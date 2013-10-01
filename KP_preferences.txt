@@ -1,0 +1,3 @@
+; IDL Toolkit KP Reader Preferences File
+kp_insitu_data_directory: /Users/klarsen/Documents/Maven/IDL/KP_data/april/insitu/
+kp_iuvs_data_directory: /Users/klarsen/Documents/Maven/IDL/KP_data/april/iuvs/
