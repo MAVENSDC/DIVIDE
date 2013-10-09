@@ -36,8 +36,8 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
                   colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
-      install_directory = strsplit(file_search('$HOME', 'mvn_kp_map2d.pro'),'mvn_kp_map2d.pro',/extract,/regex)     ;Determine the toolkit installation directory
-                
+     install_result = routine_info('mvn_kp_map2d',/source)
+     install_directory = strsplit(install_result.path,'mvn_kp_map2d.pro',/extract,/regex)          
                 
 ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
 

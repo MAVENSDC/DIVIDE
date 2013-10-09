@@ -97,7 +97,7 @@ endelse
         plot_count[i] = 1
       endelse
     endfor
- 
+ stop
     true_index = true_index[0:total_lines-1]
   
   ;LOOP OVER EACH REQUESTED PLOT VARIABLE, CHECK IT'S VALIDITY, AND STORE THE DATA IN A TPLOT VARIABLE

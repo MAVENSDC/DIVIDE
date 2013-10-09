@@ -200,17 +200,18 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     
   ;Check the contents of input variable and set-up any needed default parameters
 
-    install_directory = strsplit(file_search('$HOME', 'mvn_kp_read.pro'),'mvn_kp_read.pro',/extract,/regex)     ;Determine the toolkit installation directory    
+    install_result = routine_info('mvn_kp_read',/source)
+    install_directory = strsplit(install_result.path,'mvn_kp_read.pro',/extract,/regex)
     if keyword_set(preferences) eq 0 then begin
     ;CHECK IF THE PREFERENCES FILE EXISTS
-      preference_exists = file_search(install_directory[0],'kp_preferences.txt',count=kp_pref_exists)    
+      preference_exists = file_search(install_directory,'kp_preferences.txt',count=kp_pref_exists)    
     ;IF IT EXISTS, READ IN THE BASE PREFERENCES AS THIS ISN'T THE FIRST TIME A USER HAS RUN THE CODE  
       if kp_pref_exists ne 0 then begin
         ;READ IN THE KP_PREFERENCES FILE AND SET VARIABLES
         temp=''
         kp_insitu_data_directory = ''
         kp_iuvs_data_directory = ''
-        openr,lun,install_directory[0]+'kp_preferences.txt',/get_lun
+        openr,lun,install_directory+'kp_preferences.txt',/get_lun
         readf,lun,temp
         readf,lun,kp_insitu_data_directory
         readf,lun,kp_iuvs_data_directory
@@ -221,42 +222,23 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     ;IF IT DOESN'T EXIST, SET DEFAULT STRINGS AND VARIABLES, WHILE CREATING KP_PREFERENCES.TXT FOR FUTURE USE
       if kp_pref_exists eq 0 then begin
         ;ASK THE USER TO DEFINE THE DIRECTORY WHERE THE KP DATA FILES ARE STORED
-        kp_insitu_data_directory = dialog_pickfile(path=install_directory[0],/directory,title='Choose the directory containing insitu KP data files')
-        kp_iuvs_data_directory = dialog_pickfile(path=install_directory[0],/directory,title='Choose the directory containing IUVS KP data files')
-        openw,lun,install_directory[0]+'KP_preferences.txt',/get_lun
+        kp_insitu_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
+        kp_iuvs_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+        openw,lun,install_directory+'kp_preferences.txt',/get_lun
         printf,lun,'; IDL Toolkit KP Reader Preferences File'
         printf,lun,'kp_insitu_data_directory: '+kp_insitu_data_directory
         printf,lun,'kp_iuvs_data_directory: '+kp_iuvs_data_directory
         free_lun,lun
       endif
     endif else begin        ;loop if preferences keyword is undefined
-     ;CHECK IF THE PREFERENCES FILE EXISTS
- ;     preference_exists = file_search(preferences,count=kp_pref_exists)    
-;    ;IF IT EXISTS, READ IN THE BASE PREFERENCES AS THIS ISN'T THE FIRST TIME A USER HAS RUN THE CODE  
-;      if kp_pref_exists ne 0 then begin
-;        ;READ IN THE KP_PREFERENCES FILE AND SET VARIABLES
-;        temp=''
-;        kp_insitu_data_directory = ''
-;        kp_iuvs_data_directory = ''
-;        openr,lun,preferences,/get_lun
-;        readf,lun,temp
-;        readf,lun,kp_insitu_data_directory
-;        readf,lun,kp_iuvs_data_directory
-;        free_lun,lun
-;        kp_insitu_data_directory = strmid(kp_insitu_data_directory,strpos(kp_insitu_data_directory,'/'))        
-;        kp_iuvs_data_directory = strmid(kp_iuvs_data_directory,strpos(kp_iuvs_data_directory,'/'))        
-;      endif
-    ;IF IT DOESN'T EXIST, SET DEFAULT STRINGS AND VARIABLES, WHILE CREATING KP_PREFERENCES.TXT FOR FUTURE USE
- ;     if kp_pref_exists eq 0 then begin
         ;ASK THE USER TO DEFINE THE DIRECTORY WHERE THE KP DATA FILES ARE STORED
         kp_insitu_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
         kp_iuvs_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
-        openw,lun,install_directory[0]+'KP_preferences.txt',/get_lun
+        openw,lun,install_directory+'kp_preferences.txt',/get_lun
         printf,lun,'; IDL Toolkit KP Reader Preferences File'
         printf,lun,'kp_data_directory: '+kp_insitu_data_directory
         printf,lun,'kp_iuvs_data_directory: '+kp_iuvs_data_directory
         free_lun,lun
-  ;    endif
     endelse
 
 

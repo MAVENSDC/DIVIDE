@@ -49,10 +49,11 @@ pro  MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, $
         temp1 = temp1 + first_level_count[i]
         if (parameter-1 lt temp1) then begin
           level0_index = i
-         i = n_elements(first_level_count)
+;         i = n_elements(first_level_count)
+          break
         endif;
       endfor     
-      level0_index = level0_index
+  ;    level0_index = level0_index
       level0_temp = level0_index 
                       
       
@@ -130,5 +131,5 @@ pro  MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, $
     tag_names[0] = base_tags[level0_index]
     tag_names[1] = first_level_tags[parameter_index]
   endif
-
+stop
 end
