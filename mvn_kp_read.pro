@@ -59,12 +59,11 @@
 @time_string
 @mvn_time_convert
 @mvn_kp_iuvs_filename
-@mvn_kp_inistu_versions
+@mvn_kp_insitu_versions
 @mvn_kp_structure_build
 @mvn_loop_progress
 @mvn_kp_time_bounds
-@mvn_kp_assign_ascii
-@mvn_kp_assign_binary
+@mvn_kp_insitu_assign
 @mvn_kp_iuvs_timecheck
 @mvn_kp_iuvs_binary_assign
 
@@ -320,7 +319,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                 within_time_bounds = MVN_KP_TIME_BOUNDS(a[0],begin_time,end_time)
               ;IF WITHIN BOUNDS, EXTRACT AND STORE DATA 
                 if within_time_bounds then begin
-                  MVN_KP_ASSIGN_ASCII, record, a, instrument_array
+                  MVN_KP_INSITU_ASSIGN, record, a, instrument_array
                   kp_data_temp[index] = record
                   index=index+1
                 endif
@@ -364,27 +363,27 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                
                 if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
   
-                  MVN_KP_ASSIGN_BINARY, record, orbit[saved_records], instrument_array
+                  MVN_KP_INSITU_ASSIGN, record, orbit[saved_records], instrument_array
 ;                  if instrument_array[0] eq 1 then begin
-;                    mvn_kp_assign_binary,record, lpw_data[saved_records], 'lpw'
+;                    MVN_KP_INSITU_ASSIGN,record, lpw_data[saved_records], 'lpw'
 ;                  endif
 ;                  if instrument_array[1] eq 1 then begin
-;                    mvn_kp_assign_binary,record, static_data[saved_records], 'static'
+;                    MVN_KP_INSITU_ASSIGN,record, static_data[saved_records], 'static'
 ;                  endif
 ;                  if instrument_array[2] eq 1 then begin
-;                    mvn_kp_assign_binary,record, swia_data[saved_records], 'swia'
+;                    MVN_KP_INSITU_ASSIGN,record, swia_data[saved_records], 'swia'
 ;                  endif
 ;                  if instrument_array[3] eq 1 then begin
-;                    mvn_kp_assign_binary,record, swea_data[saved_records], 'swea'
+;                    MVN_KP_INSITU_ASSIGN,record, swea_data[saved_records], 'swea'
 ;                  endif
 ;                  if instrument_array[4] eq 1 then begin
-;                    mvn_kp_assign_binary,record, mag_data[saved_records], 'mag'
+;                    MVN_KP_INSITU_ASSIGN,record, mag_data[saved_records], 'mag'
 ;                  endif
 ;                  if instrument_array[5] eq 1 then begin
-;                    mvn_kp_assign_binary,record, sep_data[saved_records], 'sep'
+;                    MVN_KP_INSITU_ASSIGN,record, sep_data[saved_records], 'sep'
 ;                  endif
 ;                  if instrument_array[6] eq 1 then begin
-;                    mvn_kp_assign_binary,record, ngims_data[saved_records], 'ngims
+;                    MVN_KP_INSITU_ASSIGN,record, ngims_data[saved_records], 'ngims
 ;                  endif
                   kp_data_temp[index] = record             
                   index=index+1
