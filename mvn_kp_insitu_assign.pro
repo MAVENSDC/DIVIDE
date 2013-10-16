@@ -5,13 +5,13 @@
 ;    record : in, required, type=structure
 ;       the named structure for the sorted and output INSITU KP data
 ;    data_array: in, required, type=fltarr(ndims)
-;       the KP data read from the binary files, includes all instrument data
+;       the KP data read from the ascii or binary files, includes all instrument data
 ;    instrument_array: in, required, type=fltarr(13)
 ;       the instrument choice flags that determine which data will be returned from data_array
 ;    
 
 ;-
-pro MVN_KP_ASSIGN_BINARY,  record, data_array,  instrument_array
+pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
 
 
   record.time_string = data_array.time_string
