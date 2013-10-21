@@ -46,7 +46,7 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
     keeper_list = strarr(n_elements(file_list))
     check = 0
     for i=0,n_elements(file_list) - 1 do begin
-     version = fix(strmid(file_list[i],9,2,/reverse_offset))                ;CHANGE THIS WHEN 3 DIGIT VERSION NUMBERS ARE IMPLEMENTED
+     version = fix(strmid(file_list[i],11,3,/reverse_offset))                ;CHANGE THIS WHEN 3 DIGIT VERSION NUMBERS ARE IMPLEMENTED
       if version gt 0 then begin
         time1 =  strmid(file_list[i],17,6,/reverse_offset)
         for j=version,1, -1 do begin
@@ -62,12 +62,12 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
 
 
   ;EXTRACT THE HOUR-STAMP OF EACH FILE FROM THE LIST
-  sec_list = fix(strmid(file_list,13,2,/reverse_offset))
-  min_list = fix(strmid(file_list,15,2,/reverse_offset))
-  hour_list = fix(strmid(file_list, 17,2,/reverse_offset))
-  day_list = fix(strmid(file_list, 20,2,/reverse_offset))
-  month_list = fix(strmid(file_list,22,2,/reverse_offset))
-  year_list = fix(strmid(file_list,26,4,/reverse_offset))
+  sec_list = fix(strmid(file_list,15,2,/reverse_offset))
+  min_list = fix(strmid(file_list,17,2,/reverse_offset))
+  hour_list = fix(strmid(file_list, 19,2,/reverse_offset))
+  day_list = fix(strmid(file_list, 22,2,/reverse_offset))
+  month_list = fix(strmid(file_list,24,2,/reverse_offset))
+  year_list = fix(strmid(file_list,28,4,/reverse_offset))
  
   jul_list = julday(month_list, day_list, year_list, hour_list, min_list, sec_list)
   
@@ -87,5 +87,5 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
   file_count = file_count + temp_file_count
   
   
-  
+ 
 end

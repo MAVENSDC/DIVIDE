@@ -30,7 +30,7 @@
 ;       optional keyword that will return all of the SEP data 
 ;    ngims: in, optional, type=boolean
 ;       optional keyword that will return all of the NGIMS data 
-;    iuvs: in, optional, type=boolean
+;    iuvs_all: in, optional, type=boolean
 ;       optional keyword to return all IUVS KP data, regardless of observation type
 ;    insitu: in, optional, type=boolean
 ;       optional keyword that will return all of the INSITU data, regardless of observation type
@@ -40,12 +40,16 @@
 ;       optional keyword that will return all of the IUVS APOAPSE data 
 ;    iuvs_coronaEchellehigh: in, optional, type=boolean
 ;       optional keyword that will return all of the IUVS Corona Echelle high altitude data 
-;    iuvs_coronaEchellelow: in, optional, type=boolean
-;       optional keyword that will return all of the IUVS Corona Echelle low altitude data 
+;    iuvs_coronaEchelledisk: in, optional, type=boolean
+;       optional keyword that will return all of the IUVS Corona Echelle disk data 
+;    iuvs_coronaEchelleLimb: in, optional, type=boolean
+;       optional keyword that will return all of the IUVS Corona Echelle limb data 
 ;    iuvs_coronaLoreslimb: in, optional, type=boolean
-;       optional keyword that will return all of the iuvs corona LoREs on disk data 
+;       optional keyword that will return all of the iuvs corona LoREs on limb data 
 ;    iuvs_coronaLoreshigh: in, optional, type=boolean
 ;       optional keyword that will return all of the IUVS Corona LoRes high altitude data 
+;    iuvs_coronaLoresdisk: in, optional, type=boolean
+;       optional keyword that will return all of the IUVS Corona LoRes disk data 
 ;    iuvs_stellarocc: in, optional, type=boolean
 ;       optional keyword that will return all of the IUVS Stellar Occulatation data 
 ;    inbound: in, optional, type=boolean
@@ -70,7 +74,8 @@
 pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCES=PREFERENCES,$
                    lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $
                    iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
-                   iuvs_coronaEchellehigh=iuvscoronaEchellehigh,iuvs_coronaEchellelow=iuvs_coronaEchellelow,$
+                   iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
+                   iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
                    iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
                    iuvs_stellarocc=iuvs_stellarocc, insitu=insitu, $
                    inbound=inbound, outbound=outbound, binary=binary
@@ -97,10 +102,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     endif
     if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
       keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
-      keyword_set(iuvs_coronaEchellehigh) or keyword_set(iuvs_coronaEchelleLow) or keyword_set(iuvs_coronaLoresHigh) or $
-      keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_stellarocc) or keyword_set(insitu) then begin
+      keyword_set(iuvs_coronaEchellehigh) or keyword_set(iuvs_coronaEchelleLimb) or keyword_set(iuvs_coronaEchelleHigh) or keyword_set(iuvs_coronaLoresHigh) or $
+      keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu) then begin
       ;FOR EACH INSTRUMENT KEYWORD, SET RETURN FLAGS AND INDEX ARRAY FOR STRUCTURE CREATION
-      instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+      instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
       if keyword_set(lpw) then begin
         instrument_array[0] = 1
         print,'Returning All LPW Instrument KP Data.'
@@ -147,6 +152,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         instrument_array[11] = 1
         instrument_array[12] = 1
         instrument_array[13] = 1
+        instrument_array[14] = 1
+        instrument_array[15] = 1
         print,'Returning All IUVS Instrument KP Data.'
       endif   
       if keyword_set(iuvs_periapse) then begin
@@ -161,9 +168,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         instrument_array[9] = 1
         print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
       endif
-      if keyword_set(iuvs_coronaEchellelow) then begin
+      if keyword_set(iuvs_coronaEchellelimb) then begin
         instrument_array[10] = 1
-        print,'Returning All IUVS Instrument Corona Echelle Low Altitude KP Data.'
+        print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
       endif
       if keyword_set(iuvs_stellarocc) then begin
         instrument_array[11] = 1
@@ -176,9 +183,17 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       if keyword_set(iuvs_coronaLoreslimb) then begin
         instrument_array[13] = 1 
         print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
+      endif
+      if keyword_set(iuvs_coronaLoresdisk) then begin
+        instrument_array[14] = 1 
+        print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
       endif  
+      if keyword_set(iuvs_coronaechelledisk) then begin
+        instrument_array[15] = 1 
+        print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
+      endif    
     endif else begin
-      instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1]    ;SET INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE TO CONTAIN ALL DATA
+      instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]    ;SET INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE TO CONTAIN ALL DATA
     endelse
     
   ;SET INBOUND/OUTBOUND KEYWORDS IF NEEDED
@@ -398,7 +413,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
      ;OPEN AND STORE THE DESIRED IUVS DATA RECORDS IN IT'S OWN STRUCTURE
      
        if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-          (instrument_array[11] eq 1) then begin
+          (instrument_array[11] eq 1) or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
          iuvs_index=0
          for file=0,n_elements(iuvs_filenames)-1 do begin
           if keyword_set(binary) then begin                                           ;READ IUVS DATA FROM BINARY FILES
@@ -406,11 +421,14 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
             ;SET EACH IUVS OBSERVATION DATA TYPE TO 0 BEFORE READING
             periapse = 0
             apoapse = 0
-            corona_echelle_above_limb = 0
+            corona_echelle_limb = 0
             corona_echelle_disk = 0
+            corona_echelle_high = 0
   ;          stellar_occ = 0
-            corona_lores_high_alt = 0
+            corona_lores_high = 0
             corona_lores_limb = 0
+            corona_lores_disk = 0
+            
             restore,iuvs_filenames[file]
             if instrument_array[7] eq 1 then begin                                    ;READ AND PARSE PERIAPSE DATA
              if size(periapse,/type) eq 8 then begin           
@@ -433,18 +451,18 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
             endif
   
             if instrument_array[9] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
-             if size(corona_echelle_above_limb,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_echelle_above_limb.time_start, begin_time, end_time, check
+             if size(corona_echelle_high,/type) eq 8 then begin
+              MVN_KP_IUVS_TIMECHECK, corona_echelle_high.time_start, begin_time, end_time, check
               if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_above_limb, 'CORONA_ECHELLE_HIGH'
+                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_high, 'CORONA_ECHELLE_HIGH'
               endif
              endif
             endif
-            if instrument_array[10] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE DISK DATA
-             if size(corona_echelle_disk,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_echelle_disk.time_start, begin_time, end_time, check
+            if instrument_array[10] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE LIMB DATA
+             if size(corona_echelle_limb,/type) eq 8 then begin
+              MVN_KP_IUVS_TIMECHECK, corona_echelle_limb.time_start, begin_time, end_time, check
               if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_disk, 'CORONA_ECHELLE_DISK'
+                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_limb, 'CORONA_ECHELLE_LIMB'
               endif            
              endif
             endif
@@ -452,10 +470,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;          
   ;          endif
             if instrument_array[12] eq 1 then begin                                    ;READ AND PARSE CORONA LORES HIGH ALT DATA
-             if size(corona_lores_high_alt,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_lores_high_alt.time_start, begin_time, end_time, check
+             if size(corona_lores_high,/type) eq 8 then begin
+              MVN_KP_IUVS_TIMECHECK, corona_lores_high.time_start, begin_time, end_time, check
               if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_high_alt, 'CORONA_LORES_HIGH'
+                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_high, 'CORONA_LORES_HIGH'
               endif              
              endif
             endif
@@ -464,6 +482,22 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
               MVN_KP_IUVS_TIMECHECK, corona_lores_limb.time_start, begin_time, end_time, check
               if check eq 1 then begin
                 MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_limb, 'CORONA_LORES_LIMB'
+              endif              
+             endif
+            endif
+            if instrument_array[14] eq 1 then begin                                    ;READ AND PARSE CORONA LORES DISK DATA
+             if size(corona_lores_disk,/type) eq 8 then begin
+              MVN_KP_IUVS_TIMECHECK, corona_lores_disk.time_start, begin_time, end_time, check
+              if check eq 1 then begin
+                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_disk, 'CORONA_LORES_DISK'
+              endif              
+             endif
+            endif
+            if instrument_array[15] eq 1 then begin                                    ;READ AND PARSE CORONA Echelle DISK DATA
+             if size(corona_echelle_disk,/type) eq 8 then begin
+              MVN_KP_IUVS_TIMECHECK, corona_echelle_disk.time_start, begin_time, end_time, check
+              if check eq 1 then begin
+                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_disk, 'CORONA_ECHELLE_DISK'
               endif              
              endif
             endif
@@ -482,7 +516,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
 
     insitu_output = kp_data_temp[0:index-1]
       if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-        (instrument_array[11] eq 1) then begin
+        (instrument_array[11] eq 1)  or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
           iuvs_output = iuvs_data_temp[0:iuvs_index-1]
       endif
   
@@ -491,7 +525,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
    
 print,'A total of ',strtrim(string(index-1),2),' KP data records were found that met the search criteria.'
   if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-        (instrument_array[11] eq 1) then begin
+        (instrument_array[11] eq 1)  or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
         print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
   endif
 print,'Your query took ', overall_end_time - overall_start_time,' seconds to complete.'
