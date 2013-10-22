@@ -61,7 +61,7 @@ if ndim eq 0 then tsts =tst0 else tsts = make_array(value=tst0,dim=dim)
 
 if dt eq 7 then begin         ; input is a string
   bt = bindgen(256)
-  bt[byte(':_-/,')]= 32
+  bt[byte(':_-/,T')]= 32
   year=0l & month=0l & date=0 & hour=0 & min=0 & fsec=0.d
   for i=0l,n_elements(time)-1l do begin
     tst = tst0
