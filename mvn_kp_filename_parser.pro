@@ -117,10 +117,13 @@ pro MVN_KP_FILENAME_PARSER, begin_time, end_time, file_count, filenames, iuvs_fi
         filenames[i] = 'mvn_KP_l2_pf_'+strtrim(string(year_array[i]),2)+strtrim(month_array[i],2)+strtrim(day_array[i],2)+'_v001_r04.sav'
         MVN_KP_INSITU_VERSIONS, filenames[i], data_dir, new_filename, /binary
         filenames[i] = new_filename
-        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, /binary       
-        iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs
-        iuvs_file_index_low = iuvs_file_count      
-      endelse  
+        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, /binary
+        ; MAKE SURE IUVS FILES WERE FOUND BEFORE TRYING TO ADD THEM
+        if iuvs_file_count gt iuvs_file_index_low then begin
+          iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs
+          iuvs_file_index_low = iuvs_file_count
+        endif
+      endelse
     endfor      
       iuvs_filenames = iuvs_filenames_temp[0:iuvs_file_count-1]
        
