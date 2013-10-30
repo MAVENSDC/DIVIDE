@@ -21,6 +21,15 @@
 pro MVN_LOOP_PROGRESS,idx,loopbot,looptop,MODVAL=modval,MESSAGE=message,$
                     CANCEL=cancel
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+                  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+  
   cancel = 0
   
   !except = 0

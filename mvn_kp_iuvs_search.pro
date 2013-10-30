@@ -17,8 +17,34 @@
 ;       if present, will simply list the start and end times of the passed data structure
 ;    list: in, optional, type=boolean
 ;       if present, will simply list the available structure tags within the KP data structure
+;    debug: in, optional, type=boolean
+;       optional keyword to execute in "debug" mode. On errors, IDL will halt in place so the user can
+;       have a chance to see what's going on. By default this will not occur, instead error handlers
+;       are setup and errors will return to main.
 ;       ;-
-pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, min=min_value, max=max_value, list=list, range=range
+pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, min=min_value, max=max_value, list=list, range=range, debug=debug
+
+  ; IF NOT IN DEBUG, SETUP ERROR HANDLER
+  if not keyword_set(debug) then begin
+    ; Establish error handler. When errors occur, the index of the
+    ; error is returned in the variable Error_status:
+    CATCH, Error_status
+    
+    ;This statement begins the error handler:
+    IF Error_status NE 0 THEN BEGIN
+      ; Handle errors by returning to Main:
+      PRINT, '**ERROR HANDLING - ', !ERROR_STATE.MSG
+      PRINT, '**ERROR HANDLING - Cannot proceed. Returning to main'
+      Error_status = 0
+      CATCH, /CANCEL
+      return
+    ENDIF
+  endif
+  
+  ; IF DEBUG SET, SET IT AS AN ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS CALLED CAN CHECK FOR IT
+  if keyword_set(debug) then begin
+    setenv, 'MVNTOOLKIT_DEBUG=TRUE'
+  endif
 
 
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
@@ -197,7 +223,8 @@ kp_data_out = kp_data_temp
 ;
 ;endif       ;END OF ALL SEARCH ROUTINES
 
-
+; UNSET DEBUG ENV VARIABLE
+setenv, 'MVNTOOLKIT_DEBUG='
 
 finish: 
 end

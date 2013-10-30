@@ -17,8 +17,10 @@
 ;    binary: in, required, type=boolean
 ;       A flag that creates filesnames with the binary extension instead of ascii default.
 ;-
-pro MVN_KP_FILENAME_PARSER, begin_time, end_time, file_count, filenames, iuvs_filenames, data_dir, iuvs_dir, binary, debug=debug
+pro MVN_KP_FILENAME_PARSER, begin_time, end_time, file_count, filenames, iuvs_filenames, data_dir, iuvs_dir, binary
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
 
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
@@ -117,14 +119,14 @@ pro MVN_KP_FILENAME_PARSER, begin_time, end_time, file_count, filenames, iuvs_fi
         filenames[i] = 'mvn_KP_l2_pf_'+strtrim(string(year_array[i]),2)+strtrim(month_array[i],2)+strtrim(day_array[i],2)+'_v001_r01.txt'          
         MVN_KP_INSITU_VERSIONS, filenames[i], data_dir, new_filename
         filenames[i] = new_filename
-        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, debug=debug
+        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs
         iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs
         iuvs_file_index_low = iuvs_file_count    
       endif else begin
         filenames[i] = 'mvn_KP_l2_pf_'+strtrim(string(year_array[i]),2)+strtrim(month_array[i],2)+strtrim(day_array[i],2)+'_v001_r04.sav'
         MVN_KP_INSITU_VERSIONS, filenames[i], data_dir, new_filename, /binary
         filenames[i] = new_filename
-        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, /binary, debug=debug
+        MVN_KP_IUVS_FILENAME, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, /binary
         ; MAKE SURE IUVS FILES WERE FOUND BEFORE TRYING TO ADD THEM
         if iuvs_file_count gt iuvs_file_index_low then begin
           iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs

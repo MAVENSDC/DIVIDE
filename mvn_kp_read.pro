@@ -105,6 +105,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       ENDIF
   endif
   
+  ; IF DEBUG SET, SET IT AS AN ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS CALLED CAN CHECK FOR IT
+  if keyword_set(debug) then begin
+    setenv, 'MVNTOOLKIT_DEBUG=TRUE'
+  endif
   
   ;CHECK IF ANY OF THE OPTIONAL PARAMETERS ARE SET AND SET THEM IF THEY ARE NOT
 
@@ -320,7 +324,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;PARSE THE KP FILE NAMES TO DETERMINE HOW MANY FILES TO READ
     ;DETERMINE HOW MANY DAYS OF FILES WILL BE OPENED AND READ FOR THE SEARCH ROUTINE
  
-      MVN_KP_FILENAME_PARSER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag, debug=debug
+      MVN_KP_FILENAME_PARSER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag
 
     ;CREATE OUTPUT STRUCTURE BASED ON SEARCH PARAMETERS 
     
@@ -509,6 +513,8 @@ print,'A total of ',strtrim(string(index-1),2),' KP data records were found that
   endif
 print,'Your query took ', overall_end_time - overall_start_time,' seconds to complete.'
 
+; UNSET DEBUG ENV VARIABLE
+setenv, 'MVNTOOLKIT_DEBUG='
 
 break1:
 end

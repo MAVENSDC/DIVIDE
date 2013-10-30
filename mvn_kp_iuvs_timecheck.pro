@@ -14,6 +14,16 @@
 
 ;-
 pro MVN_KP_IUVS_TIMECHECK, time, begin_time, end_time, check
+  
+  
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
 
   ;PARSE THE INPUT TIME FROM IUVS FORMAT TO KP READER FORMAT
 

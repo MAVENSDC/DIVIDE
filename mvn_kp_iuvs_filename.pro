@@ -25,13 +25,17 @@
 ;    binary: in, optional, type=boolean
 ;       the binary flag to determine whether binary or ascii filenames are to be generated
 ;-
-pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, file_count, filename, binary=binary, debug=debug
+pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, file_count, filename, binary=binary
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
     on_error, 1
   endif
+
 
   time_jul = julday(month,day,year,hour)
 

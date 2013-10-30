@@ -16,6 +16,16 @@
 pro MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, input, instrument, index=index
 
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+
   if instrument eq 'APOAPSE' then begin
     iuvs_record.apoapse.time_start = input.time_start
     iuvs_record.apoapse.time_stop = input.time_stop

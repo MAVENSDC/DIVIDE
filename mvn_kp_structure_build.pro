@@ -13,7 +13,14 @@
 ;-
 pro MVN_KP_STRUCTURE_BUILD, record, iuvs_record, instrument_array
   
-
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
   
 ;DEFINE THE ALWAYS INCLUDED STRUCTURES OF SPACECRAFT AND APP PARAMETERS 
 

@@ -1,6 +1,14 @@
 function MVN_TIME_MATH, time, delta
 
- 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+  
       begin_year = fix(strmid(time,0,4))
       begin_month = fix(strmid(time,5,2))
       begin_day = fix(strmid(time,8,2))

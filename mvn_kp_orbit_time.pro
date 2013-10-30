@@ -13,21 +13,34 @@
 ;
 ; :Keywords:
 ;-
-pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time, begin_index, end_index
+pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time, begin_index, end_index, install_dir
 
 
-;FIND THE ORBIT/TIME TEXT FILE, OR PROMPT IF IT CAN'T BE FOUND.
-   orbit_directory = strsplit(file_search('$HOME', 'MVN_Orbit_Sequence.txt'),'MVN_Orbit_Sequence.txt',/extract,/regex)     ;Determine the toolkit installation directory
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
 
-   if orbit_directory eq '' then begin        ;PROMPT THE USER BECAUSE THE ORBIT FILE COULDN'T BE FOUND
-     orbit_directory = dialog_pickfile(path=orbit_directory,/directory,title='Choose the directory containing time ordered orbit list')
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+
+  ; GLOBALS
+  orbit_file = 'MVN_Orbit_Sequence.txt'
+  
+
+    ;FIND THE ORBIT/TIME TEXT FILE, OR PROMPT IF IT CAN'T BE FOUND.
+
+   if file_test( orbit_file,then begin        ;PROMPT THE USER BECAUSE THE ORBIT FILE COULDN'T BE FOUND
+     install_dir = dialog_pickfile(path=install_dir,/directory,title='Choose the directory containing time ordered orbit list')
    endif 
 
 
 ;READ IN THE ORBIT TEXT FILE FOR COMPARISON PURPOSES
 
-  restore,orbit_directory+'orbit_template.sav'
-  orbits = read_ascii(orbit_directory+'MVN_Orbit_Sequence.txt',template=orbit_template)
+  restore,install_dir+'orbit_template.sav'
+  orbits = read_ascii(install_dir+'MVN_Orbit_Sequence.txt',template=orbit_template)
 
 ;FIND THE TIME FOR THE BEGINNING ORBIT
 
