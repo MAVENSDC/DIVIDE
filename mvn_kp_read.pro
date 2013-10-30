@@ -58,6 +58,11 @@
 ;       optional keyword that will return all of the data from the outbound leg of an orbit
 ;    binary: in, optional, type=boolean
 ;       optional keyword to force the KP data reader to use binary files instead of ASCII text
+;    debug: in, optional, type=boolean
+;       optional keyword to execute in "debug" mode. On errors, IDL will halt in place so the user can
+;       have a chance to see what's going on. By default this will not occur, instead error handlers
+;       are setup and errors will return to main.   
+;       
 ;-
 
 @time_string
@@ -78,14 +83,30 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                    iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
                    iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
                    iuvs_stellarocc=iuvs_stellarocc, insitu=insitu, $
-                   inbound=inbound, outbound=outbound, binary=binary
+                   inbound=inbound, outbound=outbound, binary=binary, debug=debug
 
 
   overall_start_time = systime(1)
 
-
+  ; IF NOT IN DEBUG, SETUP ERROR HANDLER
+  if not keyword_set(debug) then begin
+    ; Establish error handler. When errors occur, the index of the
+    ; error is returned in the variable Error_status:
+    CATCH, Error_status
+  
+    ;This statement begins the error handler:
+    IF Error_status NE 0 THEN BEGIN
+      ; Handle errors by returning to Main:
+      PRINT, '**ERROR HANDLING - ', !ERROR_STATE.MSG
+      PRINT, '**ERROR HANDLING - Cannot proceed. Returning to main'
+      Error_status = 0
+      CATCH, /CANCEL
+      return
+      ENDIF
+  endif
+  
+  
   ;CHECK IF ANY OF THE OPTIONAL PARAMETERS ARE SET AND SET THEM IF THEY ARE NOT
-
 
     if keyword_set(binary) eq 0 then begin
       binary_flag = 0
@@ -298,8 +319,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
    
   ;PARSE THE KP FILE NAMES TO DETERMINE HOW MANY FILES TO READ
     ;DETERMINE HOW MANY DAYS OF FILES WILL BE OPENED AND READ FOR THE SEARCH ROUTINE
-    
-      MVN_KP_FILENAME_PARSER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag
+ 
+      MVN_KP_FILENAME_PARSER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag, debug=debug
 
     ;CREATE OUTPUT STRUCTURE BASED ON SEARCH PARAMETERS 
     
@@ -351,27 +372,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
           MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
           restore,kp_insitu_data_directory+target_kp_filenames[file]
            ;LOAD THE NEEDED IN-SITU DATA FILES FOR EACH INSTRUMENT
-   ;         if instrument_array[0] eq 1 then begin
-   ;           restore,kp_data_directory+'LPW/'+target_kp_filenames[1,file]
-   ;         endif
-   ;         if instrument_array[1] eq 1 then begin
-   ;           restore,kp_data_directory+'STATIC/'+target_kp_filenames[3,file]
-   ;         endif
-   ;         if instrument_array[2] eq 1 then begin
-   ;           restore,kp_data_directory+'SWIA/'+target_kp_filenames[7,file]
-   ;         endif
-   ;         if instrument_array[3] eq 1 then begin
-   ;           restore,kp_data_directory+'SWEA/'+target_kp_filenames[2,file]
-   ;         endif
-   ;         if instrument_array[4] eq 1 then begin
-   ;           restore,kp_data_directory+'MAG/'+target_kp_filenames[4,file]
-   ;         endif
-   ;         if instrument_array[5] eq 1 then begin
-   ;           restore,kp_data_directory+'SEP/'+target_kp_filenames[5,file]
-   ;         endif
-  ;          if instrument_array[6] eq 1 then begin
-   ;           restore,kp_data_directory+'NGIMS/'+target_kp_filenames[6,file]
-   ;         endif
           for saved_records = 0, n_elements(orbit) -1 do begin
             within_time_bounds = mvn_kp_time_bounds(orbit[saved_records].time_string, begin_time, end_time)
               if within_time_bounds then begin            ;IF WITHIN TIME RANGE, EXTRACT AND STORE DATA 
@@ -379,27 +379,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                 if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
   
                   MVN_KP_INSITU_ASSIGN, record, orbit[saved_records], instrument_array
-;                  if instrument_array[0] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, lpw_data[saved_records], 'lpw'
-;                  endif
-;                  if instrument_array[1] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, static_data[saved_records], 'static'
-;                  endif
-;                  if instrument_array[2] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, swia_data[saved_records], 'swia'
-;                  endif
-;                  if instrument_array[3] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, swea_data[saved_records], 'swea'
-;                  endif
-;                  if instrument_array[4] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, mag_data[saved_records], 'mag'
-;                  endif
-;                  if instrument_array[5] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, sep_data[saved_records], 'sep'
-;                  endif
-;                  if instrument_array[6] eq 1 then begin
-;                    MVN_KP_INSITU_ASSIGN,record, ngims_data[saved_records], 'ngims
-;                  endif
                   kp_data_temp[index] = record             
                   index=index+1
      
