@@ -27,6 +27,16 @@
 ;-
 pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, file_count, filename, binary=binary
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+
   time_jul = julday(month,day,year,hour)
 
   filename_temp = strarr(10)           ;FAR TOO LARGE, BUT TEMPORARY 
@@ -60,6 +70,19 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
     deleter = where(file_list ne '')
     file_list = file_list[deleter]
 
+  ;ERROR HANDLING: CHECK TO MAKE SURE WE FOUND A FILE
+  if file_list[0] eq '' then begin
+    if not keyword_set(debug) then begin
+      message, "No Files found in"+data_dir+"for the input time/timerange" + $
+        "Note: IUVS filenames must be of the form: MVN_IUV_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
+    endif else begin
+      print, "**ERROR HANDLING - No Files found in"+data_dir+"for the input time/timerange"
+      print, "**ERROR HANDLING - Note: IUVS filenames must be of the form: MVN_IUV_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
+      print, "**ERROR HANDLING - Debug mode set: Stoping."
+      stop
+    endelse
+    
+  endif
 
   ;EXTRACT THE HOUR-STAMP OF EACH FILE FROM THE LIST
   sec_list = fix(strmid(file_list,15,2,/reverse_offset))

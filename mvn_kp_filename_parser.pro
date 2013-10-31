@@ -19,7 +19,16 @@
 ;-
 pro MVN_KP_FILENAME_PARSER, begin_time, end_time, file_count, filenames, iuvs_filenames, data_dir, iuvs_dir, binary
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
 
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+  
+  
   ;EXTRACT THE VARIOUS TIME/DATE COMPONENTS
       begin_year = fix(strmid(begin_time,0,4))
       begin_month = fix(strmid(begin_time,5,2))

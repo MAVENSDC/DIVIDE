@@ -17,6 +17,15 @@
 ;-
 pro MVN_KP_INSITU_VERSIONS, filenames, data_dir, higher_version, binary=binary
 
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+ 
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR
     if keyword_set(binary) then begin
       file_pattern = 'mvn_KP_l2_pf*.sav'
