@@ -22,7 +22,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 (*pstate).maven_model->getProperty, transform=mavTrans
                 (*pstate).sub_solar_model->getProperty,transform=ssTrans
                 (*pstate).sub_maven_model->getProperty,transform=smTrans
-   ;             (*pstate).vector_model->getProperty,transform=vertTrans
+                (*pstate).vector_model->getProperty,transform=vertTrans
                 newTransform = curTransform # rotTransform
                 newatmtrans1 = atmtrans1 # rotTransform
                 newatmtrans2 = atmtrans2 # rotTransform
@@ -33,7 +33,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 newMavTrans = mavTrans # rotTransform
                 newSsTrans = ssTrans # rotTransform
                 newSmTrans = smTrans # rotTransform
- ;               newVertTrans = vertTrans # rotTransform
+                newVertTrans = vertTrans # rotTransform
                 (*pstate).model->setProperty, transform=newTransform
                 (*pstate).atmModel1->setProperty, transform=newatmtrans1
                 (*pstate).atmModel2->setProperty, transform=newatmtrans2
@@ -46,8 +46,13 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 (*pstate).maven_model -> setProperty, transform=newMavTrans
                 (*pstate).sub_solar_model->setProperty,transform=newSsTrans
                 (*pstate).sub_maven_model->setProperty,transform=newSmTrans
-  ;              (*pstate).vector_model->setProperty,transform=newVertTrans
+                (*pstate).vector_model->setProperty,transform=newVertTrans
                 (*pstate).axesmodel -> setProperty, transform=newtransform
+                if (*pstate).instrument_array[8] eq 1 then begin
+                  (*pstate).periapse_limb_model->getProperty,transform=periTrans
+                  newPeriTrans = periTrans # rotTransform
+                  (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
+                endif
                 (*pstate).window->draw, (*pstate).view          
               endif
             
@@ -67,7 +72,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 (*pstate).sub_solar_model->scale,s,s,s
                 (*pstate).sub_maven_model->scale,s,s,s
                 (*pstate).axesmodel->scale,s,s,s
-   ;             (*pstate).vector_model->scale,s,s,s
+                (*pstate).vector_model->scale,s,s,s
+                (*pstate).periapse_limb_model->scale,s,s,s
                 (*pstate).window->draw, (*pstate).view          
               endif       
             end
@@ -79,6 +85,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     widget_control, (*pstate).subbaseR2, map=0
                     widget_control, (*pstate).subbaseR1, map=1
                    end
+    'animation': begin
+                    widget_control, (*pstate).subbaseR1, map=0
+                    widget_control, (*pstate).subbaseR9, map=1
+                 end
+                 
+     'anim_return': begin
+                      widget_control, (*pstate).subbaseR9, map=0
+                      widget_control, (*pstate).subbaseR1, map=1
+                    end
      'time': begin
                 widget_control, event.id, get_value=newval
                 
@@ -139,6 +154,19 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                  colors[2,new_bottom:new_top] = 255
                  colors[0,new_bottom:new_top] = 0
                  (*pstate).parameter_plot->setproperty,vert_colors=colors 
+                  
+ ;               ;UPDATE THE IUVS PERIAPSE ALTITUDE PLOT
+                 MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, (*pstate).insitu[t_index].time, peri_data, (*pstate).periapse_limb_scan, xlabel
+                 (*pstate).alt_xaxis_title->setproperty,strings=xlabel
+                 (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
+                 (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
+                 (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+                 (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
+                 xc = mg_linear_function(xr, [-1.75,-1.5])
+                 yc = mg_linear_function(yr, [-1.3,1.0])
+                 (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                 (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
+                  
                   
                 ;FINALLY, REDRAW THE SCENE  
                 (*pstate).time_index = t_index
@@ -596,7 +624,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -605,6 +634,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                     end           
            
@@ -616,7 +651,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -625,6 +661,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                        end    
                        
@@ -636,7 +678,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).plottext1->setproperty,strings=plotted_parameter_name
@@ -662,7 +705,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -671,6 +715,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                      end 
                      
@@ -682,7 +732,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -691,6 +742,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
@@ -702,7 +759,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -711,6 +769,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
@@ -722,7 +786,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
                       temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
                       (*pstate).level0_index = level0_index
@@ -731,13 +796,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
+                          xc = mg_linear_function(xr, [-1.7,1.4])
+                          yc = mg_linear_function(yr, [-1.9,-1.5])
+                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                       (*pstate).window->draw,(*pstate).view   
                       end
                    
         'colortable': begin
                         xloadct,/silent,/use_current,group=(*pstate).base ,/modal
                         (*pstate).orbit_path->getproperty,vert_color=temp_vert
-                        MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,(*pstate).colorbar_ticks
+                        MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                                              (*pstate).colorbar_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                         (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                         ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar1->setproperty,red_Values=r_curr
@@ -762,9 +834,129 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                          end
                          
         'vector_field': begin
-                                widget_control, event.id, get_value=newval
-                                print,newval
-                            end
+                          widget_control, event.id, get_value=newval
+                          case newval of
+                            'Magnetic Field': begin
+                                                 (*pstate).vector_path->getproperty,data=old_data
+                                                 for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                  old_data[0,(i*2)+1] = (*pstate).insitu[i].mag.mso_x
+                                                  old_data[1,(i*2)+1] = (*pstate).insitu[i].mag.mso_y
+                                                  old_data[2,(i*2)+1] = (*pstate).insitu[i].mag.mso_z
+                                                 endfor
+                                                 (*pstate).vector_path->setproperty,data=old_data
+                                                 (*pstate).window->draw,(*pstate).view
+                                              end
+                            'SWIA H+ Flow Velocity': begin
+                                                      (*pstate).vector_path->getproperty,data=old_data
+                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msox
+                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoy
+                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoz
+                                                      endfor
+                                                      (*pstate).vector_path->setproperty,data=old_data
+                                                      (*pstate).window->draw,(*pstate).view
+                                                     end
+                            'STATIC H+ Flow Velocity': begin
+                                                        (*pstate).vector_path->getproperty,data=old_data
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoz
+                                                        endfor
+                                                        (*pstate).vector_path->setproperty,data=old_data
+                                                        (*pstate).window->draw,(*pstate).view
+                                                       end
+                            'STATIC O+ Flow Velocity': begin
+                                                        (*pstate).vector_path->getproperty,data=old_data
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoz
+                                                        endfor
+                                                        (*pstate).vector_path->setproperty,data=old_data
+                                                        (*pstate).window->draw,(*pstate).view
+                                                       end
+                            'STATIC O2+ Flow Velocity': begin
+                                                          (*pstate).vector_path->getproperty,data=old_data
+                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msox
+                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoy
+                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoz
+                                                          endfor
+                                                          (*pstate).vector_path->setproperty,data=old_data
+                                                          (*pstate).window->draw,(*pstate).view
+                                                        end  
+                            'STATIC H+/He++ Characteristic Direction': begin
+                                                                          (*pstate).vector_path->getproperty,data=old_data
+                                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msox
+                                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoy
+                                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoz
+                                                                          endfor
+                                                                          (*pstate).vector_path->setproperty,data=old_data
+                                                                          (*pstate).window->draw,(*pstate).view
+                                                                       end
+                            'STATIC Pickup Ion Characteristic Direction': begin
+                                                                            (*pstate).vector_path->getproperty,data=old_data
+                                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msox
+                                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoy
+                                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoz
+                                                                            endfor
+                                                                            (*pstate).vector_path->setproperty,data=old_data
+                                                                            (*pstate).window->draw,(*pstate).view 
+                                                                          end
+                            'SEP Look Direction 1': begin
+                                                      (*pstate).vector_path->getproperty,data=old_data
+                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msox
+                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoy
+                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoz
+                                                      endfor
+                                                      (*pstate).vector_path->setproperty,data=old_data
+                                                      (*pstate).window->draw,(*pstate).view 
+                                                    end     
+                            'SEP Look Direction 2': begin
+                                                      (*pstate).vector_path->getproperty,data=old_data
+                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msox
+                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoy
+                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoz
+                                                      endfor
+                                                      (*pstate).vector_path->setproperty,data=old_data
+                                                      (*pstate).window->draw,(*pstate).view
+                                                    end
+                            'SEP Look Direction 3': begin
+                                                      (*pstate).vector_path->getproperty,data=old_data
+                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msox
+                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoy
+                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoz
+                                                      endfor
+                                                      (*pstate).vector_path->setproperty,data=old_data
+                                                      (*pstate).window->draw,(*pstate).view
+                                                    end
+                            'SEP Look Direction 4': begin
+                                                      (*pstate).vector_path->getproperty,data=old_data
+                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msox
+                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoy
+                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoz
+                                                      endfor
+                                                      (*pstate).vector_path->setproperty,data=old_data
+                                                      (*pstate).window->draw,(*pstate).view
+                                                    end                                                                                                                                                                                   
+                          endcase
+                          
+                                
+                        end
+        
+        'vector_display': begin
+                           result = (*pstate).vector_model.hide
+                           if result eq 1 then (*pstate).vector_model->setProperty,hide=0
+                           if result eq 0 then (*pstate).vector_model->setProperty,hide=1
+                           (*pstate).window ->draw,(*pstate).view
+                          end
           
         'overplots': begin
                        result = (*pstate).plot_model.hide
@@ -775,18 +967,147 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                      
         'colorbar_stretch': begin
                               widget_control,event.id,get_value=newval
-                              print,newval
+                              if newval eq 'Linear' then temp_stretch = 0
+                              if newval eq 'Log' then temp_stretch = 1
+                              (*pstate).colorbar_stretch = temp_stretch
+                              temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                              MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                                                    temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, temp_stretch
+                              (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+                              ;CHANGE THE COLOR BAR SETTINGS
+                               (*pstate).colorbar1->setproperty,red_Values=r_curr
+                               (*pstate).colorbar1->setproperty,green_Values=g_curr
+                               (*pstate).colorbar1->setproperty,blue_Values=b_curr
+                               (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
+                               (*pstate).window ->draw,(*pstate).view
                             end
                          
         'colorbar_min': begin
                           widget_control,event.id,get_value=newval
-                          print,newval
+                          (*pstate).colorbar_min = newval[0]
+                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                                                temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
+                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+                          ;CHANGE THE COLOR BAR SETTINGS
+                           (*pstate).colorbar1->setproperty,red_Values=r_curr
+                           (*pstate).colorbar1->setproperty,green_Values=g_curr
+                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
+                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
+                           (*pstate).window ->draw,(*pstate).view
                         end
                         
         'colorbar_max': begin
                           widget_control,event.id,get_value=newval
-                          print,newval
+                          (*pstate).colorbar_max = newval[0]
+                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                                                temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
+                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+                          ;CHANGE THE COLOR BAR SETTINGS
+                           (*pstate).colorbar1->setproperty,red_Values=r_curr
+                           (*pstate).colorbar1->setproperty,green_Values=g_curr
+                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
+                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
+                           (*pstate).window ->draw,(*pstate).view
                         end
+                        
+        'colorbar_reset': begin
+                            temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                            colorbar_min = (*pstate).colorbar_min
+                            colorbar_max = (*pstate).colorbar_max
+                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                                                temp_ticks, colorbar_min, colorbar_max, (*pstate).colorbar_stretch, /reset
+                          (*pstate).colorbar_min = colorbar_min
+                          (*pstate).colorbar_max = colorbar_max                       
+                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+                          ;CHANGE THE COLOR BAR SETTINGS
+                           (*pstate).colorbar1->setproperty,red_Values=r_curr
+                           (*pstate).colorbar1->setproperty,green_Values=g_curr
+                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
+                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
+                           (*pstate).window ->draw,(*pstate).view
+                          end
+                         
+        'orbit_onoff': begin
+                        result = (*pstate).orbit_model.hide
+                        if result eq 1 then (*pstate).orbit_model->setProperty,hide=0
+                        if result eq 0 then (*pstate).orbit_model->setProperty,hide=1
+                        (*pstate).window ->draw,(*pstate).view
+                       end
+                         
+        'periapse_all': begin
+                          result = (*pstate).periapse_limb_model.hide
+                          if result eq 1 then begin
+                            (*pstate).periapse_limb_model->setProperty,hide=0
+                            widget_control,(*pstate).subbaseR8b, sensitive=1
+                          endif
+                          if result eq 0 then begin
+                             (*pstate).periapse_limb_model->setProperty,hide=1
+                             widget_control,(*pstate).subbaseR8b, sensitive=0
+                          endif
+                          
+                          (*pstate).window ->draw,(*pstate).view
+                        end
+                        
+        'periapse_some': begin
+            
+                         end
+        
+        'peri_select': begin  
+                         peri_index = widget_info(event.id, /droplist_select)
+                         widget_control, event.id, get_value=newval
+                         parameter = strtrim(string(newval[peri_index])) 
+                         (*pstate).periapse_limb_scan = parameter
+                         
+                         p1 = strmid(parameter,0,1)                         
+                         
+                         data = fltarr(n_elements((*pstate).iuvs.periapse.time_start), n_elements((*pstate).iuvs[0].periapse[0].alt))
+                         temp_index=0
+                         for i=0,n_elements((*pstate).iuvs)-1 do begin
+                          for j=0,n_elements((*pstate).iuvs[i].periapse)-1 do begin
+                            if p1 eq 'D' then data[temp_index,*] = (*pstate).iuvs[i].periapse[j].density[peri_index,*]
+                            if p1 eq 'R' then data[temp_index,*] = (*pstate).iuvs[i].periapse[j].radiance[peri_index,*]
+                            temp_index++
+                          endfor
+                         endfor
+                         (*pstate).periapse_vectors->getproperty,vert_colors=verts
+                         MVN_KP_3D_PERI_COLOR, verts, data
+                         
+                         MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, (*pstate).insitu((*pstate).time_index).time, peri_data, parameter, xlabel
+                            
+                         (*pstate).alt_xaxis_title->setproperty,strings=xlabel
+                         (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
+                         (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
+                         (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+                         (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
+                          xc = mg_linear_function([min(peri_data[1,*]),max(peri_data[1,*])], [-1.75,-1.5])
+                          yc = mg_linear_function(yr, [-1.3,1.0])
+                          (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)
+                         
+                          
+                         (*pstate).periapse_vectors->setproperty,vert_colors=verts
+                         (*pstate).window ->draw,(*pstate).view
+
+                       end
+                       
+        'peri_profile': begin
+                            result = (*pstate).alt_plot_model.hide
+                            if result eq 1 then (*pstate).alt_plot_model->setProperty,hide=0
+                            if result eq 0 then (*pstate).alt_plot_model->setProperty,hide=1
+                            (*pstate).window ->draw,(*pstate).view            
+                        end
+                       
+        'full_time_anim_begin': begin
+                                  widget_control,(*pstate).button9a,sensitive=0
+                                  widget_control,(*pstate).button9b,sensitive=1
+                                end
+                                
+        'full_time_anim_end': begin
+                                widget_control,(*pstate).button9a,sensitive=1
+                                widget_control,(*pstate).button9b,sensitive=0
+                              end
                          
   endcase     ;END OF BUTTON CONTROL
   

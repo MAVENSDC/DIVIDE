@@ -20,13 +20,15 @@
 @mvn_kp_3d_cleanup.pro
 @mvn_kp_3d_atmshell.pro
 @MVN_KP_3D_PATH_COLOR.pro
+@MVN_KP_3D_PERI_COLOR.pro
+@MVN_KP_3D_CURRENT_PERIAPSE.pro
 @MVN_KP_TAG_PARSER.pro
 @MVN_KP_TAG_VERIFY.pro
 @mg_linear_function.pro
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
-               parameter=parameter, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,$
-               vector=vector,parameterplot=parameterplot
+               field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,$
+               whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -46,16 +48,85 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         if size(time,/type) eq 3 then begin         ;double time
           initial_time = time
         endif
-        time_index=0L
-        temp_time = min(abs(insitu.time - initial_time),time_index)
-        mid_time = insitu[time_index].time
-        mid_time_string = time_string(mid_time,format=0)
+        if n_elements(time) eq 1 then begin       ;use beginning and end times of insitu, with this as the plotted time
+          if (initial_time gt start_time) and (initial_time lt end_time) then begin
+            time_index=0L
+            temp_time = min(abs(insitu.time - initial_time),time_index)
+            mid_time = insitu[time_index].time
+            mid_time_string = time_string(mid_time,format=0)
+          endif else begin
+            print,'REQUESTED INITIAL PLOT TIME OF ',strtrim(string(time),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES. PLOTTING MID-TIME INSTEAD'
+            time_index = long(total_points/2L)
+            mid_time = insitu[time_index].time
+            initial_time = mid_time
+            mid_time_string = time_string(mid_time,format=0)
+          endelse
+        endif                                     ;end of single value time loop
+        if n_elements(time) eq 2 then begin       ;use this as beginning and end times to be plotted, with initial plotas the midpoint
+          if (initial_time[0] gt start_time) and (initial_time[0] lt end_time) then begin
+            start_time = initial_time[0]
+            start_time_string = time_string(initial_time[0],format=0)
+            start_index=0L
+            temp_time = min(abs(insitu.time - initial_time[0]),start_index)
+            insitu = insitu[start_index:*]
+          endif else begin
+            print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
+          endelse
+          if (initial_time[1] gt start_time) and (initial_time[1] lt end_time) then begin
+            end_time = initial_time[1]
+            end_time_string = time_string(initial_time[1],format=0)
+            end_index = 0l
+            temp_time = min(abs(insitu.time - initial_time[1]),end_index)
+            insitu = insitu[0:end_index]
+          endif else begin
+            print, 'REQUESTED END TIME OF ',strtrim(string(time[1]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
+          endelse
+          total_points = n_elements(insitu.time)
+          time_index = long(total_points/2L)
+          mid_time = insitu[time_index].time
+          initial_time = mid_time
+          mid_time_string = time_string(mid_time,format=0)
+        endif                                     ;end of 2 value time loop
+        if n_elements(time) eq 3 then begin       ;use this as the beginning, middle, and end times 
+           if (initial_time[0] gt start_time) and (initial_time[0] lt end_time) then begin
+            start_time = initial_time[0]
+            start_time_string = time_string(initial_time[0],format=0)
+            start_index=0L
+            temp_time = min(abs(insitu.time - initial_time[0]),start_index)
+            insitu = insitu[start_index:*]
+          endif else begin
+            print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
+          endelse
+          if (initial_time[2] gt start_time) and (initial_time[2] lt end_time) then begin
+            end_time = initial_time[2]
+            end_time_string = time_string(initial_time[2],format=0)
+            end_index = 0l
+            temp_time = min(abs(insitu.time - initial_time[2]),end_index)
+            insitu = insitu[0:end_index]
+          endif else begin
+            print, 'REQUESTED END TIME OF ',strtrim(string(time[2]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
+          endelse
+          if (initial_time[1] gt start_time) and (initial_time[1] lt end_time) then begin
+            time_index=0L
+            temp_time = min(abs(insitu.time - initial_time[1]),time_index)
+            mid_time = insitu[time_index].time
+            mid_time_string = time_string(mid_time,format=0)    
+          endif else begin
+            print, 'REQUESTED PLOT TIME OF ',strtrim(string(time[1]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES. PLOTTING THE MID-TIME INSTEAD.'
+            total_points = n_elements(insitu.time)
+            time_index = long(total_points/2L)
+            mid_time = insitu[time_index].time
+            initial_time = mid_time
+            mid_time_string = time_string(mid_time,format=0) 
+          endelse
+        endif                                       ;end of 3 value time loop
       endif else begin
         time_index = long(total_points/2L)
         mid_time = insitu[time_index].time
+        initial_time = mid_time
         mid_time_string = time_string(mid_time,format=0)
       endelse 
-     
+   
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
      instrument_array = intarr(15)     ;flags to indicate if a given instrumnet data is present
@@ -115,6 +186,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       backgroundcolor = [15,15,15]
     endelse
   
+    ;default colorbar settings
+      colorbar_max = 100.
+      colorbar_min = 0.0
+      colorbar_stretch=0
+
+  
   ;BUILD THE WIDGET
 
     ;set the size of the draw window
@@ -129,6 +206,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       draw = widget_draw(subbaseL, xsize=xsize, ysize=ysize, graphics_level=2, $
                          /button_events, /motion_events, /wheel_events, uname='draw',$
                          retain=2)
+    
+    if keyword_set(direct) eq 0 then begin          ;SKIP THIS IF /DIRECT IS SET, SKIPPING THE GUI INTERFACE
+                         
       ;TOP LEVEL MENU                  
       subbaseR = widget_base(subbase)
        subbaseR1 = widget_base(subbaseR,/column)
@@ -141,6 +221,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Viewing Geometries', uname='views', xsize=300, ysize=30)
         button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=300,ysize=30)
         button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=300,ysize=30)
+        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=300, ysize=30)
         button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=300,ysize=30)       
  
       ;TIME BAR ACROSS THE BOTTOM
@@ -160,6 +241,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
        subbaseR2 = widget_base(subbaseR,/column)
        marsbase = widget_base(subbaseR2,/column)
 ;       ;BASEMAP OPTIONS
+        button1 = widget_button(marsbase, value='Spacecraft Orbit Track', uname='orbit_onoff', xsize=300, ysize=30)
         label1 = widget_label(marsbase, value='Basemap')
         basemapbase = widget_base(marsbase, /column,/frame,/exclusive)
           button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=300,ysize=30)
@@ -187,8 +269,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         loadct,0,/silent
         bgcolor = cw_clr_index(gridbase1, uname ='background_color',color_values=bg_colors,xsize=210,ysize=30)
         
-        
-;       ;CONTROL BUTTON
         button2 = widget_button(marsbase, value='Return',uname='mars_return', xsize=300,ysize=30)             
 
         ;VIEWING GEOMETRY OPTIONS MENU
@@ -311,7 +391,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               drop1=widget_droplist(subbaseR7a, value=ngims_list, uname='ngims_list', title='NGIMS', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
-         label7 = widget_label(subbaseR7, value='Vector Plots')
+        
+         button7 = widget_button(subbaseR7, value='Vector Plots', uname='vector_display',xsize=300,ysize=30)
          subbaseR7b = widget_base(subbaseR7, /column,/frame,/exclusive)
            if instrument_array[4] eq 1 then begin
              button7 = widget_button(subbaseR7b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15)
@@ -339,19 +420,45 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               button7 = widget_button(subbaseR7c, value = 'Color Bar', uname='ColorBarPlot', xsize=300, ysize=30)
               subbaseR7d = widget_base(subbaseR7c, /row)
                 label7 = widget_label(subbaseR7d, value='Min')
-                text7 = widget_text(subbaseR7d, value= string(0.0), /editable,xsize=5,uname='colorbar_min')
+                text7 = widget_text(subbaseR7d, value= string(colorbar_min), /editable,xsize=3,uname='colorbar_min')
                 label7 = widget_label(subbaseR7d, value='Max')
-                text7 = widget_text(subbaseR7d, value=string(100.), /editable,xsize=5,uname='colorbar_max')
+                text7 = widget_text(subbaseR7d, value=string(colorbar_max), /editable,xsize=3,uname='colorbar_max')
+                button7 = widget_button(subbaseR7d, value='Reset', uname='colorbar_reset')
                 subbaseR7e = widget_base(subbaseR7d, /row,/exclusive)
-                button7 = widget_button(subbaseR7e, value='Linear', uname='colorbar_stretch')
+                button7a = widget_button(subbaseR7e, value='Linear', uname='colorbar_stretch')
+                widget_control, button7a, /set_button
                 button7 = widget_button(subbaseR7e, value='Log', uname='colorbar_stretch')
           button7 = widget_button(subbaseR7, value='Return',uname='insitu_return',xsize=300,ysize=30)
         
         ;IUVS MENU
         subbaseR8 = widget_base(subbaseR, /column)
-        
+          if instrument_array[8] eq 1 then begin
+            subbaseR8a = widget_base(subbaseR8, /column,/frame) 
+              label8 = widget_label(subbaseR8a, value='Periapse Limb Scans', /align_center)
+              button8 = widget_button(subbaseR8a, value='Display All Profiles', uname='periapse_all', xsize=300, ysize=30)
+              subbaseR8b = widget_base(subbaseR8a, /column,sensitive=0)
+                  peri_den_list = 'Density: '+strtrim(iuvs[0].periapse[0].density_id,2)
+                  drop1=widget_droplist(subbaseR8b,value=peri_den_list,uname='peri_select',title='Density Profiles', frame=5)
+                  peri_rad_list = 'Radiance: '+strtrim(iuvs[0].periapse[0].radiance_id,2)
+                  drop1=widget_droplist(subbaseR8b,value=peri_rad_list,uname='peri_select',title='Radiance Profiles', frame=5)
+                  button8 = widget_button(subbaseR8b, value='Display Altitude Profile', uname='peri_profile', xsize=300, ysize=30)                  
+                  button8 = widget_button(subbaseR8b, value='Select Individual Scans', uname='periapse_some', xsize=300, ysize=30)
+          endif
+          
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
           
+          ;ANIMATION MENU
+          subbaseR9 = widget_base(subbaseR, /column)
+            label9 = widget_label(subbaseR9, value='Animation Options', /align_center)
+            subbaseR9a = widget_base(subbaseR9, /row)
+              label9 = widget_label(subbaseR9a, value='Full Time Animation', /align_center)
+              button9a = widget_button(subbaseR9a, value='Start', uname='full_time_anim_begin')
+              button9b = widget_button(subbaseR9a, value='Stop', uname='full_time_anim_end',sensitive=0)
+            
+            button9 = widget_button(subbaseR9, value='Return', uname='anim_return', xsize=300, ysize=30)
+            
+            
+    endif         ;END OF THE WIDGET CREATION LOOP (SKIPPED IF /DIRECT SET)      
           
     widget_control, base,/realize
     widget_control, draw, get_value=window  
@@ -564,18 +671,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endelse
         loadct,path_color_table,/silent
           
-        if keyword_set(parameter) then begin      ;if parameter not selected, pass an invalid value
-          MVN_KP_TAG_VERIFY, insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+        if keyword_set(field) then begin      ;if parameter not selected, pass an invalid value
+          MVN_KP_TAG_VERIFY, insitu, field,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array
           if check ne 0 then begin         ;if requested parameter doesn't exist, default to none
-            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(parameter),2)+' IS NOT PART OF THE DATA STRUCTURE.'
+            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2)+' IS NOT PART OF THE DATA STRUCTURE.'
             plotted_parameter_name = ''
             current_plotted_value = ''
             level0_index = -9
             level1_index = -9
           endif else begin
             plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-            current_plotted_value = insitu[time_index].(0).(1)
+            current_plotted_value = insitu[time_index].(level0_index).(level1_index)
           endelse             
         endif else begin                ;if no parameter selected, default to none
           plotted_parameter_name = ''
@@ -585,7 +692,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endelse 
 
         vert_color = intarr(3,n_elements(insitu.spacecraft.geo_x))        
-        MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks    
+        MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks,0.0,100.0,0.   
         orbit_model = obj_new('IDLgrModel')
         view -> add, orbit_model
         orbit_path = obj_new('IDLgrPolyline', x_orbit,y_orbit,z_orbit, thick=2,vert_color=vert_color,shading=1)
@@ -593,28 +700,27 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
     ;CREATE THE VECTOR MODEL TO HOLD SUCH DATA
     
- ;     vector_model = obj_new('IDLgrModel')
- ;     x_vector = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
- ;     y_vector = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
- ;     z_vector = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
- ;     vector_polylines = intarr(3*n_elements(insitu.spacecraft.geo_x))
- ;     for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
- ;       x_vector[i*2] = insitu[i].spacecraft.geo_x/10000.0
- ;       y_vector[i*2] = insitu[i].spacecraft.geo_y/10000.0
- ;       z_vector[i*2] = insitu[i].spacecraft.geo_z/10000.0
- ;       x_vector[(i*2)+1] = (insitu[i].spacecraft.geo_x/10000.0)+.000001
- ;       x_vector[(i*2)+1] = (insitu[i].spacecraft.geo_x/10000.0)+.000001
- ;       x_vector[(i*2)+1] = (insitu[i].spacecraft.geo_x/10000.0)+.000001
- ;       vector_polylines[i*2] = 2
- ;       vector_polylines[(i*2)+1] = (i*2)
- ;       vector_polylines[(i*2)+2] = (i*2)+1  
- ;     endfor  
-   ;   vector_path = obj_new('IDLgrPolyline', x_vector, y_vector, z_vector, polylines=vector_polylines, thick=1, vert_color=vert_color,shading=1,alpha_channel=0.1)
- ;;     for i=0,n_elements(vector_path)-1 do vector_model->add,vector_path[i]
-  ;    view -> add,vector_model
- ;;     vector_model->setProperty,hide=1
- ;     if keyword_set(vector) then vector_model->setproperty,hide=0
-
+      vector_model = obj_new('IDLgrModel')
+      x_vector = fltarr(n_elements(x_orbit)*2)
+      y_vector = fltarr(n_elements(y_orbit)*2)
+      z_vector = fltarr(n_elements(z_orbit)*2)
+      vector_polylines = lonarr(3*n_elements(insitu.spacecraft.geo_x))
+      for i=0l,n_elements(x_orbit)-1 do begin
+        x_vector[i*2] = x_orbit[i]
+        y_vector[i*2] = y_orbit[i]
+        z_vector[i*2] = x_orbit[i]       
+        x_vector[(i*2)+1] = x_orbit[i]
+        y_vector[(i*2)+1] = y_orbit[i]+0.00001
+        z_vector[(i*2)+1] = z_orbit[i]
+        vector_polylines[i*3] = 2l
+        vector_polylines[(i*3)+1] = (i*2l)
+        vector_polylines[(i*3)+2] = (i*2l)+1l  
+      endfor 
+      vector_path = obj_new('IDLgrPolyline', x_vector, y_vector, z_vector, polylines=vector_polylines, thick=1, vert_color=vert_color,shading=1,alpha_channel=0.2)
+      for i=0l,n_elements(vector_path)-1 do vector_model->add,vector_path[i]
+      view -> add,vector_model
+      vector_model->setProperty,hide=1  
+      if keyword_set(whiskers) then vector_model->setproperty,hide=0
 
 
     ;CREATE A LABEL FOR WHAT IS PLOTTED ALONG THE SPACECRAFT ORBIT
@@ -683,78 +789,164 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         plot_model->setproperty,hide=1
         if keyword_set(parameterplot) then plot_model->setproperty,hide=0
 
+      ;CREATE THE PERIAPSE LIMB SCANS
+        if instrument_array[8] eq 1 then begin
+          periapse_limb_model =  obj_new('IDLgrModel')
+          view->add, periapse_limb_model
+          periapse_x = fltarr(n_elements(iuvs.periapse.time_start)*2*n_elements(iuvs[0].periapse[0].alt))
+          periapse_y = fltarr(n_elements(iuvs.periapse.time_start)*2*n_elements(iuvs[0].periapse[0].alt))
+          periapse_z = fltarr(n_elements(iuvs.periapse.time_start)*2*n_elements(iuvs[0].periapse[0].alt))
+          periapse_polyline = lonarr(n_elements(iuvs.periapse.time_start)*3*n_elements(iuvs[0].periapse[0].alt))
+          peri_vert_colors = intarr(3,n_elements(iuvs[0].periapse[0].alt)*n_elements(iuvs.periapse.time_start))
+          peri_vert_colors[2,*] = 255
+          
+          peri_index = 0
+          for i=0,n_elements(iuvs)-1 do begin
+            for j=0, n_elements(iuvs[i].periapse)-1 do begin
+              for k=0,n_elements(iuvs[i].periapse[j].alt)-1 do begin
+                  periapse_x[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * cos(iuvs[i].periapse[j].lon*(!pi/180.))
+                  periapse_y[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * sin(iuvs[i].periapse[j].lon*(!pi/180.))
+                  periapse_z[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * sin(iuvs[i].periapse[j].lat*(!pi/180.)) 
+                peri_index = peri_index+1
+              endfor
+            endfor
+          endfor
+          
+          for i=0,n_elements(iuvs.periapse.time_start)-1 do begin
+            periapse_polyline[i*(n_elements(iuvs[0].periapse[0].alt)+1)] = n_elements(iuvs[0].periapse[0].alt)
+            for j=1,n_elements(iuvs[0].periapse[0].alt) do begin
+              periapse_polyline[(i*(n_elements(iuvs[0].periapse[0].alt)+1))+j]= (i*(n_elements(iuvs[0].periapse[0].alt)))+(j-1)
+            endfor
+          endfor
+          
+          periapse_vectors = obj_new('IDLgrPolyline', periapse_x, periapse_y, periapse_z, polylines=periapse_polyline, vert_colors=peri_vert_colors, thick=3,color=[0,0,255])
+          for i=0, n_elements(periapse_vectors)-1 do periapse_limb_model->add,periapse_vectors[i]
+          periapse_limb_model->setproperty,hide=1
+          if keyword_set(periapse_limb_scan) then periapse_limb_model->setproperty,hide=0
 
+        ;CREATE THE PERIAPSE LIMB SCAN ALTITUDE PLOT
+          if keyword_set(periapse_limb_scan) ne 1 then begin
+             periapse_limb_scan = 'Density: H'
+          endif
+          
+          MVN_KP_3D_CURRENT_PERIAPSE, iuvs.periapse, initial_time, current_periapse, periapse_limb_scan, xlabel
+          
+          alt_plot_model = obj_new('IDLgrModel')
+          view->add,alt_plot_model
+          alt_plot = obj_new('IDLgrPlot', current_periapse[1,*], current_periapse[0,*],color=[0,255,0],vert_colors=[255,255,255],linestyle=0)
+          alt_plot_model -> add, alt_plot
+  
+          alt_plot->getproperty, xrange=xr, yrange=yr
+          xc = mg_linear_function(xr, [-1.75,-1.4])
+          yc = mg_linear_function(yr, [-1.3,1.0])
+          alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+          alt_xaxis_title = obj_new('IDLgrText', xlabel, color=[0,255,0])
+          alt_xaxis_ticks = obj_new('idlgrtext', [strtrim(string(min(current_periapse[1,*]), format='(E8.2)'),2),strtrim(string(max(current_periapse[1,*]), format='(E8.2)'),2)])
+          
+          alt_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=[0,128,0],thick=2,tickdir=1,/exact,major=5)
+          alt_xaxis = obj_new('IDLgrAxis', 0, range=xr,color=[0,128,0],thick=2,tickdir=1,/exact,major=2,title=alt_xaxis_title,ticktext=alt_xaxis_ticks)
+          alt_plot_model->add,alt_yaxis
+          alt_plot_model->add,alt_xaxis
+          alt_yaxis->setproperty,xcoord_conv=[-1.76,xc[1]],ycoord_conv=yc
+          alt_xaxis->setproperty,xcoord_conv=[-1.75,xc[1]],ycoord_conv=[-1.3,yc[1]]
+          alt_plot_model->setproperty,hide=1
+          if keyword_set(periapse_limb_scan) then alt_plot_model->setproperty,hide=0
+
+        endif 
+
+     
 
     window->draw, view
 
   ;SET THE GLOBAL VARIABLES TO KEEP EVERYTHING IN CHECK
 
-    state = {button1: button1, button2: button2, button3: button3, button4: button4, button5: button5, button6: button6, $
-             button41a: button41a, button41b: button41b, button41c: button41c, button42a: button42a, button42b: button42b, $
-             button42c: button42c, button43a: button43a, button43b: button43b, button43c: button43c, button44a: button44a, $
-             button44b: button44b, button44c: button44c, button45a: button45a, button45b: button45b, button45c: button45c, $
-             button46a: button46a, button46b: button46b, button46c: button46c, $
-             window: window, $
-             draw: draw, $
-             backgroundcolor: backgroundcolor, $
-             subbaseR: subbaseR, subbaseR1: subbaseR1, subbaseR2: subbaseR2, subbaseR3: subbaseR3, subbaseR4: subbaseR4, $
-             subbaseR5: subbaseR5, subbaseR6: subbaseR6, subbaseR7: subbaseR7, subbaseR8: subbaseR8, $
-             text: text, $
-             view: view, $
-             model: model, $
-             opolygons: opolygons, $
-             atmModel1: atmModel1, atmModel2: atmModel2, atmModel3: atmModel3, atmModel4: atmModel4, atmModel5: atmModel5, atmModel6: atmModel6, $
-             opolygons1: opolygons1, opolygons2: opolygons2, opolygons3: opolygons3, opolygons4: opolygons4, opolygons5: opolygons5, opolygons6: opolygons6, $
-             atmLevel1alpha: atmLevel1alpha, atmLevel2alpha: atmLevel2alpha, atmLevel3alpha: atmLevel3alpha, atmLevel4alpha: atmLevel4alpha, atmLevel5alpha: atmLevel5alpha, atmLevel6alpha: atmLevel6alpha, $
-             atmLevel1height: atmLevel1height, atmLevel2height: atmLevel2height, atmLevel3height: atmLevel3height, atmLevel4height: atmLevel4height, atmLevel5height: atmLevel5height, atmLevel6height: atmLevel6height, $
-             gridlines: gridlines, $
-             axesmodel: axesmodel, $
-             dirlight: dirlight,  lightmodel: lightmodel, $
-             track: track, $
-             textModel: textModel, $
-             timetext: timetext, $
-             orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
- ;            vector_model:vector_model, vector_path: vector_path, $
-             maven_model: maven_model, $
-             sun_model: sun_model, $
-             sub_solar_line: sub_solar_line, $
-             sub_solar_model: sub_solar_model, $
-             sub_maven_line: sub_maven_line, $
-             sub_maven_model: sub_maven_model, $
-             parametermodel:parametermodel, $
-             plottednamemodel:plottednamemodel, $
-             colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
-             plot_model: plot_model, parameter_plot: parameter_plot, plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, $
-             paratext1: paratext1, paratext2: paratext2, paratext3: paratext3, paratext4: paratext4, paratext5: paratext5, $
-             plottext1: plottext1, plottext2: plottext2, $
-             plotted_parameter_name: plotted_parameter_name, $
-             current_plotted_value: current_plotted_value, $
-             x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, $
-             solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
-             subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
-             submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $
-             insitu: insitu, $
-             time_index:time_index, $
-             base: base, $
-             level0_index: level0_index, level1_index: level1_index, $
-             install_directory: install_directory $
-             }
-                      
-  pstate = ptr_new(state, /no_copy)
-  
-    ;set menu visibilities
-      widget_control,(*pstate).subbaseR2, map=0
-      widget_control,(*pstate).subbaseR3, map=0
-      widget_control,(*pstate).subbaseR4, map=0
-      widget_control,(*pstate).subbaseR5, map=0
-      widget_control,(*pstate).subbaseR6, map=0
-      widget_control,(*pstate).subbaseR7, map=0
-      widget_control,(*pstate).subbaseR8, map=0
-  
-  widget_control, base, set_uvalue=pstate
+    if keyword_set(direct) eq 0 then begin                ;SKIP ALL THIS IF /DIRECT IS SET, SKIPPING THE GUI INTERFACE
 
-  xmanager, 'MVN_KP_3D', base,/no_block, cleanup='MVN_KP_3D_cleanup', event_handler='MVN_KP_3D_event'
+        if keyword_set(iuvs) then begin
+          iuvs_state = {iuvs:iuvs, $
+                        periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, $
+                        alt_plot_model:alt_plot_model, alt_plot:alt_plot, alt_yaxis:alt_yaxis, alt_xaxis:alt_xaxis, alt_xaxis_title:alt_xaxis_title, alt_xaxis_ticks:alt_xaxis_ticks, $
+                        subbaseR8b:subbaseR8b}             
+        endif
+        
+        insitu_state = {button1: button1, button2: button2, button3: button3, button4: button4, button5: button5, button6: button6, $
+                 button41a: button41a, button41b: button41b, button41c: button41c, button42a: button42a, button42b: button42b, $
+                 button42c: button42c, button43a: button43a, button43b: button43b, button43c: button43c, button44a: button44a, $
+                 button44b: button44b, button44c: button44c, button45a: button45a, button45b: button45b, button45c: button45c, $
+                 button46a: button46a, button46b: button46b, button46c: button46c, button9a:button9a, button9b:button9b, $
+                 window: window, $
+                 draw: draw, $
+                 backgroundcolor: backgroundcolor, $
+                 subbaseR: subbaseR, subbaseR1: subbaseR1, subbaseR2: subbaseR2, subbaseR3: subbaseR3, subbaseR4: subbaseR4, $
+                 subbaseR5: subbaseR5, subbaseR6: subbaseR6, subbaseR7: subbaseR7, subbaseR8: subbaseR8, subbaseR9:subbaseR9, $
+                 text: text, $
+                 view: view, $
+                 model: model, $
+                 opolygons: opolygons, $
+                 atmModel1: atmModel1, atmModel2: atmModel2, atmModel3: atmModel3, atmModel4: atmModel4, atmModel5: atmModel5, atmModel6: atmModel6, $
+                 opolygons1: opolygons1, opolygons2: opolygons2, opolygons3: opolygons3, opolygons4: opolygons4, opolygons5: opolygons5, opolygons6: opolygons6, $
+                 atmLevel1alpha: atmLevel1alpha, atmLevel2alpha: atmLevel2alpha, atmLevel3alpha: atmLevel3alpha, atmLevel4alpha: atmLevel4alpha, atmLevel5alpha: atmLevel5alpha, atmLevel6alpha: atmLevel6alpha, $
+                 atmLevel1height: atmLevel1height, atmLevel2height: atmLevel2height, atmLevel3height: atmLevel3height, atmLevel4height: atmLevel4height, atmLevel5height: atmLevel5height, atmLevel6height: atmLevel6height, $
+                 gridlines: gridlines, $
+                 axesmodel: axesmodel, $
+                 dirlight: dirlight,  lightmodel: lightmodel, $
+                 track: track, $
+                 textModel: textModel, $
+                 timetext: timetext, $
+                 orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
+                 vector_model:vector_model, vector_path: vector_path, $
+                 maven_model: maven_model, $
+                 sun_model: sun_model, $
+                 sub_solar_line: sub_solar_line, $
+                 sub_solar_model: sub_solar_model, $
+                 sub_maven_line: sub_maven_line, $
+                 sub_maven_model: sub_maven_model, $
+                 parametermodel:parametermodel, $
+                 plottednamemodel:plottednamemodel, $
+                 colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
+                 colorbar_min:colorbar_min, colorbar_max:colorbar_max, colorbar_stretch:colorbar_stretch, $
+                 plot_model: plot_model, parameter_plot: parameter_plot, plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, $
+                 paratext1: paratext1, paratext2: paratext2, paratext3: paratext3, paratext4: paratext4, paratext5: paratext5, $
+                 plottext1: plottext1, plottext2: plottext2, $
+                 plotted_parameter_name: plotted_parameter_name, $
+                 current_plotted_value: current_plotted_value, $
+                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, $
+                 solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
+                 subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
+                 submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $
+                 insitu: insitu, $
+                 time_index:time_index, initial_time:initial_time, $
+                 base: base, $
+                 level0_index: level0_index, level1_index: level1_index, $
+                 install_directory: install_directory, $
+                 instrument_array:instrument_array $
+                 }
+     
+      
+        if keyword_set(iuvs) then begin
+          state = create_struct(insitu_state, iuvs_state)
+        endif else begin
+          state = insitu_state
+        endelse
+                          
+      pstate = ptr_new(state, /no_copy)
+    
+      
+        ;set menu visibilities
+          widget_control,(*pstate).subbaseR2, map=0
+          widget_control,(*pstate).subbaseR3, map=0
+          widget_control,(*pstate).subbaseR4, map=0
+          widget_control,(*pstate).subbaseR5, map=0
+          widget_control,(*pstate).subbaseR6, map=0
+          widget_control,(*pstate).subbaseR7, map=0
+          widget_control,(*pstate).subbaseR8, map=0
+          widget_control,(*pstate).subbaseR9, map=0
+      
+      widget_control, base, set_uvalue=pstate
+    
+      xmanager, 'MVN_KP_3D', base,/no_block, cleanup='MVN_KP_3D_cleanup', event_handler='MVN_KP_3D_event'
 
+  endif               ;END OF THE /DIRECT KEYWORD CHECK LOOP
 
 finish:
 end

@@ -6,6 +6,8 @@
 ;       the INSITU KP data structure from which to plot data
 ;    
 ; :Keywords:
+;    iuvs: in, optional, type=structure
+;       optional IUVS data structure for overplotting of relevant parameters
 ;    time: in, optional, type=strarr(2)
 ;       an array that defines the start and end times to be plotted
 ;    orbit: in, optional, type=intarr(2)
@@ -23,7 +25,10 @@
 ;    subsolar: in, optional, type=boolean
 ;       in selected, will plot the subsolar track 
 ;    alpha: in, optional, type=integer
-;       the transparency of the basemap between 0(opaque) and 100(transparent), defaults to 0 (opaque), 
+;       the transparency of the basemap between 0(opaque) and 100(transparent), defaults to 0 (opaque)
+;    mso: in, optional, type=boolean 
+;       switch between GEO and MSO map projections
+;    
 ;-
 
 @mvn_kp_tag_parser
@@ -32,24 +37,31 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=list, basemap=basemap, $
-                  colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso
+pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=parameter, list=list, basemap=basemap, $
+                  colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $
+                  periapse_temp=periapse_temp, $
+                  corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora
+           
+   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
      install_result = routine_info('mvn_kp_map2d',/source)
      install_directory = strsplit(install_result.path,'mvn_kp_map2d.pro',/extract,/regex)          
                 
 ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
-
-  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-
+  ;for the insitu data
+    MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+  ;for the iuvs data
+    if keyword_set(iuvs) then begin
+      MVN_KP_TAG_PARSER, iuvs, iuvs_base_tag_count, iuvs_first_level_count, iuvs_second_level_count, iuvs_base_tags,  iuvs_first_level_tags, iuvs_second_level_tags
+    endif
+    
 ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
   if keyword_set(list) then begin
     MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
     goto,finish
   endif
-
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
@@ -125,22 +137,22 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
   ;IF THE BASEMAP HAS BEEN SELECTED, LOAD IT FIRST
   if keyword_set(basemap) then begin
    if basemap eq 'mdim' then begin
-     mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
+     mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
      map_limit = [-90,-180,90,180]
      map_location = [-180,-90]
    endif
    if basemap eq 'mola' then begin
-     mapimage = FILEPATH('mars-mola-2k.jpg',root_dir=install_directory)  
+     mapimage = FILEPATH('MOLA_color_2500x1250.jpg',root_dir=install_directory)  
      map_limit = [-90,-180,90,180]
      map_location = [-180,-90]
    endif 
    if basemap eq 'mola_bw' then begin
-     mapimage = FILEPATH('MarsElevation_2500x1250.jpg',root_dir=install_directory)  
+     mapimage = FILEPATH('MOLA_BW_2500x1250.jpg',root_dir=install_directory)  
      map_limit = [-90,-180,90,180]
      map_location = [-180,-90]
    endif 
    if basemap eq 'mag' then begin
-     mapimage = FILEPATH('Mars_Crustal_Magnetism_MGS.png',root_dir=install_directory)
+     mapimage = FILEPATH('Mars_Crustal_Magnetism_MGS.jpg',root_dir=install_directory)
      map_limit = [-90,0,90,360]
      map_location = [0,-90]      
    endif
@@ -159,17 +171,17 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
 
   
   ;PLOT THE SPACECRAFT PATH 
-
+  color_default = 11
   if keyword_set(parameter) eq 1 then begin     ;PLOT THE PARAMETER WITH COLORS ALONG THE ORBITAL PATH
-   if keyword_set(colors) eq 0 then begin       ;IF NO COLOR TABLE SELECTED, ASSUME BLUE/RED PROGRESSION
+   if keyword_set(colors) eq 0 then begin       ;IF NO COLOR TABLE SELECTED, ASSUME BLUE/RED PROGRESSION 
     loadct,11,/silent
     TVLCT, R, G, B, /GET
      color_levels = intarr(3,n_elements(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude))
      parameter_minimum = min(kp_data[begin_index:end_index].(level0_index).(level1_index))
      parameter_maximum = max(kp_data[begin_index:end_index].(level0_index).(level1_index))    
      color_levels[0,*] = R(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-     color_levels[0,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-     color_levels[0,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+     color_levels[1,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+     color_levels[2,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
      p = plot(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,/overplot,margin=0,color=plot_color,symbol="D",linestyle=6)   
      symbols = symbol(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,"thin_diamond",/data,sym_color=color_levels,sym_filled=1) 
         c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=[0.3,0.1,0.7,0.15],TEXTPOS=0,$
@@ -177,6 +189,7 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
    endif else begin
     if size(colors,/type) eq 7 then begin         ;ALLOW USER TO CALL COLOR TABLES WITH ASCII NAME
       if colors eq 'bw' then begin
+        color_default = 0
        color_levels = intarr(3,n_elements(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude))
        parameter_minimum = min(kp_data[begin_index:end_index].(level0_index).(level1_index))
        parameter_maximum = max(kp_data[begin_index:end_index].(level0_index).(level1_index))     
@@ -189,14 +202,15 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
             /border,range=[parameter_minimum,parameter_maximum])
       endif 
      if colors eq 'red' then begin
+      color_default = 3
       loadct,3,/silent
       TVLCT, R, G, B, /GET
        color_levels = intarr(3,n_elements(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude))
        parameter_minimum = min(kp_data[begin_index:end_index].(level0_index).(level1_index))
        parameter_maximum = max(kp_data[begin_index:end_index].(level0_index).(level1_index))     
        color_levels[0,*] = R(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-       color_levels[0,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-       color_levels[0,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+       color_levels[1,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+       color_levels[2,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
         p = plot(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,/overplot,margin=0,color=plot_color,symbol="D",linestyle=6)   
         symbols = symbol(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,"thin_diamond",/data,sym_color=color_levels,sym_filled=1)
         c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=3,ORIENTATION=0, position=[0.3,0.1,0.7,0.15],TEXTPOS=0,$
@@ -204,14 +218,15 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
      endif
    endif
    if size(colors,/type) eq 2 then begin          ;ALLOW USER TO CALL ANY PRE-DEFINED IDL COLOR TABLE
+    color_default = colors
    loadct,colors,/silent
       TVLCT, R, G, B, /GET
        color_levels = intarr(3,n_elements(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude))
        parameter_minimum = min(kp_data[begin_index:end_index].(level0_index).(level1_index))
        parameter_maximum = max(kp_data[begin_index:end_index].(level0_index).(level1_index))     
        color_levels[0,*] = R(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-       color_levels[0,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
-       color_levels[0,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+       color_levels[1,*] = G(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
+       color_levels[2,*] = B(fix(((kp_data[begin_index:end_index].(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255) )
         p = plot(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,/overplot,margin=0,color=plot_color,symbol="D",linestyle=6)   
         symbols = symbol(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,"thin_diamond",/data,sym_color=color_levels,sym_filled=1)     
         c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=colors,ORIENTATION=0, position=[0.3,0.1,0.7,0.15],TEXTPOS=0,$
@@ -219,12 +234,177 @@ pro MVN_KP_MAP2D, kp_data, time=time, orbit=orbit, parameter=parameter, list=lis
    endif
   endelse      
   endif else begin                          ;IF NO PARAMETER REQUESTED, PLOT SIMPLY THE ORBITAL PATH
-    p = plot(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,/overplot,margin=0,color=plot_color,symbol="D",linestyle=6)
+    if keyword_set(nopath) eq 0 then begin
+      p = plot(kp_data[begin_index:end_index].spacecraft.sub_sc_longitude,kp_data[begin_index:end_index].spacecraft.sub_sc_latitude,/overplot,margin=0,color=plot_color,symbol="D",linestyle=6)
+    endif
   endelse
 
   if keyword_set(subsolar) then begin
     p = symbol(kp_data[begin_index:end_index].spacecraft.subsolar_point_geo_longitude, kp_data[begin_index:end_index].spacecraft.subsolar_point_geo_latitude, 'circle',/data,sym_color="YELLOW",sym_filled=1)
   endif
 
+
+  ;ADD ON THE IUVS PLOT PARAMETERS, IF REQUESTED
+  colorbar_position = [0.1,0.22,0.3,0.27]
+  colorbar_index = 0
+    ;PERIAPSE LIMB SCAN TEMPERATURE MEASUREMENTS
+    if keyword_set(periapse_temp) then begin
+      if keyword_set(iuvs) then begin
+        check = where(iuvs_base_tags eq 'PERIAPSE')
+        if check eq 0 then begin
+          print, 'IUVS DATA STRUCTURE DOES NOT CONTAIN PERIAPSE DATA TO PLOT.'
+        endif else begin
+          temperature = fltarr(n_elements(iuvs.periapse.temperature))
+          t_lat = fltarr(n_elements(iuvs.periapse.lat))
+          t_lon = fltarr(n_elements(iuvs.periapse.lon))
+          t_ind=0
+          for i=0,n_elements(iuvs)-1 do begin
+            for j=0,2 do begin
+              temperature[t_ind] = iuvs[i].periapse[j].temperature
+              t_lat[t_ind] = iuvs[i].periapse[j].lat
+              t_lon[t_ind] = iuvs[i].periapse[j].lon
+              t_ind++
+            endfor
+          endfor
+          fill_color = intarr(3,n_elements(iuvs.periapse.temperature))
+ 
+          MVN_KP_MAP2D_SYMBOL_FILL, temperature, fill_color, color_default, colorbars
+          for i=0,n_elements(temperature)-1 do begin
+            s1 = symbol(t_lon[i], t_lat[i], /overplot, margin=0, symbol="circle",sym_filled=1,sym_fill_color=fill_color[*,i],/data)
+          endfor
+            c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',rgb_table=colorbars, ORIENTATION=0, position=colorbar_position,TEXTPOS=0,$
+            /border,range=[min(temperature),max(temperature)])
+            if colorbar_index eq 2 then begin
+              colorbar_position = colorbar_position + [0.3,0,0.3,0]
+            endif else begin
+              colorbar_position = colorbar_position + [-0.6,-.1,-0.6,-0.1]
+              colorbar_index = 0
+            endelse
+            colorbar_index++
+        endelse 
+      endif else begin
+        print,'NO IUVS DATA STRUCTURE LOADED, CAN NOT PLOT PERIAPSE DATA'
+      endelse
+    endif
+
+  ;CORONA LORES DUST DEPTH MEASUREMENT
+    if keyword_set(corona_lo_dust) then begin
+      if keyword_set(iuvs) then begin
+        check = where(iuvs_base_tags eq 'CORONA_LO_DISK')
+        if check eq 0 then begin
+          print, 'IUVS DATA STRUCTURE DOES NOT CONTAIN CORONA LO-RES DISK DATA TO PLOT.'
+        endif else begin
+          data = fltarr(n_elements(iuvs.corona_lo_disk.dust_depth))
+          t_lat = fltarr(n_elements(iuvs.corona_lo_disk.lat))
+          t_lon = fltarr(n_elements(iuvs.corona_lo_disk.lon))
+          t_ind=0
+          for i=0,n_elements(iuvs)-1 do begin
+           data[i] = iuvs[i].corona_lo_disk.dust_depth
+           t_lat[i] = iuvs[i].corona_lo_disk.lat
+           t_lon[i] = iuvs[i].corona_lo_disk.lon
+          endfor
+          fill_color = intarr(3,n_elements(iuvs.corona_lo_disk.dust_depth))
+ 
+          MVN_KP_MAP2D_SYMBOL_FILL, data, fill_color, color_default, colorbars
+          for i=0,n_elements(data)-1 do begin
+            s1 = symbol(t_lon[i], t_lat[i], /overplot, margin=0, symbol="circle",sym_filled=1,sym_fill_color=fill_color[*,i],/data)
+          endfor
+            c = COLORBAR(TITLE='IUVS Corona Lo-Res Disk Dust Depth',rgb_table=colorbars, ORIENTATION=0, position=colorbar_position,TEXTPOS=0,$
+            /border,range=[min(data),max(data)])
+            if colorbar_index eq 2 then begin
+              colorbar_position = colorbar_position + [0.3,0,0.3,0]
+            endif else begin
+              colorbar_position = colorbar_position + [-0.6,-.1,-0.6,-0.1]
+              colorbar_index = 0
+            endelse
+            colorbar_index++
+        endelse 
+      endif else begin
+        print,'NO IUVS DATA STRUCTURE LOADED, CAN NOT PLOT CORONA LO-RES DISK DATA'
+      endelse
+    endif
+    
+  ;CORONA LORES OZONE MEASUREMENT
+    if keyword_set(corona_lo_ozone) then begin
+      if keyword_set(iuvs) then begin
+        check = where(iuvs_base_tags eq 'CORONA_LO_DISK')
+        if check eq 0 then begin
+          print, 'IUVS DATA STRUCTURE DOES NOT CONTAIN CORONA LO-RES DISK DATA TO PLOT.'
+        endif else begin
+                   
+          data = fltarr(n_elements(iuvs.corona_lo_disk.ozone_depth))
+          t_lat = fltarr(n_elements(iuvs.corona_lo_disk.lat))
+          t_lon = fltarr(n_elements(iuvs.corona_lo_disk.lon))
+          t_ind=0
+          for i=0,n_elements(iuvs)-1 do begin
+           data[i] = iuvs[i].corona_lo_disk.ozone_depth
+           t_lat[i] = iuvs[i].corona_lo_disk.lat
+           t_lon[i] = iuvs[i].corona_lo_disk.lon
+          endfor
+          fill_color = intarr(3,n_elements(iuvs.corona_lo_disk.ozone_depth))
+ 
+          MVN_KP_MAP2D_SYMBOL_FILL, data, fill_color, color_default, colorbars
+          for i=0,n_elements(data)-1 do begin
+            s1 = symbol(t_lon[i], t_lat[i], /overplot, margin=0, symbol="circle",sym_filled=1,sym_fill_color=fill_color[*,i],/data)
+          endfor
+            c = COLORBAR(TITLE='IUVS Corona Lo-Res Disk Ozone Depth',rgb_table=colorbars, ORIENTATION=0, position=colorbar_position,TEXTPOS=0,$
+            /border,range=[min(data),max(data)])
+            if colorbar_index eq 2 then begin
+              colorbar_position = colorbar_position + [0.3,0,0.3,0]
+            endif else begin
+              colorbar_position = colorbar_position + [-0.6,-.1,-0.6,-0.1]
+              colorbar_index = 0
+            endelse
+            colorbar_index++
+        endelse 
+      endif else begin
+        print,'NO IUVS DATA STRUCTURE LOADED, CAN NOT PLOT CORONA LO-RES DISK DATA'
+      endelse
+    endif
+  
+  ;CORONA LORES AURORAL INDEX 
+    if keyword_set(corona_lo_aurora) then begin
+      if keyword_set(iuvs) then begin
+        check = where(iuvs_base_tags eq 'CORONA_LO_DISK')
+        if check eq 0 then begin
+          print, 'IUVS DATA STRUCTURE DOES NOT CONTAIN CORONA LO-RES DISK DATA TO PLOT.'
+        endif else begin
+                   
+          data = fltarr(n_elements(iuvs.corona_lo_disk.auroral_index))
+          t_lat = fltarr(n_elements(iuvs.corona_lo_disk.lat))
+          t_lon = fltarr(n_elements(iuvs.corona_lo_disk.lon))
+          t_ind=0
+          for i=0,n_elements(iuvs)-1 do begin
+           data[i] = iuvs[i].corona_lo_disk.auroral_index
+           t_lat[i] = iuvs[i].corona_lo_disk.lat
+           t_lon[i] = iuvs[i].corona_lo_disk.lon
+          endfor
+          fill_color = intarr(3,n_elements(iuvs.corona_lo_disk.auroral_index))
+ 
+          MVN_KP_MAP2D_SYMBOL_FILL, data, fill_color, color_default, colorbars
+          for i=0,n_elements(data)-1 do begin
+            s1 = symbol(t_lon[i], t_lat[i], /overplot, margin=0, symbol="circle",sym_filled=1,sym_fill_color=fill_color[*,i],/data)
+          endfor
+            c = COLORBAR(TITLE='IUVS Corona Lo-Res Disk Auroral Index',rgb_table=colorbars, ORIENTATION=0, position=colorbar_position,TEXTPOS=0,$
+            /border,range=[min(data),max(data)])
+            if colorbar_index eq 2 then begin
+              colorbar_position = colorbar_position + [0.3,0,0.3,0]
+              print,'asdfa ',colorbar_position,colorbar_index
+            endif else begin
+              colorbar_position = colorbar_position + [-0.6,-.1,-0.6,-0.1]
+              print,colorbar_position,colorbar_index
+              colorbar_index = 0
+            endelse
+            colorbar_index++
+        endelse 
+      endif else begin
+        print,'NO IUVS DATA STRUCTURE LOADED, CAN NOT PLOT CORONA LO-RES DISK DATA'
+      endelse
+    endif  
+  
+  
+  
+  
+  
 finish:
 end

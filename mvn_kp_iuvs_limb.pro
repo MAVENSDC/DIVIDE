@@ -166,10 +166,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
   
   ;EXTRACT THE DATA FROM THE STRUCTURE INTO TEMPORARY ARRAYS
   
-  radiance_data = fltarr((n_elements(kp_data)),3,radiance_dimensions,30)
-  radiance_error = fltarr((n_elements(kp_data)),3,radiance_dimensions,30)
-  density_data = fltarr((n_elements(kp_data)),3,density_dimensions,30)
-  density_error = fltarr((n_elements(kp_data)),3,density_dimensions,30)
+  radiance_data = fltarr((n_elements(kp_data)),3,radiance_dimensions,31)
+  radiance_error = fltarr((n_elements(kp_data)),3,radiance_dimensions,31)
+  density_data = fltarr((n_elements(kp_data)),3,density_dimensions,31)
+  density_error = fltarr((n_elements(kp_data)),3,density_dimensions,31)
   
   index=0
   for i=0,n_elements(kp_data) -1 do begin

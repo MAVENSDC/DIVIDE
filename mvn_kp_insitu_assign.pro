@@ -14,6 +14,7 @@
 pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
 
 
+
   record.time_string = data_array.time_string
   record.time = time_double(record.time_string)
   if instrument_array[0] eq 1 then begin            ;return all the LPW data
