@@ -13,7 +13,14 @@
 ;-
 pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
 
-
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
 
   record.time_string = data_array.time_string
   record.time = time_double(record.time_string)
