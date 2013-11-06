@@ -73,7 +73,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 (*pstate).sub_maven_model->scale,s,s,s
                 (*pstate).axesmodel->scale,s,s,s
                 (*pstate).vector_model->scale,s,s,s
-                (*pstate).periapse_limb_model->scale,s,s,s
+                if (*pstate).instrument_array[8] eq 1 then begin
+                  (*pstate).periapse_limb_model->scale,s,s,s
+                endif
                 (*pstate).window->draw, (*pstate).view          
               endif       
             end
@@ -139,34 +141,29 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   
                 ;UPDATE THE PARAMETER PLOT COLORS
                  (*pstate).parameter_plot->getproperty,vert_colors=colors
-                 old_top = (*pstate).time_index+50
-                 old_bottom = (*pstate).time_index-50
-                 new_top = t_index+50
-                 new_bottom = t_index-50
-                 if old_top gt n_elements(vert_colors)-1 then old_top = n_elements(vert_colors)-1
-                 if old_bottom lt 0 then old_bottom = 0
-                 if new_top gt n_elements(vert_colors)-1 then new_top = n_elements(vert_colors)-1
-                 if new_bottom lt 0 then new_bottom = 0
-                 
-                 colors[2,old_bottom:old_top] = 0
-                 colors[0,old_bottom:old_top] = 255
-
-                 colors[2,new_bottom:new_top] = 255
-                 colors[0,new_bottom:new_top] = 0
+                 for i=0,n_elements(colors[0,*])-1 do begin
+                  if i lt t_index then begin
+                    colors[*,i] = (*pstate).parameter_plot_before_color
+                  endif else begin
+                    colors[*,i] = (*pstate).parameter_plot_after_color
+                  endelse
+                 endfor
+        
                  (*pstate).parameter_plot->setproperty,vert_colors=colors 
                   
- ;               ;UPDATE THE IUVS PERIAPSE ALTITUDE PLOT
-                 MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, (*pstate).insitu[t_index].time, peri_data, (*pstate).periapse_limb_scan, xlabel
-                 (*pstate).alt_xaxis_title->setproperty,strings=xlabel
-                 (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
-                 (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
-                 (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
-                 (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
-                 xc = mg_linear_function(xr, [-1.75,-1.5])
-                 yc = mg_linear_function(yr, [-1.3,1.0])
-                 (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                 (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
-                  
+                 if (*pstate).instrument_array[8] eq 1 then begin
+   ;               ;UPDATE THE IUVS PERIAPSE ALTITUDE PLOT
+                   MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, (*pstate).insitu[t_index].time, peri_data, (*pstate).periapse_limb_scan, xlabel
+                   (*pstate).alt_xaxis_title->setproperty,strings=xlabel
+                   (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
+                   (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
+                   (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+                   (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
+                   xc = mg_linear_function(xr, [-1.75,-1.5])
+                   yc = mg_linear_function(yr, [-1.3,1.0])
+                   (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                   (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
+                 endif
                   
                 ;FINALLY, REDRAW THE SCENE  
                 (*pstate).time_index = t_index
@@ -623,7 +620,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -640,6 +637,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end           
            
@@ -650,7 +648,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -667,6 +665,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                        end    
                        
@@ -677,7 +676,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -687,13 +686,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       (*pstate).level1_index = level1_index
                       (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                       ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                          (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string((*pstate).colorbar_ticks),2)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end
                      
@@ -704,7 +704,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -721,6 +721,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end 
                      
@@ -731,7 +732,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -748,6 +749,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
@@ -758,7 +760,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -785,7 +787,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
                       MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)) 
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
                       MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
@@ -802,6 +804,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
                           (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                       end
                    
@@ -970,7 +973,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               if newval eq 'Linear' then temp_stretch = 0
                               if newval eq 'Log' then temp_stretch = 1
                               (*pstate).colorbar_stretch = temp_stretch
-                              temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                              temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
                               MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                     temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, temp_stretch
                               (*pstate).orbit_path->SetProperty,vert_color=temp_vert
@@ -985,7 +988,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'colorbar_min': begin
                           widget_control,event.id,get_value=newval
                           (*pstate).colorbar_min = newval[0]
-                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
                           MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                 temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                           (*pstate).orbit_path->SetProperty,vert_color=temp_vert
@@ -1000,7 +1003,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'colorbar_max': begin
                           widget_control,event.id,get_value=newval
                           (*pstate).colorbar_max = newval[0]
-                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
                           MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                 temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                           (*pstate).orbit_path->SetProperty,vert_color=temp_vert
@@ -1013,7 +1016,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                         end
                         
         'colorbar_reset': begin
-                            temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x))
+                            temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
                             colorbar_min = (*pstate).colorbar_min
                             colorbar_max = (*pstate).colorbar_max
                           MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
@@ -1098,6 +1101,24 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             if result eq 0 then (*pstate).alt_plot_model->setProperty,hide=1
                             (*pstate).window ->draw,(*pstate).view            
                         end
+                        
+        'periapse_scaler': begin
+                             widget_control, event.id, get_value=newval
+                             
+                             old_r = 0.33962+((*pstate).peri_scale_factor*0.001)
+                             new_r = 0.33962+(newval*0.001)
+                             
+                             
+                             rescale = new_r/old_r
+                             
+                             
+                             (*pstate).periapse_limb_model->scale,rescale,rescale,rescale
+                           
+                             
+                             (*pstate).peri_scale_factor = newval
+                             (*pstate).window->draw,(*pstate).view
+                             
+                           end
                        
         'full_time_anim_begin': begin
                                   widget_control,(*pstate).button9a,sensitive=0

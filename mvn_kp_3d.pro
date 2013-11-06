@@ -27,13 +27,19 @@
 @mg_linear_function.pro
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
-               field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,$
-               whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct
+               field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
+               whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
+               view_size=view_size
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
   ;PARSE DATA STRUCTURES FOR BEGINNING, END, AND MID TIMES
     ;SET THE TIME BOUNDS BASED ON THE INSITU DATA STRUCTURE
+    
+   ;************************************************** 
+   ; *******NEED TO RESIZE IUVS CORRECTLY AS WELL******
+   ; ************************************************** 
+    
       start_time = double(insitu[0].time)
       end_time = double(insitu[n_elements(insitu.time)-1].time)
     
@@ -181,7 +187,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  [165,165,165],[180,180,180],[195,195,195],[210,210,210],[225,225,225],[240,240,240],[255,255,255]]
   
     if keyword_set(bgcolor) then begin
-      backgroundcolor = bg_colors[bgcolor]
+      if n_elements(bgcolor) eq 3 then begin
+         backgroundcolor = bgcolor
+      endif else begin
+         backgroundcolor = bg_colors[bgcolor]
+      endelse
     endif else begin
       backgroundcolor = [15,15,15]
     endelse
@@ -195,8 +205,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   ;BUILD THE WIDGET
 
     ;set the size of the draw window
+    if keyword_set(view_size) then begin
+      xsize = view_size[0]
+      ysize = view_size[1]
+    endif else begin
       xsize=800
       ysize=800
+    endelse
     
     base = widget_base(title='MAVEN Key Parameter Visualization',/column)
     subbase = widget_base(base,/row)
@@ -221,7 +236,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Viewing Geometries', uname='views', xsize=300, ysize=30)
         button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=300,ysize=30)
         button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=300,ysize=30)
-        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=300, ysize=30)
+        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=300, ysize=30, sensitive=0)
         button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=300,ysize=30)       
  
       ;TIME BAR ACROSS THE BOTTOM
@@ -443,6 +458,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                   drop1=widget_droplist(subbaseR8b,value=peri_rad_list,uname='peri_select',title='Radiance Profiles', frame=5)
                   button8 = widget_button(subbaseR8b, value='Display Altitude Profile', uname='peri_profile', xsize=300, ysize=30)                  
                   button8 = widget_button(subbaseR8b, value='Select Individual Scans', uname='periapse_some', xsize=300, ysize=30)
+                  slider8 = widget_slider(subbaseR8b, Title='Limb Scale Factor', uname='periapse_scaler', xsize=300,ysize=35,minimum=1,maximum=20)
           endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
@@ -479,7 +495,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         'mola': read_jpeg,install_directory+'MOLA_color_2500x1250.jpg',image
         'mola_bw': read_jpeg,install_directory+'MOLA_bw_2500x1250.jpg',image
         'mag': read_jpeg,install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
-      endcase
+        else: read_jpeg, basemap,image
+      endcase      
     endelse
     
    ;BUILD THE GLOBE
@@ -523,6 +540,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
      
     ;ADD LINES   DEFAULT THAT GRIDLINES ARE NOT SHOWN
      ;LATITUDE
+      if keyword_set(grid) then begin
+        if n_elements(grid) eq 3 then begin
+          grid_color = grid
+        endif else begin
+          grid_color = [0,0,0]
+        endelse
+      endif
       xcenter = 0
       ycenter = 0
       rplanet = .33962
@@ -534,7 +558,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
        y = (ycenter + radius * sin(points))*cos((-60.+(30.*i))*(!pi/180.))
        z = (points*0.)+(ycenter + (radius * sin((-60.+(30.*i))*(!pi/180.))))
        arr = transpose ([[x],[y],[z]])
-       ogridarr[i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2)
+       ogridarr[i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2,color=grid_color)
       endfor
      ;LONGITUDE
       for i=0,7 do begin
@@ -542,7 +566,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         y = ycenter + radius * sin((45.*i)*(!pi/180.)) * cos(points)
         z = ycenter + radius * sin(points)
         arr = transpose([[x],[y],[z]])
-        ogridarr[5+i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2)
+        ogridarr[5+i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2,color=grid_color)
       endfor
       gridlines = obj_new('IDLgrModel')
       for i = 0, n_elements(ogridarr) - 1 do $ 
@@ -559,6 +583,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     
     
     ;ADD THE AXES TO THE PLANET
+      if keyword_set(axes) then begin
+        if n_elements(axes) eq 3 then begin
+          axes_color = axes
+        endif else begin
+          axes_color = [255,255,255]
+        endelse
+      endif
       axesModel = obj_new('IDLgrModel')
       xticks = obj_new('idlgrtext',['1','2','3'])
       yticks = obj_new('idlgrtext',['1','2','3'])
@@ -566,9 +597,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       xticktitle=obj_new('idlgrtext','X')
       yticktitle=obj_new('idlgrtext','Y')
       zticktitle=obj_new('idlgrtext','Z')
-      Xaxis = obj_new('IDLgraxis',0,color=[200,200,200], thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Xticks,ticklen=0.1,title=xticktitle)
-      Yaxis = obj_new('IDLgraxis',1,color=[200,200,200], thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Yticks,ticklen=0.1,title=yticktitle)
-      Zaxis = obj_new('IDlgraxis',2,color=[200,200,200], thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Zticks,ticklen=0.1,title=zticktitle)
+      Xaxis = obj_new('IDLgraxis',0, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Xticks,ticklen=0.1,title=xticktitle,color=axes_color)
+      Yaxis = obj_new('IDLgraxis',1, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Yticks,ticklen=0.1,title=yticktitle,color=axes_color)
+      Zaxis = obj_new('IDlgraxis',2, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Zticks,ticklen=0.1,title=zticktitle,color=axes_color)
       axesModel->add, Xaxis
       axesModel->add, Yaxis
       axesModel->add, Zaxis
@@ -592,6 +623,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       ;OVERALL LIGHTING FOR THE DARKSIDE
       ambientLight = obj_new('IDLgrLight', type=0, intensity=0.2)
       lightModel->add, ambientLight
+      if keyword_set(ambient) then begin
+        ambientLight->setproperty, intensity=ambient
+      endif
 
     ;ADD A VECTOR POINTING TO THE SUN, IF REQUESTED 
       sun_model = obj_new('IDLgrModel')
@@ -659,18 +693,43 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       parameterModel->setproperty,hide=1
 
     ;CREATE THE ORBITAL PATH
-      x_orbit = (insitu.spacecraft.geo_x)/10000.0
-      y_orbit = (insitu.spacecraft.geo_y)/10000.0
-      z_orbit = (insitu.spacecraft.geo_z)/10000.0
+      x_orbit = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
+      y_orbit = fltarr(n_elements(insitu.spacecraft.geo_y)*2)
+      z_orbit = fltarr(n_elements(insitu.spacecraft.geo_z)*2)
+      path_connections = lonarr(n_elements(insitu.spacecraft.geo_x)*3)
+      for i=0L,n_elements(insitu.spacecraft.geo_x)-1 do begin
+        x_orbit[i*2] = insitu[i].spacecraft.geo_x/10000.0
+        x_orbit[(i*2)+1] = insitu[i].spacecraft.geo_x/10000.0
+        y_orbit[i*2] = insitu[i].spacecraft.geo_y/10000.0
+        y_orbit[(i*2)+1] = (insitu[i].spacecraft.geo_y/10000.0)+0.0001
+        z_orbit[i*2] = (insitu[i].spacecraft.geo_z/10000.0)+0.0001
+        z_orbit[(i*2)+1] = (insitu[i].spacecraft.geo_z/10000.0)+0.0001
+        path_connections[i*3] = 2
+        path_connections[(i*3)+1] = (i*2L)
+        path_connections[(i*3)+2] = (i*2L)+1L
+      endfor
 
       ;DEFINE THE COLORS ALONG THE FLIGHT PATH
         if keyword_set(color_table) then begin
-          path_color_table = color_table
+          if n_elements(color_table) eq 4 then begin
+            path_color_table = color_table[0]
+            path_color_min = color_table[1]
+            path_color_max = color_table[2]
+            path_color_stretch = color_table[3]
+          endif else begin
+            path_color_table = 13
+            path_color_min = -999999
+            path_color_max = 999999
+            path_color_stretch = 0
+          endelse 
         endif else begin
-          path_color_table = 13             ;default RAINBOW color table, changable
+            path_color_table = 13
+            path_color_min = -999999
+            path_color_max = 999999
+            path_color_stretch = 0           ;default RAINBOW color table, changable
         endelse
         loadct,path_color_table,/silent
-          
+        
         if keyword_set(field) then begin      ;if parameter not selected, pass an invalid value
           MVN_KP_TAG_VERIFY, insitu, field,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array
@@ -691,27 +750,28 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           level1_index = -9
         endelse 
 
-        vert_color = intarr(3,n_elements(insitu.spacecraft.geo_x))        
-        MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks,0.0,100.0,0.   
+        vert_color = intarr(3,n_elements(insitu.spacecraft.geo_x)*2)        
+        MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks,path_color_min,path_color_max,path_color_stretch   
         orbit_model = obj_new('IDLgrModel')
         view -> add, orbit_model
-        orbit_path = obj_new('IDLgrPolyline', x_orbit,y_orbit,z_orbit, thick=2,vert_color=vert_color,shading=1)
+        orbit_path = obj_new('IDLgrPolyline', x_orbit,y_orbit,z_orbit, polylines=path_connections, thick=2,vert_color=vert_color,shading=1)
         for i=0,n_elements(orbit_path) -1 do orbit_model -> add,orbit_path[i]
+
 
     ;CREATE THE VECTOR MODEL TO HOLD SUCH DATA
     
       vector_model = obj_new('IDLgrModel')
-      x_vector = fltarr(n_elements(x_orbit)*2)
-      y_vector = fltarr(n_elements(y_orbit)*2)
-      z_vector = fltarr(n_elements(z_orbit)*2)
+      x_vector = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
+      y_vector = fltarr(n_elements(insitu.spacecraft.geo_y)*2)
+      z_vector = fltarr(n_elements(insitu.spacecraft.geo_z)*2)
       vector_polylines = lonarr(3*n_elements(insitu.spacecraft.geo_x))
-      for i=0l,n_elements(x_orbit)-1 do begin
-        x_vector[i*2] = x_orbit[i]
-        y_vector[i*2] = y_orbit[i]
-        z_vector[i*2] = x_orbit[i]       
-        x_vector[(i*2)+1] = x_orbit[i]
-        y_vector[(i*2)+1] = y_orbit[i]+0.00001
-        z_vector[(i*2)+1] = z_orbit[i]
+      for i=0l,n_elements(insitu.spacecraft.geo_x)-1 do begin
+        x_vector[i*2] = x_orbit[i*2]
+        y_vector[i*2] = y_orbit[i*2]
+        z_vector[i*2] = z_orbit[i*2]       
+        x_vector[(i*2)+1] = x_orbit[i*2]
+        y_vector[(i*2)+1] = y_orbit[i*2]+0.00001
+        z_vector[(i*2)+1] = z_orbit[i*2]
         vector_polylines[i*3] = 2l
         vector_polylines[(i*3)+1] = (i*2l)
         vector_polylines[(i*3)+2] = (i*2l)+1l  
@@ -724,9 +784,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
 
     ;CREATE A LABEL FOR WHAT IS PLOTTED ALONG THE SPACECRAFT ORBIT
+      if keyword_set(plotname) then begin
+        if n_elements(plotname) eq 3 then begin
+          plotname_color = plotname
+        endif else begin
+          plotname_color = [0,255,0]
+        endelse
+      endif else begin
+        plotname_color = [0,255,0]
+      endelse
       plottedNameModel = obj_new('IDLgrModel')
-      plotText1 = obj_new('IdlgrText',plotted_parameter_name, color=[0,255,0],locations=[1.99,1.9,0],alignment=1.0)
-      plotText2 = obj_new('IdlgrText',strtrim(string(current_plotted_value),2), color=[0,255,0], locations=[1.99,1.82,0],alignment=1.0)
+      plotText1 = obj_new('IdlgrText',plotted_parameter_name, color=plotname_color,locations=[1.99,1.9,0],alignment=1.0)
+      plotText2 = obj_new('IdlgrText',strtrim(string(current_plotted_value),2), color=plotname_color, locations=[1.99,1.82,0],alignment=1.0)
       plottedNameModel->add,plotText1
       plottedNameModel->add,plotText2
       view->add,plottedNameModel
@@ -734,10 +803,19 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       if keyword_set(plotname) then plottedNameModel->setproperty,hide=0
       
     ;CREATE A COLORBAR FOR THE ALONG TRACK PLOTS
+      if keyword_set(color_bar) then begin
+        if n_elements(color_bar) eq 3 then begin
+          colorbar_color = color_bar
+        endif else begin
+          colorbar_color = [0,255,0]
+        endelse
+      endif else begin
+        colorbar_color = [0,255,0]
+      endelse
       colorbarmodel = obj_new('IDLgrModel')
       barDims = [0.1, 0.4]
-      colorbar_ticktext = obj_new('idlgrtext',string(colorbar_ticks),color=[0,255,0])
-      colorbar1 = obj_new('IdlgrColorbar', dimensions=barDims, r_curr,g_curr, b_curr, /show_axis, /show_outline, ticktext=colorbar_ticktext,major=5,color=[0,255,0])
+      colorbar_ticktext = obj_new('idlgrtext',string(colorbar_ticks),color=colorbar_color)
+      colorbar1 = obj_new('IdlgrColorbar', dimensions=barDims, r_curr,g_curr, b_curr, /show_axis, /show_outline, ticktext=colorbar_ticktext,major=5,color=colorbar_color)
       colorbarmodel->add,colorbar1
       view->add,colorbarmodel
       colorbarmodel->translate,1.9,-1.9,0
@@ -763,16 +841,56 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
       ;CREATE THE PARAMETER PLOT ALONG THE BOTTOM EDGE OF THE DISPLAY
       
+        if keyword_set(parameterplot) ne 1 then begin
+          parameter_plot_connected = 1
+          parameter_plot_axis_color = [0,128,0]
+          parameter_plot_before_color = [255,0,0]
+          parameter_plot_after_color = [0,0,255]
+          parameter_plot_hide = 0
+        endif else begin
+           if size(parameterplot,/type) ne 8 then begin
+            parameter_plot_connected = 1
+            parameter_plot_axis_color = [0,128,0]
+            parameter_plot_before_color = [255,0,0]
+            parameter_plot_after_color = [0,0,255]
+            parameter_plot_hide = 1
+           endif else begin
+            parameter_plot_connected = parameterplot.plot_connected
+            parameter_plot_axis_color = parameterplot.axes_color
+            parameter_plot_before_color = parameterplot.before_color
+            parameter_plot_after_color = parameterplot.after_color
+            parameter_plot_hide = 1
+           endelse
+        endelse
+        
         plot_model = obj_new('IDLgrModel')
         view->add,plot_model
         plot_x = insitu.time
         plot_y = fltarr(n_elements(insitu.spacecraft.altitude))
-        plot_y = insitu.spacecraft.altitude
-        plot_colors = intarr(3,n_elements(plot_x))
-        plot_colors[0,*] = 255
-        plot_colors[0,time_index-50:n_elements(plot_x)-1] = 0
-        plot_colors[2,time_index-50:n_elements(plot_x)-1] = 255
-        parameter_plot = obj_new('IDLgrPlot', plot_x, plot_y,color=[0,255,0],vert_colors=plot_colors)
+        if keyword_set(field) then begin
+          plot_y = insitu.(level0_index).(level1_index)
+        endif else begin
+          plot_y = insitu.spacecraft.altitude
+        endelse
+        ;set the plot colors before and after the selected time
+          plot_colors = intarr(3,n_elements(plot_x))
+          for i=0, n_elements(plot_x) -1 do begin
+            if i lt time_index then begin
+              plot_colors[*,i] = parameter_plot_before_color
+            endif else begin
+              plot_colors[*,i] = parameter_plot_after_color
+            endelse
+          endfor
+        
+        if parameter_plot_connected eq 1 then begin
+          parameter_plot_symbol=0
+          parameter_plot_linestyle=0
+        endif else begin
+          parameter_plot_symbol = obj_new('IDLgrSymbol',data=3,size=50)
+          parameter_plot_linestyle=6
+        endelse
+        parameter_plot = obj_new('IDLgrPlot', plot_x, plot_y,color=[0,255,0],vert_colors=plot_colors,linestyle=parameter_plot_linestyle,$
+                                  symbol=parameter_plot_symbol,thick=1)
         plot_model -> add, parameter_plot
         
         parameter_plot->getproperty, xrange=xr, yrange=yr
@@ -780,17 +898,50 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         yc = mg_linear_function(yr, [-1.9,-1.5])
         parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
 
-        parameter_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=[0,128,0],thick=2,tickdir=1,/exact,notext=1)
-        parameter_xaxis = obj_new('IDLgrAxis', 0, range=xr,color=[0,128,0],thick=2,tickdir=1,/exact,notext=1)
+        parameter_yaxis_ticktext = obj_new('idlgrtext',[strtrim(string(fix(min(plot_y))),2) ,strtrim(string(fix(max(plot_y))),2)])
+        parameter_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=parameter_plot_axis_color,thick=2,tickdir=1,ticktext=parameter_yaxis_ticktext,/exact,major=2)
+        parameter_xaxis = obj_new('IDLgrAxis', 0, range=xr,color=parameter_plot_axis_color,thick=2,tickdir=1,/exact,notext=1)
         plot_model->add,parameter_yaxis
         plot_model->add,parameter_xaxis
         parameter_yaxis->setproperty,xcoord_conv=[-1.7,xc[1]],ycoord_conv=yc
         parameter_xaxis->setproperty,xcoord_conv=xc,ycoord_conv=yc
         plot_model->setproperty,hide=1
-        if keyword_set(parameterplot) then plot_model->setproperty,hide=0
+        if parameter_plot_hide eq 1 then plot_model->setproperty,hide=0
 
       ;CREATE THE PERIAPSE LIMB SCANS
         if instrument_array[8] eq 1 then begin
+
+        ;CREATE THE PERIAPSE LIMB SCAN ALTITUDE PLOT
+          if keyword_set(periapse_limb_scan) ne 1 then begin
+             periapse_limb_scan = 'Density: H'
+             peri_axis_color = [0,255,0]
+             peri_line_color = [255,255,255]
+             peri_line_thick = 2
+             peri_axes_thick = 1
+             peri_scale_factor = 1
+             periapse_hide = 1
+          endif else begin
+            if size(periapse_limb_scan,/type) ne 8 then begin
+             periapse_limb_scan = 'Density: H'
+             peri_axis_color = [0,255,0]
+             peri_line_color = [255,255,255]
+             peri_line_thick = 2
+             peri_axes_thick = 1
+             peri_scale_factor = 1
+             periapse_hide = 0
+             widget_control,subbaseR8b, sensitive=1
+            endif else begin
+              peri_axis_color = periapse_limb_scan.axes_color
+              peri_line_color = periapse_limb_scan.line_color
+              peri_line_thick = periapse_limb_scan.line_thick
+              peri_axes_thick = periapse_limb_scan.axes_thick
+              peri_scale_factor = periapse_limb_scan.scale
+              periapse_limb_scan = periapse_limb_scan.name
+              widget_control,subbaseR8b, sensitive=1
+             periapse_hide = 0
+            endelse 
+          endelse       
+             
           periapse_limb_model =  obj_new('IDLgrModel')
           view->add, periapse_limb_model
           periapse_x = fltarr(n_elements(iuvs.periapse.time_start)*2*n_elements(iuvs[0].periapse[0].alt))
@@ -800,13 +951,35 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           peri_vert_colors = intarr(3,n_elements(iuvs[0].periapse[0].alt)*n_elements(iuvs.periapse.time_start))
           peri_vert_colors[2,*] = 255
           
+          if keyword_set(periapse_limb_scan) then begin
+            peri_data = fltarr(n_elements(iuvs.periapse.time_start), n_elements(iuvs[0].periapse[0].alt))
+            peri_temp_index=0
+            p1 = strmid(periapse_limb_scan,0,1) 
+            p2 = strmid(periapse_limb_scan,strpos(periapse_limb_scan,':')+1,strlen(periapse_limb_scan)-strpos(periapse_limb_scan,':'))
+            
+             for i=0,n_elements(iuvs)-1 do begin
+              for j=0,n_elements(iuvs[i].periapse)-1 do begin
+                if p1 eq 'D' then begin
+                  p_ind = where(iuvs[i].periapse[j].density_id eq strtrim(p2,2))
+                  peri_data[peri_temp_index,*] = iuvs[i].periapse[j].density[p_ind,*]
+                endif
+                if p1 eq 'R' then begin
+                  p_ind = where(iuvs[i].periapse[j].radiance_id eq p2)
+                  peri_data[peri_temp_index,*] = iuvs[i].periapse[j].radiance[p_ind,*]
+                endif
+                peri_temp_index++
+              endfor
+             endfor
+            MVN_KP_3D_PERI_COLOR, peri_vert_colors, peri_data
+          endif 
+            
           peri_index = 0
           for i=0,n_elements(iuvs)-1 do begin
             for j=0, n_elements(iuvs[i].periapse)-1 do begin
               for k=0,n_elements(iuvs[i].periapse[j].alt)-1 do begin
-                  periapse_x[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * cos(iuvs[i].periapse[j].lon*(!pi/180.))
-                  periapse_y[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * sin(iuvs[i].periapse[j].lon*(!pi/180.))
-                  periapse_z[peri_index] = (rplanet+(iuvs[i].periapse[j].alt[k]/10000.0)) * sin(iuvs[i].periapse[j].lat*(!pi/180.)) 
+                  periapse_x[peri_index] = (rplanet+((iuvs[i].periapse[j].alt[k]*peri_scale_factor)/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * cos(iuvs[i].periapse[j].lon*(!pi/180.))
+                  periapse_y[peri_index] = (rplanet+((iuvs[i].periapse[j].alt[k]*peri_scale_factor)/10000.0)) * cos(iuvs[i].periapse[j].lat*(!pi/180.)) * sin(iuvs[i].periapse[j].lon*(!pi/180.))
+                  periapse_z[peri_index] = (rplanet+((iuvs[i].periapse[j].alt[k]*peri_scale_factor)/10000.0)) * sin(iuvs[i].periapse[j].lat*(!pi/180.)) 
                 peri_index = peri_index+1
               endfor
             endfor
@@ -821,36 +994,32 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           
           periapse_vectors = obj_new('IDLgrPolyline', periapse_x, periapse_y, periapse_z, polylines=periapse_polyline, vert_colors=peri_vert_colors, thick=3,color=[0,0,255])
           for i=0, n_elements(periapse_vectors)-1 do periapse_limb_model->add,periapse_vectors[i]
+          
           periapse_limb_model->setproperty,hide=1
-          if keyword_set(periapse_limb_scan) then periapse_limb_model->setproperty,hide=0
-
-        ;CREATE THE PERIAPSE LIMB SCAN ALTITUDE PLOT
-          if keyword_set(periapse_limb_scan) ne 1 then begin
-             periapse_limb_scan = 'Density: H'
-          endif
+          if (periapse_hide eq 0) then periapse_limb_model->setproperty,hide=0
           
           MVN_KP_3D_CURRENT_PERIAPSE, iuvs.periapse, initial_time, current_periapse, periapse_limb_scan, xlabel
           
           alt_plot_model = obj_new('IDLgrModel')
           view->add,alt_plot_model
-          alt_plot = obj_new('IDLgrPlot', current_periapse[1,*], current_periapse[0,*],color=[0,255,0],vert_colors=[255,255,255],linestyle=0)
+          alt_plot = obj_new('IDLgrPlot', current_periapse[1,*], current_periapse[0,*],color=[0,255,0],vert_colors=peri_line_color,linestyle=0,thick=peri_line_thick)
           alt_plot_model -> add, alt_plot
   
           alt_plot->getproperty, xrange=xr, yrange=yr
           xc = mg_linear_function(xr, [-1.75,-1.4])
           yc = mg_linear_function(yr, [-1.3,1.0])
           alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-          alt_xaxis_title = obj_new('IDLgrText', xlabel, color=[0,255,0])
+          alt_xaxis_title = obj_new('IDLgrText', xlabel, color=peri_axis_color)
           alt_xaxis_ticks = obj_new('idlgrtext', [strtrim(string(min(current_periapse[1,*]), format='(E8.2)'),2),strtrim(string(max(current_periapse[1,*]), format='(E8.2)'),2)])
           
-          alt_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=[0,128,0],thick=2,tickdir=1,/exact,major=5)
-          alt_xaxis = obj_new('IDLgrAxis', 0, range=xr,color=[0,128,0],thick=2,tickdir=1,/exact,major=2,title=alt_xaxis_title,ticktext=alt_xaxis_ticks)
+          alt_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=peri_axis_color,thick=peri_axes_thick,tickdir=1,/exact,major=5)
+          alt_xaxis = obj_new('IDLgrAxis', 0, range=xr,color=peri_axis_color,thick=peri_axes_thick,tickdir=1,/exact,major=2,title=alt_xaxis_title,ticktext=alt_xaxis_ticks)
           alt_plot_model->add,alt_yaxis
           alt_plot_model->add,alt_xaxis
           alt_yaxis->setproperty,xcoord_conv=[-1.76,xc[1]],ycoord_conv=yc
           alt_xaxis->setproperty,xcoord_conv=[-1.75,xc[1]],ycoord_conv=[-1.3,yc[1]]
           alt_plot_model->setproperty,hide=1
-          if keyword_set(periapse_limb_scan) then alt_plot_model->setproperty,hide=0
+          if (periapse_hide eq 0) then alt_plot_model->setproperty,hide=0
 
         endif 
 
@@ -864,7 +1033,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
         if keyword_set(iuvs) then begin
           iuvs_state = {iuvs:iuvs, $
-                        periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, $
+                        periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, peri_scale_factor:peri_scale_factor, $
                         alt_plot_model:alt_plot_model, alt_plot:alt_plot, alt_yaxis:alt_yaxis, alt_xaxis:alt_xaxis, alt_xaxis_title:alt_xaxis_title, alt_xaxis_ticks:alt_xaxis_ticks, $
                         subbaseR8b:subbaseR8b}             
         endif
@@ -905,7 +1074,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  plottednamemodel:plottednamemodel, $
                  colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
                  colorbar_min:colorbar_min, colorbar_max:colorbar_max, colorbar_stretch:colorbar_stretch, $
-                 plot_model: plot_model, parameter_plot: parameter_plot, plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, $
+                 plot_model: plot_model, parameter_plot: parameter_plot, plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, parameter_plot_before_color:parameter_plot_before_color, $
+                 parameter_plot_after_color:parameter_plot_after_color, parameter_yaxis_ticktext:parameter_yaxis_ticktext,$
                  paratext1: paratext1, paratext2: paratext2, paratext3: paratext3, paratext4: paratext4, paratext5: paratext5, $
                  plottext1: plottext1, plottext2: plottext2, $
                  plotted_parameter_name: plotted_parameter_name, $
