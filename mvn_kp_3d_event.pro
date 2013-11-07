@@ -1044,10 +1044,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           if result eq 1 then begin
                             (*pstate).periapse_limb_model->setProperty,hide=0
                             widget_control,(*pstate).subbaseR8b, sensitive=1
+                            widget_control,(*pstate).button8b, set_value='Hide All Profiles'
                           endif
                           if result eq 0 then begin
                              (*pstate).periapse_limb_model->setProperty,hide=1
                              widget_control,(*pstate).subbaseR8b, sensitive=0
+                             widget_control,(*pstate).button8b, set_value='Display All Profiles'
                           endif
                           
                           (*pstate).window ->draw,(*pstate).view
@@ -1129,6 +1131,52 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 widget_control,(*pstate).button9a,sensitive=1
                                 widget_control,(*pstate).button9b,sensitive=0
                               end
+                              
+        'apoapse_image': begin
+                          result = widget_info((*pstate).subbaseR8d, /sensitive)
+                            if result eq 0 then begin
+                              widget_control,(*pstate).subbaseR8d,sensitive=1
+                              widget_control,(*pstate).button8a, set_value='Hide Apoapse Images'
+                            endif else begin
+                              widget_control,(*pstate).subbaseR8d, sensitive=0
+                              widget_control,(*pstate).button8a, set_value='Display Apoapse Images'
+                            endelse
+                         end
+                         
+        'apoapse_select': begin
+                            widget_control,event.id, get_value=choice
+                            case choice of
+                              'Ozone Depth': begin
+                                                ;set a new basemap from a single ozone depth image
+                                                       image = bytarr(3,90,45)
+                                                       for i=0,2 do begin
+                                                        image[i,*,*] = bytscl((*pstate).iuvs[0].apoapse.ozone_depth)
+                                                       endfor
+                                                       
+                                                        oImage = OBJ_NEW('IDLgrImage', image )
+                                                        (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                        (*pstate).gridlines -> setProperty, hide=0
+                                                        (*pstate).window ->draw,(*pstate).view  
+                                             end
+                              'Dust Depth': begin
+                                                ;set a new basemap from a single ozone depth image
+                                                       image = bytarr(3,90,45)
+                                                       for i=0,2 do begin
+                                                        image[i,*,*] = bytscl((*pstate).iuvs[0].apoapse.dust_depth)
+                                                       endfor
+                                                       
+                                                        oImage = OBJ_NEW('IDLgrImage', image )
+                                                        (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                        (*pstate).gridlines -> setProperty, hide=0
+                                                        (*pstate).window ->draw,(*pstate).view  
+                                             end
+                              'Radiance Map: H': print,'H'
+                              'Radiance Map: O_1304': print,'O'
+                              'Radiance Map: CO': print,'CO'
+                              'Radiance Map: NO': print,'N'
+                              
+                            endcase  
+                          end
                          
   endcase     ;END OF BUTTON CONTROL
   

@@ -447,10 +447,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         
         ;IUVS MENU
         subbaseR8 = widget_base(subbaseR, /column)
-          if instrument_array[8] eq 1 then begin
+          if instrument_array[8] eq 1 then begin            ;PERIAPSE LIMB SCAN OPTIONS
             subbaseR8a = widget_base(subbaseR8, /column,/frame) 
               label8 = widget_label(subbaseR8a, value='Periapse Limb Scans', /align_center)
-              button8 = widget_button(subbaseR8a, value='Display All Profiles', uname='periapse_all', xsize=300, ysize=30)
+              button8b = widget_button(subbaseR8a, value='Display All Profiles', uname='periapse_all', xsize=300, ysize=30)
               subbaseR8b = widget_base(subbaseR8a, /column,sensitive=0)
                   peri_den_list = 'Density: '+strtrim(iuvs[0].periapse[0].density_id,2)
                   drop1=widget_droplist(subbaseR8b,value=peri_den_list,uname='peri_select',title='Density Profiles', frame=5)
@@ -459,6 +459,22 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                   button8 = widget_button(subbaseR8b, value='Display Altitude Profile', uname='peri_profile', xsize=300, ysize=30)                  
                   button8 = widget_button(subbaseR8b, value='Select Individual Scans', uname='periapse_some', xsize=300, ysize=30)
                   slider8 = widget_slider(subbaseR8b, Title='Limb Scale Factor', uname='periapse_scaler', xsize=300,ysize=35,minimum=1,maximum=20)
+          endif
+          if instrument_array[9] eq 1 then begin            ;APOAPSE IMAGING OPTIONS
+            subbaseR8c = widget_base(subbaseR8, /column, /frame)
+              label8 = widget_label(subbaseR8c, value='Apoapse Imaging', /align_center)
+              button8a = widget_button(subbaseR8c, value='Display Apoapse Images', uname='apoapse_image', xsize=300, ysize=30)
+               subbaseR8d = widget_base(subbaseR8c, /row, sensitive=0)
+                subbaseR8e = widget_base(subbaseR8d, /column, /exclusive,/frame)
+                  button8 = widget_button(subbaseR8e, value='Ozone Depth', uname='apoapse_select', xsize=150, ysize=15)
+                  button8 = widget_button(subbaseR8e, value='Dust Depth', uname='apoapse_select', xsize=150, ysize=15)
+                  apo_rad_list = 'Radiance Map: '+strtrim(iuvs[0].apoapse[0].radiance_id, 2)
+                  for i=0,n_elements(apo_rad_list)-1 do begin
+                    button8 = widget_button(subbaseR8e, value=apo_rad_list[i], uname='apoapse_select', xsize=150, ysize=15)
+                  endfor
+                subbaseR8f = widget_base(subbaseR8d, /column, /frame)
+                  label8 = widget_label(subbaseR8f, value='Blend Options',/align_center)
+                  
           endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
@@ -828,7 +844,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         if keyword_set(cow) then begin
           model_scale = 0.1
         endif else begin
-          model_scale = 0.01
+          model_scale = 0.005
         endelse
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,install_directory           ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
         ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
@@ -1035,7 +1051,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           iuvs_state = {iuvs:iuvs, $
                         periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, peri_scale_factor:peri_scale_factor, $
                         alt_plot_model:alt_plot_model, alt_plot:alt_plot, alt_yaxis:alt_yaxis, alt_xaxis:alt_xaxis, alt_xaxis_title:alt_xaxis_title, alt_xaxis_ticks:alt_xaxis_ticks, $
-                        subbaseR8b:subbaseR8b}             
+                        subbaseR8b:subbaseR8b, subbaseR8d:subbaseR8d, button8a:button8a, button8b:button8b}             
         endif
         
         insitu_state = {button1: button1, button2: button2, button3: button3, button4: button4, button5: button5, button6: button6, $

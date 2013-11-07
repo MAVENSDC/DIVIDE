@@ -43,9 +43,9 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
 
   ;SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
   if keyword_set(binary) then begin
-    file_pattern = 'MVN_IUV_KP_'+strtrim(string(year),2)+strtrim(string(month),2)+strtrim(string(day),2)+'T*.sav'
+    file_pattern = 'mvn_rs_kp_'+strtrim(string(year),2)+strtrim(string(month),2)+strtrim(string(day),2)+'T*.sav'
   endif else begin
-    file_pattern = 'MVN_IUV_KP_'+strtrim(string(year),2)+strtrim(string(month),2)+strtrim(string(day),2)+'T*.txt'
+    file_pattern = 'mvn_rs_kp_'+strtrim(string(year),2)+strtrim(string(month),2)+strtrim(string(day),2)+'T*.txt'
   endelse
   
   ;SEARCH THE IUVS DIRECTORY FOR ALL FILES THAT OCCUR ON THE START DATE
@@ -74,10 +74,10 @@ pro MVN_KP_IUVS_FILENAME, year, month, day, hour, begin_jul, end_jul, data_dir, 
   if file_list[0] eq '' then begin
     if not keyword_set(debug) then begin
       message, "No Files found in"+data_dir+"for the input time/timerange" + $
-        "Note: IUVS filenames must be of the form: MVN_IUV_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
+        "Note: IUVS filenames must be of the form: MVN_RS_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
     endif else begin
       print, "**ERROR HANDLING - No Files found in"+data_dir+"for the input time/timerange"
-      print, "**ERROR HANDLING - Note: IUVS filenames must be of the form: MVN_IUV_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
+      print, "**ERROR HANDLING - Note: IUVS filenames must be of the form: MVN_RS_KP_YYYYMMDDTHHMMSS_V###_R###.[sav,txt]"
       print, "**ERROR HANDLING - Debug mode set: Stoping."
       stop
     endelse
