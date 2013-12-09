@@ -32,9 +32,10 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time, begin_index
 
     ;FIND THE ORBIT/TIME TEXT FILE, OR PROMPT IF IT CAN'T BE FOUND.
 
-   if file_test( orbit_file,then begin        ;PROMPT THE USER BECAUSE THE ORBIT FILE COULDN'T BE FOUND
-     install_dir = dialog_pickfile(path=install_dir,/directory,title='Choose the directory containing time ordered orbit list')
-   endif 
+  ;FIXME
+;   if file_test( orbit_file,then begin        ;PROMPT THE USER BECAUSE THE ORBIT FILE COULDN'T BE FOUND
+ ;    install_dir = dialog_pickfile(path=install_dir,/directory,title='Choose the directory containing time ordered orbit list')
+ ;  endif 
 
 
 ;READ IN THE ORBIT TEXT FILE FOR COMPARISON PURPOSES

@@ -117,7 +117,7 @@ endif
  endfor
  ;BUILD THE NEW DATA STRUCTURE TO HOLD THE STORED DATA
  
-  MVN_KP_STRUCTURE_BUILD, record, iuvs_record, instrument_array
+  MVN_KP_IUVS_STRUCT_INIT,iuvs_record, instrument_array
   kp_data_temp = replicate(iuvs_record, n_elements(kp_data))
 
 stop    
