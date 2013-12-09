@@ -38,10 +38,13 @@ if format eq 2 then begin
       12: begin_day1 = ((begin_year-2013)*365)+(334 + begin_day)
     endcase
   
-    day_fraction = ((begin_hour * 3600.) + (begin_minute * 60.) + (begin_second))/86400.
+    ;INIT day_fraction AS DOUBLE PRECISION
+    day_fraction = 0.0D
+    time_out = 0.0D
     
+    day_fraction = ((begin_hour * 3600.0D) + (begin_minute * 60.0D) + (begin_second))/86400.0D
     time_out = ((begin_year-2013)*365) + begin_day1 + day_fraction
-  
+
 endif
 
 

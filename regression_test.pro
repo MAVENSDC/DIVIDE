@@ -68,8 +68,10 @@ if keyword_set(READ) then begin
   ;; Test inbound flag & instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/binary,/ngims,/sep,/iuvs_periapse, /inbound"]
   
-  ;; FIXME - This is failing and shouldn't
+  ;; FIXME - This is failing and shouldn't - Bigger question, how to handle time range inputs that are less than 1 day.
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs, /binary"]
+  
+
 
   ;; Test orbit time range input  FIXME not working
   ;mvn_kp_read, 10, insitu, iuvs, /binary
@@ -128,7 +130,7 @@ endif
 
 
 ;; ------------------------------------------------------------------------------------ ;;
-;; ------------------------------ Excute all commands --------------------------------- ;;
+;; ------------------------- Excute all normal commands ------------------------------- ;;
 
 ;;
 ;; Important Note:
@@ -163,6 +165,17 @@ for J=0, n_elements(cmd_list_prob)-1 do begin
     test_results_prob = [test_results_prob, "[REGRESSION TEST] - SUCCESS with: "+cmd_list_prob[J]]
   endelse
 endfor
+
+
+
+;; ------------------------------------------------------------------------------------ ;;
+;; -------------- Special tests that require checking of output  ---------------------- ;;
+
+;; FIXME implement these and more.
+
+;; The insitu data structure has two data points at the end that were outside the time range due to single precision instead of double.
+;; FIXME - Special, check first and last data points are within timerange. This was a bug recently fixed, need special check.
+;;cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/17:00:30'] , insitu, iuvs, /binary"]
 
 
 ;; ------------------------------------------------------------------------------------ ;;
