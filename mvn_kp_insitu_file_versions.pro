@@ -15,7 +15,7 @@
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
-pro MVN_KP_INSITU_VERSIONS, filenames, data_dir, higher_version, binary=binary
+pro MVN_KP_INSITU_FILE_VERSIONS, filenames, data_dir, higher_version, binary=binary
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -25,36 +25,36 @@ pro MVN_KP_INSITU_VERSIONS, filenames, data_dir, higher_version, binary=binary
   if not keyword_set(debug) then begin
     on_error, 1
   endif
- 
+  
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR
-    if keyword_set(binary) then begin
-      file_pattern = 'mvn_KP_l2_pf*.sav'
-    endif else begin
-      file_pattern = 'mvn_KP_l2_pf*.txt'
-    endelse
-
+  if keyword_set(binary) then begin
+    file_pattern = 'mvn_KP_l2_pf*.sav'
+  endif else begin
+    file_pattern = 'mvn_KP_l2_pf*.txt'
+  endelse
+  
   data_dir1 = data_dir
   ;SEARCH THE INSITU DIRECTORY FOR ALL FILES THAT OCCUR ON THE START DATE
   file_list = file_search(data_dir1,file_pattern)
   
   file_time = strmid(file_list, 20, 8, /reverse_offset)
-
+  
   ;EXTRACT THE TIME STAMPS TO MATCH
   time1 = strmid(filenames, 20, 8,/reverse_offset)
- 
+  
   matched = where(file_time eq time1)
   
   ;PULL OUT THE VERSION NUMBERS
-   versions = fix(strmid(file_list(matched), 10, 3, /reverse_offset))
-   
+  versions = fix(strmid(file_list(matched), 10, 3, /reverse_offset))
+  
   ;FIND THE MAXIMUM VERSION COUNT
-   maxed = max(versions, max_index)
-   
+  maxed = max(versions, max_index)
+  
   ;FIND THE MAXIMUM SOFTWARE REVISION CODE
-   higher_version = file_list(matched(max_index))
-
+  higher_version = file_list(matched(max_index))
+  
   ;RESET THE FILENAME TO THE MAXIMUM FILE VERSION LABEL
-   final_slash = strpos(higher_version, '/', /reverse_search)
-   higher_version = strmid(higher_version, final_slash+1)
+  final_slash = strpos(higher_version, '/', /reverse_search)
+  higher_version = strmid(higher_version, final_slash+1)
 
 end

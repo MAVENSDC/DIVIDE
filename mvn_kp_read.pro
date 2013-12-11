@@ -67,8 +67,8 @@
 
 @time_string
 @mvn_time_convert
-@mvn_kp_iuvs_filename
-@mvn_kp_insitu_versions
+@mvn_kp_iuvs_file_versions
+@mvn_kp_insitu_file_versions
 @mvn_kp_insitu_struct_init
 @mvn_kp_iuvs_struct_init
 @mvn_loop_progress
@@ -252,6 +252,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     preference_exists = file_search(install_directory,'kp_preferences.txt',count=kp_pref_exists)
     if kp_pref_exists ne 0 then begin
       ;READ IN THE KP_PREFERENCES FILE AND SET VARIABLES
+      ;FIXME THIS PREFERENCE READER LOOKS A LITTLE FRAGILE
       temp=''
       kp_insitu_data_directory = ''
       kp_iuvs_data_directory = ''
@@ -333,7 +334,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; -------------- and initialize data structures for holding data --------------------- ;;
   
   ;DETERMINE WHICH FILES TO READ TO COVER INPUT TIME RANGE
-  MVN_KP_FILENAME_PARSER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, $
+  MVN_KP_FILE_SEARCH_DRIVER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, $
                           kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS
