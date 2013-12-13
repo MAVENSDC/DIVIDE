@@ -220,7 +220,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       subbaseL = widget_base(subbase)
       draw = widget_draw(subbaseL, xsize=xsize, ysize=ysize, graphics_level=2, $
                          /button_events, /motion_events, /wheel_events, uname='draw',$
-                         retain=2)
+                         retain=0, renderer=0)
     
     if keyword_set(direct) eq 0 then begin          ;SKIP THIS IF /DIRECT IS SET, SKIPPING THE GUI INTERFACE
                          

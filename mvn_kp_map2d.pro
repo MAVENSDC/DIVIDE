@@ -156,6 +156,12 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
      map_limit = [-90,0,90,360]
      map_location = [0,-90]      
    endif
+   if basemap eq 'user' then begin
+      input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
+      read_jpeg,input_file,mapimage
+      map_limit = [-90,-180,90,180]
+      map_location = [-180,-90]
+   endif
     i = image(mapimage, axis_style=2,LIMIT=map_limit, GRID_UNITS=2, IMAGE_LOCATION=map_location, IMAGE_DIMENSIONS=[360,180],$
               MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",transparency=alpha)
     plot_color = "White"

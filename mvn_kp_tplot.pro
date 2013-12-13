@@ -64,7 +64,7 @@ endelse
     device,decompose=0
     !p.background='FFFFFF'x
     !p.color=0
-    loadct,39
+    loadct,39,/silent
 
 ;DETEMINE THE TOTAL NUMBER OF PLOTS AND VARIABLES TO DEFINE ARRAYS.
     
@@ -97,24 +97,27 @@ endelse
         plot_count[i] = 1
       endelse
     endfor
- stop
+ 
     true_index = true_index[0:total_lines-1]
   
   ;LOOP OVER EACH REQUESTED PLOT VARIABLE, CHECK IT'S VALIDITY, AND STORE THE DATA IN A TPLOT VARIABLE
   ; also calculate the min/max ranges for overplot uses
   
   tplot_variable_array = strarr(n_elements(true_index))
+  temp_variable_names = strarr(n_elements(true_index))
   ymin = fltarr(n_elements(true_index))
   ymax = fltarr(n_elements(true_index))
   for i=0,n_elements(true_index) - 1 do begin
    MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, first_level_count, base_tags,  $
                       first_level_tags, check, level0_index, level1_index, tag_array
+   temp_variable_names[i] = strtrim(tag_array[0],2)+'.'+strtrim(tag_array[1],2)
    if check eq 1 then begin
                print,'Whoops, ',strupcase(field[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
                goto,finish
    endif else begin
      tplot_variable_name = strtrim('mvn'+strtrim(string(i+1),2))
      tplot_variable_array[i] = tplot_variable_name
+     time_data = kp_data[kp_start_index:kp_end_index].time
      store_data,tplot_variable_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)},verbose=0
      ymin[i] = min(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
      ymax[i] = max(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
@@ -124,26 +127,35 @@ endelse
     store_data,'alt',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].spacecraft.altitude},verbose=0
   endif
   
+  ;DEFINE A DEFAULT COLOR ARRAY FOR MULTI-PLOTS
+  
+  multi_colors = [0,240,50,210,180,128,30,80,100]
   
   ;MERGE ANY TPLOT VARIABLES TO ALLOW FOR OVERPLOTTING
   tplot_2plot = strarr(n_elements(plot_count))
   starter = 0
   ender = 0
   for i=0,n_elements(plot_count)-1 do begin
-    if keyword_set(ytitles) then begin
-      tplot_2plot[i] = ytitles[i]
-    endif else begin   
-      tplot_2plot[i] = strtrim('MAVEN'+strtrim(string(i+1),2))
-    endelse
     starter = fix(total(plot_count[0:i]) - plot_count[i])
     ender = fix(total(plot_count[0:i])-1.)
+    if keyword_set(ytitles) then begin                              ;CREATE THE STRING ARRAY OF Y-AXIS TITLES
+      tplot_2plot[i] = ytitles[i]
+    endif else begin   
+      if starter eq ender then begin
+        tplot_2plot[i] = temp_variable_names[starter:ender]
+      endif else begin
+        for j=starter,ender do begin
+          tplot_2plot[i] = tplot_2plot[i]+temp_variable_names[j]
+          if j lt ender then tplot_2plot[i] = tplot_2plot[i]+':'
+        endfor
+      endelse
+    endelse    
     store_data,tplot_2plot[i],data=tplot_variable_array[starter:ender],verbose=0
   endfor
 
   ;PLOT THE SINGLE AND MERGED TPLOT VARIABLES
 
-
-
+  temp_index=0
   if keyword_set(noplot) eq 0 then begin
       tplot,tplot_2plot,title=overall_title,verbose=0
     if keyword_set(altitude) then begin
@@ -154,10 +166,19 @@ endelse
     endif else begin
       tplot,var_label=[''],verbose=0
     endelse
+    for i=0,n_elements(plot_count)-1 do begin
+      for j=0, plot_count[i] -1 do begin
+        options,tplot_variable_array[temp_index],color=multi_colors[j]
+        temp_index = temp_index + 1
+      endfor
+    endfor
+    
   endif else begin
     print, 'Tplot window suppresed. Tplot variables created and stored only.'
     tplot_names
   endelse
 
+
+tplot,verbose=0
 finish:
 end

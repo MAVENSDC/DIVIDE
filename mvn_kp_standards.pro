@@ -149,7 +149,7 @@ pro MVN_KP_STANDARDS, kp_data, $
     mag_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.mso_z
     mag_mso_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].mag.mso_x^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_y^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_z^2))
     store_data,'MAG_MSO',data={x:kp_data[kp_start_index:kp_end_index].time, y:mag_mso_data, v:mag_mso_v}, dlim={labels:mag_mso_labels},verbose=0
-    options,'MAG_MSO','labflag',-1
+    options,'MAG_MSO','labflag',0
     
     tplot_2plot[plot_count] = 'MAG_MSO'
     lin_log[plot_count] = 0
