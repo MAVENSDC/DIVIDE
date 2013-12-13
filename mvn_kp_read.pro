@@ -16,6 +16,8 @@
 ;       optional length of time to return data, in seconds, only used if input time is a single value
 ;    preferences: in, optional, type=string
 ;       optional name of a text preferences file if the user wants to override the default name ; FIXME THIS IS WRONG
+;    update_prefs: in, optional, type=boolean
+;       option to use dialog boxes and re-define your data paths in preferences.txt
 ;    lpw: in, optional, type=boolean
 ;       optional keyword that will return all of the LPW data 
 ;    static: in, optional, type=boolean
@@ -32,8 +34,10 @@
 ;       optional keyword that will return all of the NGIMS data 
 ;    iuvs_all: in, optional, type=boolean
 ;       optional keyword to return all IUVS KP data, regardless of observation type
-;    insitu: in, optional, type=boolean
+;    insitu_all: in, optional, type=boolean
 ;       optional keyword that will return all of the INSITU data, regardless of observation type
+;    insitu_only: in, optional, type=boolean
+;       optinal keyword to specify that you only want to read in insitu data (ignore IUVS)
 ;    iuvs_periapse:  in, optional, type=boolean
 ;       optional keyword that will return all of the IUVS PERIAPSE limb scan data 
 ;    iuvs_apoapse: in, optional, type=boolean
@@ -83,8 +87,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                    iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
                    iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
                    iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
-                   iuvs_stellarocc=iuvs_stellarocc, insitu=insitu, $
-                   inbound=inbound, outbound=outbound, binary=binary, debug=debug
+                   iuvs_stellarocc=iuvs_stellarocc, insitu_all=insitu_all, $
+                   inbound=inbound, outbound=outbound, binary=binary, debug=debug, insitu_only=insitu_only, $
+                   update_prefs=update_prefs
 
   
   overall_start_time = systime(1)
@@ -129,7 +134,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
     keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
     keyword_set(iuvs_coronaEchellehigh) or keyword_set(iuvs_coronaEchelleLimb) or keyword_set(iuvs_coronaEchelleHigh) or keyword_set(iuvs_coronaLoresHigh) or $
-    keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu) then begin
+    keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu_all) then begin
    
     instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
    
@@ -161,7 +166,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       instrument_array[6] = 1
       print,'Returning All NGIMS Instrument KP Data.'
     endif
-    if keyword_set(insitu) then begin
+    if keyword_set(insitu_all) then begin
       instrument_array[0] = 1
       instrument_array[1] = 1
       instrument_array[2] = 1
@@ -242,46 +247,79 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Read or create preferences file ---------------------------- ;;
-  
 
+  ;FIXME TAKE ANOTHER LOOK OVER LOGIC HERE, MAKE SURE SOLID ENOUGH
   install_result = routine_info('mvn_kp_read',/source)
   install_directory = strsplit(install_result.path,'mvn_kp_read.pro',/extract,/regex)
-  if keyword_set(preferences) eq 0 then begin
+  kp_insitu_data_directory = ''
+  kp_iuvs_data_directory = ''
+  if not keyword_set(update_prefs) then begin
     
     ;CHECK IF THE PREFERENCES FILE EXISTS & READ IF IT DOES
     preference_exists = file_search(install_directory,'kp_preferences.txt',count=kp_pref_exists)
     if kp_pref_exists ne 0 then begin
-      ;READ IN THE KP_PREFERENCES FILE AND SET VARIABLES
-      ;FIXME THIS PREFERENCE READER LOOKS A LITTLE FRAGILE
-      temp=''
-      kp_insitu_data_directory = ''
-      kp_iuvs_data_directory = ''
+
+      ;LOOP THROUGH KP PREFS FILE LOOKING FOR PARTICULAR PREFERENCES
       openr,lun,install_directory+'kp_preferences.txt',/get_lun
-      readf,lun,temp
-      readf,lun,kp_insitu_data_directory
-      readf,lun,kp_iuvs_data_directory
+      while not eof(lun) do begin
+        line=''
+        readf,lun,line
+        tokens = strsplit(line,' ',/extract)
+        if tokens[0] ne ';' then begin
+          case tokens[0] of 
+            'kp_insitu_data_directory:':  kp_insitu_data_directory = tokens[1]
+            'kp_iuvs_data_directory:'  :  kp_iuvs_data_directory   = tokens[1]
+           else                        :  print, 'Unknown preference: ', tokens[0], ' ', tokens[1] 
+          endcase
+          
+        endif
+      endwhile
       free_lun,lun
-      kp_insitu_data_directory = strmid(kp_insitu_data_directory,strpos(kp_insitu_data_directory,'/'))
-      kp_iuvs_data_directory = strmid(kp_iuvs_data_directory,strpos(kp_iuvs_data_directory,'/'))
-    endif else begin
-      ;ASK THE USER TO DEFINE THE DIRECTORY WHERE THE KP DATA FILES ARE STORED
-      kp_insitu_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
-      kp_iuvs_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+
+      ;IF NO INSITU DIRECOTRY FOUND IN PREFS FILE, PROMPT USER TO RE-RUN WITH UPDATE-PREFS OPTION (FIXME)
+      if kp_insitu_data_directory eq '' then begin
+        print,      'Error: No kp_insitu_data_directory: /path/ found in kp_preferences.txt file.'
+        error_msg = 'Re run mvn_kp_read with /UPDATE_PREFS or manually fix kp_preferences.txt file.'
+        message, error_msg
+      endif
       
-      ;CREATE KP_PREFERENCES.TXT FOR FUTURE USE
-      openw,lun,install_directory+'kp_preferences.txt',/get_lun
-      printf,lun,'; IDL Toolkit KP Reader Preferences File'
-      printf,lun,'kp_insitu_data_directory: '+kp_insitu_data_directory
-      printf,lun,'kp_iuvs_data_directory: '+kp_iuvs_data_directory
-      free_lun,lun
+      ;IF NO IUVS DIRECTORY AND NOT IN INSITU ONLY MODE, PROMPT USER FOR IUVS DIRECTORY
+      if kp_iuvs_data_directory eq '' and not keyword_set(insitu_only) then begin
+        print, "kp_preferences.txt file only contains insitu path. Requesting path to IUVS data..."
+        kp_iuvs_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+        update_prefs=1
+      endif
+      
+    endif else begin
+      ;NO PREFS FILE EXISTS, PROMPT USER FOR PATHS
+      kp_insitu_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
+        
+      if not keyword_set(insitu_only) then begin
+        kp_iuvs_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+      endif
+      update_prefs=1
     endelse
     
   endif else begin
-    ;FIXME THIS WAS NOT IMPLEMENTED AS DESCRIBED IN THE HEADER. NEED TO DECIDE HOW WE WANT TO
-    ;HANDLE THIS SITUATION
-    stop
+    ;WETHER OR NOT kp_preferences.txt FILE EXISTS, USE DIALOG BOXES TO REQUEST NEW LOCATIONS AND THEN WRITE (OR OVERWRITE) kp_preferences.txt
+    ;FIXME - THIS LOGIC CAN BE CLEANED UP
+
+    kp_insitu_data_directory = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
+    kp_iuvs_data_directory =   dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+    update_prefs=1
 
   endelse
+  
+  
+  ;WRITE/UPDATE PREFERENCES FILE IF NECESSARY
+  if keyword_set(update_prefs) then begin
+    ;CREATE KP_PREFERENCES.TXT FOR FUTURE USE
+    openw,lun,install_directory+'kp_preferences.txt',/get_lun
+    printf,lun,'; IDL Toolkit KP Reader Preferences File'
+    printf,lun,'kp_insitu_data_directory: '+kp_insitu_data_directory
+    if kp_iuvs_data_directory ne '' then printf,lun,'kp_iuvs_data_directory: '+kp_iuvs_data_directory
+    free_lun,lun
+  endif
 
   
   ;; ------------------------------------------------------------------------------------ ;;
@@ -332,18 +370,21 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; ------------------------------------------------------------------------------------ ;;
   ;; -------------- Find files which contain data in input time range ------------------- ;;
   ;; -------------- and initialize data structures for holding data --------------------- ;;
-  
+
   ;DETERMINE WHICH FILES TO READ TO COVER INPUT TIME RANGE
   MVN_KP_FILE_SEARCH_DRIVER, begin_time, end_time, total_KP_file_count, target_KP_filenames, iuvs_filenames, $
-                          kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag
+                          kp_insitu_data_directory, kp_iuvs_data_directory, binary_flag, insitu_only=insitu_only
 
-  ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS
+  ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS & INITIALIZE ARRAY OF DATA STRUTURES 
   MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
-  MVN_KP_IUVS_STRUCT_INIT,   iuvs_record,   instrument_array
+  kp_data_temp = replicate(insitu_record,21600L*total_KP_file_count)
+    
+  if not keyword_set(insitu_only) then begin  
+    MVN_KP_IUVS_STRUCT_INIT, iuvs_record,   instrument_array
+    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+  endif
 
-  ; INITIALIZE ARRAY OF DATA STRUTURES 
-  kp_data_temp   = replicate(insitu_record,21600L*total_KP_file_count)
-  iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+ 
   
   
   ;; ------------------------------------------------------------------------------------ ;;
@@ -354,11 +395,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;VARIABLES TO HOLD THE COUNT OF VARIOUS OBSERVATION TYPES (IE. HIGH VS. LOW ALTITUDE)
   ; high_count = 0
   ; low_count = 0
-   
+
   if binary_flag eq 0 then begin
     index=0L
     within_time_bounds = 0
-    for file=0,total_KP_file_count[0]-1 do begin
+    for file=0,total_KP_file_count[0]-1 do begin 
+      
       ;UPDATE THE READ STATUS BAR
       MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
       ;OPEN THE KP DATA FILE
@@ -367,15 +409,34 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       while not eof(lun) do begin
         temp = ''
         readf,lun,temp
-        a = strsplit(temp,' ',/extract)
-        if a[0] ne '#' then begin
+        data = strsplit(temp,' ',/extract)
+        if data[0] ne '#' then begin
+
           ;KICK TO ROUTINE TO CHECK IF TIME FALLS WITHIN SEARCH BOUNDS
-          within_time_bounds = MVN_KP_TIME_BOUNDS(a[0],begin_time,end_time)
+          within_time_bounds = MVN_KP_TIME_BOUNDS(data[0],begin_time,end_time)
           ;IF WITHIN BOUNDS, EXTRACT AND STORE DATA
           if within_time_bounds then begin
-            MVN_KP_INSITU_ASSIGN, insitu_record, a, instrument_array
-            kp_data_temp[index] = insitu_record
-            index=index+1
+         
+            ; TEMPLATE STRUCTURE TO READ DATA INTO
+            orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(203)}
+            
+            ;READ IN AND INIT TEMP STRUCTURE OF DATA
+            orbit.time_string = data[0]
+            orbit.time = time_double(data[0])
+            orbit.orbit = data[198]
+            orbit.IO_bound = data[199]
+            orbit.data[0:196] = data[1:197]
+            orbit.data[197:202] = data[200:205]
+            
+            ;CHECK time_string FORMAT FOR A SLASH DELIMITER INSTEAD OF A "T" AND SWITCH IF NECESSARY
+            ts_split=strsplit(orbit.time_string, '/', COUNT=ts_count, /EXTRACT)
+            if ts_count gt 1 then orbit.time_string = ts_split[0]+'T'+ts_split[1]
+            
+            if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
+              MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instrument_array
+              kp_data_temp[index] = insitu_record
+              index=index+1
+            endif 
           endif
         endif
       endwhile
@@ -409,8 +470,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Main read loop: IUVS  data   ------------------------------- ;;
  
-  if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-    (instrument_array[11] eq 1) or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
+
+   ;IF ANY IUVS DATA IS REQUESTED & NOT IN INSITU ONLY MODE
+  if not keyword_set (insitu_only) and ((instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $   
+    (instrument_array[11] eq 1) or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1)) then begin
     iuvs_index=0
     for file=0,n_elements(iuvs_filenames)-1 do begin
       ;INITIALIZE IUVS_RECORD TO CONTAIN DEFAULT VALUES
@@ -514,21 +577,25 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------- Copy data into input data structures  -------------------------- ;;
-
-  insitu_output = kp_data_temp[0:index-1]
-  if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-    (instrument_array[11] eq 1)  or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
-    iuvs_output = iuvs_data_temp[0:iuvs_index-1]
-  endif
   
-  overall_end_time = systime(1)
+ 
+  ;OUTPUT INSITU DATA STRUCTURE
+  insitu_output = kp_data_temp[0:index-1]
+  print,'A total of ',strtrim(string(index-1),2),' INSITU KP data records were found that met the search criteria.'
+  
 
-  print,'A total of ',strtrim(string(index-1),2),' KP data records were found that met the search criteria.'
-  if (instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $    ;IF ANY IUVS DATA IS REQUESTED
-    (instrument_array[11] eq 1)  or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1) then begin
+  ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED
+  if not keyword_set(insitu_only) and ((instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $ 
+    (instrument_array[11] eq 1)  or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1)) then begin
+    iuvs_output = iuvs_data_temp[0:iuvs_index-1]
     print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
   endif
+  
+
+  ;TIME TO RUN ROUTINE 
+  overall_end_time = systime(1)
   print,'Your query took ', overall_end_time - overall_start_time,' seconds to complete.'
+  
   
   ; UNSET DEBUG ENV VARIABLE
   setenv, 'MVNTOOLKIT_DEBUG='

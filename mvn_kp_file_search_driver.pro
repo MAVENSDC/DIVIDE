@@ -17,7 +17,8 @@
 ;    binary: in, required, type=boolean
 ;       A flag that creates filesnames with the binary extension instead of ascii default.
 ;-
-pro MVN_KP_FILE_SEARCH_DRIVER, begin_time, end_time, file_count, insitu_filenames, iuvs_filenames, data_dir, iuvs_dir, binary
+pro MVN_KP_FILE_SEARCH_DRIVER, begin_time, end_time, file_count, insitu_filenames, iuvs_filenames, data_dir, iuvs_dir, $
+                               binary, insitu_only=insitu_only
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -125,15 +126,19 @@ pro MVN_KP_FILE_SEARCH_DRIVER, begin_time, end_time, file_count, insitu_filename
     insitu_filenames[i] = 'mvn_KP_l2_pf_'+strtrim(string(year_array[i]),2)+strtrim(month_array[i],2)+strtrim(day_array[i],2)+insitu_suffix
     MVN_KP_INSITU_FILE_VERSIONS, insitu_filenames[i], data_dir, new_filename, binary=binary
     insitu_filenames[i] = new_filename
-    MVN_KP_IUVS_FILE_VERSIONS, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, binary=binary
-    ; MAKE SURE IUVS FILES WERE FOUND BEFORE TRYING TO ADD THEM
-    if iuvs_file_count gt iuvs_file_index_low then begin
-      iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs
-      iuvs_file_index_low = iuvs_file_count
+    
+    if not keyword_set(insitu_only) then begin
+      MVN_KP_IUVS_FILE_VERSIONS, year_array[i], month_array[i], day_array[i], begin_hour, begin_jul, end_jul, iuvs_dir, iuvs_file_count, iuvs, binary=binary
+      ; MAKE SURE IUVS FILES WERE FOUND BEFORE TRYING TO ADD THEM
+      if iuvs_file_count gt iuvs_file_index_low then begin
+        iuvs_filenames_temp[iuvs_file_index_low:(iuvs_file_count-1)] = iuvs
+        iuvs_file_index_low = iuvs_file_count
+      endif
     endif
 
   endfor
   
-  iuvs_filenames = iuvs_filenames_temp[0:iuvs_file_count-1]
+  ;OUTPUT IUVS STRUCTURE IF NOT INSITU ONLY MODE
+  if not keyword_set(insitu_only) then iuvs_filenames = iuvs_filenames_temp[0:iuvs_file_count-1]
   
 end

@@ -44,7 +44,14 @@ cmd_list_prob = []
 
 if keyword_set(READ) then begin
 
-  ;; Test string time input
+  ;; *** Test reading in only INSITU data ****
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /binary, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /insitu_all, /insitu_only"]
+
+
+  ;; *** Test string time input ***
 
   ;; Test single time input - binary
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs, /binary"]
@@ -73,12 +80,12 @@ if keyword_set(READ) then begin
   
 
 
-  ;; Test orbit time range input  FIXME not working
+  ;; *** Test orbit time range input  FIXME not working ***
   ;mvn_kp_read, 10, insitu, iuvs, /binary
   
   
-  ;; ---- Tests that shoudl fail ----
   
+  ;; ---- Tests that shoudl fail ----
   
   ;; Test single time input for files that we don't have data for - binary
   cmd_list_prob = [cmd_list_prob, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /binary"]
