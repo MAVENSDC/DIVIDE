@@ -27,7 +27,7 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitles=ytitles, title=top_title,range=range,noplot=noplot
+pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitles=ytitles, title=top_title,range=range,noplot=noplot, zero=zero
 
 
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
@@ -44,11 +44,11 @@ pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitl
     goto,finish
   endif
 
-if keyword_set(top_title) then begin
-  overall_title=top_title
-endif else begin
-  overall_title=''
-endelse
+  if keyword_set(top_title) then begin
+    overall_title=top_title
+  endif else begin
+    overall_title=''
+  endelse
 
   ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
   
@@ -70,7 +70,7 @@ endelse
     
     plot_count =intarr(n_elements(field))
     total_lines = 0
-    true_index = intarr(50)
+    true_index = strarr(50)
     merged_plots = 0
     
     for i=0,n_elements(field)-1 do begin
@@ -83,22 +83,24 @@ endelse
         while pos1 ne -1 do begin
           pos1 = strpos(field[i],',',pos)
           if pos1 ne -1 then begin
-            true_index[total_lines-1] = fix(strmid(field[i],pos,(pos1-pos)))
+            true_index[total_lines-1] = strmid(field[i],pos,(pos1-pos))
             total_lines = total_lines+1
             pos=pos1+1
             plot_count[i]=plot_count[i]+1
           endif
         endwhile
-        true_index[total_lines-1] = fix(strmid(field[i],pos,(strlen(field[i])-pos)))
+        true_index[total_lines-1] = strmid(field[i],pos,(strlen(field[i])-pos))
         plot_count[i]=plot_count[i]+1
       endif else begin
-        true_index[total_lines] = fix(field[i])
+        true_index[total_lines] = field[i]
         total_lines = total_lines+1
         plot_count[i] = 1
       endelse
     endfor
  
     true_index = true_index[0:total_lines-1]
+  
+  
   
   ;LOOP OVER EACH REQUESTED PLOT VARIABLE, CHECK IT'S VALIDITY, AND STORE THE DATA IN A TPLOT VARIABLE
   ; also calculate the min/max ranges for overplot uses
@@ -108,24 +110,42 @@ endelse
   ymin = fltarr(n_elements(true_index))
   ymax = fltarr(n_elements(true_index))
   for i=0,n_elements(true_index) - 1 do begin
-   MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-   temp_variable_names[i] = strtrim(tag_array[0],2)+'.'+strtrim(tag_array[1],2)
-   if check eq 1 then begin
-               print,'Whoops, ',strupcase(field[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
-               goto,finish
-   endif else begin
-     tplot_variable_name = strtrim('mvn'+strtrim(string(i+1),2))
-     tplot_variable_array[i] = tplot_variable_name
-     time_data = kp_data[kp_start_index:kp_end_index].time
-     store_data,tplot_variable_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)},verbose=0
-     ymin[i] = min(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
-     ymax[i] = max(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
+   if strmid(true_index[i],0,1) eq 't' then begin                                                                 ;IF THE USER REQUESTS A TPLOT VARIABLE INDEX
+     tplot_names, names=tplot_available
+     temp_variable_names[i] = tplot_available[fix(strmid(true_index[i],1))-1]
+     tplot_variable_array[i] = temp_variable_names[i]
+     get_data, tplot_available[fix(strmid(true_index[i],1))-1], data=data
+     ymin[i] = min(data.y)
+     ymax[i] = max(data.y)
+   endif else begin                                                                                               ;IF THE USER REQUESTS A NON-TPLOT VARIABLE      
+     MVN_KP_TAG_VERIFY, kp_data, fix(true_index[i]),base_tag_count, first_level_count, base_tags,  $
+                        first_level_tags, check, level0_index, level1_index, tag_array
+     temp_variable_names[i] = strtrim(tag_array[0],2)+'.'+strtrim(tag_array[1],2) 
+   
+       if check eq 1 then begin
+                   print,'Whoops, ',strupcase(field[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
+                   goto,finish
+       endif else begin
+         tplot_variable_name = strtrim('mvn'+strtrim(string(i+1),2))
+         tplot_variable_array[i] = tplot_variable_name
+         time_data = kp_data[kp_start_index:kp_end_index].time
+         store_data,tplot_variable_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)},verbose=0
+         ymin[i] = min(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
+         ymax[i] = max(kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index))
+       endelse
    endelse
   endfor
   if keyword_set(altitude) then begin
     store_data,'alt',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].spacecraft.altitude},verbose=0
   endif
+  
+  if keyword_set(zero) then begin
+    get_data,'mvn1' , data = data
+    zero_line = fltarr(n_elements(data.x))
+    zero_line[*] =  0.0
+    store_data,'zero',data={x:data.x, y:zero_line},verbose=0
+  endif
+  
   
   ;DEFINE A DEFAULT COLOR ARRAY FOR MULTI-PLOTS
   
@@ -150,9 +170,14 @@ endelse
         endfor
       endelse
     endelse    
-    store_data,tplot_2plot[i],data=tplot_variable_array[starter:ender],verbose=0
+    if keyword_set(zero) then begin
+      store_data,tplot_2plot[i],data=['zero',tplot_variable_array[starter:ender]],verbose=0
+    endif else begin
+      store_data,tplot_2plot[i],data=tplot_variable_array[starter:ender],verbose=0
+    endelse
   endfor
-
+  
+ 
   ;PLOT THE SINGLE AND MERGED TPLOT VARIABLES
 
   temp_index=0
