@@ -2,24 +2,33 @@
 
 pro insitu_cdf_write
 
-mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/16:00:30'] , insitu, iuvs, /binary
+all_files = file_search('/Users/martin/repos/data_maven/kp_data/mvn*sav')
+masterCDF = '/Users/martin/repos/maventoolkit/cdf_work/full_maven_insitu_master.cdf'
 
-;masterCDF = 'cdf_work/maven_swia_master.cdf'
-masterCDF = 'cdf_work/full_maven_insitu_master.cdf'
-outputCDF = 'cdf_work/insitu_out.cdf'
+foreach file , all_files do begin
 
-insitu_cut = insitu[0:4]
-
+  
 ;; Release insitu and iuvs
 insitu=0
-iuvs=0
 
-insitu=insitu_cut
+
+base = file_basename(file, '.sav')
+outpath='/Users/martin/repos/data_maven/insitu_cdf/'
+year=strmid(base, 13, 4)
+month=strmid(base, 17, 2)
+day=strmid(base, 19, 2)
+
+startdate = year+'-'+month+'-'+day+'/00:00:00'
+enddate = year+'-'+month+'-'+day+'/23:59:59'
+
+mvn_kp_read, [startdate, enddate] , insitu, /binary, /insitu_only
+
 
 ;; Top level data
-time     = insitu.time
-orbit    = insitu.orbit
-io_bound = insitu.io_bound
+time        = insitu.time
+time_string = insitu.time_string
+orbit       = insitu.orbit
+io_bound    = insitu.io_bound
 
 ;; Instruments
 ngims      = insitu.ngims
@@ -34,22 +43,25 @@ app        = insitu.app
 
 
 ;; Load CDF Master file (empty) that we will fill in
+cdfi_insitu=0
 cdfi_insitu = cdf_load_vars(masterCDF, /ALL)
 
 
 ;; Set top level variables
-ptr = PTR_NEW(time)
+ptr = PTR_NEW(time_string)
 cdfi_insitu.vars[1].dataptr = ptr
-ptr = PTR_NEW(orbit)
+ptr = PTR_NEW(time)
 cdfi_insitu.vars[2].dataptr = ptr
-ptr = PTR_NEW(io_bound)
+ptr = PTR_NEW(orbit)
 cdfi_insitu.vars[3].dataptr = ptr
+ptr = PTR_NEW(io_bound)
+cdfi_insitu.vars[4].dataptr = ptr
 
 
 
 ;; Loop through varialbes, create a pointer to a (copy) of a paramter
 ;; Number of variables
-j=4
+j=5
 NV=n_tags(lpw)
 for i=0, NV-1 Do begin
   ptr = PTR_NEW(lpw.(i))
@@ -136,7 +148,9 @@ for i=0, NV-1 Do begin
 endfor
 
 
-dummy = cdf_save_vars(cdfi_insitu, outputCDF)
+dummy = cdf_save_vars(cdfi_insitu,outpath+base+'.cdf')
 
+
+endforeach
 
 end
