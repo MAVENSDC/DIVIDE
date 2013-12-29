@@ -1,6 +1,6 @@
 ;; Testing CDF Generation of insitu
 
-pro mvn_insitu_cdf_read, insitu, infiles
+pro mvn_kp_insitu_cdf_read, insitu, infiles
 
   overall_start_time_cdf = systime(1)
   insitu = []

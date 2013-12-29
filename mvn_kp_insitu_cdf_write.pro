@@ -1,6 +1,6 @@
 ;; CDF Generation of insitu
 
-pro mvn_insitu_cdf_write, infiles, outpath
+pro mvn_kp_insitu_cdf_write, infiles, outpath
 
   ;PATH TO MASTER CDF FILE, NECESSARY FOR cdf_load_vars TO WORK.
   masterCDF = '/Users/martin/repos/maventoolkit/cdf_work/full_maven_insitu_master.cdf'
