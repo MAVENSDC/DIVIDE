@@ -6,78 +6,95 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   widget_control, event.top, get_uvalue=pstate
   uname = widget_info(event.id,/uname)
   
+    IF TAG_NAMES(Event, /STRUCTURE_NAME) EQ 'WIDGET_KILL_REQUEST' THEN BEGIN
+        WIDGET_CONTROL, Event.top, GET_UVALUE=(*pState)
+
+       ; Destroy the objects.
+       OBJ_DESTROY, (*pstate).window
+       WIDGET_CONTROL, Event.top, /DESTROY
+       RETURN
+    ENDIF
+  
+  
   case uname of 
     'draw': begin
-               ; rotate
-              translate = event.modifiers and 1
-              update = (*pstate).track->update(event, transform=rotTransform, translate=translate)
-              if (update) then begin
-                (*pstate).model->getProperty, transform=curTransform
-                (*pstate).atmModel1->getproperty,transform=atmtrans1
-                (*pstate).atmModel2->getproperty,transform=atmtrans2
-                (*pstate).atmModel3->getproperty,transform=atmtrans3
-                (*pstate).atmModel4->getproperty,transform=atmtrans4
-                (*pstate).atmModel5->getproperty,transform=atmtrans5
-                (*pstate).atmModel6->getproperty,transform=atmtrans6
-                (*pstate).maven_model->getProperty, transform=mavTrans
-                (*pstate).sub_solar_model->getProperty,transform=ssTrans
-                (*pstate).sub_maven_model->getProperty,transform=smTrans
-                (*pstate).vector_model->getProperty,transform=vertTrans
-                newTransform = curTransform # rotTransform
-                newatmtrans1 = atmtrans1 # rotTransform
-                newatmtrans2 = atmtrans2 # rotTransform
-                newatmtrans3 = atmtrans3 # rotTransform
-                newatmtrans4 = atmtrans4 # rotTransform
-                newatmtrans5 = atmtrans5 # rotTransform
-                newatmtrans6 = atmtrans6 # rotTransform
-                newMavTrans = mavTrans # rotTransform
-                newSsTrans = ssTrans # rotTransform
-                newSmTrans = smTrans # rotTransform
-                newVertTrans = vertTrans # rotTransform
-                (*pstate).model->setProperty, transform=newTransform
-                (*pstate).atmModel1->setProperty, transform=newatmtrans1
-                (*pstate).atmModel2->setProperty, transform=newatmtrans2
-                (*pstate).atmModel3->setProperty, transform=newatmtrans3
-                (*pstate).atmModel4->setProperty, transform=newatmtrans4
-                (*pstate).atmModel5->setProperty, transform=newatmtrans5
-                (*pstate).atmModel6->setProperty, transform=newatmtrans6
-                (*pstate).gridlines -> setProperty, transform=newTransform
-                (*pstate).orbit_model -> setProperty, transform=newTransform
-                (*pstate).maven_model -> setProperty, transform=newMavTrans
-                (*pstate).sub_solar_model->setProperty,transform=newSsTrans
-                (*pstate).sub_maven_model->setProperty,transform=newSmTrans
-                (*pstate).vector_model->setProperty,transform=newVertTrans
-                (*pstate).axesmodel -> setProperty, transform=newtransform
-                if (*pstate).instrument_array[8] eq 1 then begin
-                  (*pstate).periapse_limb_model->getProperty,transform=periTrans
-                  newPeriTrans = periTrans # rotTransform
-                  (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
+              if (*pstate).camera_view eq 0 then begin
+                 ; rotate
+                translate = event.modifiers and 1
+                update = (*pstate).track->update(event, transform=rotTransform, translate=translate)
+                              
+                if (update) then begin
+                  (*pstate).model->getProperty, transform=curTransform
+                  (*pstate).atmModel1->getproperty,transform=atmtrans1
+                  (*pstate).atmModel2->getproperty,transform=atmtrans2
+                  (*pstate).atmModel3->getproperty,transform=atmtrans3
+                  (*pstate).atmModel4->getproperty,transform=atmtrans4
+                  (*pstate).atmModel5->getproperty,transform=atmtrans5
+                  (*pstate).atmModel6->getproperty,transform=atmtrans6
+                  (*pstate).maven_model->getProperty, transform=mavTrans
+                  (*pstate).sub_solar_model->getProperty,transform=ssTrans
+                  (*pstate).sub_maven_model->getProperty,transform=smTrans
+                  (*pstate).vector_model->getProperty,transform=vertTrans
+                  newTransform = curTransform # rotTransform
+                  newatmtrans1 = atmtrans1 # rotTransform
+                  newatmtrans2 = atmtrans2 # rotTransform
+                  newatmtrans3 = atmtrans3 # rotTransform
+                  newatmtrans4 = atmtrans4 # rotTransform
+                  newatmtrans5 = atmtrans5 # rotTransform
+                  newatmtrans6 = atmtrans6 # rotTransform
+                  newMavTrans = mavTrans # rotTransform
+                  newSsTrans = ssTrans # rotTransform
+                  newSmTrans = smTrans # rotTransform
+                  newVertTrans = vertTrans # rotTransform
+                  (*pstate).model->setProperty, transform=newTransform
+                  (*pstate).atmModel1->setProperty, transform=newatmtrans1
+                  (*pstate).atmModel2->setProperty, transform=newatmtrans2
+                  (*pstate).atmModel3->setProperty, transform=newatmtrans3
+                  (*pstate).atmModel4->setProperty, transform=newatmtrans4
+                  (*pstate).atmModel5->setProperty, transform=newatmtrans5
+                  (*pstate).atmModel6->setProperty, transform=newatmtrans6
+                  (*pstate).gridlines -> setProperty, transform=newTransform
+                  (*pstate).orbit_model -> setProperty, transform=newTransform
+                  (*pstate).maven_model -> setProperty, transform=newMavTrans
+                  (*pstate).sub_solar_model->setProperty,transform=newSsTrans
+                  (*pstate).sub_maven_model->setProperty,transform=newSmTrans
+                  (*pstate).vector_model->setProperty,transform=newVertTrans
+                  (*pstate).axesmodel -> setProperty, transform=newtransform
+                  if (*pstate).instrument_array[8] eq 1 then begin
+                    (*pstate).periapse_limb_model->getProperty,transform=periTrans
+                    newPeriTrans = periTrans # rotTransform
+                    (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
+                  endif
+                  
+                  (*pstate).maven_location = (*pstate).maven_location#rotTransform
+                  
+                  (*pstate).window->draw, (*pstate).view          
                 endif
-                (*pstate).window->draw, (*pstate).view          
-              endif
-            
-              ; scale
-              if (event.type eq 7) then begin
-                s = 1.1 ^ event.clicks
-                (*pstate).model->scale, s, s, s
-                (*pstate).atmModel1->scale,s,s,s
-                (*pstate).atmModel2->scale,s,s,s
-                (*pstate).atmModel3->scale,s,s,s
-                (*pstate).atmModel4->scale,s,s,s
-                (*pstate).atmModel5->scale,s,s,s
-                (*pstate).atmModel6->scale,s,s,s
-                (*pstate).gridlines->scale,s,s,s
-                (*pstate).orbit_model->scale,s,s,s
-                (*pstate).maven_model->scale,s,s,s
-                (*pstate).sub_solar_model->scale,s,s,s
-                (*pstate).sub_maven_model->scale,s,s,s
-                (*pstate).axesmodel->scale,s,s,s
-                (*pstate).vector_model->scale,s,s,s
-                if (*pstate).instrument_array[8] eq 1 then begin
-                  (*pstate).periapse_limb_model->scale,s,s,s
-                endif
-                (*pstate).window->draw, (*pstate).view          
-              endif       
+             endif       ;end of camera view check     
+                ; scale
+                if (event.type eq 7) then begin
+                  s = 1.1 ^ event.clicks
+                  (*pstate).model->scale, s, s, s
+                  (*pstate).atmModel1->scale,s,s,s
+                  (*pstate).atmModel2->scale,s,s,s
+                  (*pstate).atmModel3->scale,s,s,s
+                  (*pstate).atmModel4->scale,s,s,s
+                  (*pstate).atmModel5->scale,s,s,s
+                  (*pstate).atmModel6->scale,s,s,s
+                  (*pstate).gridlines->scale,s,s,s
+                  (*pstate).orbit_model->scale,s,s,s
+                  (*pstate).maven_model->scale,s,s,s
+                  (*pstate).sub_solar_model->scale,s,s,s
+                  (*pstate).sub_maven_model->scale,s,s,s
+                  (*pstate).axesmodel->scale,s,s,s
+                  (*pstate).vector_model->scale,s,s,s
+                  if (*pstate).instrument_array[8] eq 1 then begin
+                    (*pstate).periapse_limb_model->scale,s,s,s
+                  endif
+                  (*pstate).maven_location = (*pstate).maven_location*s
+                  (*pstate).window->draw, (*pstate).view          
+                endif       
+           
             end
     'mars': begin
               widget_control, (*pstate).subbaseR1, map=0
@@ -101,18 +118,21 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 
                 ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
                   t = min(abs(((*pstate).insitu.time - newval)),t_index)
+                  
                   data = *(*pstate).orbit_path.data
                   (*pstate).orbit_model->GetProperty,transform=curtrans
-                  cur_x = data[0,(*pstate).time_index]
-                  cur_y = data[1,(*pstate).time_index]
-                  cur_z = data[2,(*pstate).time_index]
+                  cur_x = data[0,(*pstate).time_index*2]
+                  cur_y = data[1,(*pstate).time_index*2]
+                  cur_z = data[2,(*pstate).time_index*2]
                   new = fltarr(1,3)
-                  new[0,0] = data[0,t_index]-cur_x
-                  new[0,1] = data[1,t_index]-cur_y
-                  new[0,2] = data[2,t_index]-cur_z
+                  new[0,0] = data[0,t_index*2]-cur_x
+                  new[0,1] = data[1,t_index*2]-cur_y
+                  new[0,2] = data[2,t_index*2]-cur_z
                   delta = new # curtrans[0:2,0:2]
                   (*pstate).maven_model -> translate, delta[0],delta[1],delta[2]
-                  
+                  (*pstate).maven_location[0] = (*pstate).maven_location[0]+delta[0]
+                  (*pstate).maven_location[1] = (*pstate).maven_location[1]+delta[1]
+                  (*pstate).maven_location[2] = (*pstate).maven_location[2]+delta[2]
                   
                 ;UPDATE THE PARAMETERS ON SCREEN
                   (*pstate).paratext1->setProperty,strings='Distance to Sun:'+strtrim(string((*pstate).insitu(t_index).spacecraft.mars_sun_distance),2)+' AU'
@@ -120,6 +140,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).paratext3->setProperty,strings='MAVEN Altitude:'+strtrim(string((*pstate).insitu(t_index).spacecraft.altitude),2)
                   (*pstate).paratext4->setProperty,strings='Solar Zenith Angle:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sza),2)
                   (*pstate).paratext5->setProperty,strings='Local Time:'+strtrim(string((*pstate).insitu(t_index).spacecraft.local_time),2)
+                  (*pstate).paratext6->setProperty,strings='SubMaven Lat:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sub_sc_latitude),2)
+                  (*pstate).paratext7->setProperty,strings='SubMaven Lon:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sub_sc_longitude),2)
                   (*pstate).timetext->setProperty,strings=time_string(newval,format=0)
                   (*pstate).plottext1->getproperty,strings=temp_string
                   if temp_string ne '' then begin
@@ -165,8 +187,88 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                    (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
                  endif
                   
+                 (*pstate).time_index = t_index 
+                  
+                 ;IF THE SCENE IS SPACECRAFT LOCKED, ROTATE EVERYTHING TO KEEP MAVEN CENTERED
+                 if (*pstate).camera_view eq 1 then begin
+print,(*pstate).maven_location[0:2]
+                     v1 = [0.0,0.0,1.0]
+                     v2 = (*pstate).maven_location[0:2]
+
+                     axis = crossp(v1,v2)
+                     angle = acos( transpose(v1)#v2 / sqrt(total(v1^2)) / sqrt(total(v2^2)) ) * 180./!pi 
+      ;              print,axis
+      ;              print,angle
+                     ;rotate everything around to the right location
+                      (*pstate).maven_model->rotate,axis,-angle
+                      (*pstate).model->rotate,axis,-angle
+                      (*pstate).atmModel1->rotate,axis,-angle
+                      (*pstate).atmModel2->rotate,axis,-angle
+                      (*pstate).atmModel3->rotate,axis,-angle
+                      (*pstate).atmModel4->rotate,axis,-angle
+                      (*pstate).atmModel5->rotate,axis,-angle
+                      (*pstate).atmModel6->rotate,axis,-angle
+                      (*pstate).gridlines -> rotate,axis,-angle
+                      (*pstate).orbit_model -> rotate,axis,-angle
+                      (*pstate).sub_solar_model->rotate,axis,-angle
+                      (*pstate).sub_maven_model->rotate,axis,-angle
+                      (*pstate).vector_model->rotate,axis,-angle
+                      (*pstate).axesmodel -> rotate,axis,-angle
+                      if (*pstate).instrument_array[8] eq 1 then begin
+                        (*pstate).periapse_limb_model ->rotate,axis,-angle
+                      endif;;
+;
+;                      ;update the maven location 
+                     (*pstate).maven_location[0:2] = [0.0,0.0,1.0]
+                 endif 
+              
+                 ;IF APOAPSE IMAGES ARE DISPLAYED AS A SINGLE FRAME (APOPAPSE_BLEND = 0) THEN UPDATE
+                 if (*pstate).apoapse_blend eq 0 then begin
+                  image = bytarr(3,90,45)
+                  time = (*pstate).insitu[(*pstate).time_index].time_string
+                  case (*pstate).apoapse_image_choice of 
+                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Radiance Map: H': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                               end
+                            'Radiance Map: O_1304': begin
+                                                        sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                                                        input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                        for i=0,sizes(4)-1 do begin
+                                                          input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
+                                                        endfor
+                                                        MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                     end  
+                            'Radiance Map: CO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                               end
+                            'Radiance Map: NO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                               end
+                          endcase                           
+                  oImage = OBJ_NEW('IDLgrImage', image )
+                  (*pstate).opolygons -> setproperty, texture_map=oimage
+                 endif
+                  
+                  
                 ;FINALLY, REDRAW THE SCENE  
-                (*pstate).time_index = t_index
+           
                 (*pstate).window->draw, (*pstate).view
              end                   
                  
@@ -272,6 +374,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 (*pstate).view->setProperty,color=newval
                                 (*pstate).window ->draw,(*pstate).view
                            end
+       'ambient': begin
+                    widget_control,event.id, get_value=newval
+                    (*pstate).ambientlight->setProperty,intensity=newval/100.0
+                    (*pstate).window->draw,(*pstate).view
+                  end
+                            
                             
        'views': begin
                   widget_control,(*pstate).subbaseR1, map=0
@@ -1140,6 +1248,13 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             endif else begin
                               widget_control,(*pstate).subbaseR8d, sensitive=0
                               widget_control,(*pstate).button8a, set_value='Display Apoapse Images'
+                              
+                              ;reset the basemap to default MOLA
+                               read_jpeg,(*pstate).install_directory+'MDIM_2500x1250.jpg',image
+                               oImage = OBJ_NEW('IDLgrImage', image )
+                               (*pstate).opolygons -> setproperty, texture_map=oimage
+                               (*pstate).window->draw, (*pstate).view 
+                              
                             endelse
                          end
                          
@@ -1147,36 +1262,264 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             widget_control,event.id, get_value=choice
                             case choice of
                               'Ozone Depth': begin
-                                                ;set a new basemap from a single ozone depth image
-                                                       image = bytarr(3,90,45)
-                                                       for i=0,2 do begin
-                                                        image[i,*,*] = bytscl((*pstate).iuvs[0].apoapse.ozone_depth)
-                                                       endfor
-                                                       
+                                              image = bytarr(3,90,45)
+                                              (*pstate).apoapse_image_choice = 'Ozone Depth'
+                                              time = (*pstate).insitu[(*pstate).time_index].time_string
+                                              
+                                                MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, $
+                                                                          (*pstate).iuvs.apoapse.time_start
+                                 
                                                         oImage = OBJ_NEW('IDLgrImage', image )
                                                         (*pstate).opolygons -> setproperty, texture_map=oimage
                                                         (*pstate).gridlines -> setProperty, hide=0
                                                         (*pstate).window ->draw,(*pstate).view  
+                                                     
                                              end
                               'Dust Depth': begin
-                                                ;set a new basemap from a single ozone depth image
-                                                       image = bytarr(3,90,45)
-                                                       for i=0,2 do begin
-                                                        image[i,*,*] = bytscl((*pstate).iuvs[0].apoapse.dust_depth)
-                                                       endfor
-                                                       
+                                              image = bytarr(3,90,45)
+                                              (*pstate).apoapse_image_choice = 'Dust Depth'
+                                              time = (*pstate).insitu[(*pstate).time_index].time_string
+                                                 MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, $
+                                                                          (*pstate).iuvs.apoapse.time_start
+                                                
                                                         oImage = OBJ_NEW('IDLgrImage', image )
                                                         (*pstate).opolygons -> setproperty, texture_map=oimage
                                                         (*pstate).gridlines -> setProperty, hide=0
                                                         (*pstate).window ->draw,(*pstate).view  
                                              end
-                              'Radiance Map: H': print,'H'
-                              'Radiance Map: O_1304': print,'O'
-                              'Radiance Map: CO': print,'CO'
-                              'Radiance Map: NO': print,'N'
+                              'Radiance Map: H': begin
+                                                  image = bytarr(3,90,45)
+                                                  (*pstate).apoapse_image_choice = 'Radiance Map: H'
+                                                  time = (*pstate).insitu[(*pstate).time_index].time_string
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
+                                                                              (*pstate).iuvs.apoapse.time_start
+                                                    
+                                                            oImage = OBJ_NEW('IDLgrImage', image )
+                                                            (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                            (*pstate).gridlines -> setProperty, hide=0
+                                                            (*pstate).window ->draw,(*pstate).view  
+                                                 end
+                              'Radiance Map: O_1304': begin
+                                                        image = bytarr(3,90,45)
+                                                        (*pstate).apoapse_image_choice = 'Radiance Map: O_1304'
+                                                        time = (*pstate).insitu[(*pstate).time_index].time_string
+                                                        sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                                                        input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                        for i=0,sizes(4)-1 do begin
+                                                          input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
+                                                        endfor
+                                                        MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
+                                                                                    (*pstate).iuvs.apoapse.time_start
+                                                          
+                                                                  oImage = OBJ_NEW('IDLgrImage', image )
+                                                                  (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                                  (*pstate).gridlines -> setProperty, hide=0
+                                                                  (*pstate).window ->draw,(*pstate).view  
+                                                       end
+                              'Radiance Map: CO': begin
+                                                    image = bytarr(3,90,45)
+                                                    (*pstate).apoapse_image_choice = 'Radiance Map: CO'
+                                                    time = (*pstate).insitu[(*pstate).time_index].time_string
+                                                    sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                                                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                    for i=0,sizes(4)-1 do begin
+                                                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
+                                                    endfor
+                                                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
+                                                                                (*pstate).iuvs.apoapse.time_start
+                                                      
+                                                              oImage = OBJ_NEW('IDLgrImage', image )
+                                                              (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                              (*pstate).gridlines -> setProperty, hide=0
+                                                              (*pstate).window ->draw,(*pstate).view  
+                                                   end
+                              'Radiance Map: NO': begin
+                                                    image = bytarr(3,90,45)
+                                                    (*pstate).apoapse_image_choice = 'Radiance Map: NO'
+                                                    time = (*pstate).insitu[(*pstate).time_index].time_string
+                                                    sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                                                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                    for i=0,sizes(4)-1 do begin
+                                                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
+                                                    endfor
+                                                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
+                                                                                (*pstate).iuvs.apoapse.time_start
+                                                      
+                                                              oImage = OBJ_NEW('IDLgrImage', image )
+                                                              (*pstate).opolygons -> setproperty, texture_map=oimage
+                                                              (*pstate).gridlines -> setProperty, hide=0
+                                                              (*pstate).window ->draw,(*pstate).view  
+                                                   end
                               
                             endcase  
                           end
+          
+          'apo_blend': begin
+                        widget_control, event.id, get_value=choice
+                        if choice eq 'Average' then begin
+                          (*pstate).apoapse_blend = 1
+                          image = bytarr(3,90,45)
+                          time = (*pstate).insitu[(*pstate).time_index].time_string
+                          case (*pstate).apoapse_image_choice of 
+                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Radiance Map: H': begin
+                                                sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                                                input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                for i=0,sizes(4)-1 do begin
+                                                  input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
+                                                endfor
+                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                               end
+                            'Radiance Map: O_1304': begin
+                                                      sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                      for i=0,sizes(4)-1 do begin
+                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
+                                                      endfor
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                     end
+                            'Radiance Map: CO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                 end
+                            'Radiance Map: NO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                 end
+                          endcase
+                          oImage = OBJ_NEW('IDLgrImage', image )
+                          (*pstate).opolygons -> setproperty, texture_map=oimage
+                          (*pstate).gridlines -> setProperty, hide=0
+                          (*pstate).window ->draw,(*pstate).view  
+                        endif
+                        if choice eq 'None' then begin
+                          (*pstate).apoapse_blend = 0
+                          image = bytarr(3,90,45)
+                          time = (*pstate).insitu[(*pstate).time_index].time_string
+                          case (*pstate).apoapse_image_choice of 
+                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Radiance Map: H':begin
+                                                sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                                                input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                for i=0,sizes(4)-1 do begin
+                                                  input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
+                                                endfor
+                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                               end
+                            'Radiance Map: O_1304': begin
+                                                      sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                      for i=0,sizes(4)-1 do begin
+                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
+                                                      endfor
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                     end
+                            'Radiance Map: CO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                 end
+                            'Radiance Map: NO': begin
+                                                  sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                  for i=0,sizes(4)-1 do begin
+                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
+                                                  endfor
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                 end
+                          endcase
+                          oImage = OBJ_NEW('IDLgrImage', image )
+                          (*pstate).opolygons -> setproperty, texture_map=oimage
+                          (*pstate).gridlines -> setProperty, hide=0
+                          (*pstate).window ->draw,(*pstate).view 
+                        endif
+                       end
+          'camera': begin
+                          ;FREE THE CAMERA TO MOVE AS THE USER CHOOSES
+                          widget_control,event.id, get_value=choice, /use_text_select
+                          
+                          if choice eq 'Free-view Camera' then (*pstate).camera_view = 0
+                          
+                          if choice eq 'Spacecraft Camera' then begin
+                             (*pstate).camera_view =1
+                             v1 = [0.0,0.0,1.0]
+                             v2 = (*pstate).maven_location[0:2]
+                          
+                             axis = crossp(v1,v2)
+                             angle = acos( transpose(v1)#v2 / sqrt(total(v1^2)) / sqrt(total(v2^2)) ) * 180./!pi 
+                            
+                             ;rotate everything around to the right location
+                              (*pstate).maven_model->rotate,axis,-angle
+                              (*pstate).model->rotate,axis,-angle
+                              (*pstate).atmModel1->rotate,axis,-angle
+                              (*pstate).atmModel2->rotate,axis,-angle
+                              (*pstate).atmModel3->rotate,axis,-angle
+                              (*pstate).atmModel4->rotate,axis,-angle
+                              (*pstate).atmModel5->rotate,axis,-angle
+                              (*pstate).atmModel6->rotate,axis,-angle
+                              (*pstate).gridlines -> rotate,axis,-angle
+                              (*pstate).orbit_model -> rotate,axis,-angle
+                              (*pstate).sub_solar_model->rotate,axis,-angle
+                              (*pstate).sub_maven_model->rotate,axis,-angle
+                              (*pstate).vector_model->rotate,axis,-angle
+                              (*pstate).axesmodel -> rotate,axis,-angle
+                              if (*pstate).instrument_array[8] eq 1 then begin
+                                (*pstate).periapse_limb_model->rotate,axis,-angle
+                                newPeriTrans = periTrans # rotTransform
+                                (*pstate).periapse_limb_model ->rotate,axis,-angle
+                              endif
+                      
+                             ;scale everything to zoom into MAVEN
+                                                 
+                             s = 5.0/(*pstate).maven_location[3] 
+                             
+                             (*pstate).model->scale, s, s, s
+                             (*pstate).atmModel1->scale,s,s,s
+                             (*pstate).atmModel2->scale,s,s,s
+                             (*pstate).atmModel3->scale,s,s,s
+                             (*pstate).atmModel4->scale,s,s,s
+                             (*pstate).atmModel5->scale,s,s,s
+                             (*pstate).atmModel6->scale,s,s,s
+                             (*pstate).gridlines->scale,s,s,s
+                             (*pstate).orbit_model->scale,s,s,s
+                             (*pstate).maven_model->scale,s,s,s
+                             (*pstate).sub_solar_model->scale,s,s,s
+                             (*pstate).sub_maven_model->scale,s,s,s
+                             (*pstate).axesmodel->scale,s,s,s
+                             (*pstate).vector_model->scale,s,s,s
+                             if (*pstate).instrument_array[8] eq 1 then begin
+                              (*pstate).periapse_limb_model->scale,s,s,s
+                              endif
+                              (*pstate).maven_location = (*pstate).maven_location*s
+                             
+                                     ;update the maven location 
+                            ;  (*pstate).maven_location[0:2] = [0.0,0.0,1.0]
+                             
+                             ;redraw the scene
+                              (*pstate).window->draw,(*pstate).view
+                             
+                          endif
+                         end
+           
+
                          
   endcase     ;END OF BUTTON CONTROL
   

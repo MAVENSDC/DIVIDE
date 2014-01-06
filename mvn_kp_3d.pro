@@ -29,9 +29,13 @@
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
-               view_size=view_size
+               view_size=view_size, camera_view=camera_view
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
+  
+  ;variables to be added to command line at some points
+  apoapse_image_choice = 'Ozone Depth'
+  
   
   ;PARSE DATA STRUCTURES FOR BEGINNING, END, AND MID TIMES
     ;SET THE TIME BOUNDS BASED ON THE INSITU DATA STRUCTURE
@@ -133,9 +137,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         mid_time_string = time_string(mid_time,format=0)
       endelse 
    
+   
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
-     instrument_array = intarr(15)     ;flags to indicate if a given instrumnet data is present
+     instrument_array = intarr(17)     ;flags to indicate if a given instrumnet data is present
      
      tags=tag_names(insitu)
      temp = where(tags eq 'LPW')
@@ -170,6 +175,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       if temp ne -1 then instrument_array[13] = 1
       temp = where(tags1 eq 'CORONA_LO_LIMB')
       if temp ne -1 then instrument_array[14] = 1
+      temp = where(tags1 eq 'CORONA_E_LIMB')
+      if temp ne -1 then instrument_array[15] = 1
+      temp = where(tags1 eq 'CORONA_LO_DISK')
+      if temp ne -1 then instrument_array[16] = 1
      endif
   
   
@@ -201,6 +210,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       colorbar_min = 0.0
       colorbar_stretch=0
 
+    ;camera viewpoint: 0=default free view camera, 1=spacecraft view locked camera
+      if keyword_set(camera_view) ne 1 then begin
+        camera_view = 0
+      endif
+  
   
   ;BUILD THE WIDGET
 
@@ -259,13 +273,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(marsbase, value='Spacecraft Orbit Track', uname='orbit_onoff', xsize=300, ysize=30)
         label1 = widget_label(marsbase, value='Basemap')
         basemapbase = widget_base(marsbase, /column,/frame,/exclusive)
-          button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=300,ysize=30)
+          button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=300,ysize=30, /no_release)
           widget_control,button1, /set_button                  
-          button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=300,ysize=30)                  
-          button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=300,ysize=30)                  
-          button1 = widget_button(basemapbase, value='MAG',uname='basemap1',xsize=300,ysize=30)
-          button1 = widget_button(basemapbase, value='BLANK',uname='basemap1',xsize=300,ysize=30) 
-          button1 = widget_button(basemapbase, value='User Defined',uname='basemap1',xsize=300,ysize=30)                                          
+          button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=300,ysize=30, /no_release)                  
+          button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=300,ysize=30, /no_release)                  
+          button1 = widget_button(basemapbase, value='MAG',uname='basemap1',xsize=300,ysize=30, /no_release)
+          button1 = widget_button(basemapbase, value='BLANK',uname='basemap1',xsize=300,ysize=30, /no_release) 
+          button1 = widget_button(basemapbase, value='User Defined',uname='basemap1',xsize=300,ysize=30, /no_release)                                          
 ;      ;LABEL OPTIONS
         label2 = widget_label(marsbase, value='Label Options')
         gridbase = widget_base(marsbase, /column,/frame)
@@ -279,15 +293,28 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button2 = widget_button(gridbase, value='Plotted Values', uname='orbitPlotName', xsize=300, ysize=30)
         
        ;COLOR OPTIONS
-        label2 = widget_label(marsbase, value='Color Options')
+        label2 = widget_label(marsbase, value='Background Color Options')
         gridbase1 = widget_base(marsbase,/column,/frame)
         loadct,0,/silent
         bgcolor = cw_clr_index(gridbase1, uname ='background_color',color_values=bg_colors,xsize=210,ysize=30)
         
+       ;ambient light slider
+        label2 = widget_label(marsbase, value='Ambient Light Level')
+        slider2 = widget_slider(marsbase, frame=2, maximum=100, minimum=0, xsize=300,ysize=33,uname='ambient', value=50)
+         
         button2 = widget_button(marsbase, value='Return',uname='mars_return', xsize=300,ysize=30)             
 
         ;VIEWING GEOMETRY OPTIONS MENU
         subbaseR3 = widget_base(subbaseR,/column)
+          label3 = widget_label(subbaseR3, value='Camera Options', /align_center)
+          subbaseR3a = widget_base(subbaseR3,/column,/exclusive,/frame)
+            button3a = widget_button(subbaseR3a, value='Free-view Camera', uname='camera', xsize=300, ysize=30, /no_release)
+              if camera_view eq 0 then widget_control, button3a, /set_button
+            button3b = widget_button(subbaseR3a, value='Spacecraft Camera', uname='camera', xsize=300, ysize=30, /no_release)
+              if camera_view eq 1 then widget_control, button3b, /set_button
+          
+          
+          widget_control,subbaseR3a, sensitive=0
           
           button3 = widget_button(subbaseR3, value='Return',uname='view_return', xsize=300,ysize=30)             
  
@@ -410,23 +437,23 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
          button7 = widget_button(subbaseR7, value='Vector Plots', uname='vector_display',xsize=300,ysize=30)
          subbaseR7b = widget_base(subbaseR7, /column,/frame,/exclusive)
            if instrument_array[4] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15)
+             button7 = widget_button(subbaseR7b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15, /no_release)
            endif
            if instrument_array[2] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='SWIA H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15)
+             button7 = widget_button(subbaseR7b, value='SWIA H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
            endif
            if instrument_array[1] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='STATIC H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='STATIC O+ Flow Velocity', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='STATIC O2+ Flow Velocity', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='STATIC H+/He++ Characteristic Direction', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='STATIC Pickup Ion Characteristic Direction', uname='vector_field', xsize=300,ysize=15)
+             button7 = widget_button(subbaseR7b, value='STATIC H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='STATIC O+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='STATIC O2+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='STATIC H+/He++ Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='STATIC Pickup Ion Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
            endif
            if instrument_array[5] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 1', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 2', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 3', uname='vector_field', xsize=300,ysize=15)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 4', uname='vector_field', xsize=300,ysize=15)
+             button7 = widget_button(subbaseR7b, value='SEP Look Direction 1', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='SEP Look Direction 2', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='SEP Look Direction 3', uname='vector_field', xsize=300,ysize=15, /no_release)
+             button7 = widget_button(subbaseR7b, value='SEP Look Direction 4', uname='vector_field', xsize=300,ysize=15, /no_release)
            endif
              
             button7 = widget_button(subbaseR7, value='Plot',uname='overplots',xsize=300,ysize=30) 
@@ -440,9 +467,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 text7 = widget_text(subbaseR7d, value=string(colorbar_max), /editable,xsize=3,uname='colorbar_max')
                 button7 = widget_button(subbaseR7d, value='Reset', uname='colorbar_reset')
                 subbaseR7e = widget_base(subbaseR7d, /row,/exclusive)
-                button7a = widget_button(subbaseR7e, value='Linear', uname='colorbar_stretch')
+                button7a = widget_button(subbaseR7e, value='Linear', uname='colorbar_stretch', /no_release)
                 widget_control, button7a, /set_button
-                button7 = widget_button(subbaseR7e, value='Log', uname='colorbar_stretch')
+                button7 = widget_button(subbaseR7e, value='Log', uname='colorbar_stretch', /no_release)
           button7 = widget_button(subbaseR7, value='Return',uname='insitu_return',xsize=300,ysize=30)
         
         ;IUVS MENU
@@ -466,16 +493,32 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               button8a = widget_button(subbaseR8c, value='Display Apoapse Images', uname='apoapse_image', xsize=300, ysize=30)
                subbaseR8d = widget_base(subbaseR8c, /row, sensitive=0)
                 subbaseR8e = widget_base(subbaseR8d, /column, /exclusive,/frame)
-                  button8 = widget_button(subbaseR8e, value='Ozone Depth', uname='apoapse_select', xsize=150, ysize=15)
-                  button8 = widget_button(subbaseR8e, value='Dust Depth', uname='apoapse_select', xsize=150, ysize=15)
+                  button8 = widget_button(subbaseR8e, value='Ozone Depth', uname='apoapse_select', xsize=150, ysize=15, /no_release)
+                  widget_control,button8,/set_button
+                  button8 = widget_button(subbaseR8e, value='Dust Depth', uname='apoapse_select', xsize=150, ysize=15, /no_release)
                   apo_rad_list = 'Radiance Map: '+strtrim(iuvs[0].apoapse[0].radiance_id, 2)
                   for i=0,n_elements(apo_rad_list)-1 do begin
                     button8 = widget_button(subbaseR8e, value=apo_rad_list[i], uname='apoapse_select', xsize=150, ysize=15)
                   endfor
                 subbaseR8f = widget_base(subbaseR8d, /column, /frame)
                   label8 = widget_label(subbaseR8f, value='Blend Options',/align_center)
-                  
-          endif
+                  subbaseR8g = widget_base(subbaseR8f, /exclusive,/column)
+                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='None',xsize=150, ysize=15,/no_release)
+                  widget_control,button8g,/set_button
+                  apoapse_blend=0
+                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='Average', xsize=150, ysize=15, /no_release)
+           endif
+           ;CORONAL SCAN DISPLAY
+           if (instrument_array[10] eq 1) or (instrument_array[11] eq 1) or (instrument_array[13] eq 1) or (instrument_array[14] eq 1) or $
+              (instrument_array[15] eq 1) or (instrument_array[16] eq 1) then begin
+             subbaseR8h = widget_base(subbaseR8, /column, /frame)
+              label8 = widget_label(subbaseR8h, value='Coronal Scans', /align_center)
+               subbaseR8ha = widget_base(subbaseR8h, /row)
+                subbaseR8i = widget_base(subbaseR8ha, /column, /frame)
+                 label8 = widget_label(subbaseR8i, value='Low-Res', /align_center)
+                subbaseR8j = widget_base(subbaseR8ha, /column, /frame)
+                 label8 = widget_label(subbaseR8j, value='Echelle', /align_center)
+           endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
           
@@ -496,6 +539,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     widget_control, draw, get_value=window  
   
   ;SET THE INITIAL VIEWING DETAILS
+
 
     view = obj_new('IDLgrView', color=backgroundcolor, viewplane_rect=[-2,-2,4,4], eye=5.1,projection=2)
     view -> SetProperty, zclip = [5.0,-5.0]
@@ -637,7 +681,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       lightModel->add, dirLight
       
       ;OVERALL LIGHTING FOR THE DARKSIDE
-      ambientLight = obj_new('IDLgrLight', type=0, intensity=0.2)
+      
+      ambientLight = obj_new('IDLgrLight', type=0, intensity=0.5)
       lightModel->add, ambientLight
       if keyword_set(ambient) then begin
         ambientLight->setproperty, intensity=ambient
@@ -705,6 +750,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       parameterModel->add,paraText4
       paraText5 = obj_new('IDLgrText','Local Time:'+strtrim(string(insitu(time_index).spacecraft.local_time),2),color=[0,255,0], locations=[-1.99,1.3,0])
       parameterModel->add,paraText5    
+      paraText6 = obj_new('IDLgrText','SubMaven Lat:'+strtrim(string(insitu(time_index).spacecraft.sub_sc_latitude),2),color=[0,255,0], locations=[-1.99,1.2,0])
+      parameterModel->add,paraText6
+      paraText7 = obj_new('IDLgrText','SubMaven Lon:'+strtrim(string(insitu(time_index).spacecraft.sub_sc_longitude),2),color=[0,255,0], locations=[-1.99,1.1,0])
+      parameterModel->add,paraText7
       view->add,parameterModel
       parameterModel->setproperty,hide=1
 
@@ -841,6 +890,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
      ;CREATE THE SPACECRAFT 
      
         maven_model = obj_new('IDLgrModel')
+        maven_location = fltarr(4)
         if keyword_set(cow) then begin
           model_scale = 0.1
         endif else begin
@@ -848,9 +898,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endelse
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,install_directory           ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
         ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
-         x = x + x_orbit(time_index)
-         y = y + y_orbit(time_index)
-         z = z + z_orbit(time_index)
+         x = x + x_orbit(time_index*2)
+         y = y + y_orbit(time_index*2)
+         z = z + z_orbit(time_index*2)
+        ;add it's position to the camera tracking variable
+         maven_location[0] = x_orbit(time_index*2)
+         maven_location[1] = y_orbit(time_index*2)
+         maven_location[2] = z_orbit(time_index*2)
+         maven_location[3] = 1.0                        ;default scale factor
         maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, color=[100,80,25], shading=1,reject=1)
         maven_model -> add, maven_poly
         view -> add, maven_model
@@ -1051,7 +1106,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           iuvs_state = {iuvs:iuvs, $
                         periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, peri_scale_factor:peri_scale_factor, $
                         alt_plot_model:alt_plot_model, alt_plot:alt_plot, alt_yaxis:alt_yaxis, alt_xaxis:alt_xaxis, alt_xaxis_title:alt_xaxis_title, alt_xaxis_ticks:alt_xaxis_ticks, $
-                        subbaseR8b:subbaseR8b, subbaseR8d:subbaseR8d, button8a:button8a, button8b:button8b}             
+                        subbaseR8b:subbaseR8b, subbaseR8d:subbaseR8d, button8a:button8a, button8b:button8b, $
+                        apoapse_blend:apoapse_blend, apoapse_image_choice:apoapse_image_choice}             
         endif
         
         insitu_state = {button1: button1, button2: button2, button3: button3, button4: button4, button5: button5, button6: button6, $
@@ -1074,7 +1130,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  atmLevel1height: atmLevel1height, atmLevel2height: atmLevel2height, atmLevel3height: atmLevel3height, atmLevel4height: atmLevel4height, atmLevel5height: atmLevel5height, atmLevel6height: atmLevel6height, $
                  gridlines: gridlines, $
                  axesmodel: axesmodel, $
-                 dirlight: dirlight,  lightmodel: lightmodel, $
+                 dirlight: dirlight,  lightmodel: lightmodel, ambientlight: ambientlight, $
                  track: track, $
                  textModel: textModel, $
                  timetext: timetext, $
@@ -1092,7 +1148,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  colorbar_min:colorbar_min, colorbar_max:colorbar_max, colorbar_stretch:colorbar_stretch, $
                  plot_model: plot_model, parameter_plot: parameter_plot, plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, parameter_plot_before_color:parameter_plot_before_color, $
                  parameter_plot_after_color:parameter_plot_after_color, parameter_yaxis_ticktext:parameter_yaxis_ticktext,$
-                 paratext1: paratext1, paratext2: paratext2, paratext3: paratext3, paratext4: paratext4, paratext5: paratext5, $
+                 paratext1: paratext1, paratext2: paratext2, paratext3: paratext3, paratext4: paratext4, paratext5: paratext5, paratext6:paratext6, paratext7:paratext7, $
                  plottext1: plottext1, plottext2: plottext2, $
                  plotted_parameter_name: plotted_parameter_name, $
                  current_plotted_value: current_plotted_value, $
@@ -1105,7 +1161,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  base: base, $
                  level0_index: level0_index, level1_index: level1_index, $
                  install_directory: install_directory, $
-                 instrument_array:instrument_array $
+                 instrument_array:instrument_array, $
+                 camera_view: camera_view, maven_location:maven_location $
                  }
      
       
