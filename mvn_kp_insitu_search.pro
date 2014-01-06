@@ -52,6 +52,8 @@ pro MVN_KP_INSITU_SEARCH,  kp_data, kp_data_out, tag=tag, min=min_value, max=max
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
 
+  
+  
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
 
@@ -88,9 +90,9 @@ if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET,
   ;; If input is a number, make sure it's great than 0
   tag_size = size(tag,/type)  
   if tag_size eq 2 then begin
-    if tag le 0 then begin
-      message, "If input tag is a number, it must be greater than 0."
-    endif
+    ;if tag le 0 then begin
+    ;  message, "If input tag is a number, it must be greater than 0."
+    ;endif
   endif
   
     count = intarr(n_elements(tag))
