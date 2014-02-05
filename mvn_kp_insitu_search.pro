@@ -87,40 +87,42 @@ endif
 
 if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET, RUN A SEARCH ON THAT DATA FIELD BETWEEN MIN AND MAX
 
-  ;; If input is a number, make sure it's great than 0
-  tag_size = size(tag,/type)  
-  if tag_size eq 2 then begin
-    ;if tag le 0 then begin
-    ;  message, "If input tag is a number, it must be greater than 0."
-    ;endif
-  endif
+
+  count = intarr(n_elements(tag))
+  kp_data_temp = kp_data
+  for i=0,n_elements(tag) -1 do begin
   
-    count = intarr(n_elements(tag))
-    kp_data_temp = kp_data
-    for i=0,n_elements(tag) -1 do begin
-                 MVN_KP_TAG_VERIFY, kp_data, tag[i],base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-            
-            ;; If we didn't find the tag in the input structure, exit now
-            if check ne 0 then begin
-              if not keyword_set(debug) then begin
-                message, "The tag: "+string(tag)+" was not found in the input structure." 
-              endif else begin
-                print, "**ERROR HANDLING - The tag: ", string(tag), " was not found in the input structure."
-                print, "**ERROR HANDLING - Debug mode set: Stoping."
-                stop
-              endelse
-            endif
-
-            print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-                
-             meets_criteria = where(kp_data_temp.(level0_index).(level1_index) ge min_value[i] and kp_data_temp.(level0_index).(level1_index) le max_value[i],counter)
-             count[i] = counter
-             kp_data_temp = kp_data_temp[meets_criteria]
-    endfor
-    print,strtrim(string(counter),2),' records found that meet the search criteria.'      
-    kp_data_out = kp_data_temp
-
+    ;; If input is a number, make sure it's great than 0
+    tag_size = size(tag[i],/type)
+    if tag_size eq 2 then begin
+      if tag[i] le 0 then begin
+        message, "If input tag is a number, it must be greater than 0."
+      endif
+    endif
+    
+    MVN_KP_TAG_VERIFY, kp_data, tag[i],base_tag_count, first_level_count, base_tags,  $
+      first_level_tags, check, level0_index, level1_index, tag_array
+      
+    ;; If we didn't find the tag in the input structure, exit now
+    if check ne 0 then begin
+      if not keyword_set(debug) then begin
+        message, "The tag: "+string(tag)+" was not found in the input structure."
+      endif else begin
+        print, "**ERROR HANDLING - The tag: ", string(tag), " was not found in the input structure."
+        print, "**ERROR HANDLING - Debug mode set: Stoping."
+        stop
+      endelse
+    endif
+    
+    print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
+    
+    meets_criteria = where(kp_data_temp.(level0_index).(level1_index) ge min_value[i] and kp_data_temp.(level0_index).(level1_index) le max_value[i],counter)
+    count[i] = counter
+    kp_data_temp = kp_data_temp[meets_criteria]
+  endfor
+  print,strtrim(string(counter),2),' records found that meet the search criteria.'
+  kp_data_out = kp_data_temp
+  
 endif       ;END OF ALL SEARCH ROUTINES
 
 
