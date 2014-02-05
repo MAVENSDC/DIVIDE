@@ -78,7 +78,9 @@ if keyword_set(READ) then begin
   ;; FIXME - This is failing and shouldn't - Bigger question, how to handle time range inputs that are less than 1 day.
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs, /binary"]
   
-
+   ;; Test single time input for files that we don't have data for - binary
+   ;; This used to Error out, now it handles it and warns user.
+  cmd_list = [cmd_list, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /binary"]
 
   ;; *** Test orbit time range input  FIXME not working ***
   ;mvn_kp_read, 10, insitu, iuvs, /binary
@@ -87,8 +89,8 @@ if keyword_set(READ) then begin
   
   ;; ---- Tests that shoudl fail ----
   
-  ;; Test single time input for files that we don't have data for - binary
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /binary"]
+ 
+ 
   
   
 endif
