@@ -215,6 +215,102 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         camera_view = 0
       endif
   
+    ;parse the input iuvs structure (if it exists) to see which coronal observations are present
+    if instrument_array[7] eq 1 then begin
+      e_disk_list = 'None'
+      if instrument_array[11] eq 1 then begin           ;Echelle Disk
+        tag_list = tag_names(iuvs.corona_e_disk)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_e_disk.radiance_id[0] ne '')
+          e_disk_list = [e_disk_list,'Radiance:'+iuvs[min(temp)].corona_e_disk.radiance_id]
+        endif
+      endif
+      e_limb_list = 'None'
+      if instrument_array[15] eq 1 then begin           ;Echelle Limb
+        tag_list = tag_names(iuvs.corona_e_limb)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_e_limb.radiance_id[0] ne '')
+          e_limb_list = [e_limb_list, 'Radiance:'+iuvs[min(temp)].corona_e_limb.radiance_id]
+        endif
+        check = where(tag_list eq 'HALF_INT_DISTANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_e_limb.half_int_distance_id[0] ne '')
+          e_limb_list = [e_limb_list, '1/2 Dist:'+iuvs[min(temp)].corona_e_limb.half_int_distance_id]
+        endif
+      endif
+      e_high_list = 'None'
+      if instrument_array[10] eq 1 then begin           ;Echelle High
+        tag_list = tag_names(iuvs.corona_e_high)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_e_high.radiance_id[0] ne '')
+          e_high_list = [e_high_list, 'Radiance:'+iuvs[min(temp)].corona_e_high.radiance_id]
+        endif
+        check = where(tag_list eq 'HALF_INT_DISTANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_e_high.half_int_distance_id[0] ne '')
+          e_high_list = [e_high_list, '1/2 Dist:'+iuvs[min(temp)].corona_e_high.half_int_distance_id]
+        endif
+      endif
+      lo_disk_list = 'None'
+      if instrument_array[16] eq 1 then begin           ;Low Res Disk
+        tag_list = tag_names(iuvs.corona_lo_disk)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp  = where(iuvs.corona_lo_disk.radiance_id[0] ne '')
+          lo_disk_list = [lo_disk_list, 'Radiance:'+iuvs[min(temp)].corona_lo_disk.radiance_id]
+        endif
+        check = where(tag_list eq 'DUST_DEPTH:')
+        if check ne -1 then lo_disk_list = [lo_disk_list, 'Dust Depth']
+        check = where(tag_list eq 'OZONE_DEPTH:')
+        if check ne -1 then lo_disk_list = [lo_disk_list, 'Ozone Depth']
+        check = where(tag_list eq 'AURORAL_INDEX:')
+        if check ne -1 then lo_disk_list = [lo_disk_list, 'Auroral Index']
+      endif
+      lo_limb_list = 'None'
+      if instrument_array[14] eq 1 then begin           ;Low Res Limb
+        tag_list = tag_names(iuvs.corona_lo_limb)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_limb.radiance_id[0] ne '')    
+          lo_limb_list = [lo_limb_list, 'Radiance:'+iuvs[min(temp)].corona_lo_limb.radiance_id]
+        endif
+        check = where(tag_list eq 'SCALE_HEIGHT')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_limb.scale_height_id[0] ne '')    
+          lo_limb_list = [lo_limb_list, 'Scale Height:'+iuvs[min(temp)].corona_lo_limb.scale_height_id]
+        endif
+        check = where(tag_list eq 'DENSITY')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_limb.density_id[0] ne '')
+          lo_limb_list = [lo_limb_list, 'Density:'+iuvs[min(temp)].corona_lo_limb.density_id]
+        endif
+        check = where(tag_list eq 'TEMPERATURE')
+        if check ne -1 then lo_limb_list = [lo_limb_list, 'Temperature:']
+      endif
+      lo_high_list = 'None
+      if instrument_array[13] eq 1 then begin           ;Row Res High
+        tag_list = tag_names(iuvs.corona_lo_high)
+        check = where(tag_list eq 'RADIANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_high.radiance_id[0] ne '')    
+          lo_high_list = [lo_high_list, 'Radiance:'+iuvs[min(temp)].corona_lo_high.radiance_id]
+        endif
+        check = where(tag_list eq 'DENSITY')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_high.density_id[0] ne '')    
+          lo_high_list = [lo_high_list, 'Density:'+iuvs[min(temp)].corona_lo_high.density_id]
+        endif        
+        check = where(tag_list eq 'HALF_INT_DISTANCE')
+        if check ne -1 then begin
+          temp = where(iuvs.corona_lo_high.half_int_distance_id[0] ne '')    
+          lo_high_list = [lo_high_list, '1/2 Dist:'+iuvs[min(temp)].corona_lo_high.half_int_distance_id]
+        endif          
+      endif
+    endif
+  
   
   ;BUILD THE WIDGET
 
@@ -274,6 +370,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         label1 = widget_label(marsbase, value='Basemap')
         basemapbase = widget_base(marsbase, /column,/frame,/exclusive)
           button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=300,ysize=30, /no_release)
+          mars_base_map = 'mdim'
           widget_control,button1, /set_button                  
           button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=300,ysize=30, /no_release)                  
           button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=300,ysize=30, /no_release)                  
@@ -489,7 +586,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           endif
           if instrument_array[9] eq 1 then begin            ;APOAPSE IMAGING OPTIONS
             subbaseR8c = widget_base(subbaseR8, /column, /frame)
-              label8 = widget_label(subbaseR8c, value='Apoapse Imaging', /align_center)
+       ;       label8 = widget_label(subbaseR8c, value='Apoapse Imaging', /align_center)
               button8a = widget_button(subbaseR8c, value='Display Apoapse Images', uname='apoapse_image', xsize=300, ysize=30)
                subbaseR8d = widget_base(subbaseR8c, /row, sensitive=0)
                 subbaseR8e = widget_base(subbaseR8d, /column, /exclusive,/frame)
@@ -513,11 +610,23 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               (instrument_array[15] eq 1) or (instrument_array[16] eq 1) then begin
              subbaseR8h = widget_base(subbaseR8, /column, /frame)
               label8 = widget_label(subbaseR8h, value='Coronal Scans', /align_center)
-               subbaseR8ha = widget_base(subbaseR8h, /row)
+               subbaseR8h1 = widget_base(subbaseR8h, /row)
+                subbaseR8ha = widget_base(subbaseR8h1, /column)
                 subbaseR8i = widget_base(subbaseR8ha, /column, /frame)
-                 label8 = widget_label(subbaseR8i, value='Low-Res', /align_center)
+                 if instrument_array[16] eq 1 then drop8a = widget_droplist(subbaseR8i, value=lo_disk_list, uname='corona_lo_disk', title='Lo Disk', ysize=28)
+                 if instrument_array[14] eq 1 then drop8b = widget_droplist(subbaseR8i, value=lo_limb_list, uname='corona_lo_limb', title='Lo Limb', ysize=28)
+                 if instrument_array[13] eq 1 then drop8c = widget_droplist(subbaseR8i, value=lo_high_list, uname='corona_lo_high', title='Lo High', ysize=28)
                 subbaseR8j = widget_base(subbaseR8ha, /column, /frame)
-                 label8 = widget_label(subbaseR8j, value='Echelle', /align_center)
+                 if instrument_array[11] eq 1 then drop8d = widget_droplist(subbaseR8j, value=e_disk_list, uname='corona_e_disk', title='Ech. Disk', ysize=28)
+                 if instrument_array[15] eq 1 then drop8e = widget_droplist(subbaseR8j, value=e_limb_list, uname='corona_e_limb', title='Ech. Limb', ysize=28)
+                 if instrument_array[10] eq 1 then drop8f = widget_droplist(subbaseR8j, value=e_high_list, uname='corona_e_high', title='Ech. High', ysize=28)                 
+               subbaseR8h2 = widget_base(subbaseR8h1, /column)
+               label8 = widget_label(subbaseR8h2, value='Options')
+                subbaseR8hb = widget_base(subbaseR8h2, /column, /exclusive)
+                button8h = widget_button(subbaseR8hb, value='Erase Orbit', uname='coronal_reset',/no_release)
+                widget_control,button8h,/set_button
+                coronal_reset = 1
+                button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
            endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
@@ -549,13 +658,29 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       ;DEFINE THE BASEMAP
     if keyword_set(basemap) eq 0 then begin
       read_jpeg,install_directory+'MDIM_2500x1250.jpg',image     ;USE MDIM AS DEFAULT BASEMAP FOR NOW
+      mars_base_map = 'mdim'
     endif else begin
       case basemap of 
-        'mdim': read_jpeg,install_directory+'MDIM_2500x1250.jpg',image
-        'mola': read_jpeg,install_directory+'MOLA_color_2500x1250.jpg',image
-        'mola_bw': read_jpeg,install_directory+'MOLA_bw_2500x1250.jpg',image
-        'mag': read_jpeg,install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
-        else: read_jpeg, basemap,image
+        'mdim':begin
+                read_jpeg,install_directory+'MDIM_2500x1250.jpg',image
+                mars_base_map = 'mdim
+               end
+        'mola': begin
+                  read_jpeg,install_directory+'MOLA_color_2500x1250.jpg',image
+                  mars_base_map = 'mola'
+                end
+        'mola_bw': begin
+                    read_jpeg,install_directory+'MOLA_bw_2500x1250.jpg',image
+                    mars_base_map = 'mola_bw'
+                   end
+        'mag': begin
+                read_jpeg,install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
+                mars_base_map = 'mag'
+               end
+        else: begin
+               read_jpeg, basemap,image
+               mars_base_map = 'user'
+              end
       endcase      
     endelse
     
@@ -894,7 +1019,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         if keyword_set(cow) then begin
           model_scale = 0.1
         endif else begin
-          model_scale = 0.005
+          model_scale = 0.05
         endelse
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,install_directory           ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
         ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
@@ -1102,12 +1227,68 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
     if keyword_set(direct) eq 0 then begin                ;SKIP ALL THIS IF /DIRECT IS SET, SKIPPING THE GUI INTERFACE
 
-        if keyword_set(iuvs) then begin
-          iuvs_state = {iuvs:iuvs, $
-                        periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, peri_scale_factor:peri_scale_factor, $
+        if keyword_set(iuvs) then begin                   ;IF IUVS STRUCTURE IS INCLUDED, SET UP ITS PARAMETERSmvn_
+          iuvs_begin = {iuvs: iuvs}
+          if instrument_array[8] eq 1 then begin              ;SET THE IUVS PERIAPSE STRUCTURES
+            iuvs_peri_state = {periapse_limb_model:periapse_limb_model, periapse_vectors:periapse_vectors, current_periapse:current_periapse, periapse_limb_scan:periapse_limb_scan, peri_scale_factor:peri_scale_factor, $
                         alt_plot_model:alt_plot_model, alt_plot:alt_plot, alt_yaxis:alt_yaxis, alt_xaxis:alt_xaxis, alt_xaxis_title:alt_xaxis_title, alt_xaxis_ticks:alt_xaxis_ticks, $
-                        subbaseR8b:subbaseR8b, subbaseR8d:subbaseR8d, button8a:button8a, button8b:button8b, $
-                        apoapse_blend:apoapse_blend, apoapse_image_choice:apoapse_image_choice}             
+                        subbaseR8b:subbaseR8b, button8a:button8a, button8b:button8b}
+            iuvs1 = create_struct(iuvs_begin, iuvs_peri_state)
+          endif else begin
+            iuvs1 = iuvs_begin
+          endelse
+          
+          if instrument_array[9] eq 1 then begin              ;SET THE IUVS APOAPSE STRUCTURES
+            iuvs_apo_state = {subbaseR8d:subbaseR8d,apoapse_blend:apoapse_blend, apoapse_image_choice:apoapse_image_choice}
+            iuvs2 = create_struct(iuvs1, iuvs_apo_state)          
+          endif else begin
+            iuvs2 = iuvs1
+          endelse
+          
+          if (instrument_array[10] eq 1) or (instrument_array[11] eq 1) or (instrument_array[13] eq 1) or (instrument_array[14] eq 1) or $
+              (instrument_array[15] eq 1) or (instrument_array[16] eq 1) then begin
+              cstate1 = {subbaseR8h:subbaseR8h, coronal_reset:coronal_reset}
+              if instrument_array[16] eq 1 then begin
+                 coronal1 = {drop8a:drop8a}
+                 cstate2 = create_struct(cstate1, coronal1) 
+               endif else begin
+                 cstate2 = cstate1
+              endelse
+              if instrument_array[14] eq 1 then begin 
+                 coronal2 = {drop8b:drop8b}
+                 cstate3 = create_struct(cstate2, coronal2) 
+               endif else begin
+                cstate3 = cstate2
+              endelse
+              if instrument_array[13] eq 1 then begin 
+                 coronal3 = {drop8c:drop8c}
+                 cstate4 = create_struct(cstate3, coronal3) 
+               endif else begin
+                cstate4 = cstate3
+              endelse
+              if instrument_array[11] eq 1 then begin 
+                 coronal4 = {drop8d:drop8d}
+                 cstate5 = create_struct(cstate4, coronal4) 
+               endif else begin
+                 cstate5 = cstate4
+              endelse
+              if instrument_array[15] eq 1 then begin 
+                coronal5 = {drop8e:drop8e}
+                cstate6 = create_struct(cstate5, coronal5) 
+               endif else begin
+                cstate6 = cstate5
+              endelse
+              if instrument_array[10] eq 1 then begin 
+                coronal6 = {drop8f:drop8f}
+                cstate7 = create_struct(cstate6, coronal6) 
+               endif else begin
+                cstate7 = cstate6
+              endelse
+            iuvs3 = create_struct(iuvs2, cstate7)  
+          endif else begin
+            iuvs3 = iuvs2
+          endelse 
+          iuvs_state = iuvs3
         endif
         
         insitu_state = {button1: button1, button2: button2, button3: button3, button4: button4, button5: button5, button6: button6, $
@@ -1123,7 +1304,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  text: text, $
                  view: view, $
                  model: model, $
-                 opolygons: opolygons, $
+                 opolygons: opolygons, mars_base_map:mars_base_map, $
                  atmModel1: atmModel1, atmModel2: atmModel2, atmModel3: atmModel3, atmModel4: atmModel4, atmModel5: atmModel5, atmModel6: atmModel6, $
                  opolygons1: opolygons1, opolygons2: opolygons2, opolygons3: opolygons3, opolygons4: opolygons4, opolygons5: opolygons5, opolygons6: opolygons6, $
                  atmLevel1alpha: atmLevel1alpha, atmLevel2alpha: atmLevel2alpha, atmLevel3alpha: atmLevel3alpha, atmLevel4alpha: atmLevel4alpha, atmLevel5alpha: atmLevel5alpha, atmLevel6alpha: atmLevel6alpha, $

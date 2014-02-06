@@ -22,7 +22,7 @@ pro MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist, scale,cow=cow,install_directory
     filename = filepath('cow10.sav', subdir=['examples','data'])
   endif else begin
     print,'NO MAVEN Model yet established. Using Aurora-7 for now'
-    filename = install_directory+'aurora.sav'  
+    filename = install_directory+'maven_model.sav'  
   endelse
   restore,filename=filename
 

@@ -223,47 +223,51 @@ print,(*pstate).maven_location[0:2]
                  endif 
               
                  ;IF APOAPSE IMAGES ARE DISPLAYED AS A SINGLE FRAME (APOPAPSE_BLEND = 0) THEN UPDATE
-                 if (*pstate).apoapse_blend eq 0 then begin
-                  image = bytarr(3,90,45)
-                  time = (*pstate).insitu[(*pstate).time_index].time_string
-                  case (*pstate).apoapse_image_choice of 
-                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                            'Radiance Map: H': begin
-                                                  sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
-                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                  for i=0,sizes(4)-1 do begin
-                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
-                                                  endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                                               end
-                            'Radiance Map: O_1304': begin
-                                                        sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
-                                                        input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                        for i=0,sizes(4)-1 do begin
-                                                          input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
-                                                        endfor
-                                                        MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                                                     end  
-                            'Radiance Map: CO': begin
-                                                  sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
-                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                  for i=0,sizes(4)-1 do begin
-                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
-                                                  endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                                               end
-                            'Radiance Map: NO': begin
-                                                  sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
-                                                  input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                  for i=0,sizes(4)-1 do begin
-                                                    input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
-                                                  endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                                               end
-                          endcase                           
-                  oImage = OBJ_NEW('IDLgrImage', image )
-                  (*pstate).opolygons -> setproperty, texture_map=oimage
+                 if (*pstate).instrument_array[9] eq 1 then begin
+                   if (*pstate).apoapse_blend eq 0 then begin
+                    if (*pstate).mars_base_map eq 'apoapse' then begin
+                      image = bytarr(3,90,45)
+                      time = (*pstate).insitu[(*pstate).time_index].time_string
+                      case (*pstate).apoapse_image_choice of 
+                                'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                'Radiance Map: H': begin
+                                                      sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                      for i=0,sizes(4)-1 do begin
+                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
+                                                      endfor
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                   end
+                                'Radiance Map: O_1304': begin
+                                                            sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                                                            input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                            for i=0,sizes(4)-1 do begin
+                                                              input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
+                                                            endfor
+                                                            MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                         end  
+                                'Radiance Map: CO': begin
+                                                      sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                      for i=0,sizes(4)-1 do begin
+                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
+                                                      endfor
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                   end
+                                'Radiance Map: NO': begin
+                                                      sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                                                      for i=0,sizes(4)-1 do begin
+                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
+                                                      endfor
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                   end
+                              endcase                           
+                      oImage = OBJ_NEW('IDLgrImage', image )
+                      (*pstate).opolygons -> setproperty, texture_map=oimage
+                     endif  
+                   endif
                  endif
                   
                   
@@ -281,6 +285,7 @@ print,(*pstate).maven_location[0:2]
                             image = bytarr(3,2048,1024)
                             image[*,*,*] = 255
                             oImage = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).mars_base_map = 'blank'
                             (*pstate).opolygons -> setproperty, texture_map=oimage
                             (*pstate).gridlines -> setProperty, hide=0
                             (*pstate).window ->draw,(*pstate).view
@@ -288,24 +293,28 @@ print,(*pstate).maven_location[0:2]
                 'MDIM': begin 
                           read_jpeg,(*pstate).install_directory+'MDIM_2500x1250.jpg',image
                           oImage = OBJ_NEW('IDLgrImage', image )
+                          (*pstate).mars_base_map = 'mdim'
                           (*pstate).opolygons -> setproperty, texture_map=oimage
                           (*pstate).window->draw, (*pstate).view 
                         end
                 'MOLA': begin
                           read_jpeg,(*pstate).install_directory+'MOLA_color_2500x1250.jpg',image
                           oImage = OBJ_NEW('IDLgrImage', image )
+                          (*pstate).mars_base_map = 'mola'
                           (*pstate).opolygons -> setproperty, texture_map=oimage
                           (*pstate).window->draw, (*pstate).view 
                         end
                 'MOLA_BW': begin
                              read_jpeg,(*pstate).install_directory+'MOLA_bw_2500x1250.jpg',image
                              oImage = OBJ_NEW('IDLgrImage', image )
+                             (*pstate).mars_base_map = 'mola_bw'
                              (*pstate).opolygons -> setproperty, texture_map=oimage
                              (*pstate).window->draw, (*pstate).view 
                            end
                 'MAG': begin
                          read_jpeg,(*pstate).install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
                          oImage = OBJ_NEW('IDLgrImage', image )
+                         (*pstate).mars_base_map = 'mag'
                          (*pstate).opolygons -> setproperty, texture_map=oimage
                          (*pstate).window->draw, (*pstate).view
                        end
@@ -313,6 +322,7 @@ print,(*pstate).maven_location[0:2]
                                   input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.jpg')
                                   read_jpeg,input_file,image
                                   oImage = OBJ_NEW('IDLgrImage', image )
+                                  (*pstate).mars_base_map = 'user'
                                   (*pstate).opolygons -> setproperty, texture_map=oimage
                                   (*pstate).window->draw, (*pstate).view
                                 end
@@ -1245,9 +1255,11 @@ print,(*pstate).maven_location[0:2]
                             if result eq 0 then begin
                               widget_control,(*pstate).subbaseR8d,sensitive=1
                               widget_control,(*pstate).button8a, set_value='Hide Apoapse Images'
+                              (*pstate).mars_base_map = 'mdim'
                             endif else begin
                               widget_control,(*pstate).subbaseR8d, sensitive=0
                               widget_control,(*pstate).button8a, set_value='Display Apoapse Images'
+                              (*pstate).mars_base_map = 'apoapse'
                               
                               ;reset the basemap to default MOLA
                                read_jpeg,(*pstate).install_directory+'MDIM_2500x1250.jpg',image
@@ -1264,6 +1276,7 @@ print,(*pstate).maven_location[0:2]
                               'Ozone Depth': begin
                                               image = bytarr(3,90,45)
                                               (*pstate).apoapse_image_choice = 'Ozone Depth'
+                                              (*pstate).mars_base_map = 'apoapse'
                                               time = (*pstate).insitu[(*pstate).time_index].time_string
                                               
                                                 MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, $
@@ -1278,6 +1291,7 @@ print,(*pstate).maven_location[0:2]
                               'Dust Depth': begin
                                               image = bytarr(3,90,45)
                                               (*pstate).apoapse_image_choice = 'Dust Depth'
+                                              (*pstate).mars_base_map = 'apoapse'
                                               time = (*pstate).insitu[(*pstate).time_index].time_string
                                                  MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, $
                                                                           (*pstate).iuvs.apoapse.time_start
@@ -1290,6 +1304,7 @@ print,(*pstate).maven_location[0:2]
                               'Radiance Map: H': begin
                                                   image = bytarr(3,90,45)
                                                   (*pstate).apoapse_image_choice = 'Radiance Map: H'
+                                                  (*pstate).mars_base_map = 'apoapse'
                                                   time = (*pstate).insitu[(*pstate).time_index].time_string
                                                   sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
                                                   input_data = fltarr(sizes(2),sizes(3),sizes(4))
@@ -1307,6 +1322,7 @@ print,(*pstate).maven_location[0:2]
                               'Radiance Map: O_1304': begin
                                                         image = bytarr(3,90,45)
                                                         (*pstate).apoapse_image_choice = 'Radiance Map: O_1304'
+                                                        (*pstate).mars_base_map = 'apoapse'
                                                         time = (*pstate).insitu[(*pstate).time_index].time_string
                                                         sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
                                                         input_data = fltarr(sizes(2),sizes(3),sizes(4))
@@ -1324,6 +1340,7 @@ print,(*pstate).maven_location[0:2]
                               'Radiance Map: CO': begin
                                                     image = bytarr(3,90,45)
                                                     (*pstate).apoapse_image_choice = 'Radiance Map: CO'
+                                                    (*pstate).mars_base_map = 'apoapse'
                                                     time = (*pstate).insitu[(*pstate).time_index].time_string
                                                     sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
                                                     input_data = fltarr(sizes(2),sizes(3),sizes(4))
@@ -1341,6 +1358,7 @@ print,(*pstate).maven_location[0:2]
                               'Radiance Map: NO': begin
                                                     image = bytarr(3,90,45)
                                                     (*pstate).apoapse_image_choice = 'Radiance Map: NO'
+                                                    (*pstate).mars_base_map = 'apoapse'
                                                     time = (*pstate).insitu[(*pstate).time_index].time_string
                                                     sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
                                                     input_data = fltarr(sizes(2),sizes(3),sizes(4))
@@ -1519,8 +1537,72 @@ print,(*pstate).maven_location[0:2]
                           endif
                          end
            
+          'corona_lo_disk': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
+                        
+                              MVN_KP_3D_CORONA_COLORS, 'lo_disk', newval[index],t, (*pstate).iuvs 
+                              
+                            end
+          'corona_lo_limb': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
 
+                              (*pstate).orbit_path -> getproperty, vert_color=vert_color
+
+                              ;set reset flag if only need to erase other data
+
+                              MVN_KP_3D_CORONA_COLORS, 'lo_limb', newval, index, vert_color, (*pstate).iuvs.corona_lo_limb, (*pstate).coronal_reset, (*pstate).insitu.time, (*pstate).insitu.spacecraft.altitude
+                              
+                              
+;      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
+;      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+;                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
+;      (*pstate).colorbar_ticks = new_ticks
+;      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
+;      (*pstate).level0_index = level0_index
+;      (*pstate).level1_index = level1_index
+;      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
+                              (*pstate).orbit_path->SetProperty,vert_color=vert_color
+                              (*pstate).window->draw,(*pstate).view   
+                            end
+          'corona_lo_high': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
+                              
+                              (*pstate).orbit_path -> getproperty, vert_color=vert_color
+                              MVN_KP_3D_CORONA_COLORS, 'lo_high', newval, index, vert_color, (*pstate).iuvs.corona_lo_high, (*pstate).coronal_reset, (*pstate).insitu.time, (*pstate).insitu.spacecraft.altitude
+                              
+                              
+                              (*pstate).orbit_path->SetProperty,vert_color=vert_color
+                              (*pstate).window->draw,(*pstate).view  
+                            end
+          'corona_e_disk': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
+                        
+                              print,index, newval[index]
+                           end
+          'corona_e_limb': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
+                              
+                              print,index, newval[index]
+                           end
+          'corona_e_high': begin
+                              index = widget_info(event.id, /droplist_select)
+                              widget_control, event.id, get_value=newval
+                              
+                              print,index, newval[index]
+                           end
                          
+          'coronal_reset': begin
+                            widget_control,event.id,get_value=newval
+                            if newval eq 'Erase Orbit' then (*pstate).coronal_reset = 1
+                            if newval eq 'Keep Orbit' then (*pstate).coronal_reset = 0 
+                            print,'reset ',(*pstate).coronal_reset
+                           end
+         
   endcase     ;END OF BUTTON CONTROL
   
 end

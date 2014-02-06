@@ -27,7 +27,8 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitles=ytitles, title=top_title,range=range,noplot=noplot, zero=zero
+pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitles=ytitles, title=top_title,range=range,$
+                  noplot=noplot, zero=zero, createall=createall, quiet=quiet
 
 
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
@@ -65,6 +66,25 @@ pro MVN_KP_TPLOT, kp_data, field, time=time, altitude=altitude, list=list, ytitl
     !p.background='FFFFFF'x
     !p.color=0
     loadct,39,/silent
+    
+;IF USER CHOOSES CREATEALL, BUILD TPLOT VARIABLES FROM ALL PARAMETERS AND THEN QUIT
+
+  if keyword_set(createall) then begin
+    print,'**** Creating Tplot variables from all available KP Parameters ****'
+    index=0
+    for i=0, n_elements(first_level_count)-1 do begin
+      if first_level_count[i] gt 0 then begin
+        for j=0, first_level_count[i]-1 do begin
+          tplot_name = strtrim(base_tags[i],2)+':'+strtrim(first_level_tags[index])
+          store_data,tplot_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(i).(j)},verbose=0
+          index=index+1
+        endfor
+      endif
+    endfor
+    if (keyword_set(quiet) ne 1) then tplot_names
+    goto, finish
+  endif
+    
 
 ;DETEMINE THE TOTAL NUMBER OF PLOTS AND VARIABLES TO DEFINE ARRAYS.
     
