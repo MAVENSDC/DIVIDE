@@ -53,53 +53,99 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
     'spacecraft_altitude'          ,0.0,          $
     'mars_sun_distance'            ,0.0)
     
-    
   iuvs_record_temp = create_struct(['orbit'],0L)
 
-  ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
-  if instrument_array[7] eq 1 then begin    
-    i1 = create_struct(                          $
-          NAME                ='periapse',       $
-          iuvs_record_common,                    $
-          'scale_height_id'   ,strarr(7),        $ 
-          'scale_height'      ,fltarr(7),        $
-          'scale_height_err'  ,fltarr(7),        $
-          'density_id'        ,strarr(7),        $ 
-          'density'           ,fltarr(7,31),     $ 
-          'density_err'       ,fltarr(7,31),     $ 
-          'radiance_id'       ,strarr(11),       $
-          'radiance'          ,fltarr(11,31),    $ 
-          'radiance_err'      ,fltarr(11,31),    $ 
-          'temperature_id'    ,'',               $ 
-          'temperature'       ,0.0,              $ 
-          'temperature_err'   ,0.0,              $ 
-          'alt'               ,fltarr(31))
-          
-              iuvs_record_temp1 = create_struct(['periapse'],[i1,i1,i1],iuvs_record_temp)
+
+  ;INCLUDE IUVS STELLAR OCCULTATION DATA STRUCTURE
+  if instrument_array[11] eq 1 then begin
+    i5 = {stellar, test1:0.0}
+    
+    iuvs_record_temp1 = create_struct(['stellar_occ'],i5,iuvs_record_temp)
   endif else  iuvs_record_temp1 = create_struct(iuvs_record_temp)
 
-  
+
   ;INCLUDE IUVS APOAPSE DATA STRUCTURE
-  if instrument_array[8] eq 1 then begin    
+  if instrument_array[8] eq 1 then begin
     i2 = create_struct(                        $
-          NAME               ='apoapse',       $ 
-          iuvs_record_common ,                 $
-          'ozone_depth'      ,fltarr(90,45),   $
-          'ozone_depth_err'  ,fltarr(90,45),   $
-          'auroral_index'    ,fltarr(90,45),   $
-          'dust_depth'       ,fltarr(90,45),   $
-          'dust_depth_err'   ,fltarr(90,45),   $
-          'radiance_id'      ,strarr(4),       $
-          'radiance'         ,fltarr(4,90,45), $
-          'radiance_err'     ,fltarr(4,90,45), $
-          'sza_bp'           ,fltarr(90,45),   $
-          'local_time_bp'    ,fltarr(90,45),   $
-          'lon_bins'         ,fltarr(90),      $
-          'lat_bins'         ,fltarr(45))
-    
-              iuvs_record_temp2 = create_struct(['apoapse'],i2,iuvs_record_temp1)
+      NAME               ='apoapse',       $
+      iuvs_record_common ,                 $
+      'ozone_depth'      ,fltarr(90,45),   $
+      'ozone_depth_err'  ,fltarr(90,45),   $
+      'auroral_index'    ,fltarr(90,45),   $
+      'dust_depth'       ,fltarr(90,45),   $
+      'dust_depth_err'   ,fltarr(90,45),   $
+      'radiance_id'      ,strarr(4),       $
+      'radiance'         ,fltarr(4,90,45), $
+      'radiance_err'     ,fltarr(4,90,45), $
+      'sza_bp'           ,fltarr(90,45),   $
+      'local_time_bp'    ,fltarr(90,45),   $
+      'lon_bins'         ,fltarr(90),      $
+      'lat_bins'         ,fltarr(45))
+      
+    iuvs_record_temp2 = create_struct(['apoapse'],i2,iuvs_record_temp1)
   endif else  iuvs_record_temp2 = create_struct(iuvs_record_temp1)
+
+  
+  ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
+  if instrument_array[12] eq 1 then begin
+    i6 = create_struct(                          $
+      NAME                    ='c_l_high',   $
+      iuvs_record_common      ,              $
+      'half_int_distance_id'  ,strarr(6),    $
+      'half_int_distance'     ,fltarr(6),    $
+      'half_int_distance_err' ,fltarr(6),    $
+      'density_id'            ,strarr(4),    $
+      'density'               ,fltarr(4,77), $
+      'density_err'           ,fltarr(4,77), $
+      'radiance_id'           ,strarr(6),    $
+      'radiance'              ,fltarr(6,77), $
+      'radiance_err'          ,fltarr(6,77), $
+      'alt'                   ,fltarr(77))
+      
+    iuvs_record_temp3 = create_struct(['corona_lo_high'],i6,iuvs_record_temp2)
+  endif else  iuvs_record_temp3 = create_struct(iuvs_record_temp2)
+
  
+  ;INCLUDE IUVS LO RES LIMB CORONA DATA STRUCTURE
+  if instrument_array[13] eq 1 then begin
+    i7 = create_struct(                       $
+      NAME               ='c_l_limb',     $
+      iuvs_record_common ,                $
+      'scale_height_id'  ,strarr(7),      $
+      'scale_height'     ,fltarr(7),      $
+      'scale_height_err' ,fltarr(7),      $
+      'density_id'       ,strarr(7),      $
+      'density'          ,fltarr(7,31),   $
+      'density_err'      ,fltarr(7,31),   $
+      'radiance_id'      ,strarr(11),     $
+      'radiance'         ,fltarr(11,31),  $
+      'radiance_err'     ,fltarr(11,31),  $
+      'temperature_id'   ,'',             $
+      'temperature'      ,0.0,            $
+      'temperature_err'  ,0.0,            $
+      'alt'              ,fltarr(31))
+      
+    iuvs_record_temp4 = create_struct(['corona_lo_limb'],i7,iuvs_record_temp3)
+  endif else  iuvs_record_temp4 = create_struct(iuvs_record_temp3)
+
+  
+  ;INCLUDE IUVS LO RES DISK CORONA DATA STRUCTURE
+  if instrument_array[14] eq 1 then begin
+    i8 = create_struct(                    $
+      NAME               ='c_l_disk',  $
+      iuvs_record_common ,             $
+      'ozone_depth'      ,0.0,         $
+      'ozone_depth_err'  ,0.0,         $
+      'auroral_index'    ,0.0,         $
+      'dust_depth'       ,0.0,         $
+      'dust_depth_err'   ,0.0,         $
+      'radiance_id'      ,strarr(4),   $
+      'radiance'         ,fltarr(4),   $
+      'radiance_err'     ,fltarr(4))
+      
+    iuvs_record_temp5 = create_struct(['corona_lo_disk'],i8,iuvs_record_temp4)
+  endif else  iuvs_record_temp5 = create_struct(iuvs_record_temp4)
+
   
   ;INCLUDE IUVS ECHELLE HIGH ALTITUDE CORONA DATA STRUCTURE 
   if instrument_array[9] eq 1 then begin    
@@ -114,108 +160,62 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
           'radiance_err'           ,fltarr(3,77), $ 
           'alt'                    ,fltarr(77))
     
-             iuvs_record_temp3 = create_struct(['corona_e_high'],i3,iuvs_record_temp2)
-  endif else iuvs_record_temp3 = create_struct(iuvs_record_temp2)
+             iuvs_record_temp6 = create_struct(['corona_e_high'],i3,iuvs_record_temp5)
+  endif else iuvs_record_temp6 = create_struct(iuvs_record_temp5)
 
   
   ;INCLUDE IUVS ECHELLE LIMB CORONA DATA STRUCTURE
-  if instrument_array[10] eq 1 then begin    
+  if instrument_array[10] eq 1 then begin
     i4 = create_struct(                           $
-          NAME                     ='c_e_limb',   $
-          iuvs_record_common ,                    $
-          'half_int_distance_id'   ,strarr(3),    $ 
-          'half_int_distance'      ,fltarr(3),    $ 
-          'half_int_distance_err'  ,fltarr(3),    $
-          'radiance_id'            ,strarr(3),    $ 
-          'radiance'               ,fltarr(3,31), $ 
-          'radiance_err'           ,fltarr(3,31), $ 
-          'alt'                    ,fltarr(31))
-    
-              iuvs_record_temp4 = create_struct(['corona_e_limb'],i4,iuvs_record_temp3)
-  endif else  iuvs_record_temp4 = create_struct(iuvs_record_temp3)
-
-  
-  ;INCLUDE IUVS STELLAR OCCULTATION DATA STRUCTURE
-  if instrument_array[11] eq 1 then begin    
-    i5 = {stellar, test1:0.0}
-    
-              iuvs_record_temp5 = create_struct(['stellar_occ'],i5,iuvs_record_temp4)
-  endif else  iuvs_record_temp5 = create_struct(iuvs_record_temp4)
-
-  
-  ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
-  if instrument_array[12] eq 1 then begin     
-    i6 = create_struct(                          $
-          NAME                    ='c_l_high',   $
-          iuvs_record_common      ,              $
-          'half_int_distance_id'  ,strarr(6),    $ 
-          'half_int_distance'     ,fltarr(6),    $ 
-          'half_int_distance_err' ,fltarr(6),    $
-          'density_id'            ,strarr(4),    $
-          'density'               ,fltarr(4,77), $ 
-          'density_err'           ,fltarr(4,77), $ 
-          'radiance_id'           ,strarr(6),    $ 
-          'radiance'              ,fltarr(6,77), $ 
-          'radiance_err'          ,fltarr(6,77), $
-          'alt'                   ,fltarr(77))
-    
-              iuvs_record_temp6 = create_struct(['corona_lo_high'],i6,iuvs_record_temp5)
-  endif else  iuvs_record_temp6 = create_struct(iuvs_record_temp5)
-
-  
-  ;INCLUDE IUVS LO RES LIMB CORONA DATA STRUCTURE
-  if instrument_array[13] eq 1 then begin      
-    i7 = create_struct(                       $
-          NAME               ='c_l_limb',     $
-          iuvs_record_common ,                $
-          'scale_height_id'  ,strarr(7),      $ 
-          'scale_height'     ,fltarr(7),      $ 
-          'scale_height_err' ,fltarr(7),      $ 
-          'density_id'       ,strarr(7),      $ 
-          'density'          ,fltarr(7,31),   $
-          'density_err'      ,fltarr(7,31),   $ 
-          'radiance_id'      ,strarr(11),     $ 
-          'radiance'         ,fltarr(11,31),  $ 
-          'radiance_err'     ,fltarr(11,31),  $ 
-          'temperature_id'   ,'',             $
-          'temperature'      ,0.0,            $
-          'temperature_err'  ,0.0,            $
-          'alt'              ,fltarr(31))
-          
-              iuvs_record_temp7 = create_struct(['corona_lo_limb'],i7,iuvs_record_temp6)
+      NAME                     ='c_e_limb',   $
+      iuvs_record_common ,                    $
+      'half_int_distance_id'   ,strarr(3),    $
+      'half_int_distance'      ,fltarr(3),    $
+      'half_int_distance_err'  ,fltarr(3),    $
+      'radiance_id'            ,strarr(3),    $
+      'radiance'               ,fltarr(3,31), $
+      'radiance_err'           ,fltarr(3,31), $
+      'alt'                    ,fltarr(31))
+      
+    iuvs_record_temp7 = create_struct(['corona_e_limb'],i4,iuvs_record_temp6)
   endif else  iuvs_record_temp7 = create_struct(iuvs_record_temp6)
-
   
-  ;INCLUDE IUVS LO RES DISK CORONA DATA STRUCTURE
-  if instrument_array[14] eq 1 then begin     
-    i8 = create_struct(                    $
-          NAME               ='c_l_disk',  $
-          iuvs_record_common ,             $
-          'ozone_depth'      ,0.0,         $
-          'ozone_depth_err'  ,0.0,         $
-          'auroral_index'    ,0.0,         $
-          'dust_depth'       ,0.0,         $
-          'dust_depth_err'   ,0.0,         $
-          'radiance_id'      ,strarr(4),   $ 
-          'radiance'         ,fltarr(4),   $ 
-          'radiance_err'     ,fltarr(4))
-          
-              iuvs_record_temp8 = create_struct(['corona_lo_disk'],i8,iuvs_record_temp7)
+  
+  ;INCLUDE IUVS ECHELLE DISK CORONA DATA STRUCTURE
+  if instrument_array[15] eq 1 then begin
+    i9 = create_struct(                 $
+      NAME            ='c_e_disk',  $
+      iuvs_record_common ,          $
+      'radiance_id'   ,strarr(3),   $
+      'radiance'      ,fltarr(3),   $
+      'radiance_err'  ,fltarr(3))
+      
+    iuvs_record_temp8 = create_struct(['corona_e_disk'],i9,iuvs_record_temp7)
   endif else  iuvs_record_temp8 = create_struct(iuvs_record_temp7)
 
   
-  ;INCLUDE IUVS ECHELLE DISK CORONA DATA STRUCTURE
-  if instrument_array[15] eq 1 then begin      
-    i9 = create_struct(                 $
-          NAME            ='c_e_disk',  $
-          iuvs_record_common ,          $
-          'radiance_id'   ,strarr(3),   $ 
-          'radiance'      ,fltarr(3),   $ 
-          'radiance_err'  ,fltarr(3))
-    
-              iuvs_record_temp9 = create_struct(['corona_e_disk'],i9,iuvs_record_temp8)
+  ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
+  if instrument_array[7] eq 1 then begin
+    i1 = create_struct(                          $
+      NAME                ='periapse',       $
+      iuvs_record_common,                    $
+      'scale_height_id'   ,strarr(7),        $
+      'scale_height'      ,fltarr(7),        $
+      'scale_height_err'  ,fltarr(7),        $
+      'density_id'        ,strarr(7),        $
+      'density'           ,fltarr(7,31),     $
+      'density_err'       ,fltarr(7,31),     $
+      'radiance_id'       ,strarr(11),       $
+      'radiance'          ,fltarr(11,31),    $
+      'radiance_err'      ,fltarr(11,31),    $
+      'temperature_id'    ,'',               $
+      'temperature'       ,0.0,              $
+      'temperature_err'   ,0.0,              $
+      'alt'               ,fltarr(31))
+      
+    iuvs_record_temp9 = create_struct(['periapse'],[i1,i1,i1],iuvs_record_temp8)
   endif else  iuvs_record_temp9 = create_struct(iuvs_record_temp8)
-  
+
   
   ;COPY TO OUTPUT STRUCTURE
   iuvs_record = 0
