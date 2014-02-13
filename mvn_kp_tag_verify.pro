@@ -99,7 +99,7 @@ pro  MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, $
   endif
   
   if size(parameter,/type) eq 7 then begin          ;LOOP TO CHECK STRING PARAMETER EXISTENCE
-    tag_elements = strupcase(strsplit(parameter,'.',/extract))
+    tag_elements = strupcase(strtrim(strsplit(parameter,'.',/extract),2))
     if n_elements(tag_elements) eq 2 then begin
       level0_index = where(base_tags eq tag_elements[0])
       level0_temp = level0_index
@@ -131,5 +131,4 @@ pro  MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, $
     tag_names[0] = base_tags[level0_index]
     tag_names[1] = first_level_tags[parameter_index]
   endif
-
 end
