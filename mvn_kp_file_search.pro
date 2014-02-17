@@ -14,33 +14,46 @@
 ;       A returned array holding the names of the relevant IUVS KP data files
 ;    data_dir: in, required, type="string"
 ;       The directory in which KP data files are held.
-;    binary: in, required, type=boolean
-;       A flag that creates filesnames with the binary extension instead of ascii default.
+;
+;    FXIME - HEADER NEEDS TO BE UPDATED
 ;-
 
 
-function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, binary=binary
-
   ;; Get list of Insitu Files
+function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spec, savefiles=savefiles, textfiles=textfiles
+
+  ;; File pattern details
+  insitu_pattern     = filename_spec.pattern
+  insitu_year_index  = filename_spec.year_index
+  insitu_month_index = filename_spec.month_index
+  insitu_day_index   = filename_spec.day_index
+  
+
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR    - FIXME Make below more consistent
-  insitu_pattern = 'mvn_KP_l2_pf*'
-  if keyword_set(binary) then insitu_pattern += '.sav' else file_pattern += '.txt'
+  ;; Default is CDF format
+  if keyword_set(savefiles) then begin 
+    insitu_pattern += '.sav' 
+  endif else if keyword_set(textfiles) then begin
+    insitu_pattern += '.txt' 
+  endif else begin
+    insitu_pattern += '.cdf' 
+  endelse
   
   local_insitu = file_search(insitu_dir, insitu_pattern, count=count)
   if (count gt 0) then begin
     local_insitu_base  = file_basename(local_insitu)
-    local_times_insitu = strmid(local_insitu_base, 20, 8, /reverse_offset) ;;FIXME - cleaner way to get this part of the string
-    local_times_insitu_year = fix(strmid(local_times_insitu, 0, 4))
-    local_times_insitu_month = fix(strmid(local_times_insitu, 4, 2))
-    local_times_insitu_day = fix(strmid(local_times_insitu, 6, 2))
+    ;local_times_insitu = strmid(local_insitu_base, 20, 8, /reverse_offset) ;;FIXME - cleaner way to get this part of the string
     
+    local_times_insitu_year =  fix(strmid(local_insitu_base, insitu_year_index, 4))
+    local_times_insitu_month = fix(strmid(local_insitu_base, insitu_month_index, 2))
+    local_times_insitu_day =   fix(strmid(local_insitu_base, insitu_day_index, 2))
+     
     local_times_insitu_jul = julday(local_times_insitu_month, local_times_insitu_day, local_times_insitu_year)
-    
-    
+
     
     ;; Prune List to only be within time range (use floor of begin day, ceiling of end day
     ;; so as not to chop off half days we want)
-    ind = where((local_times_insitu_jul ge floor(begin_jul)) and (local_times_insitu_jul le ceil(end_jul)))
+    ind = where((local_times_insitu_jul ge (floor(begin_jul-.5)+.5)) and (local_times_insitu_jul le (ceil(end_jul-.5)+.5))) ;; FIXME ensure this floor/ceil math is good
     
     if(ind[0] lt 0) then begin
       print, "No Local Files Found"
@@ -52,34 +65,52 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, binary=binar
   endif else begin
     local_insitu = 'None'
   endelse
-  
+
   return, local_insitu
   
 end
 
-function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, binary=binary
   ;; Get list of Iuvs files
-  ;SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
-  iuvs_pattern = 'mvn_rs_kp_*T*'
-  if keyword_set(binary) then iuvs_pattern += '.sav' else iuvs_pattern += '.txt'
-  
+function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, savefiles=savefiles, textfiles=textfiles
+
+  ;; File pattern details 
+  iuvs_pattern     = filename_spec.pattern
+  iuvs_year_index  = filename_spec.year_index
+  iuvs_month_index = filename_spec.month_index
+  iuvs_day_index   = filename_spec.day_index
+  iuvs_hour_index  = filename_spec.hour_index
+  iuvs_min_index   = filename_spec.min_index
+  iuvs_sec_index   = filename_spec.sec_index
+
+
+
+  ;; SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
+  ;; Default is CDF format
+  if keyword_set(savefiles) then begin 
+    iuvs_pattern += '.sav' 
+  endif else if keyword_set(textfiles) then begin
+    iuvs_pattern += '.txt' 
+  endif else begin
+    iuvs_pattern += '.cdf' 
+  endelse
+ 
+ 
   local_iuvs = file_search(iuvs_dir, iuvs_pattern, count=count)
   if (count gt 0) then begin
     local_iuvs_base = file_basename(local_iuvs)
-    times_iuvs      = strmid(local_iuvs_base, 10, 15)
     
-    tiuvs_year  = fix(strmid(times_iuvs, 0,  4))
-    tiuvs_month = fix(strmid(times_iuvs, 4,  2))
-    tiuvs_day   = fix(strmid(times_iuvs, 6,  2))
-    tiuvs_hour  = fix(strmid(times_iuvs, 9,  2))
-    tiuvs_min   = fix(strmid(times_iuvs, 11, 2))
-    tiuvs_sec   = fix(strmid(times_iuvs, 13, 2))
+    tiuvs_year  = fix(strmid(local_iuvs_base, iuvs_year_index,  4))
+    tiuvs_month = fix(strmid(local_iuvs_base, iuvs_month_index,  2))
+    tiuvs_day   = fix(strmid(local_iuvs_base, iuvs_day_index,  2))
+    tiuvs_hour  = fix(strmid(local_iuvs_base, iuvs_hour_index,  2))
+    tiuvs_min   = fix(strmid(local_iuvs_base, iuvs_min_index, 2))
+    tiuvs_sec   = fix(strmid(local_iuvs_base, iuvs_sec_index, 2))
     
     times_iuvs_jul = julday(tiuvs_month,tiuvs_day,tiuvs_year,tiuvs_hour,tiuvs_min,tiuvs_sec)
     
     ;; Prune list to only be within time range (use ceiling of end day so as not to chop off
     ;; data we may want)
-    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le ceil(end_jul)))
+    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le (ceil(end_jul-.5)+.5))) ;; FIXME ensure this floor/ceil math is good
     if (ind[0] lt 0) then begin
       print, "no Files found"
       return, 'None'
@@ -100,7 +131,7 @@ end
 ;;
 function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
   ;; Copy input
-  files = in_files
+  files = in_files  
   
   ;; If only one file, it is the latest version
   if n_elements(files) le 1 then return, files
@@ -137,9 +168,14 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
 end
 
 
-function MVN_KP_LATEST_VERSIONS, in_files, vpos, rpos, basetrim
+function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
   ; Prune out files that have multiple coppies, but just different versions/revisoinos
   ; leave the highest version, then revision
+  
+  vpos=filename_spec.vpos
+  rpos=filename_spec.rpos   ;: FIXME Don't need this part, replace variables below
+  basetrim=filename_spec.basetrim
+  
   
   basenames=file_basename(in_files)
   base_trim=strmid(basenames,0,basetrim)
@@ -167,7 +203,7 @@ end
 
 
 pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs_filenames, iuvs_dir, $
-  binary=binary, insitu_only=insitu_only, download_new=download_new
+  savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
   
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -177,6 +213,11 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   if not keyword_set(debug) then begin
     on_error, 1
   endif
+  
+
+  ;; Globals Describing the filenames and where dates & versions are located
+  insitu_filename_spec = mvn_kp_config(/insitu_file_spec)
+  iuvs_filename_spec   = mvn_kp_config(/iuvs_file_spec)
   
   
   ;EXTRACT THE VARIOUS TIME/DATE COMPONENTS
@@ -194,43 +235,43 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   end_minute   = fix(strmid(end_time,14,2))
   end_second   = fix(strmid(end_time,17,2))
 
-;; Variables containing just the date, not the time
-begin_date = strmid(begin_time,0,10)
-end_date   = strmid(end_time, 0,10)
+  ;; Variables containing just the date, not the time
+  begin_date = strmid(begin_time,0,10)
+  end_date   = strmid(end_time, 0,10)
 
 
-;CALCULATE THE JULIAN DATES FOR BEGIN AND END
+  ;CALCULATE THE JULIAN DATES FOR BEGIN AND END
 
-begin_jul = julday(begin_month,begin_day,begin_year, begin_hour)
-end_jul = julday(end_month, end_day, end_year, end_hour)
+  begin_jul = julday(begin_month,begin_day,begin_year, begin_hour)
+  end_jul = julday(end_month, end_day, end_year, end_hour)
 
 
 
-;; If user wants the SDC server to be queried for udpated files or to fill in files
-;; needed to complete the time range
-if keyword_set(download_new) then begin
+  ;; If user wants the SDC server to be queried for udpated files or to fill in files
+  ;; needed to complete the time range
+  if keyword_set(download_new) then begin
   
-  ;; Check for insitu files
-  mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, status=status, /new_files
+     ;; Check for insitu files
+     mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, status=status, /new_files
   
-  ;; Check for IUVS files
-  if not keyword_set(insitu_only) then begin
-    mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, status=status, /new_files
+    ;; Check for IUVS files
+    if not keyword_set(insitu_only) then begin
+      mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, status=status, /new_files
+      endif
+  
   endif
-  
-endif
 
 
+  ;; Get list of files now (some may have been downloaded)
+  ;; And trim list to only have highest versions/revisions of each file
+  insitu_filenames = MVN_KP_LOCAL_INSITU_FILES(begin_jul, end_jul, insitu_dir, insitu_filename_spec, $
+                                               savefiles=savefiles, textfiles=textfiles)
+  insitu_filenames = MVN_KP_LATEST_VERSIONS(insitu_filenames, insitu_filename_spec) 
 
-;; Get list of files now (some may have been downloaded)
-;; And trim list to only have highest versions/revisions of each file
-insitu_filenames = MVN_KP_LOCAL_INSITU_FILES(begin_jul, end_jul, insitu_dir, binary=binary)
-insitu_filenames = MVN_KP_LATEST_VERSIONS(insitu_filenames, 5, 6, 21)
-
-if not keyword_set(insitu_only) then begin
-  iuvs_filenames = MVN_KP_LOCAL_IUVS_FILES(begin_jul, end_jul, iuvs_dir, binary=binary)
-  iuvs_filenames = MVN_KP_LATEST_VERSIONS(iuvs_filenames, 4, 5, 27)
-endif
-
+  if not keyword_set(insitu_only) then begin
+    iuvs_filenames = MVN_KP_LOCAL_IUVS_FILES(begin_jul, end_jul, iuvs_dir, iuvs_filename_spec, $ 
+                                             savefiles=savefiles, textfiles=textfiles)
+    iuvs_filenames = MVN_KP_LATEST_VERSIONS(iuvs_filenames, iuvs_filename_spec)
+  endif
 
 end

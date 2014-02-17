@@ -1,0 +1,342 @@
+;; FIXME - Needs Header
+;;
+;; Testing CDF Generation of insitu
+;;
+
+pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, instrument_array=instrument_array
+
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+  iuvs = []  ;; FIXME WONT WORK ON IDL 7
+
+  ;; Global "constants" used for indicies into CDF input array  
+  N_common = 23
+  orbit_number_i = 10
+  
+  i_c_e_periapse_start = 25
+  i_c_e_disk_start     = 38
+  i_c_e_limb_start     = 41
+  i_c_e_high_start     = 48
+  i_c_e_apoapse_start  = 55
+  
+  i_c_l_periapse_start = 25
+  i_c_l_disk_start     = 38
+  i_c_l_limb_start     = 46
+  i_c_l_high_start     = 59
+  i_c_l_apoapse_start  = 69
+  
+
+
+  ;;FOR EAC FILE INPUT, READ INTO MEMORY
+  foreach file , infiles do begin
+  
+    ;; Release cdfi_in array
+    cdfi_in = 0
+    
+    ;; Load CDF Master file (empty) that we will fill in
+    cdfi_in = cdf_load_vars(file, VARFORMAT='*')
+    
+    ;; Initialize IUVS structure for data to be read into
+    if not keyword_set (instrument_array) then instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array
+
+    
+    ;; Determine which mode we are in (echelle or lores) based on the number of variables
+    num_vars = cdfi_in.NV
+    if (num_vars eq 67) then begin
+      in_mode = 'echelle'
+    endif else if (num_vars eq 81) then begin
+      in_mode = 'lores'
+    endif else begin
+      message, "Problem reading in IUVS CDF File. Unexepcted number of variables in input CDF"
+    endelse
+    
+    
+
+    if in_mode eq 'echelle' then begin
+    
+      ;; Fill in common values
+      for i=0, N_common-1 DO begin
+        
+        ;; 3 PERIAPSE entries per observation
+        if instruments.periapse eq 1 then begin
+          if ((size(iuvs_record.periapse[0].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0]
+          endif else begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*]
+          endelse
+          
+          if ((size(iuvs_record.periapse[1].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1]
+          endif else begin
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*]
+          endelse
+          
+          if ((size(iuvs_record.periapse[2].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2]
+          endif else begin
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*]
+          endelse
+        endif
+
+        
+        ;; CORONA ECHELLE DISK, LIMB, HIGH 
+        if instruments.c_e_disk eq 1 then begin
+          if ((size(iuvs_record.CORONA_E_DISK.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_E_DISK.(i) = (*cdfi_in.vars[i+2].dataptr)[3]
+          endif else begin
+            iuvs_record.CORONA_E_DISK.(i) = (*cdfi_in.vars[i+2].dataptr)[3,*]
+          endelse
+        endif
+        
+        if instruments.c_e_limb eq 1 then begin
+          if ((size(iuvs_record.CORONA_E_LIMB.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_E_LIMB.(i) = (*cdfi_in.vars[i+2].dataptr)[4]
+          endif else begin
+            iuvs_record.CORONA_E_LIMB.(i) = (*cdfi_in.vars[i+2].dataptr)[4,*]
+          endelse
+        endif
+          
+        if instruments.c_e_high eq 1 then begin  
+          if ((size(iuvs_record.CORONA_E_HIGH.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_E_HIGH.(i) = (*cdfi_in.vars[i+2].dataptr)[5]
+          endif else begin
+            iuvs_record.CORONA_E_HIGH.(i) = (*cdfi_in.vars[i+2].dataptr)[5,*]
+          endelse
+        endif
+        
+        
+        ;; APOAPSE 
+        if instruments.apoapse eq 1 then begin
+          if ((size(iuvs_record.APOAPSE.(i)))[0] eq 0) then begin
+            iuvs_record.APOAPSE.(i) = (*cdfi_in.vars[i+2].dataptr)[6]
+          endif else begin
+            iuvs_record.APOAPSE.(i) = (*cdfi_in.vars[i+2].dataptr)[6,*]
+          endelse
+        endif
+          
+      endfor
+      
+      ;; Start of non common data
+      cdfi_index = i_c_e_periapse_start
+      
+      ;; PERIAPSE SPECIFIC DATA
+      if instruments.periapse eq 1 then begin
+        NT=n_tags(iuvs_record.periapse[0])
+        for i=N_common, NT-1 DO begin
+          pdim = (size(iuvs_record.periapse[0].(i)))[0]
+          if (pdim eq 0) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2]
+          endif else if (pdim eq 1) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*]
+          endif else if (pdim eq 2) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*,*]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*,*]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*,*]
+          endif else begin
+            messsage, "Problem reading in IUVS cdf data. Unexepected data dimensions for periapse."
+          endelse
+  
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA E DISK SPECIFIC DATA
+      if instruments.c_e_disk eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_E_DISK)
+        cdfi_index = i_c_e_disk_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_E_DISK.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA E LIMB SPECIFIC DATA
+      if instruments.c_e_limb eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_E_LIMB)
+        cdfi_index = i_c_e_limb_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_E_LIMB.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA E HIGH SPECIFIC DATA
+      if instruments.c_e_high eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_E_HIGH)
+        cdfi_index = i_c_e_high_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_E_HIGH.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; APOAPSE SPECIFIC DATA
+      if instruments.apoapse eq 1 then begin
+        NT=n_tags(iuvs_record.APOAPSE)
+        cdfi_index = i_c_e_apoapse_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.APOAPSE.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+        
+    endif else if in_mode eq 'lores' then begin
+    
+      ;; Fill in common values
+      for i=0, N_common-1 DO begin
+      
+        ;; 3 PERIAPSE entries per observation
+        if instruments.periapse eq 1 then begin
+          if ((size(iuvs_record.periapse[0].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0]
+          endif else begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*]
+          endelse
+          
+          if ((size(iuvs_record.periapse[1].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1]
+          endif else begin
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*]
+          endelse
+          
+          if ((size(iuvs_record.periapse[2].(i)))[0] eq 0) then begin
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2]
+          endif else begin
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*]
+          endelse
+        endif
+        
+        
+        ;; CORONA LORES DISK, LIMB, HIGH
+        if instruments.c_l_disk eq 1 then begin
+          if ((size(iuvs_record.CORONA_LO_DISK.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_LO_DISK.(i) = (*cdfi_in.vars[i+2].dataptr)[3]
+          endif else begin
+            iuvs_record.CORONA_LO_DISK.(i) = (*cdfi_in.vars[i+2].dataptr)[3,*]
+          endelse
+        endif
+        
+        if instruments.c_l_limb eq 1 then begin
+          if ((size(iuvs_record.CORONA_LO_LIMB.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_LO_LIMB.(i) = (*cdfi_in.vars[i+2].dataptr)[4]
+          endif else begin
+            iuvs_record.CORONA_LO_LIMB.(i) = (*cdfi_in.vars[i+2].dataptr)[4,*]
+          endelse
+        endif
+        
+        if instruments.c_l_high eq 1 then begin
+          if ((size(iuvs_record.CORONA_LO_HIGH.(i)))[0] eq 0) then begin
+            iuvs_record.CORONA_LO_HIGH.(i) = (*cdfi_in.vars[i+2].dataptr)[5]
+          endif else begin
+            iuvs_record.CORONA_LO_HIGH.(i) = (*cdfi_in.vars[i+2].dataptr)[5,*]
+          endelse
+        endif
+        
+        
+        ;; APOAPSE
+        if instruments.apoapse eq 1 then begin
+          if ((size(iuvs_record.APOAPSE.(i)))[0] eq 0) then begin
+            iuvs_record.APOAPSE.(i) = (*cdfi_in.vars[i+2].dataptr)[6]
+          endif else begin
+            iuvs_record.APOAPSE.(i) = (*cdfi_in.vars[i+2].dataptr)[6,*]
+          endelse
+        endif
+        
+      endfor
+      
+      ;; Start of non common data
+      cdfi_index = i_c_l_periapse_start
+      
+      ;; PERIAPSE SPECIFIC DATA
+      if instruments.periapse eq 1 then begin
+        NT=n_tags(iuvs_record.periapse[0])
+        for i=N_common, NT-1 DO begin
+          pdim = (size(iuvs_record.periapse[0].(i)))[0]
+          if (pdim eq 0) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2]
+          endif else if (pdim eq 1) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*]
+          endif else if (pdim eq 2) then begin
+            iuvs_record.periapse[0].(i) = (*cdfi_in.vars[i+2].dataptr)[0,*,*]
+            iuvs_record.periapse[1].(i) = (*cdfi_in.vars[i+2].dataptr)[1,*,*]
+            iuvs_record.periapse[2].(i) = (*cdfi_in.vars[i+2].dataptr)[2,*,*]
+          endif else begin
+            messsage, "Problem reading in IUVS cdf data. Unexepected data dimensions for periapse."
+          endelse
+          
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA LORES DISK SPECIFIC DATA
+      if instruments.c_l_disk eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_LO_DISK)
+        cdfi_index = i_c_l_disk_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_LO_DISK.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA LORES LIMB SPECIFIC DATA
+      if instruments.c_l_limb eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_LO_LIMB)
+        cdfi_index = i_c_l_limb_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_LO_LIMB.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; CORONA LORES HIGH SPECIFIC DATA
+      if instruments.c_l_high eq 1 then begin
+        NT=n_tags(iuvs_record.CORONA_LO_HIGH)
+        cdfi_index = i_c_l_high_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.CORONA_LO_HIGH.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif
+      
+      ;; APOAPSE SPECIFIC DATA
+      if instruments.apoapse eq 1 then begin
+        NT=n_tags(iuvs_record.APOAPSE)
+        cdfi_index = i_c_l_apoapse_start
+        for i=N_common, NT-1 DO begin
+          iuvs_record.APOAPSE.(i) = *cdfi_in.vars[cdfi_index].dataptr
+          cdfi_index++
+        endfor
+      endif  
+
+   
+    endif
+    
+    
+    ;; Add in orbit number to top layer of structure
+    ;; Pull directly out of CDF (cdfi_in) 
+    iuvs_record.orbit = (*cdfi_in.vars[orbit_number_i].dataptr)[0]
+    
+    ;; Append iuvs_record into iuvs output structure
+    iuvs=[iuvs, iuvs_record]
+    
+  endforeach
+  
+  
+end

@@ -60,8 +60,9 @@
 ;       optional keyword that will return all of the data from the inbound leg of an orbit
 ;    outbound: in, optional, type=boolean
 ;       optional keyword that will return all of the data from the outbound leg of an orbit
-;    binary: in, optional, type=boolean
-;       optional keyword to force the KP data reader to use binary files instead of ASCII text
+;
+;;    Need to update
+;;
 ;    download_new: in, optional, type=boolean
 ;       optional keyword to instruct IDL to query the SDC server to look for any new files to download
 ;       over the input timerange.
@@ -83,6 +84,10 @@
 @mvn_kp_insitu_assign
 @mvn_kp_iuvs_timecheck
 @mvn_kp_iuvs_binary_assign
+@mvn_kp_read_iuvs_file
+@mvn_kp_iuvs_cdf_read
+@mvn_kp_insitu_cdf_read
+
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCES=PREFERENCES,$
                    lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $
@@ -91,8 +96,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                    iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
                    iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
                    iuvs_stellarocc=iuvs_stellarocc, insitu_all=insitu_all, $
-                   inbound=inbound, outbound=outbound, binary=binary, debug=debug, insitu_only=insitu_only, $
-                   update_prefs=update_prefs, download_new=download_new
+                   inbound=inbound, outbound=outbound, debug=debug, insitu_only=insitu_only, $
+                   update_prefs=update_prefs, download_new=download_new, savefiles=savefiles, textfiles=textfiles
 
   
   overall_start_time = systime(1)
@@ -124,9 +129,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
 
-  ;BINARY FLAG  
-  if keyword_set(binary) eq 0 then binary_flag = 0 else binary_flag = 1
-
   ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT 
   if keyword_set(duration) eq 0 then begin
     if size(time,/type) eq 7 then duration = 86400
@@ -140,33 +142,49 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu_all) then begin
    
     instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    
+
+    instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
+                                'swea',     0, 'mag',      0, 'sep',      0, $
+                                'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
+                                'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
+                                'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, 'stellarocc', 0)                            
    
+
+    
     if keyword_set(lpw) then begin
       instrument_array[0] = 1
+      instruments.lpw = 1
       print,'Returning All LPW Instrument KP Data.'
     endif
     if keyword_set(static) then begin
       instrument_array[1] = 1
+      instruments.static = 1
       print,'Returning All STATIC Instrument KP Data.'
     endif
     if keyword_set(swia) then begin
       instrument_array[2] = 1
+      instruments.swia = 1
       print,'Returning All SWIA Instrument KP Data.'
     endif
     if keyword_set(swea) then begin
       instrument_array[3] = 1
+      instruments.swea = 1
       print,'Returning All SWEA Instrument KP Data.'
     endif
     if keyword_set(mag) then begin
       instrument_array[4] = 1
+      instruments.mag = 1
       print,'Returning All MAG Instrument KP Data.'
     endif
     if keyword_set(sep) then begin
       instrument_array[5] = 1
+      instruments.sep = 1
       print,'Returning All SEP Instrument KP Data.'
     endif
     if keyword_set(ngims) then begin
       instrument_array[6] = 1
+      instruments.ngims = 1
       print,'Returning All NGIMS Instrument KP Data.'
     endif
     if keyword_set(insitu_all) then begin
@@ -177,6 +195,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       instrument_array[4] = 1
       instrument_array[5] = 1
       instrument_array[6] = 1
+      instruments.lpw    = 1
+      instruments.static = 1
+      instruments.swia   = 1
+      instruments.swea   = 1
+      instruments.mag    = 1
+      instruments.sep    = 1
+      instruments.ngims  = 1
       print, 'Returning all INSITU Instrument KP Data.'
     endif
     if keyword_set(iuvs_all) then begin
@@ -189,48 +214,73 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       instrument_array[13] = 1
       instrument_array[14] = 1
       instrument_array[15] = 1
+      instruments.periapse   = 1
+      instruments.c_e_disk   = 1
+      instruments.c_e_limb   = 1
+      instruments.c_e_high   = 1
+      instruments.c_l_disk   = 1
+      instruments.c_l_limb   = 1
+      instruments.c_l_high   = 1
+      instruments.apoapse    = 1
+      instruments.stellarocc = 1
       print,'Returning All IUVS Instrument KP Data.'
     endif
     if keyword_set(iuvs_periapse) then begin
       instrument_array[7] = 1
+      instruments.periapse = 1
       print,'Returning All IUVS Instrument Periapse KP Data.'
     endif
     if keyword_set(iuvs_apoapse) then begin
       instrument_array[8] = 1
+      instruments.apoapse = 1
       print,'Returning All IUVS Instrument Apoapse KP Data.'
     endif
     if keyword_set(iuvs_coronaEchellehigh) then begin
       instrument_array[9] = 1
+      instruments.c_e_high = 1
       print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
     endif
     if keyword_set(iuvs_coronaEchellelimb) then begin
       instrument_array[10] = 1
+      instruments.c_e_limb = 1
       print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
     endif
     if keyword_set(iuvs_stellarocc) then begin
       instrument_array[11] = 1
+      instruments.stellarocc = 1
       print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
     endif
     if keyword_set(iuvs_coronaLoreshigh) then begin
       instrument_array[12] = 1
+      instruments.c_l_high = 1
       print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
     endif
     if keyword_set(iuvs_coronaLoreslimb) then begin
       instrument_array[13] = 1
+      instruments.c_l_limb = 1
       print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
     endif
     if keyword_set(iuvs_coronaLoresdisk) then begin
       instrument_array[14] = 1
+      instruments.c_l_disk = 1
       print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
     endif
     if keyword_set(iuvs_coronaechelledisk) then begin
       instrument_array[15] = 1
+      instruments.c_e_disk = 1
       print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
     endif
   endif else begin
     ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE FOR ALL INSTRUMENT DATA
-    instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]    
+    instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 
+    
+    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
+                                'swea',     1, 'mag',      1, 'sep',      1, $
+                                'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
+                                'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
+                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)   
   endelse
+  
   
   ;SET INBOUND/OUTBOUND KEYWORDS IF NEEDED
   io_flag = intarr(2)
@@ -305,7 +355,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
 
   ;; FIXME variable names
   MVN_KP_FILE_SEARCH, begin_time, end_time, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
-     kp_iuvs_data_directory, binary=binary_flag, insitu_only=insitu_only, download_new=download_new
+     kp_iuvs_data_directory, savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
 
   
   total_KP_file_count = n_elements(target_KP_filenames) ; FIXME shouldn't need this here
@@ -332,7 +382,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ; high_count = 0
   ; low_count = 0
   if target_kp_filenames[0] ne 'None' then begin
-    if binary_flag eq 0 then begin
+    if keyword_set(textfiles) then begin
       index=0L
       within_time_bounds = 0
       for file=0,total_KP_file_count[0]-1 do begin
@@ -379,7 +429,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         
         free_lun,lun
       endfor      ;file loop, open/read each KP file
-    endif else begin
+      
+      start_index=0
+      stop_index=index-1
+      
+    endif else if keyword_set(savefiles) then begin
       index=0L
       within_time_bounds=0
       for file=0,total_KP_file_count[0]-1 do begin
@@ -401,12 +455,56 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
           endif
         endfor
       endfor
+  
+      start_index=0
+      stop_index=index-1
+      
+    endif else begin
+      
+      index=0L
+      ;; Default behavior of reading in CDF files. 
+      for file=0, total_kp_file_count[0]-1 do begin
+        ;UPDATE THE READ STATUS BAR
+        MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
+        
+        filename = kp_insitu_data_directory+target_kp_filenames[file]
+        MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments, instrument_array=instrument_array ;; FIXME
+        kp_data_temp[index] = insitu_record
+        index+= n_elements(insitu_record)
+        
+      endfor
+      
+      ;; ----------FIXME Try to make more efficient. Maybe only check first and last day.
+      ;; ------------more testing of edge cases
+      ;
+      ;; Strip out times not in range
+      start_index=-1L
+      stop_index=index-1L
+      
+      for i=0, index-1 do begin
+        within_time_bounds = MVN_KP_TIME_BOUNDS(kp_data_temp[i].time_string, begin_time, end_time)
+        if within_time_bounds then begin
+          start_index=i
+          i++
+          break
+        endif
+      endfor
+
+      for j=i, index-1 do begin
+        within_time_bounds = MVN_KP_TIME_BOUNDS(kp_data_temp[j].time_string, begin_time, end_time)
+        if within_time_bounds ne 1 then begin
+          stop_index=j-1
+          break
+        endif
+      endfor
+
+      
     endelse
     
     
     ;OUTPUT INSITU DATA STRUCTURE
-    insitu_output = kp_data_temp[0:index-1]
-    print,'A total of ',strtrim(string(index-1),2),' INSITU KP data records were found that met the search criteria.'
+    insitu_output = kp_data_temp[start_index:stop_index]
+    print,'A total of ',strtrim(string(stop_index-start_index),2),' INSITU KP data records were found that met the search criteria.'
     
   endif else begin
     printf,-2, "Warning: No Insitu files found for input timerange."
@@ -415,120 +513,61 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Main read loop: IUVS  data   ------------------------------- ;;
  
-
+  
   ;IF ANY IUVS DATA IS REQUESTED & NOT IN INSITU ONLY MODE
   if not keyword_set (insitu_only) and ((instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $
     (instrument_array[11] eq 1) or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1)) then begin
     iuvs_index=0
     if iuvs_filenames[0] ne 'None' then begin
-      for file=0,n_elements(iuvs_filenames)-1 do begin
-        ;INITIALIZE IUVS_RECORD TO CONTAIN DEFAULT VALUES
-        MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array
+    
+      if keyword_set(savefiles) then begin
+        for file=0,n_elements(iuvs_filenames)-1 do begin
         
-        if keyword_set(binary) then begin                                           ;READ IUVS DATA FROM BINARY FILES
           MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
-          ;SET EACH IUVS OBSERVATION DATA TYPE TO 0 BEFORE READING
-          periapse = 0
-          apoapse = 0
-          corona_echelle_limb = 0
-          corona_echelle_disk = 0
-          corona_echelle_high = 0
-          ;          stellar_occ = 0
-          corona_lores_high = 0
-          corona_lores_limb = 0
-          corona_lores_disk = 0
           
-          restore,kp_iuvs_data_directory+iuvs_filenames[file]
-          if instrument_array[7] eq 1 then begin                                    ;READ AND PARSE PERIAPSE DATA
-            if size(periapse,/type) eq 8 then begin
-              for peri_index = 0,n_elements(periapse.time_start)-1 do begin
-                MVN_KP_IUVS_TIMECHECK, periapse[peri_index].time_start, begin_time, end_time, check
-                if check eq 1 then begin
-                  MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, periapse[peri_index], 'PERIAPSE',index=peri_index
-                endif
-              endfor
-            endif
-          endif
-          
-          if instrument_array[8] eq 1 then begin                                    ;READ AND PARSE APOAPSE DATA
-            if size(apoapse,/type) eq 8 then begin                                    ;ONLY EXECUTE IF THIS DATA TYPE IS AVAILABLE IN THE READ FILE
-              MVN_KP_IUVS_TIMECHECK, apoapse.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, apoapse, 'APOAPSE',index=0
-              endif
-            endif
-          endif
-          
-          if instrument_array[9] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
-            if size(corona_echelle_high,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_echelle_high.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_high, 'CORONA_ECHELLE_HIGH'
-              endif
-            endif
-          endif
-          if instrument_array[10] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE LIMB DATA
-            if size(corona_echelle_limb,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_echelle_limb.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_limb, 'CORONA_ECHELLE_LIMB'
-              endif
-            endif
-          endif
-          ;          if instrument_array[11] eq 1 then begin                                    ;READ AND PARSE STELLAR OCCULTATION DATA
-          ;
-          ;          endif
-          if instrument_array[12] eq 1 then begin                                    ;READ AND PARSE CORONA LORES HIGH ALT DATA
-            if size(corona_lores_high,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_lores_high.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_high, 'CORONA_LORES_HIGH'
-              endif
-            endif
-          endif
-          if instrument_array[13] eq 1 then begin                                    ;READ AND PARSE CORONA LORES LIMB DATA
-            if size(corona_lores_limb,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_lores_limb.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_limb, 'CORONA_LORES_LIMB'
-              endif
-            endif
-          endif
-          if instrument_array[14] eq 1 then begin                                    ;READ AND PARSE CORONA LORES DISK DATA
-            if size(corona_lores_disk,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_lores_disk.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_disk, 'CORONA_LORES_DISK'
-              endif
-            endif
-          endif
-          if instrument_array[15] eq 1 then begin                                    ;READ AND PARSE CORONA Echelle DISK DATA
-            if size(corona_echelle_disk,/type) eq 8 then begin
-              MVN_KP_IUVS_TIMECHECK, corona_echelle_disk.time_start, begin_time, end_time, check
-              if check eq 1 then begin
-                MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_disk, 'CORONA_ECHELLE_DISK'
-              endif
-            endif
-          endif
-          
+          fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
+          MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
+            instrument_array=instrument_array, /savefiles
+            
+          ;; Add single iuvs_record to array of iuvs records
           iuvs_data_temp[iuvs_index] = iuvs_record
-          iuvs_data_temp[iuvs_index].orbit = periapse[0].orbit_number
-          iuvs_index=iuvs_index+1
-        endif else begin                                                             ;READ IUVS DATA FROM ASCII FILES
-          print,'These files do not exist as yet, so go back and use binary'
-        endelse
-      endfor
+          iuvs_index++
+          
+        endfor
+      endif else if keyword_set(textfiles) then begin
+        print, "No TEXT reader for IUVS yet."   ;; FIXME NEED TO DO 
+        iuvs_data_temp = 0
+        iuvs_index = 1
+      
+      endif else begin
+        
+        ;; DEFAULT BEHAVIOR IS TO READ CDF FILES
+        for file=0,n_elements(iuvs_filenames)-1 do begin
+        
+          MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
+          
+          fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
+          MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
+            instrument_array=instrument_array, instruments=instruments
+            
+          ;; Add single iuvs_record to array of iuvs records
+          iuvs_data_temp[iuvs_index] = iuvs_record
+          iuvs_index++
+          
+        endfor
+        
+      endelse
       
       
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED
       iuvs_output = iuvs_data_temp[0:iuvs_index-1]
       print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
-
+      
     endif else begin
       printf, -2, "Warning: No IUVS files found for input timerange"
     endelse
   endif
-  
+
   
   
   ;TIME TO RUN ROUTINE 

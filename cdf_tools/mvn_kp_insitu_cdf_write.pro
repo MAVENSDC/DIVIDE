@@ -1,26 +1,36 @@
 ;; CDF Generation of insitu
+;;
+;
+;; Infiles : Input array of files with paths of insitu save files to convert to cdf files
+;;
+;; Outdir : Output path where created cdf files should go.
+;;
+;; Currently only reating from Save files.
 
-pro mvn_kp_insitu_cdf_write, infiles, outpath
+
+pro mvn_kp_insitu_cdf_write, infiles, outpath, debug=debug
 
   ;PATH TO MASTER CDF FILE, NECESSARY FOR cdf_load_vars TO WORK.
-  masterCDF = '/Users/martin/repos/maventoolkit/cdf_work/full_maven_insitu_master.cdf'
-  
+  cdf_tools_result = routine_info('mvn_kp_insitu_cdf_write',/source)
+  cdf_tools_directory = strsplit(cdf_tools_result.path,'mvn_kp_insitu_cdf_write.pro',/extract,/regex)
+  masterCDF = cdf_tools_directory+'/mvn_kp_insitu_master.cdf'
+
   
   ;LOOP THROUGH ALL INPUT FILES AND CREATE A CDF VERSION OF EACH IN THE OUTPATH
   foreach file , infiles do begin
   
   
-  
     ;; Strip out the date from input filenames.
+    filename_spec=mvn_kp_config(/insitu_file_spec)
     base = file_basename(file, '.sav')
-    year=strmid(base, 13, 4)
-    month=strmid(base, 17, 2)
-    day=strmid(base, 19, 2)
-    
+    year =strmid(base, filename_spec.year_index, 4)
+    month=strmid(base, filename_spec.month_index, 2)
+    day  =strmid(base, filename_spec.day_index, 2)
+
     ;; Read in data files for exactly 1 day range
     startdate = year+'-'+month+'-'+day+'/00:00:00'
     enddate = year+'-'+month+'-'+day+'/23:59:59'
-    mvn_kp_read, [startdate, enddate] , insitu, /binary, /insitu_only
+    mvn_kp_read, [startdate, enddate] , insitu, /savefiles, /insitu_only, debug=debug
     
     
     ;; Top level data
@@ -39,8 +49,8 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath
     lpw        = insitu.lpw
     spacecraft = insitu.spacecraft
     app        = insitu.app
-    
-    
+
+
     ;; Load CDF Master file (empty) that we will fill in
     cdfi_insitu=0
     cdfi_insitu = cdf_load_vars(masterCDF, /ALL)
@@ -140,9 +150,9 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath
       j++
     endfor
     
-    
+
     ; Now actually write output CDF file containing all data.
-    dummy = cdf_save_vars(cdfi_insitu,outpath+base+'.cdf')
+    dummy = cdf_save_vars(cdfi_insitu,outpath+'/'+base+'.cdf')
     
     ;; Release insitu
     insitu=0

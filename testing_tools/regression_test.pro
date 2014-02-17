@@ -45,45 +45,44 @@ cmd_list_prob = []
 if keyword_set(READ) then begin
 
   ;; *** Test reading in only INSITU data ****
-  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /binary, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /binary, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
 
 
   ;; *** Test string time input ***
 
   ;; Test single time input - binary
-  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs, /savefiles"]
 
   ;; Test range time input - binary
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs, /savefiles"]
 
   ;; Test range time input - binary
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs, /savefiles"]
 
   ;; Test single time input - ascii  FIXME not working
   ;; Test range time input - ascii   FIXME not working
 
-  ;; Test specifying just insitu or just iuvs FIXME not working
-  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-02/14:00:00', insitu, iuvs, /binary, /insitu"]
-  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /binary, /iuvs"]
+  ;; Test specifying just iuvs FIXME not working
+  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /savefiles, /iuvs"]
 
   ;; Test specifying certain instruments
-  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/binary,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse"]
   
   ;; Test inbound flag & instruments
-  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/binary,/ngims,/sep,/iuvs_periapse, /inbound"]
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse, /inbound"]
   
   ;; FIXME - This is failing and shouldn't - Bigger question, how to handle time range inputs that are less than 1 day.
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs, /savefiles"]
   
    ;; Test single time input for files that we don't have data for - binary
    ;; This used to Error out, now it handles it and warns user.
-  cmd_list = [cmd_list, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /savefiles"]
 
   ;; *** Test orbit time range input  FIXME not working ***
-  ;mvn_kp_read, 10, insitu, iuvs, /binary
+  ;mvn_kp_read, 10, insitu, iuvs, /savefiles
   
   
   
@@ -102,7 +101,7 @@ endif
 if keyword_set(INSITU_SEARCH) then begin
   
   ;; read in two days worth of data and all instruments to do below testing
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-07/01:00:00'] , insitu, iuvs, /binary"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-07/01:00:00'] , insitu, iuvs, /savefiles"]
 
   
   ;; Test search of insitu with /list option
@@ -184,7 +183,7 @@ endfor
 
 ;; The insitu data structure has two data points at the end that were outside the time range due to single precision instead of double.
 ;; FIXME - Special, check first and last data points are within timerange. This was a bug recently fixed, need special check.
-;;cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/17:00:30'] , insitu, iuvs, /binary"]
+;;cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/17:00:30'] , insitu, iuvs, /savefiles"]
 
 
 ;; ------------------------------------------------------------------------------------ ;;
