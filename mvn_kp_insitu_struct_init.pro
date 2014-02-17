@@ -32,8 +32,7 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
         attitude_geo_y:0.0, attitude_geo_z:0.0, attitude_mso_x:0.0, $
         attitude_mso_y:0.0, attitude_mso_z:0.0, mars_season:0.0, $
         mars_sun_distance:0.0, subsolar_point_GEO_longitude:0.0, subsolar_point_GEO_latitude:0.0, $
-        submars_point_solar_longitude:0.0, submars_point_solar_latitude:0.0, $
-        t11:0.0, t12:0.0, t13:0.0, t21:0.0, t22:0.0, t23:0.0, t31:0.0, t32:0.0, t33:0.0}
+        submars_point_solar_longitude:0.0, submars_point_solar_latitude:0.0}
   S2 = {app, attitude_geo_x:0.0, attitude_geo_y:0.0, attitude_geo_z:0.0, attitude_mso_x:0.0,  $
         attitude_mso_y:0.0,  attitude_mso_z:0.0}                                
                                    
