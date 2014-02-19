@@ -35,8 +35,11 @@ end
 function mvn_kp_get_connection, host=host, port=port, authentication=authentication
   common mvn_kp_connection, netUrl, connection_time
   
+  ;; Get SDC server configuration information
+  sdc_server_spec = mvn_kp_config(/data_retrieval)
+
   ; Define the length of time the login will remain valid, in seconds.
-  expire_duration = 86400 ;24 hours
+  expire_duration = sdc_server_spec.expire_duration
   
   ; Test if login has expired. If so, destroy the IDLnetURL object and replace it with -1
   ; so the login will be triggered below.
@@ -45,9 +48,10 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
     if (duration gt expire_duration) then mvn_kp_logout_connection
   endif
   
-  if n_elements(host) eq 0 then host = '10.247.10.27' ;"sdc-web1"  ;"dmz-shib1"
-  if n_elements(port) eq 0 then port = 25000
-  if n_elements(authentication) eq 0 then authentication = 1 ;basic
+  if n_elements(host) eq 0 then host = sdc_server_spec.host
+  if n_elements(port) eq 0 then port = sdc_server_spec.port
+  if n_elements(authentication) eq 0 then authentication = sdc_server_spec.authentication
+
 
   ;Make sure the singleton instance has been created
   ;TODO: consider error cases, avoid leaving incomplete netURL in common block
@@ -66,7 +70,7 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
       ;read, password, prompt='password: '
       password = mvn_kp_read_password(prompt='password: ') ;don't echo password
       
-      netUrl->SetProperty, URL_SCHEME = 'https'
+      netUrl->SetProperty, URL_SCHEME = sdc_server_spec.url_scheme
       netUrl->SetProperty, SSL_VERIFY_HOST = 0 ;don't worry about certificate
       netUrl->SetProperty, SSL_VERIFY_PEER = 0
       netUrl->SetProperty, AUTHENTICATION = authentication

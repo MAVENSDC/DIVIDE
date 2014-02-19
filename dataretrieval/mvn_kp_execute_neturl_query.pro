@@ -6,12 +6,14 @@
 ;
 function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
 
-  ;TODO: reuse for Put? diff set of error codes to look for
-
-  ;FIXME if try to reference filename, and it is not set, this error catchign can cause infinite loop
-
+  ;FIXME clean up error handling. 
+  
   catch, error_status
   if (error_status ne 0) then begin
+    ;; Check filename & query to ensure not empty
+    if n_elements(query) le 0 then query = ''
+    if n_elements(filename) le 0 then filename = ''
+    
     netURL->GetProperty, RESPONSE_CODE=code
     ;TODO: let callers print messages?
     case code of
@@ -39,7 +41,7 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
   netURL->SetProperty, URL_PATH=url_path
   netURL->SetProperty, URL_QUERY=query
 
-
+  stop
   ; Make the request.
   ; If the 'filename' parameter is set, assume we want to download a file.
   ; Otherwise, get the results as a string array.

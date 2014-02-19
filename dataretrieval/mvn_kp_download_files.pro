@@ -26,17 +26,24 @@ end
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=start_date, end_date=end_date, $
                            insitu=insitu, iuvs=iuvs, $
                            descriptor=descriptor, latest=latest, status=status, new_files=new_files, $
-                           update_prefs=update_prefs, list_files=list_files
+                           update_prefs=update_prefs, list_files=list_files, data_level=data_level
   
   
  
  
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------ Check input options & set global variables----------------------- ;;
+ 
+  ;; Get SDC server specs
+  sdc_server_spec = mvn_kp_config(/data_retrieval)
   
-  url_path = "/api/v1/download/science"  ; Define the URL path for the download web service.
-  max_files = 500                        ; Define the maximum number of files to allow.
-  data_level='kp'                        ; This will only be used for KP data files
+  url_path = sdc_server_spec.url_path_download       ; Define the URL path for the download web service.
+  check_max_files = sdc_server_spec.check_max_files  ; Define if we want to check the number of files before dl
+  max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow.
+  
+  ;; Default behavior is to download KP data
+  if not keyword_set(data_level) then data_level='kp'
+
   
   ; Web API defined with lower case.
   ;if n_elements(data_rate_mode) gt 0 then data_rate_mode = strlowcase(data_rate_mode)
@@ -62,6 +69,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   
   if keyword_set(insitu)             then query_args = [query_args, "instrument=pfp"]
   if keyword_set(iuvs)               then query_args = [query_args, "instrument=rs"]
+  ;;if keyword_set(iuvs)               then query_args = [query_args, "instrument=iuv"]                                 ;; FIXME TESTING
   if n_elements(filename)       gt 0 then query_args = [query_args, "file=" + strjoin(filename, ",")]
   if n_elements(data_level)     gt 0 then query_args = [query_args, "level=" + strjoin(data_level, ",")]
   if n_elements(descriptor)     gt 0 then query_args = [query_args, "descriptor=" + strjoin(descriptor, ",")]
@@ -78,7 +86,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   if n_elements(local_dir) eq 0 then cd, current=local_dir
 
 
-  
+
   
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------------------ Main logic ------------------------------------------ ;;
@@ -86,7 +94,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
 
 
   ; Get the IDLnetURL singleton. May prompt for password.
-  connection = mvn_kp_get_connection(authentication=0) ; FIXME turned off authentication for testing
+  connection = mvn_kp_get_connection(authentication=authentication)
   
   ; If no input filename(s), then query the server to find available files for download
   if not keyword_set (filenames) then begin
@@ -116,7 +124,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
     endif
     if keyword_set(iuvs) then begin
       local_dir = iuvs_data_dir 
-      local_files = file_basename(file_search(iuvs_data_dir  , "mvn*.txt"))
+      local_files = file_basename(file_search(iuvs_data_dir  , "mvn*.txt"))                                ;; Fixme add CDF
     endif
         
     ; Get list of files on server (within a time span if entereted), that are not on local machine
@@ -155,7 +163,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   if KEYWORD_SET(latest) then nfiles = 1
   
   ; Error if too many files. (TODO: - Do we want this?)
-  if (nfiles gt max_files) then begin
+  if (check_max_files) and (nfiles gt max_files) then begin
     printf, -2, "ERROR: The resulting set of files (" + strtrim(nfiles,2) + ") is too large for the query: " + query
     status = -1 ;TODO: better error codes? http://www.exelisvis.com/docs/IDLnetURL.html#objects_network_1009015_1417867
     return
@@ -176,7 +184,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   endwhile
   
   
-  
+  stop                                                                       ;; FIXME - here to stop beforedownloading for testing
   ; Download files one at a time. 
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
