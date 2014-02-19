@@ -311,15 +311,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   if size(time, /type) eq 2 then begin
     if n_elements(time) eq 1 then begin
       if keyword_set(duration) then begin
-        print,'Retrieving KP data for ',strtrim(string(duration),2),' orbits beginning at #',strtrim(string(time),2)
-        begin_orbit = time
-        end_orbit = time + duration
+        print,'Retrieving KP data for ',strtrim(string(duration),2),' orbits beginning at orbit #',strtrim(string(time),2)
+        begin_orbit = time[0]
+        end_orbit = time[0] + duration
         MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
       endif
     endif else begin
       print,'Retrieving KP data between orbits ',strtrim(string(time(0)),2),' and ',strtrim(string(time(1)),2)
-      begin_orbit = time(0)
-      end_orbit = time(1)
+      begin_orbit = time[0]
+      end_orbit   = time[1]
       MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
     endelse
   endif
@@ -474,8 +474,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         
       endfor
       
-      ;; ----------FIXME Try to make more efficient. Maybe only check first and last day.
-      ;; ------------more testing of edge cases
+      ;; ----------FIXME Maybe make more efficent/
+      ;; ------------more testing of edge cases - Re think make sure this is grabbing correct time range
       ;
       ;; Strip out times not in range
       start_index=-1L
@@ -490,14 +490,16 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         endif
       endfor
 
-      for j=i, index-1 do begin
+      ;; Search backwards from end
+      j = index-1
+      while (j ge 0 ) do begin
         within_time_bounds = MVN_KP_TIME_BOUNDS(kp_data_temp[j].time_string, begin_time, end_time)
-        if within_time_bounds ne 1 then begin
-          stop_index=j-1
+        if within_time_bounds eq 1 then begin
+          stop_index=j
           break
         endif
-      endfor
-
+        j--
+      endwhile
       
     endelse
     
