@@ -20,12 +20,12 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
  
 ; Default if no arguments passed
 if n_params() eq 0 then begin
-  SAVEFILES="TRUE"
-  CDF="TRUE"
-  INSITU_SEARCH="TRUE"
-  ASCII="TRUE"
-  COMPAREINSITU="TRUE"
-  COMPAREIUVS="TRUE"
+;  SAVEFILES="TRUE"
+;  CDF="TRUE"
+;  INSITU_SEARCH="TRUE"
+;  ASCII="TRUE"
+;  COMPAREINSITU="TRUE"
+;  COMPAREIUVS="TRUE"
 endif
 
 
@@ -185,27 +185,46 @@ endif
 
 if keyword_set(COMPAREINSITU) then begin
   ;; *** Test reading in only INSITU data ****
-  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+;
+;
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu, /savefiles, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu2, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+;
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu2,  /swia, /mag, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+;    
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+;
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
+;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+;  
+  
+  ;; Compare Ascii to CDF
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /textfiles, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-
-
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu, /savefiles, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu2, /insitu_only"]
+  
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-02/01:00:00', '2015-04-06/17:01:05'] , insitu, /insitu_only, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-02/01:00:00', '2015-04-06/17:01:05'] , insitu2, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu2,  /swia, /mag, /insitu_only"]
+  
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-11/13:01:59' , insitu, /textfiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-11/13:01:59' , insitu2, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-    
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-15/00:00:01'] , insitu, /swia, /mag, /insitu_only, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-15/00:00:01'] , insitu2, /swia, /mag, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-
+  
 endif
 
 if keyword_set(COMPAREIUVS) then begin
