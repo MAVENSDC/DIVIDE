@@ -12,15 +12,20 @@
  @mvn_kp_insitu_search
  
 
-PRO REGRESSION_TEST, READ=READ, INSITU_SEARCH=INSITU_SEARCH
+PRO REGRESSION_TEST, CDF=CDF, SAVEFILES=SAVEFILES, INSITU_SEARCH=INSITU_SEARCH, ASCII=ASCII, $
+                     COMPAREINSITU=COMPAREINSITU, COMPAREIUVS=COMPAREIUVS
 
 ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
  
  
 ; Default if no arguments passed
 if n_params() eq 0 then begin
-  READ="TRUE"
+  SAVEFILES="TRUE"
+  CDF="TRUE"
   INSITU_SEARCH="TRUE"
+  ASCII="TRUE"
+  COMPAREINSITU="TRUE"
+  COMPAREIUVS="TRUE"
 endif
 
 
@@ -42,13 +47,72 @@ cmd_list_prob = []
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ----------------------------- Test MVN_KP_READ ------------------------------------- ;;
 
-if keyword_set(READ) then begin
+
+if keyword_set(CDF) then begin
+  ;; *** Test reading in only INSITU data ****
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu,  /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /insitu_all, /insitu_only"]
+  
+  
+  ;; *** Test string time input ***
+  
+  ;; Test single time input - binary
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs"]
+  
+  ;; Test range time input - binary
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs"]
+  
+  ;; Test range time input - binary
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs"]
+  
+  ;; Test single time input - ascii  FIXME not working
+  ;; Test range time input - ascii   FIXME not working
+  
+  ;; Test specifying just iuvs FIXME not working
+  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /iuvs"]
+  
+  ;; Test specifying certain instruments
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/ngims,/sep,/iuvs_periapse"]
+  
+  ;; Test inbound flag & instruments
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound"]
+  
+  ;; FIXME - This is failing and shouldn't - Bigger question, how to handle time range inputs that are less than 1 day.
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs"]
+  
+  ;; Test single time input for files that we don't have data for - binary
+  ;; This used to Error out, now it handles it and warns user.
+  cmd_list = [cmd_list, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs"]
+  
+  ;; *** Test orbit time range input ***
+  cmd_list = [cmd_list, "mvn_kp_read, 1021 , insitu, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021,1030] , insitu, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, 1035 , insitu, iuvs"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1035,1040] , insitu, iuvs"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1024],insitu,iuvs,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1024,1025],insitu,iuvs,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1022,1060],insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound"]
+
+
+
+  
+  
+  
+  ;; ---- Tests that shoudl fail ----
+  
+endif
+
+
+if keyword_set(SAVEFILES) then begin
 
   ;; *** Test reading in only INSITU data ****
-  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /savefiles, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-10/17:01:05'] , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:00', '2015-04-11/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
 
 
   ;; *** Test string time input ***
@@ -82,18 +146,111 @@ if keyword_set(READ) then begin
   cmd_list = [cmd_list, "mvn_kp_read, '2014-04-01/06:00:00' , insitu, iuvs, /savefiles"]
 
   ;; *** Test orbit time range input  FIXME not working ***
-  ;mvn_kp_read, 10, insitu, iuvs, /savefiles
+  cmd_list = [cmd_list, "mvn_kp_read, 1022 , insitu, /insitu_only, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, /insitu_only, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, 1034 , insitu, iuvs, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1030,1070] , insitu, iuvs, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1026],insitu,iuvs,/ngims,/sep,/iuvs_periapse, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1024,1025],insitu,iuvs,/ngims,/sep,/iuvs_periapse, /SAVEFILES"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1022,1040],insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound, /SAVEFILES"]
   
   
   
   ;; ---- Tests that shoudl fail ----
   
- 
- 
-  
   
 endif
 
+
+if keyword_set(ASCII) then begin
+  ;; *** Test reading in only INSITU data ****
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /textfiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-10/17:01:05'] , insitu, /textfiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:00', '2015-04-11/00:00:01'] , insitu, /textfiles, /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /textfiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-29/17:01:05'] , insitu, /textfiles, /insitu_all, /insitu_only"]
+  
+  
+  ;; Orbit Numer
+  cmd_list = [cmd_list, "mvn_kp_read, 1022 , insitu, /textfiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, /textfiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, /textfiles, /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, /textfiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021, 2022] , insitu, /textfiles, /insitu_all, /insitu_only"]
+  
+  
+  ;; NO IUVS ASCI READER YET - FIXME
+  
+endif
+
+if keyword_set(COMPAREINSITU) then begin
+  ;; *** Test reading in only INSITU data ****
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu2, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu2,  /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+    
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+endif
+
+if keyword_set(COMPAREIUVS) then begin
+
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-01/01:00:00' , insitu, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]
+  
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]
+
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]
+
+
+  
+  ;; Test single time input - ascii  FIXME not working
+  ;; Test range time input - ascii   FIXME not working
+  
+  ;; Test specifying just iuvs FIXME not working
+  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /savefiles, /iuvs"]
+  
+  ;; Test specifying certain instruments
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs2,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]
+  
+  ;; Test inbound flag & instruments
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse, /inbound"]
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs2,/ngims,/sep,/iuvs_periapse, /inbound"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]  
+  
+  ;; FIXME - This is failing and shouldn't - Bigger question, how to handle time range inputs that are less than 1 day.
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]  
+
+  
+
+  
+endif
 
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ----------------------------- Test MVN_KP_INSITU_SEARCH ---------------------------- ;;
@@ -101,7 +258,7 @@ endif
 if keyword_set(INSITU_SEARCH) then begin
   
   ;; read in two days worth of data and all instruments to do below testing
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-07/01:00:00'] , insitu, iuvs, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs"]
 
   
   ;; Test search of insitu with /list option
