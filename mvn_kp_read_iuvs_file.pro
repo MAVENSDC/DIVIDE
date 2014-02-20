@@ -155,7 +155,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
   endif else begin
 
     ;; Default is to read CDF files
-    
+
     ;; Read in CDF version of file
     MVN_KP_IUVS_CDF_READ, iuvs_record_temp, filename, instruments=instruments, instrument_array=instrument_array
     
@@ -170,44 +170,60 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
 
       if instruments.periapse then begin
         for peri_index = 0, n_elements(iuvs_record_temp.periapse.time_start)-1 do begin
-          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.periapse[peri_index].time_start, begin_time, end_time, check
+          if (iuvs_record_temp.periapse[peri_index].time_start ne '') then begin
+            MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.periapse[peri_index].time_start, begin_time, end_time, check
           
-          if check then iuvs_record_time_temp.periapse[peri_index] = iuvs_record_temp.periapse[peri_index]
+            if check then iuvs_record_time_temp.periapse[peri_index] = iuvs_record_temp.periapse[peri_index]
+          endif
         endfor
       endif
   
       ;; Check Echelle Observation Modes
-      if instruments.c_e_limb and (iuvs_record_temp.corona_e_limb.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_limb.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.corona_e_limb = iuvs_record_temp.corona_e_limb
+      if instruments.c_e_limb then begin
+        if (iuvs_record_temp.corona_e_limb.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_limb.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.corona_e_limb = iuvs_record_temp.corona_e_limb
+        endif
       endif
-      if instruments.c_e_disk and (iuvs_record_temp.corona_e_disk.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_disk.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.corona_e_disk = iuvs_record_temp.corona_e_disk
+      if instruments.c_e_disk then begin
+        if (iuvs_record_temp.corona_e_disk.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_disk.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.corona_e_disk = iuvs_record_temp.corona_e_disk
+        endif
       endif
-      if instruments.c_e_high and (iuvs_record_temp.corona_e_high.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_high.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.corona_e_high = iuvs_record_temp.corona_e_high
+      if instruments.c_e_high then begin
+        if (iuvs_record_temp.corona_e_high.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_e_high.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.corona_e_high = iuvs_record_temp.corona_e_high
+        endif
       endif
 
       ;; Check LORES Observation modes
-      if instruments.c_l_limb and (iuvs_record_temp.corona_lo_limb.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_limb.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.corona_lo_limb = iuvs_record_temp.corona_lo_limb
+      if instruments.c_l_limb then begin
+        if (iuvs_record_temp.corona_lo_limb.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_limb.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.corona_lo_limb = iuvs_record_temp.corona_lo_limb
+        endif
       endif      
-      if instruments.c_l_disk and (iuvs_record_temp.corona_lo_disk.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_disk.time_start, begin_time, end_time, check     
-        if check then iuvs_record_time_temp.corona_lo_disk = iuvs_record_temp.corona_lo_disk
+      if instruments.c_l_disk then begin
+        if (iuvs_record_temp.corona_lo_disk.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_disk.time_start, begin_time, end_time, check     
+          if check then iuvs_record_time_temp.corona_lo_disk = iuvs_record_temp.corona_lo_disk
+        endif
       endif  
-      if instruments.c_l_high and (iuvs_record_temp.corona_lo_high.time_start ne '') then begin
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_high.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.corona_lo_high = iuvs_record_temp.corona_lo_high
+      if instruments.c_l_high then begin
+        if (iuvs_record_temp.corona_lo_high.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.corona_lo_high.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.corona_lo_high = iuvs_record_temp.corona_lo_high
+        endif
       endif
 
       ;; Check apoapse observation mode
-      if instruments.apoapse then begin      
-        MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.apoapse.time_start, begin_time, end_time, check
-        if check then iuvs_record_time_temp.apoapse = iuvs_record_temp.apoapse
+      if instruments.apoapse then begin
+        if (iuvs_record_temp.apoapse.time_start ne '') then begin
+          MVN_KP_IUVS_TIMECHECK, iuvs_record_temp.apoapse.time_start, begin_time, end_time, check
+          if check then iuvs_record_time_temp.apoapse = iuvs_record_temp.apoapse
+        endif
       endif  
 
     
