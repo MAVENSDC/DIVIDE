@@ -240,12 +240,23 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
   record.spacecraft.subsolar_point_GEO_latitude     = data_array.data[200]
   record.spacecraft.submars_point_solar_longitude   = data_array.data[201]
   record.spacecraft.submars_point_solar_latitude    = data_array.data[202]
+  record.spacecraft.t11                             = data_array.data[203]
+  record.spacecraft.t21                             = data_array.data[204]
+  record.spacecraft.t31                             = data_array.data[205]
+  record.spacecraft.t12                             = data_array.data[206]
+  record.spacecraft.t22                             = data_array.data[207]
+  record.spacecraft.t32                             = data_array.data[208]
+  record.spacecraft.t13                             = data_array.data[209]
+  record.spacecraft.t23                             = data_array.data[210]
+  record.spacecraft.t33                             = data_array.data[211]
+    
   record.app.attitude_geo_x                         = data_array.data[191]
   record.app.attitude_geo_y                         = data_array.data[192]
   record.app.attitude_geo_z                         = data_array.data[193]
   record.app.attitude_mso_x                         = data_array.data[194]
   record.app.attitude_mso_y                         = data_array.data[195]
   record.app.attitude_mso_z                         = data_array.data[196]
+
   
   
   

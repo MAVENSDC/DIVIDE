@@ -21,8 +21,8 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
 ; Default if no arguments passed
 if n_params() eq 0 then begin
 ;  SAVEFILES="TRUE"
-;  CDF="TRUE"
-;  INSITU_SEARCH="TRUE"
+ ; CDF="TRUE"
+ ; INSITU_SEARCH="TRUE"
 ;  ASCII="TRUE"
 ;  COMPAREINSITU="TRUE"
 ;  COMPAREIUVS="TRUE"
@@ -185,29 +185,29 @@ endif
 
 if keyword_set(COMPAREINSITU) then begin
   ;; *** Test reading in only INSITU data ****
-;  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-;
-;
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu, /savefiles, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu2, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-;
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu2,  /swia, /mag, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-;    
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-;
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
-;  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
-;  
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu, /savefiles, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-08/17:01:05'] , insitu2, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu, /savefiles, /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-12/00:00:01'] , insitu2,  /swia, /mag, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+    
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /savefiles, /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
+
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /savefiles, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
   
-  ;; Compare Ascii to CDF
+  
+;  ;; Compare Ascii to CDF
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /textfiles, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
@@ -292,6 +292,7 @@ if keyword_set(INSITU_SEARCH) then begin
 
   ;; Test searching based on a tage number with with min & max 
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=185,min=1000, max=5000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=205,min=-.1, max=.5"]
   
   ;; Test searching with tag string and max
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='SPACECRAFT.ALTITUDE', max=5000"]
@@ -301,6 +302,8 @@ if keyword_set(INSITU_SEARCH) then begin
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='NGIMS.HE_DENSITY', min=1"]
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.HPLUS_DENSITY', min=1, max=5"]
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='APP.ATTITUDE_GEO_X', max=1000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='spacecraft.t21', min=-1, max=1"]
+  
   
   
   ;; Commands that should fail

@@ -20,7 +20,7 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
   sep_start        = 121
   ngims_start      = 149
   spacecraft_start = 179
-  app_start        = 202
+  app_start        = 211
   
   lpw_total        = 18
   static_total     = 51
@@ -29,7 +29,7 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
   mag_total        = 14
   sep_total        = 28
   ngims_total      = 30
-  spacecraft_total = 23
+  spacecraft_total = 32
   app_total        = 6
   
   if not keyword_set(instruments) then message, "Need to specify instruments option right now." ;; FIXME 

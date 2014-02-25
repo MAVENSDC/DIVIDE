@@ -404,7 +404,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
             if within_time_bounds then begin
             
               ; TEMPLATE STRUCTURE TO READ DATA INTO
-              orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(203)}
+              orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(212)}
               
               ;READ IN AND INIT TEMP STRUCTURE OF DATA
               orbit.time_string = data[0]
@@ -412,7 +412,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
               orbit.orbit = data[198]
               orbit.IO_bound = data[199]
               orbit.data[0:196] = data[1:197]
-              orbit.data[197:202] = data[200:205]
+              orbit.data[197:211] = data[200:214]
               
               ;CHECK time_string FORMAT FOR A SLASH DELIMITER INSTEAD OF A "T" AND SWITCH IF NECESSARY
               ts_split=strsplit(orbit.time_string, '/', COUNT=ts_count, /EXTRACT)

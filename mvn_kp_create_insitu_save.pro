@@ -32,7 +32,7 @@ for file=0, n_elements(infiles)-1 do begin
   
   
   ;; Create Orbit array for structures to be put into
-  orbit_temp = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(203)}
+  orbit_temp = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(212)}
   orbit = replicate(orbit_temp, data_count)
   
 
@@ -55,7 +55,7 @@ for file=0, n_elements(infiles)-1 do begin
       orbit[i].orbit = data[198]
       orbit[i].IO_bound = data[199]
       orbit[i].data[0:196] = data[1:197]
-      orbit[i].data[197:202] = data[200:205]
+      orbit[i].data[197:211] = data[200:214]
 
       i++
     endif
