@@ -41,7 +41,7 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
   netURL->SetProperty, URL_PATH=url_path
   netURL->SetProperty, URL_QUERY=query
 
-  stop
+
   ; Make the request.
   ; If the 'filename' parameter is set, assume we want to download a file.
   ; Otherwise, get the results as a string array.
