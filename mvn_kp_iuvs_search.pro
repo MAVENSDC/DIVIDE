@@ -52,13 +52,13 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, min=min
 
 if keyword_set(list) then begin                              ;LIST ALL THE SUB-STRUCTURES INLUDED IN A GIVEN KP DATA STRUCTURE
     MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    goto,finish
+    return
 endif
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
-    goto,finish
+    return
   endif
 
 if keyword_set(min_value) eq 0 then begin             ;IF THE MINIMUM VALUE KEYWORD IS NOT SET, THEN ASSUME IT TO BE -INFINITY
@@ -131,14 +131,14 @@ if keyword_set(tag) then begin
                          first_level_tags, check, level0_index, level1_index, tag_array
       if check eq 1 then begin
         print,'Tag #',strtrim(string(tag[i]),2),' is not included in the KP data structure.'
-        goto, finish
+        return
       endif      
       
       ;CHECK IF RADIANCE OR DENSITIES ARE REQUESTED AND IF PROPER SPECIES LISTED
       if (tag_array[1] eq 'SCALE_HEIGHT') or (tag_array[1] eq 'DENSITY') or (tag_array[1] eq 'RADIANCE') then begin
         if keyword_set(species) ne 1 then begin
           print, 'Please identify the atmospheric species of interest.'
-          goto, finish
+          return
         endif
           MVN_KP_IUVS_SPECIES, tag_array, species[species_count], species_index
       endif else begin 
@@ -146,7 +146,7 @@ if keyword_set(tag) then begin
       endelse
       if species_index eq -1 then begin
         print, 'Invalid species profile to search on. Try again.'
-        goto, finish
+        return
       endif
       if species_index eq -9 then begin
         print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
@@ -174,7 +174,7 @@ kp_data_out = kp_data_temp
 ;                      first_level_tags, check, level0_index, level1_index, tag_array
 ;            if check eq 1 then begin
 ;              print,'Tag #',strtrim(string(tag[i]),2),' is not included in the KP data structure.'
-;              goto, finish
+;              return
 ;            endif
 ;            
 ;            ;CHECK IF RADIANCE OR DENSITIES ARE REQUESTED AND IF PROPER SPECIES LISTED
@@ -185,7 +185,7 @@ kp_data_out = kp_data_temp
 ;            endelse
 ;            if species_index eq -1 then begin
 ;              print, 'Invalid species profile to search on. Try again.'
-;              goto, finish
+;              return
 ;            endif
 ;            if species_index eq -9 then begin
 ;              print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
@@ -226,7 +226,7 @@ kp_data_out = kp_data_temp
 ; UNSET DEBUG ENV VARIABLE
 setenv, 'MVNTOOLKIT_DEBUG='
 
-finish: 
+
 end
 
 

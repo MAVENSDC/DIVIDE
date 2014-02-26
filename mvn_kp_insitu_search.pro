@@ -59,13 +59,13 @@ pro MVN_KP_INSITU_SEARCH,  kp_data, kp_data_out, tag=tag, min=min_value, max=max
 
 if keyword_set(list) then begin                              ;LIST ALL THE SUB-STRUCTURES INLUDED IN A GIVEN KP DATA STRUCTURE
     MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    goto,finish
+    return
 endif
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
-    goto,finish
+    return
   endif
 
 if keyword_set(min_value) eq 0 then begin             ;IF THE MINIMUM VALUE KEYWORD IS NOT SET, THEN ASSUME IT TO BE -INFINITY
@@ -128,8 +128,7 @@ endif       ;END OF ALL SEARCH ROUTINES
 
 ; UNSET DEBUG ENV VARIABLE
 setenv, 'MVNTOOLKIT_DEBUG='
-
-finish: 
+e
 end
 
  
