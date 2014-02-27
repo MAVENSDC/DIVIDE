@@ -8,8 +8,26 @@
 ;; FIXME - Needs better header
 ;;
 
-pro mvn_kp_iuvs_cdf_write, infiles, outpath
+pro mvn_kp_iuvs_cdf_write, infiles, outpath, debug=debug
 
+  ;IF NOT IN DEBUG, SETUP ERROR HANDLER
+  if not keyword_set(debug) then begin
+    ;ESTABLISH ERROR HANDLER. WHEN ERRORS OCCUR, THE INDEX OF THE
+    ;ERROR IS RETURNED IN THE VARIABLE ERROR_STATUS:
+    catch, Error_status
+    
+    ;THIS STATEMENT BEGINS THE ERROR HANDLER:
+    if Error_status ne 0 then begin
+      ;HANDLE ERRORS BY RETURNING TO MAIN:
+      print, '**ERROR HANDLING - ', !ERROR_STATE.MSG
+      print, '**ERROR HANDLING - Cannot proceed. Returning to main'
+      Error_status = 0
+      catch, /CANCEL
+      return
+    endif
+  endif
+
+  
   ;PATH TO MASTER CDF FILE, NECESSARY FOR cdf_load_vars TO WORK.
   cdf_tools_result = routine_info('mvn_kp_iuvs_cdf_write',/source)
   cdf_tools_directory = strsplit(cdf_tools_result.path,'mvn_kp_iuvs_cdf_write.pro',/extract,/regex)
@@ -246,5 +264,7 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath
 
   endforeach
   
+  ; UNSET DEBUG ENV VARIABLE
+  setenv, 'MVNTOOLKIT_DEBUG='
   
 end

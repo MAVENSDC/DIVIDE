@@ -17,6 +17,16 @@
 
 function mvn_kp_cdf_save_vars, cdf_structure, new_cdf_name
 
+  ;; Check ENV variable to see if we are in debug mode                                              ;; Added in MVN toolkit way of error
+  debug = getenv('MVNTOOLKIT_DEBUG')                                                                ;; handling
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+
   ;check input
   ;-----------
   if not keyword_set(cdf_structure) then begin
@@ -93,7 +103,7 @@ function mvn_kp_cdf_save_vars, cdf_structure, new_cdf_name
 
 
       if (cdf_structure.vars[i].recvary eq 1) then begin
-        ;if dimen_data_dimen(0) eq 1 then data_dimen=0 else data_dimen=data_dimen(1,*)
+        ;if dimen_data_dimen(0) eq 1 then data_dimen=0 else data_dimen=data_dimen(1,*)                                ;; Old way of setting up dimen
         ;if dimen_data_dimen(0) eq 1 then data_dimen=0 else data_dimen=data_dimen
         if ndimen_cdf eq 0 then data_dimen=0
 
@@ -110,9 +120,9 @@ function mvn_kp_cdf_save_vars, cdf_structure, new_cdf_name
     if (cdf_structure.vars[i].datatype eq 'CDF_CHAR' or cdf_structure.vars[i].datatype eq 'CDF_UCHAR') then begin
       if (ptr_valid(cdf_structure.vars[i].dataptr)) then begin
         numelem=max(strlen(*cdf_structure.vars[i].dataptr))
- ;       *cdf_structure.vars[i].dataptr=string(*cdf_structure.vars[i].dataptr,format='(a'+string(numelem)+')')
-      endif else numelem=1
-    endif else numelem=1
+ ;       *cdf_structure.vars[i].dataptr=string(*cdf_structure.vars[i].dataptr,format='(a'+string(numelem)+')')        ;; Old Way of changing strings, 
+      endif else numelem=1                                                                                            ;; I don't understand why this was happening
+    endif else numelem=1                                                                                              ;; But it was brekaing my char variables
     
     
     if (cdf_structure.vars[i].datatype eq 'CDF_EPOCH16') then datatype='CDF_LONG_EPOCH' else datatype=cdf_structure.vars[i].datatype
@@ -122,7 +132,7 @@ function mvn_kp_cdf_save_vars, cdf_structure, new_cdf_name
     if (data_dimen[0] eq 0) then begin
       dummy=cdf_varcreate(id,cdf_structure.vars[i].name,_extra=var_parameters,/zvariable)
     endif else begin
-      ;dummy=cdf_varcreate(id,cdf_structure.vars[i].name,data_dimen,dim=data_dimen,_extra=var_parameters,/zvariable)
+      ;dummy=cdf_varcreate(id,cdf_structure.vars[i].name,data_dimen,dim=data_dimen,_extra=var_parameters,/zvariable)          ;; Old Way of creating var
       dummy=cdf_varcreate(id,cdf_structure.vars[i].name,vary_array[0:(ndimen_cdf-1)],dim=data_dimen[0:(ndimen_cdf-1)],_extra=var_parameters,/zvariable)
     endelse
      
@@ -150,8 +160,8 @@ function mvn_kp_cdf_save_vars, cdf_structure, new_cdf_name
     
     if (ptr_valid(cdf_structure.vars[i].dataptr)) then begin
       vd=*cdf_structure.vars[i].dataptr
-;      if (data_dimen ne 0 and recvary eq 'rec_vary') then begin
-      
+;      if (data_dimen ne 0 and recvary eq 'rec_vary') then begin    ;; Old code to flip matricies
+                                                                    ;; I don't think this is needed for the way MVN toolkit is using it
  ;       num_dimen=dimen(data_dimen)
  ;       transshift=shift((findgen(num_dimen+1)),-1)
   ;      vd=transpose(vd,transshift)
