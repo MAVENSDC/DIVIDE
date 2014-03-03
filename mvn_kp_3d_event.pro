@@ -34,7 +34,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).maven_model->getProperty, transform=mavTrans
                   (*pstate).sub_solar_model->getProperty,transform=ssTrans
                   (*pstate).sub_maven_model->getProperty,transform=smTrans
+                  (*pstate).sub_maven_model_mso->getProperty,transform=smTransMSO
                   (*pstate).vector_model->getProperty,transform=vertTrans
+                  (*pstate).sun_model->getproperty,transform=SunTrans
+                  (*pstate).axesmodel_msox->getproperty,transform=xaxesTrans
+                  (*pstate).axesmodel_msoy->getproperty,transform=yaxesTrans
+                  (*pstate).axesmodel_msoz->getproperty,transform=zaxesTrans
                   newTransform = curTransform # rotTransform
                   newatmtrans1 = atmtrans1 # rotTransform
                   newatmtrans2 = atmtrans2 # rotTransform
@@ -45,7 +50,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   newMavTrans = mavTrans # rotTransform
                   newSsTrans = ssTrans # rotTransform
                   newSmTrans = smTrans # rotTransform
+                  newSmTransMSO = smTransMSO # rotTransform
                   newVertTrans = vertTrans # rotTransform
+                  newSunTrans = sunTrans # rotTransform
+                  newXaxes = xAxesTrans # rotTransform
+                  newYaxes = yAxesTrans # rotTransform
+                  newZaxes = zAxesTrans # rotTransform
                   (*pstate).model->setProperty, transform=newTransform
                   (*pstate).atmModel1->setProperty, transform=newatmtrans1
                   (*pstate).atmModel2->setProperty, transform=newatmtrans2
@@ -53,20 +63,25 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).atmModel4->setProperty, transform=newatmtrans4
                   (*pstate).atmModel5->setProperty, transform=newatmtrans5
                   (*pstate).atmModel6->setProperty, transform=newatmtrans6
-                  (*pstate).gridlines -> setProperty, transform=newTransform
+                  (*pstate).gridlines->setproperty, transform=newtransform
                   (*pstate).orbit_model -> setProperty, transform=newTransform
                   (*pstate).maven_model -> setProperty, transform=newMavTrans
                   (*pstate).sub_solar_model->setProperty,transform=newSsTrans
                   (*pstate).sub_maven_model->setProperty,transform=newSmTrans
+                  (*pstate).sub_maven_model_mso->setProperty,transform=newSmTransMSO
                   (*pstate).vector_model->setProperty,transform=newVertTrans
                   (*pstate).axesmodel -> setProperty, transform=newtransform
+                  (*pstate).sun_model ->setProperty, transform=newSunTrans
+                  (*pstate).axesmodel_msox->setProperty, transform=newXaxes
+                  (*pstate).axesmodel_msoy->setProperty, transform=newYaxes
+                  (*pstate).axesmodel_msoz->setProperty, transform=newZaxes
                   if (*pstate).instrument_array[8] eq 1 then begin
                     (*pstate).periapse_limb_model->getProperty,transform=periTrans
                     newPeriTrans = periTrans # rotTransform
                     (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
                   endif
-                  
                   (*pstate).maven_location = (*pstate).maven_location#rotTransform
+                  (*pstate).z_position = (*pstate).z_position#rotTransform
                   
                   (*pstate).window->draw, (*pstate).view          
                 endif
@@ -86,12 +101,18 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).maven_model->scale,s,s,s
                   (*pstate).sub_solar_model->scale,s,s,s
                   (*pstate).sub_maven_model->scale,s,s,s
+                  (*pstate).sub_maven_model_mso->scale,s,s,s
                   (*pstate).axesmodel->scale,s,s,s
                   (*pstate).vector_model->scale,s,s,s
+                  (*pstate).sun_model -> scale,s,s,s
+                  (*pstate).axesmodel_msox->scale, s,s,s
+                  (*pstate).axesmodel_msoy->scale, s,s,s
+                  (*pstate).axesmodel_msoz->scale, s,s,s
                   if (*pstate).instrument_array[8] eq 1 then begin
                     (*pstate).periapse_limb_model->scale,s,s,s
                   endif
                   (*pstate).maven_location = (*pstate).maven_location*s
+                  (*pstate).z_position = (*pstate).z_position*s
                   (*pstate).window->draw, (*pstate).view          
                 endif       
            
@@ -119,7 +140,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
                   t = min(abs(((*pstate).insitu.time - newval)),t_index)
                   
-                  data = *(*pstate).orbit_path.data
+    ;              data = *(*pstate).orbit_path.data
+                  (*pstate).orbit_path -> getproperty, data=data
                   (*pstate).orbit_model->GetProperty,transform=curtrans
                   cur_x = data[0,(*pstate).time_index*2]
                   cur_y = data[1,(*pstate).time_index*2]
@@ -149,17 +171,36 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   endif
                   
                 ;MOVE THE SUN'S LIGHT SOURCE TO THE PROPER LOCATION
+                if (*pstate).coord_sys eq 0 then begin        ;GEO COORDINATE SYSTEM
                   (*pstate).dirlight->setProperty,location=[(*pstate).solar_x_coord(t_index),(*pstate).solar_y_coord(t_index),(*pstate).solar_z_coord(t_index)]
-               
+                ;UPDATE THE SUBSOLAR POINT
+                 (*pstate).sub_solar_line->setProperty,data=[(*pstate).subsolar_x_coord[t_index],(*pstate).subsolar_y_coord[t_index],(*pstate).subsolar_z_coord[t_index]]
+                ;UPDATE THE SUBMAVEN POINT  
+                 (*pstate).sub_maven_line->setProperty,data=[(*pstate).submaven_x_coord[t_index],(*pstate).submaven_y_coord[t_index],(*pstate).submaven_z_coord[t_index]]
+                ;UPDATE THE SUN VECTOR
+                  (*pstate).sun_vector -> getproperty, data=data1
+                  data1[0,1] = (*pstate).solar_x_coord(t_index)
+                  data1[1,1] = (*pstate).solar_y_coord(t_index)
+                  data1[2,1] = (*pstate).solar_z_coord(t_index)
+                  (*pstate).sun_vector->setProperty,data=data1
+  
+
+                endif else begin                              ;MSO COORDINATE DISPLAY
+                  lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
+                  lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+
+                  (*pstate).sub_maven_line_mso->setproperty,data=[(*pstate).submaven_x_coord_mso[t_index],(*pstate).submaven_y_coord_mso[t_index],(*pstate).submaven_z_coord_mso[t_index]]
+                  (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
+                 
+                endelse
+                
+                
                 ;UPDATE THE SUN VECTOR POINTING  
                 
                 ;UPDATE THE TERMINATOR LOCATION
                 
-                ;UPDATE THE SUBSOLAR POINT
-                 (*pstate).sub_solar_line->setProperty,data=[(*pstate).subsolar_x_coord[t_index],(*pstate).subsolar_y_coord[t_index],(*pstate).subsolar_z_coord[t_index]]
-                  
-                ;UPDATE THE SUBMAVEN POINT  
-                 (*pstate).sub_maven_line->setProperty,data=[(*pstate).submaven_x_coord[t_index],(*pstate).submaven_y_coord[t_index],(*pstate).submaven_z_coord[t_index]]
+ 
+
                   
                 ;UPDATE THE PARAMETER PLOT COLORS
                  (*pstate).parameter_plot->getproperty,vert_colors=colors
@@ -191,7 +232,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   
                  ;IF THE SCENE IS SPACECRAFT LOCKED, ROTATE EVERYTHING TO KEEP MAVEN CENTERED
                  if (*pstate).camera_view eq 1 then begin
-print,(*pstate).maven_location[0:2]
+
                      v1 = [0.0,0.0,1.0]
                      v2 = (*pstate).maven_location[0:2]
 
@@ -345,8 +386,14 @@ print,(*pstate).maven_location[0:2]
                   
        'submaven': begin
                     result = (*pstate).sub_maven_model.hide
-                    if result eq 1 then (*pstate).sub_maven_model -> setProperty,hide=0
-                    if result eq 0 then (*pstate).sub_maven_model -> setProperty,hide=1
+                    if (*pstate).coord_sys eq 0 then begin
+                      if result eq 1 then (*pstate).sub_maven_model -> setProperty,hide=0
+                      if result eq 0 then (*pstate).sub_maven_model -> setProperty,hide=1
+                    endif 
+                    if (*pstate).coord_sys eq 1 then begin
+                      if result eq 1 then (*pstate).sub_maven_model_mso -> setProperty,hide=0
+                      if result eq 0 then (*pstate).sub_maven_model_mso -> setProperty,hide=1
+                    endif
                     (*pstate).window -> draw, (*pstate).view
                    end
                
@@ -366,9 +413,24 @@ print,(*pstate).maven_location[0:2]
                      end
 
        'axes': begin
-                      result = (*pstate).axesmodel.hide
-                      if result eq 1 then (*pstate).axesmodel -> setProperty,hide=0
-                      if result eq 0 then (*pstate).axesmodel -> setProperty,hide=1
+                      if (*pstate).coord_sys eq 0 then begin
+                        result = (*pstate).axesmodel.hide
+                        if result eq 1 then (*pstate).axesmodel -> setProperty,hide=0
+                        if result eq 0 then (*pstate).axesmodel -> setProperty,hide=1
+                      endif
+                      if (*pstate).coord_sys eq 1 then begin
+                        result = (*pstate).axesmodel_msox.hide
+                        if result eq 1 then begin
+                          (*pstate).axesmodel_msox->setproperty,hide=0
+                          (*pstate).axesmodel_msoy->setproperty,hide=0
+                          (*pstate).axesmodel_msoz->setproperty,hide=0
+                        endif
+                        if result eq 0 then begin
+                          (*pstate).axesmodel_msox->setproperty,hide=1
+                          (*pstate).axesmodel_msoy->setproperty,hide=1
+                          (*pstate).axesmodel_msoz->setproperty,hide=1
+                        endif
+                      endif
                       (*pstate).window -> draw, (*pstate).view
                      end      
 
@@ -675,14 +737,37 @@ print,(*pstate).maven_location[0:2]
                    end                 
           
        'insitu_return': begin
-                    widget_control, (*pstate).subbaseR7, map=0
-                    widget_control, (*pstate).subbaseR1, map=1
-                   end    
+                          widget_control, (*pstate).subbaseR7, map=0
+                          widget_control, (*pstate).subbaseR1, map=1
+                         end    
 
        'insitu': begin
                   widget_control,(*pstate).subbaseR1, map=0
                   widget_control,(*pstate).subbaseR7, map=1
                end
+
+       'insitu_vector': begin
+                          widget_control, (*pstate).subbaseR1, map=0
+                          widget_control, (*pstate).subbaseR10, map=1
+                        end
+                        
+       'vec_scale': begin
+                      widget_control,event.id, get_value=newval
+                      scale_factor=newval/100.0
+                      ;RESCALE THE DISPLAYED VECTOR FIELD
+                      (*pstate).vector_path->getproperty,data=old_data
+                      
+                      MVN_KP_3D_VECTOR_SCALE, old_data, (*pstate).vector_scale, scale_factor
+                      
+                      (*pstate).vector_path->setproperty,data=old_data
+                      (*pstate).vector_scale = scale_factor
+                      (*pstate).window->draw,(*pstate).view   
+                    end
+                        
+       'insitu_vector_return': begin
+                                widget_control, (*pstate).subbaseR10, map=0
+                                widget_control, (*pstate).subbaseR1, map=1
+                               end
 
        'iuvs_return': begin
                     widget_control, (*pstate).subbaseR8, map=0
@@ -959,111 +1044,281 @@ print,(*pstate).maven_location[0:2]
                           case newval of
                             'Magnetic Field': begin
                                                  (*pstate).vector_path->getproperty,data=old_data
-                                                 for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                  old_data[0,(i*2)+1] = (*pstate).insitu[i].mag.mso_x
-                                                  old_data[1,(i*2)+1] = (*pstate).insitu[i].mag.mso_y
-                                                  old_data[2,(i*2)+1] = (*pstate).insitu[i].mag.mso_z
-                                                 endfor
+                                                 if (*pstate).coord_sys eq 0 then begin
+                                                  for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                    old_data[0,(i*2)+1] = (*pstate).insitu[i].mag.geo_x
+                                                    old_data[1,(i*2)+1] = (*pstate).insitu[i].mag.geo_y
+                                                    old_data[2,(i*2)+1] = (*pstate).insitu[i].mag.geo_z
+                                                   endfor
+                                                 endif
+                                                 if (*pstate).coord_sys eq 1 then begin
+                                                   for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                    old_data[0,(i*2)+1] = (*pstate).insitu[i].mag.mso_x
+                                                    old_data[1,(i*2)+1] = (*pstate).insitu[i].mag.mso_y
+                                                    old_data[2,(i*2)+1] = (*pstate).insitu[i].mag.mso_z
+                                                   endfor
+                                                 endif
+                                                 MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                  (*pstate).vector_path->setproperty,data=old_data
                                                  (*pstate).window->draw,(*pstate).view
                                               end
                             'SWIA H+ Flow Velocity': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
-                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msox
-                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoy
-                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoz
-                                                      endfor
+                                                      if (*pstate).coord_sys eq 0 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].swia.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].swia.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].swia.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].swia.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                        endfor
+                                                      endif
+                                                      if (*pstate).coord_sys eq 1 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].swia.hplus_flow_v_msoz
+                                                        endfor
+                                                      endif
+                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                      end
                             'STATIC H+ Flow Velocity': begin
                                                         (*pstate).vector_path->getproperty,data=old_data
-                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoz
-                                                        endfor
+                                                        if (*pstate).coord_sys eq 0 then begin
+                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                            old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                            old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                            old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          endfor
+                                                        endif
+                                                        if (*pstate).coord_sys eq 1 then begin
+                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msox
+                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoy
+                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoz
+                                                          endfor
+                                                        endif
+                                                        MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                         (*pstate).vector_path->setproperty,data=old_data
                                                         (*pstate).window->draw,(*pstate).view
                                                        end
                             'STATIC O+ Flow Velocity': begin
                                                         (*pstate).vector_path->getproperty,data=old_data
-                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoz
-                                                        endfor
+                                                        if (*pstate).coord_sys eq 0 then begin
+                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                            old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.oplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                            old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.oplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                            old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.oplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                  ((*pstate).insitu[i].static.oplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          endfor
+                                                        endif
+                                                        if (*pstate).coord_sys eq 1 then begin
+                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msox
+                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoy
+                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.oplus_flow_v_msoz
+                                                          endfor
+                                                        endif
+                                                        MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                         (*pstate).vector_path->setproperty,data=old_data
                                                         (*pstate).window->draw,(*pstate).view
                                                        end
                             'STATIC O2+ Flow Velocity': begin
                                                           (*pstate).vector_path->getproperty,data=old_data
-                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msox
-                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoy
-                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoz
-                                                          endfor
+                                                          if (*pstate).coord_sys eq 0 then begin
+                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                              old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.o2plus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                              old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.o2plus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                              old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.o2plus_flow_v_msox*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                    ((*pstate).insitu[i].static.o2plus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                            endfor
+                                                          endif
+                                                          if (*pstate).coord_sys eq 1 then begin
+                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msox
+                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoy
+                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.o2plus_flow_v_msoz
+                                                            endfor
+                                                          endif
+                                                          MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                           (*pstate).vector_path->setproperty,data=old_data
                                                           (*pstate).window->draw,(*pstate).view
                                                         end  
                             'STATIC H+/He++ Characteristic Direction': begin
                                                                           (*pstate).vector_path->getproperty,data=old_data
-                                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msox
-                                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoy
-                                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoz
-                                                                          endfor
+                                                                          if (*pstate).coord_sys eq 0 then begin
+                                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                              old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                                              old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                                              old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                                            endfor    
+                                                                          endif 
+                                                                          if (*pstate).coord_sys eq 1 then begin
+                                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msox
+                                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoy
+                                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoz
+                                                                            endfor
+                                                                          endif
+                                                                          MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                                           (*pstate).vector_path->setproperty,data=old_data
                                                                           (*pstate).window->draw,(*pstate).view
                                                                        end
                             'STATIC Pickup Ion Characteristic Direction': begin
                                                                             (*pstate).vector_path->getproperty,data=old_data
-                                                                            for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msox
-                                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoy
-                                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoz
-                                                                            endfor
+                                                                            if (*pstate).coord_sys eq 0 then begin
+                                                                              for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                                old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                                                old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                                                old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                                              endfor
+                                                                            endif
+                                                                            if (*pstate).coord_sys eq 1 then begin
+                                                                              for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                                                old_data[0,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msox
+                                                                                old_data[1,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoy
+                                                                                old_data[2,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoz
+                                                                              endfor
+                                                                            endif
+                                                                            MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                                             (*pstate).vector_path->setproperty,data=old_data
                                                                             (*pstate).window->draw,(*pstate).view 
                                                                           end
                             'SEP Look Direction 1': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
-                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msox
-                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoy
-                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoz
-                                                      endfor
+                                                      if (*pstate).coord_sys eq 0 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                        endfor
+                                                      endif
+                                                      if (*pstate).coord_sys eq 1 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoz
+                                                        endfor
+                                                      endif
+                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view 
                                                     end     
                             'SEP Look Direction 2': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
-                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msox
-                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoy
-                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoz
-                                                      endfor
+                                                      if (*pstate).coord_sys eq 0 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                        endfor
+                                                      endif
+                                                      if (*pstate).coord_sys eq 1 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoz
+                                                        endfor
+                                                      endif
+                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                     end
                             'SEP Look Direction 3': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
-                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msox
-                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoy
-                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoz
-                                                      endfor
+                                                      if (*pstate).coord_sys eq 0 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                        endfor
+                                                      endif
+                                                      if (*pstate).coord_sys eq 1 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoz
+                                                        endfor
+                                                      endif
+                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                     end
                             'SEP Look Direction 4': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
-                                                      for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                        old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msox
-                                                        old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoy
-                                                        old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoz
-                                                      endfor
+                                                      if (*pstate).coord_sys eq 0 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                        endfor
+                                                      endif
+                                                      if (*pstate).coord_sys eq 1 then begin
+                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoz
+                                                        endfor
+                                                      endif
+                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                     end                                                                                                                                                                                   
@@ -1074,8 +1329,14 @@ print,(*pstate).maven_location[0:2]
         
         'vector_display': begin
                            result = (*pstate).vector_model.hide
-                           if result eq 1 then (*pstate).vector_model->setProperty,hide=0
-                           if result eq 0 then (*pstate).vector_model->setProperty,hide=1
+                           if result eq 1 then begin
+                            (*pstate).vector_model->setProperty,hide=0
+                            widget_control,(*pstate).subbaseR10a, sensitive=1
+                           endif
+                           if result eq 0 then begin
+                            (*pstate).vector_model->setProperty,hide=1
+                            widget_control,(*pstate).subbaseR10a, sensitive=0
+                           endif
                            (*pstate).window ->draw,(*pstate).view
                           end
           
@@ -1535,6 +1796,129 @@ print,(*pstate).maven_location[0:2]
                               (*pstate).window->draw,(*pstate).view
                              
                           endif
+                         end
+           
+          'coordinates': begin
+                           widget_control,event.id, get_value=choice, /use_text_select
+                           (*pstate).orbit_path -> getproperty, data=data
+                           (*pstate).orbit_model->GetProperty,transform=curtrans
+                              cur_x = data[0,(*pstate).time_index*2]
+                              cur_y = data[1,(*pstate).time_index*2]
+                              cur_z = data[2,(*pstate).time_index*2]
+                           (*pstate).vector_path -> getproperty, data=vec_data
+
+                           if choice eq 'Planetocentric' then begin
+                            ;UPDATE THE ORBITAL PATH
+                              for i=0L,n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
+                                data[0,i*2] = (*pstate).insitu[i].spacecraft.geo_x/10000.0
+                                data[0,(i*2)+1] = (*pstate).insitu[i].spacecraft.geo_x/10000.0
+                                data[1,i*2] = (*pstate).insitu[i].spacecraft.geo_y/10000.0
+                                data[1,(i*2)+1] = ((*pstate).insitu[i].spacecraft.geo_y/10000.0)+0.0001
+                                data[2,i*2] = ((*pstate).insitu[i].spacecraft.geo_z/10000.0)+0.0001
+                                data[2,(i*2)+1] = ((*pstate).insitu[i].spacecraft.geo_z/10000.0)+0.0001
+                              endfor
+                            ;UPDATE MAVEN POSITION
+                              new = fltarr(1,3)
+                              new[0,0] = data[0,(*pstate).time_index*2]-cur_x
+                              new[0,1] = data[1,(*pstate).time_index*2]-cur_y
+                              new[0,2] = data[2,(*pstate).time_index*2]-cur_z
+                              delta = new # curtrans[0:2,0:2]
+                              (*pstate).maven_model -> translate, delta[0],delta[1],delta[2]
+                              (*pstate).coord_sys = 0
+                             ;SWITCH SUB-SC POINT IF NECESSARY
+                               result = (*pstate).sub_maven_model_mso.hide
+                               if result eq 0 then begin
+                                (*pstate).sub_maven_model_mso -> setproperty, hide=1
+                                (*pstate).sub_maven_model ->setproperty, hide=0
+                               endif
+                             ;switch axes if necessary
+                               result = (*pstate).axesmodel_msox.hide
+                               if result eq 0 then begin
+                                (*pstate).axesmodel_msox->setproperty,hide=1
+                                (*pstate).axesmodel_msoy->setproperty,hide=1
+                                (*pstate).axesmodel_msoz->setproperty,hide=1
+                                (*pstate).axesmodel->setproperty,hide=0
+                               endif
+                              ;UPDATE THE VECTOR WHISKERS, IF NECESSARY
+                               result = (*pstate).vector_model.hide
+                               if result eq 0 then begin
+                                vec_data1 = vec_data
+                                for i=0, n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
+                                  vec_data[0,i*2] = (*pstate).insitu[i].spacecraft.geo_x/10000.0
+                                  vec_data[1,i*2] = (*pstate).insitu[i].spacecraft.geo_y/10000.0
+                                  vec_data[2,i*2] = (*pstate).insitu[i].spacecraft.geo_z/10000.0
+                                  vec_data[0,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t11)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t12)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t13)
+                                  vec_data[1,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t21)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t22)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t23)
+                                  vec_data[2,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t31)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t32)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t33)                                   
+                                endfor
+                                (*pstate).vector_path->setproperty,data=vec_data
+                               endif
+                           endif else begin
+                            ;UPDATE THE ORBITAL PATH 
+                              for i=0L,n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
+                                data[0,i*2] = (*pstate).insitu[i].spacecraft.mso_x/10000.0
+                                data[0,(i*2)+1] = (*pstate).insitu[i].spacecraft.mso_x/10000.0
+                                data[1,i*2] = (*pstate).insitu[i].spacecraft.mso_y/10000.0
+                                data[1,(i*2)+1] = ((*pstate).insitu[i].spacecraft.mso_y/10000.0)+0.0001
+                                data[2,i*2] = ((*pstate).insitu[i].spacecraft.mso_z/10000.0)+0.0001
+                                data[2,(i*2)+1] = ((*pstate).insitu[i].spacecraft.mso_z/10000.0)+0.0001
+                              endfor
+                            ;UPDATE MAVEN POSITION
+                              new = fltarr(1,3)
+                              new[0,0] = data[0,(*pstate).time_index*2]-cur_x
+                              new[0,1] = data[1,(*pstate).time_index*2]-cur_y
+                              new[0,2] = data[2,(*pstate).time_index*2]-cur_z
+                              delta = new # curtrans[0:2,0:2]
+                              (*pstate).maven_model -> translate, delta[0],delta[1],delta[2]
+                              (*pstate).coord_sys = 1
+                            ;SWITCH SUB-SC POINT IF NECESSARY
+                               result = (*pstate).sub_maven_model.hide
+                               if result eq 0 then begin
+                                (*pstate).sub_maven_model_mso -> setproperty, hide=0
+                                (*pstate).sub_maven_model ->setproperty, hide=1
+                               endif
+                             ;switch axes if necessary
+                               result = (*pstate).axesmodel.hide
+                               if result eq 0 then begin
+                                (*pstate).axesmodel_msox->setproperty,hide=0
+                                (*pstate).axesmodel_msoy->setproperty,hide=0
+                                (*pstate).axesmodel_msoz->setproperty,hide=0
+                                (*pstate).axesmodel->setproperty,hide=1
+                               endif
+                             ;UPDATE THE VECTOR WHISKERS, IF NECESSARY
+                               result = (*pstate).vector_model.hide
+                               if result eq 0 then begin
+                                  vec_data1 = vec_data
+                                for i=0, n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
+                                  vec_data[0,i*2] = (*pstate).insitu[i].spacecraft.mso_x/10000.0
+                                  vec_data[1,i*2] = (*pstate).insitu[i].spacecraft.mso_y/10000.0
+                                  vec_data[2,i*2] = (*pstate).insitu[i].spacecraft.mso_z/10000.0
+                                  vec_data[0,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t11)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t21)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t31)
+                                  vec_data[1,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t12)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t22)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t32)
+                                  vec_data[2,(i*2)+1] = (vec_data1[0,(i*2)+1]*(*pstate).insitu[i].spacecraft.t13)+$
+                                                        (vec_data1[1,(i*2)+1]*(*pstate).insitu[i].spacecraft.t23)+$
+                                                        (vec_data1[2,(i*2)+1]*(*pstate).insitu[i].spacecraft.t33)                      
+                                endfor
+                                (*pstate).vector_path->setproperty,data=vec_data
+                               endif
+                           endelse
+        
+                 
+                              ;redraw the scene
+                              (*pstate).orbit_path -> setproperty, data=data
+                              (*pstate).window->draw,(*pstate).view
+        
+                           
                          end
            
           'corona_lo_disk': begin

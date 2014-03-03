@@ -29,12 +29,20 @@
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
-               view_size=view_size, camera_view=camera_view
+               view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
   ;variables to be added to command line at some points
   apoapse_image_choice = 'Ozone Depth'
+  
+  ;OPTIMIZATION OPTION
+  
+    if keyword_set(optimize) then begin
+      MVN_KP_3D_OPTIMIZE, insitu, insitu1, optimize
+    endif else begin
+      insitu1 = insitu
+    endelse
   
   
   ;PARSE DATA STRUCTURES FOR BEGINNING, END, AND MID TIMES
@@ -44,13 +52,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
    ; *******NEED TO RESIZE IUVS CORRECTLY AS WELL******
    ; ************************************************** 
     
-      start_time = double(insitu[0].time)
-      end_time = double(insitu[n_elements(insitu.time)-1].time)
+      start_time = double(insitu1[0].time)
+      end_time = double(insitu1[n_elements(insitu1.time)-1].time)
     
       start_time_string = time_string(start_time, format=0)
       end_time_string = time_string(end_time, format=0)
       
-      total_points = n_elements(insitu.time)
+      total_points = n_elements(insitu1.time)
       if keyword_set(time) then begin
         if size(time,/type) eq 7 then begin         ;string based time 
           initial_time = time_double(time)
@@ -58,16 +66,16 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         if size(time,/type) eq 3 then begin         ;double time
           initial_time = time
         endif
-        if n_elements(time) eq 1 then begin       ;use beginning and end times of insitu, with this as the plotted time
+        if n_elements(time) eq 1 then begin       ;use beginning and end times of insitu1, with this as the plotted time
           if (initial_time gt start_time) and (initial_time lt end_time) then begin
             time_index=0L
-            temp_time = min(abs(insitu.time - initial_time),time_index)
-            mid_time = insitu[time_index].time
+            temp_time = min(abs(insitu1.time - initial_time),time_index)
+            mid_time = insitu1[time_index].time
             mid_time_string = time_string(mid_time,format=0)
           endif else begin
             print,'REQUESTED INITIAL PLOT TIME OF ',strtrim(string(time),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES. PLOTTING MID-TIME INSTEAD'
             time_index = long(total_points/2L)
-            mid_time = insitu[time_index].time
+            mid_time = insitu1[time_index].time
             initial_time = mid_time
             mid_time_string = time_string(mid_time,format=0)
           endelse
@@ -77,8 +85,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             start_time = initial_time[0]
             start_time_string = time_string(initial_time[0],format=0)
             start_index=0L
-            temp_time = min(abs(insitu.time - initial_time[0]),start_index)
-            insitu = insitu[start_index:*]
+            temp_time = min(abs(insitu1.time - initial_time[0]),start_index)
+            insitu1 = insitu1[start_index:*]
           endif else begin
             print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
           endelse
@@ -86,14 +94,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             end_time = initial_time[1]
             end_time_string = time_string(initial_time[1],format=0)
             end_index = 0l
-            temp_time = min(abs(insitu.time - initial_time[1]),end_index)
-            insitu = insitu[0:end_index]
+            temp_time = min(abs(insitu1.time - initial_time[1]),end_index)
+            insitu1 = insitu1[0:end_index]
           endif else begin
             print, 'REQUESTED END TIME OF ',strtrim(string(time[1]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
           endelse
-          total_points = n_elements(insitu.time)
+          total_points = n_elements(insitu1.time)
           time_index = long(total_points/2L)
-          mid_time = insitu[time_index].time
+          mid_time = insitu1[time_index].time
           initial_time = mid_time
           mid_time_string = time_string(mid_time,format=0)
         endif                                     ;end of 2 value time loop
@@ -102,8 +110,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             start_time = initial_time[0]
             start_time_string = time_string(initial_time[0],format=0)
             start_index=0L
-            temp_time = min(abs(insitu.time - initial_time[0]),start_index)
-            insitu = insitu[start_index:*]
+            temp_time = min(abs(insitu1.time - initial_time[0]),start_index)
+            insitu1 = insitu1[start_index:*]
           endif else begin
             print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
           endelse
@@ -111,28 +119,28 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             end_time = initial_time[2]
             end_time_string = time_string(initial_time[2],format=0)
             end_index = 0l
-            temp_time = min(abs(insitu.time - initial_time[2]),end_index)
-            insitu = insitu[0:end_index]
+            temp_time = min(abs(insitu1.time - initial_time[2]),end_index)
+            insitu1 = insitu1[0:end_index]
           endif else begin
             print, 'REQUESTED END TIME OF ',strtrim(string(time[2]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
           endelse
           if (initial_time[1] gt start_time) and (initial_time[1] lt end_time) then begin
             time_index=0L
-            temp_time = min(abs(insitu.time - initial_time[1]),time_index)
-            mid_time = insitu[time_index].time
+            temp_time = min(abs(insitu1.time - initial_time[1]),time_index)
+            mid_time = insitu1[time_index].time
             mid_time_string = time_string(mid_time,format=0)    
           endif else begin
             print, 'REQUESTED PLOT TIME OF ',strtrim(string(time[1]),2),' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES. PLOTTING THE MID-TIME INSTEAD.'
-            total_points = n_elements(insitu.time)
+            total_points = n_elements(insitu1.time)
             time_index = long(total_points/2L)
-            mid_time = insitu[time_index].time
+            mid_time = insitu1[time_index].time
             initial_time = mid_time
             mid_time_string = time_string(mid_time,format=0) 
           endelse
         endif                                       ;end of 3 value time loop
       endif else begin
         time_index = long(total_points/2L)
-        mid_time = insitu[time_index].time
+        mid_time = insitu1[time_index].time
         initial_time = mid_time
         mid_time_string = time_string(mid_time,format=0)
       endelse 
@@ -142,7 +150,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   
      instrument_array = intarr(17)     ;flags to indicate if a given instrumnet data is present
      
-     tags=tag_names(insitu)
+     tags=tag_names(insitu1)
      temp = where(tags eq 'LPW')
      if temp ne -1 then instrument_array[0] = 1
      temp = where(tags eq 'STATIC')
@@ -188,8 +196,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     install_result = routine_info('mvn_kp_3d',/source)
     install_directory = strsplit(install_result.path,'mvn_kp_3d.pro',/extract,/regex)
     
-    ;CHECK THE INSITU DATA STRUCTURE FOR RELEVANT FIELDS
-      MVN_KP_TAG_PARSER, insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+    ;CHECK THE insitu1 DATA STRUCTURE FOR RELEVANT FIELDS
+      MVN_KP_TAG_PARSER, insitu1, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
     ;BACKGROUND COLORS
     bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],[75,75,75],[90,90,90],[105,105,105],[120,120,120],[135,135,135],[150,150,150],$
@@ -310,6 +318,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endif          
       endif
     endif
+    
+    ;SET WHETHER GEO OR MSO COORDINATES ARE USED
+    if keyword_set(mso) then begin
+      coord_sys = 1
+    endif else begin
+      coord_sys = 0
+    endelse
   
   
   ;BUILD THE WIDGET
@@ -339,7 +354,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
        subbaseR1 = widget_base(subbaseR,/column)
         button1 = widget_button(subbaseR1, value='Mars/Label Options', uname='mars',$
                                 xsize=300, ysize=30)
-        button1 = widget_button(subbaseR1, value='In-Situ Data', uname='insitu', xsize=300, ysize=30)
+        button1 = widget_button(subbaseR1, value='In-Situ Scalar Data', uname='insitu', xsize=300, ysize=30)
+        button1 = widget_button(subbaseR1, value='In-Situ Vector Data', uname='insitu_vector', xsize=300,ysize=30)
         if instrument_array[7] eq 1 then begin
           button1 = widget_button(subbaseR1, value='IUVS Data', uname='iuvs', xsize=300, ysize=30)
         endif
@@ -384,7 +400,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button2 = widget_button(gridbase, value='Sub-Solar Point', uname='subsolar',xsize=300,ysize=30)
         button2 = widget_button(gridbase, value='Sub-Spacecraft', uname='submaven', xsize=300,ysize=30)
         button2 = widget_button(gridbase, value='Terminator', uname='terminator', xsize=300,ysize=30,sensitive=0)
-        button2 = widget_button(gridbase, value='Sun Vector', uname='sunvector', xsize=300, ysize=30,sensitive=0)
+        button2 = widget_button(gridbase, value='Sun Vector', uname='sunvector', xsize=300, ysize=30)
         button2 = widget_button(gridbase, value='Planet Axes', uname='axes', xsize=300, ysize=30)
         button2 = widget_button(gridbase, value='Parameters', uname='parameters', xsize=300, ysize=30)
         button2 = widget_button(gridbase, value='Plotted Values', uname='orbitPlotName', xsize=300, ysize=30)
@@ -409,8 +425,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               if camera_view eq 0 then widget_control, button3a, /set_button
             button3b = widget_button(subbaseR3a, value='Spacecraft Camera', uname='camera', xsize=300, ysize=30, /no_release)
               if camera_view eq 1 then widget_control, button3b, /set_button
-          
-          
+          label3 = widget_label(subbaseR3,value='Coordinate Systems', /align_center)
+          subbaseR3b = widget_base(subbaseR3,/column,/exclusive,/frame)
+            button3c = widget_button(subbaseR3b, value='Planetocentric', uname='coordinates', xsize=300,ysize=30,/no_release)
+              if coord_sys eq 0 then widget_control,button3c, /set_button
+            button3d = widget_button(subbaseR3b, value='Mars-Sun', uname='coordinates', xsize=300,ysize=30,/no_release)
+              if coord_sys eq 1 then widget_control, button3d, /set_button
+              
           widget_control,subbaseR3a, sensitive=0
           
           button3 = widget_button(subbaseR3, value='Return',uname='view_return', xsize=300,ysize=30)             
@@ -490,68 +511,48 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           text = widget_text(subbaseR6, /scroll,xsize=45,ysize=55)
           button6 = widget_button(subbaseR6, value='Return',uname='help_return',xsize=300,ysize=30)
         
-        ;INSITU MENU
+        ;insitu1 SCALAR DATA MENU
         subbaseR7 = widget_base(subbaseR, /column)
          subbaseR7a = widget_base(subbaseR7, /column,/frame)
            label7 = widget_label(subbaseR7a, value='Orbital Track Plots')
             vert_align = 15
             if instrument_array[0] eq 1 then begin
-              lpw_list = tag_names(insitu.lpw)
+              lpw_list = tag_names(insitu1.lpw)
               drop1=widget_droplist(subbaseR7a, value=lpw_list, uname='lpw_list',title='LPW',frame=5, yoffset=vert_alignf)
               vert_align = vert_align + 15
             endif
             if instrument_array[1] eq 1 then begin
-              static_list = tag_names(insitu.static)
+              static_list = tag_names(insitu1.static)
               drop1=widget_droplist(subbaseR7a, value=static_list, uname='static_list', title='STATIC', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[2] eq 1 then begin
-              swia_list = tag_names(insitu.swia)
+              swia_list = tag_names(insitu1.swia)
               drop1=widget_droplist(subbaseR7a, value=swia_list, uname='swia_list', title='SWIA', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[3] eq 1 then begin
-              swea_list = tag_names(insitu.swea)
+              swea_list = tag_names(insitu1.swea)
               drop1=widget_droplist(subbaseR7a, value=swea_list, uname='swea_list', title='SWEA', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[4] eq 1 then begin
-              mag_list = tag_names(insitu.mag)
+              mag_list = tag_names(insitu1.mag)
               drop1=widget_droplist(subbaseR7a, value=mag_list, uname='mag_list', title='MAG', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[5] eq 1 then begin
-              sep_list = tag_names(insitu.sep)
+              sep_list = tag_names(insitu1.sep)
               drop1=widget_droplist(subbaseR7a, value=sep_list, uname='sep_list', title='SEP', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[6] eq 1 then begin
-              ngims_list = tag_names(insitu.ngims)
+              ngims_list = tag_names(insitu1.ngims)
               drop1=widget_droplist(subbaseR7a, value=ngims_list, uname='ngims_list', title='NGIMS', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
         
-         button7 = widget_button(subbaseR7, value='Vector Plots', uname='vector_display',xsize=300,ysize=30)
-         subbaseR7b = widget_base(subbaseR7, /column,/frame,/exclusive)
-           if instrument_array[4] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15, /no_release)
-           endif
-           if instrument_array[2] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='SWIA H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-           endif
-           if instrument_array[1] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='STATIC H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='STATIC O+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='STATIC O2+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='STATIC H+/He++ Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='STATIC Pickup Ion Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
-           endif
-           if instrument_array[5] eq 1 then begin
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 1', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 2', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 3', uname='vector_field', xsize=300,ysize=15, /no_release)
-             button7 = widget_button(subbaseR7b, value='SEP Look Direction 4', uname='vector_field', xsize=300,ysize=15, /no_release)
-           endif
+      
              
             button7 = widget_button(subbaseR7, value='Plot',uname='overplots',xsize=300,ysize=30) 
             subbaseR7c = widget_base(subbaseR7, /column, /frame)
@@ -569,6 +570,40 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 button7 = widget_button(subbaseR7e, value='Log', uname='colorbar_stretch', /no_release)
           button7 = widget_button(subbaseR7, value='Return',uname='insitu_return',xsize=300,ysize=30)
         
+        ;insitu1 VECTOR DATA MENU
+          subbaseR10 = widget_base(subbaseR, /column)
+            
+                 button10 = widget_button(subbaseR10, value='Vector Plots', uname='vector_display',xsize=300,ysize=30)
+                 subbaseR10a = widget_base(subbaseR10, /column)
+                  subbaseR10b = widget_base(subbaseR10a, /column,/frame,/exclusive)
+                   if instrument_array[4] eq 1 then begin
+                     button10 = widget_button(subbaseR10b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15, /no_release)
+                   endif
+                   if instrument_array[2] eq 1 then begin
+                     button10 = widget_button(subbaseR10b, value='SWIA H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+                   endif
+                   if instrument_array[1] eq 1 then begin
+                     button10 = widget_button(subbaseR10b, value='STATIC H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='STATIC O+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='STATIC O2+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='STATIC H+/He++ Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='STATIC Pickup Ion Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
+                   endif
+                   if instrument_array[5] eq 1 then begin
+                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 1', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 2', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 3', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 4', uname='vector_field', xsize=300,ysize=15, /no_release)
+                   endif
+                   
+                   label10 = widget_label(subbaseR10a, value='Vector Scale Factor, Percent')
+                   slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=300,ysize=33,uname='vec_scale', value=100)
+                   vector_scale = 1.0
+                   
+                   if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0    
+              button10 = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=300,ysize=30)
+
+
         ;IUVS MENU
         subbaseR8 = widget_base(subbaseR, /column)
           if instrument_array[8] eq 1 then begin            ;PERIAPSE LIMB SCAN OPTIONS
@@ -685,6 +720,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     endelse
     
    ;BUILD THE GLOBE
+   mars_globe = obj_new('IDLgrModel')
+   model -> add, mars_globe
     npoints=361
     rplanet = .33962
     arr = REPLICATE(rplanet,npoints,npoints)
@@ -699,7 +736,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         COLOR = [255, 255, 255], reject=1, shading=1,$ 
         TEXTURE_COORD = texure_coordinates, $ 
         TEXTURE_MAP = oImage, /TEXTURE_INTERP)
-     model -> ADD, oPolygons  
+     mars_globe -> ADD, oPolygons  
      
    ;ADD ADDITIONAL 'GLOBES' WITH TEMPORARY TEXTURE FOR LATER ATM MODELS
     
@@ -756,9 +793,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       gridlines = obj_new('IDLgrModel')
       for i = 0, n_elements(ogridarr) - 1 do $ 
         gridlines -> ADD, ogridarr[i]
-      mytext_north = OBJ_NEW('IDLgrText', 'N', LOCATION=[0,0,rplanet+0.001], COLOR=[255,255,255],onglass=1,char_dimensions=[10,10],render_method=render_method)
+      mytext_north = OBJ_NEW('IDLgrText', 'N', LOCATION=[0,0,rplanet+0.00001], COLOR=[255,255,255],onglass=1,char_dimensions=[10,10],render_method=render_method)
       gridlines->Add, mytext_north  
-      mytext_south = OBJ_NEW('IDLgrText', 'S', LOCATION=[0,0,-rplanet-0.001], COLOR=[255,255,255],onglass=1,char_dimensions=[10,10],render_method=render_method)
+      mytext_south = OBJ_NEW('IDLgrText', 'S', LOCATION=[0,0,-rplanet-0.00001], COLOR=[255,255,255],onglass=1,char_dimensions=[10,10],render_method=render_method)
       gridlines->Add, mytext_south
       view -> add, gridlines
 
@@ -766,31 +803,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       
       if keyword_set(grid) then gridlines -> setProperty,hide=0
     
-    
-    ;ADD THE AXES TO THE PLANET
-      if keyword_set(axes) then begin
-        if n_elements(axes) eq 3 then begin
-          axes_color = axes
-        endif else begin
-          axes_color = [255,255,255]
-        endelse
-      endif
-      axesModel = obj_new('IDLgrModel')
-      xticks = obj_new('idlgrtext',['1','2','3'])
-      yticks = obj_new('idlgrtext',['1','2','3'])
-      zticks = obj_new('idlgrtext',['1','2','3'])
-      xticktitle=obj_new('idlgrtext','X')
-      yticktitle=obj_new('idlgrtext','Y')
-      zticktitle=obj_new('idlgrtext','Z')
-      Xaxis = obj_new('IDLgraxis',0, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Xticks,ticklen=0.1,title=xticktitle,color=axes_color)
-      Yaxis = obj_new('IDLgraxis',1, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Yticks,ticklen=0.1,title=yticktitle,color=axes_color)
-      Zaxis = obj_new('IDlgraxis',2, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Zticks,ticklen=0.1,title=zticktitle,color=axes_color)
-      axesModel->add, Xaxis
-      axesModel->add, Yaxis
-      axesModel->add, Zaxis
-      view->add, axesModel
-      axesmodel->setproperty,hide=1
-      if keyword_set(axes) then axesmodel->setproperty,hide=0
+ 
 
     ;ADD THE LIGHTING
       lightModel = obj_new('IDLgrModel')
@@ -798,9 +811,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       
       ;LIGHT FROM THE SUN (CALCULATED TO BE IN THE RIGHT PLACE)
         ;CONVERT SOLAR POSITION TO X,Y,Z
-        solar_x_coord = 10000. * cos(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * cos(insitu.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
-        solar_y_coord = 10000. * cos(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * sin(insitu.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
-        solar_z_coord = 10000. * sin(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
+        solar_x_coord = 10000. * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * cos(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        solar_y_coord = 10000. * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * sin(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        solar_z_coord = 10000. * sin(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
       
       dirLight = obj_new('IDLgrLight', type=2, location=[solar_x_coord[time_index],solar_y_coord[time_index],solar_z_coord[time_index]])
       lightModel->add, dirLight
@@ -815,9 +828,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
     ;ADD A VECTOR POINTING TO THE SUN, IF REQUESTED 
       sun_model = obj_new('IDLgrModel')
-     
-      sun_vector = obj_new('IDLgrPolyline',[[0,-10000],[0,10000],[0,0]],color=[255,255,255],thick=5)
-      sun_model->add, sun_vector
+      view->add, sun_model
+      
+      sun_vector = obj_new('IDLgrPolyline',[0,solar_x_coord[time_index]],[0,solar_y_coord[time_index]],[0,solar_z_coord[time_index]],color=[255,255,0],thick=2)
+      for i=0, n_elements(sun_vector) -1 do sun_model->add, sun_vector[i]
       sun_model->setproperty,hide=1
       if keyword_set(sunmodel) then sun_model->setproperty,hide=0
       
@@ -828,9 +842,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       sub_solar_model = obj_new('IDLgrModel')
       view->add,sub_solar_model
       sub_solar_point = obj_new('IDLgrSymbol',data=24, color=[255,255,0], fill_color=[255,255,0], filled=1, size=[0.02,0.02,0.02])
-      subsolar_x_coord = rplanet * cos(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * cos(insitu.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
-      subsolar_y_coord = rplanet * cos(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * sin(insitu.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
-      subsolar_z_coord = rplanet * sin(insitu.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
+      subsolar_x_coord = rplanet * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * cos(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+      subsolar_y_coord = rplanet * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) * sin(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+      subsolar_z_coord = rplanet * sin(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
       
       sub_solar_line = obj_new('IDLgrPolyline', [subsolar_x_coord[time_index],subsolar_x_coord[time_index]],[subsolar_y_coord[time_index],subsolar_y_coord[time_index]],$
                                 [subsolar_z_coord[time_index],subsolar_z_coord[time_index]],color=[255,255,0],thick=1,symbol=sub_solar_point)
@@ -838,21 +852,92 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       sub_solar_model -> setproperty,hide=1
       if keyword_set(subsolar) then sub_solar_model ->setproperty,hide=0
     
-    ;ADD THE SUB-SPACECRAFT POINT
+    ;ADD THE SUB-SPACECRAFT POINT IN GEO COORDINATES
       sub_maven_model = obj_new('IDLgrModel')
       view->add,sub_maven_model
       submaven_point = obj_new('IDLgrSymbol',data=18, color=[0,0,255], fill_color=[0,0,255], filled=1, size=[0.02,0.02,0.02])
-      submaven_x_coord = rplanet * cos(insitu.spacecraft.sub_sc_latitude*(!pi/180.)) * cos(insitu.spacecraft.sub_sc_longitude*(!pi/180.))
-      submaven_y_coord = rplanet * cos(insitu.spacecraft.sub_sc_latitude*(!pi/180.)) * sin(insitu.spacecraft.sub_sc_longitude*(!pi/180.))
-      submaven_z_coord = rplanet * sin(insitu.spacecraft.sub_sc_latitude*(!pi/180.))
-      
+      submaven_x_coord = rplanet * cos(insitu1.spacecraft.sub_sc_latitude*(!pi/180.)) * cos(insitu1.spacecraft.sub_sc_longitude*(!pi/180.))
+      submaven_y_coord = rplanet * cos(insitu1.spacecraft.sub_sc_latitude*(!pi/180.)) * sin(insitu1.spacecraft.sub_sc_longitude*(!pi/180.))
+      submaven_z_coord = rplanet * sin(insitu1.spacecraft.sub_sc_latitude*(!pi/180.))
+         
       sub_maven_line = obj_new('IDLgrPolyline', [submaven_x_coord[time_index],submaven_x_coord[time_index]],[submaven_y_coord[time_index],submaven_y_coord[time_index]],$
                                 [submaven_z_coord[time_index],submaven_z_coord[time_index]],color=[0,0,255],thick=1,symbol=submaven_point)
       for i=0,n_elements(sub_maven_line) -1 do sub_maven_model -> add,sub_maven_line[i]
       sub_maven_model -> setproperty,hide=1
-      if keyword_set(submaven) then sub_maven_model ->setproperty,hide=0    
+      if keyword_set(submaven) and (keyword_set(mso) eq 0) then sub_maven_model ->setproperty,hide=0    
     
-    
+    ;ADD THE SUB-SPACECRAFT POINT IN MSO COORDINATES
+      sub_maven_model_mso = obj_new('IDLgrModel')
+      view->add, sub_maven_model_mso
+      alt_scale = (insitu1.spacecraft.altitude+(rplanet*10000.0))/(rplanet*10000.0)
+      submaven_x_coord_mso = (insitu1.spacecraft.mso_x/10000.0)/alt_scale
+      submaven_y_coord_mso = (insitu1.spacecraft.mso_y/10000.0)/alt_scale
+      submaven_z_coord_mso = (insitu1.spacecraft.mso_z/10000.0)/alt_scale
+      
+      sub_maven_line_mso = obj_new('IDLgrPolyline', [submaven_x_coord_mso[time_index],submaven_x_coord_mso[time_index]],[submaven_y_coord_mso[time_index],submaven_y_coord_mso[time_index]],$
+                                [submaven_z_coord_mso[time_index],submaven_z_coord_mso[time_index]],color=[0,0,255],thick=1,symbol=submaven_point)
+      for i=0, n_elements(sub_maven_line_mso) -1 do sub_maven_model_mso->add,sub_maven_line_mso[i]
+      sub_maven_model_mso -> setproperty,hide=1
+      if keyword_set(submaven) and keyword_set(mso) then sub_maven_model_mso->setproperty,hide=0
+   
+   
+    ;ADD THE GEOCENTRIC AXES TO THE PLANET
+      if keyword_set(axes) then begin
+        if n_elements(axes) eq 3 then begin
+          axes_color = axes
+        endif else begin
+          axes_color = [255,255,255]
+        endelse
+      endif else begin
+          axes_color = [255,255,255]
+      endelse
+      axesModel = obj_new('IDLgrModel')
+      xticks = obj_new('idlgrtext',['1','2','3'])
+      yticks = obj_new('idlgrtext',['1','2','3'])
+      zticks = obj_new('idlgrtext',['1','2','3'])
+      xticktitle=obj_new('idlgrtext','GEO-X')
+      yticktitle=obj_new('idlgrtext','GEO-Y')
+      zticktitle=obj_new('idlgrtext','GEO-Z')
+      Xaxis = obj_new('IDLgraxis',0, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Xticks,ticklen=0.1,title=xticktitle,color=axes_color)
+      Yaxis = obj_new('IDLgraxis',1, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Yticks,ticklen=0.1,title=yticktitle,color=axes_color)
+      Zaxis = obj_new('IDlgraxis',2, thick=2,tickvalues=[.33962,.67924,1.01886],ticktext=Zticks,ticklen=0.1,title=zticktitle,color=axes_color)
+      axesModel->add, Xaxis
+      axesModel->add, Yaxis
+      axesModel->add, Zaxis
+      view->add, axesModel
+      axesmodel->setproperty,hide=1
+      if keyword_set(axes) and (keyword_set(mso) ne 1) then axesmodel->setproperty,hide=0
+
+    ;ADD THE MSO COORDINATE AXES
+      axesModel_msox = obj_new('IDLgrModel')
+      axesModel_msoy = obj_new('IDLgrModel')
+      axesModel_msoz = obj_new('IDLgrModel')
+      xticktitle_mso = obj_new('IDLgrtext','MSO-X')
+      yticktitle_mso = obj_new('IDLgrText','MSO-Y')
+      zticktitle_mso = obj_new('IDLgrText','MSO-Z')
+      xtemp = [[0,0,0],[(solar_x_coord[time_index]/10000.0),(solar_y_coord[time_index]/10000.0),(solar_z_coord[time_index]/10000.0)]]
+      ztemp = [[0,0,0],[0,0,1.5]]
+      ytemp = crossp(ztemp[*,1],xtemp[*,1])
+      xaxis_mso = obj_new('IDLgrpolyline',1.5*xtemp,color=[255,255,255],thick=2,label_objects=xticktitle_mso)
+      yaxis_mso = obj_new('IDLgrpolyline',[0,ytemp[0]],[0,ytemp[1]],[0,ytemp[2]],color=[255,255,255],thick=2,label_objects=yticktitle_mso)
+      zaxis_mso = obj_new('IDLgrpolyline',ztemp,color=[255,255,255],thick=2,label_objects=zticktitle_mso)      
+      for i=0,n_elements(xaxis_mso)-1 do axesmodel_msox->add,xaxis_mso[i]
+      for i=0,n_elements(yaxis_mso)-1 do axesmodel_msoy->add,yaxis_mso[i]
+      for i=0,n_elements(zaxis_mso)-1 do axesmodel_msoz->add,zaxis_mso[i]
+      view->add,axesModel_msox
+      view->add,axesModel_msoy
+      view->add,axesModel_msoz
+      axesModel_msox->setproperty,hide=1
+      axesModel_msoy->setproperty,hide=1
+      axesModel_msoz->setproperty,hide=1
+      if keyword_set(axes) and keyword_set(mso) then begin
+        axesModel_msox->setproperty,hide=0
+        axesModel_msoy->setproperty,hide=0
+        axesModel_msoz->setproperty,hide=0
+      endif
+      
+      
+   
     ;ADD THE MOUSE CONTROL
       track = obj_new('Trackball', [xsize, ysize] / 2, (xsize < ysize) / 2)
 
@@ -865,39 +950,58 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
     ;CREATE THE PARAMETER LABELS
       parameterModel = obj_new('IDLgrModel')
-      paraText1 = obj_new('IDLgrText','Distance to Sun:'+strtrim(string(insitu(time_index).spacecraft.mars_sun_distance),2)+' AU',color=[0,255,0], locations=[-1.99,1.7,0])
+      paraText1 = obj_new('IDLgrText','Distance to Sun:'+strtrim(string(insitu1(time_index).spacecraft.mars_sun_distance),2)+' AU',color=[0,255,0], locations=[-1.99,1.7,0])
       parameterModel->add, paraText1
-      paraText2 = obj_new('IDLgrText','Mars Season:'+strtrim(string(insitu(time_index).spacecraft.mars_season),2),color=[0,255,0], locations=[-1.99,1.6,0])
+      paraText2 = obj_new('IDLgrText','Mars Season:'+strtrim(string(insitu1(time_index).spacecraft.mars_season),2),color=[0,255,0], locations=[-1.99,1.6,0])
       parameterModel->add,paraText2
-      paraText3 = obj_new('IDLgrText','MAVEN Altitude:'+strtrim(string(insitu(time_index).spacecraft.altitude),2),color=[0,255,0], locations=[-1.99,1.5,0])
+      paraText3 = obj_new('IDLgrText','MAVEN Altitude:'+strtrim(string(insitu1(time_index).spacecraft.altitude),2),color=[0,255,0], locations=[-1.99,1.5,0])
       parameterModel->add,paraText3
-      paraText4 = obj_new('IDLgrText','Solar Zenith Angle:'+strtrim(string(insitu(time_index).spacecraft.sza),2),color=[0,255,0], locations=[-1.99,1.4,0])
+      paraText4 = obj_new('IDLgrText','Solar Zenith Angle:'+strtrim(string(insitu1(time_index).spacecraft.sza),2),color=[0,255,0], locations=[-1.99,1.4,0])
       parameterModel->add,paraText4
-      paraText5 = obj_new('IDLgrText','Local Time:'+strtrim(string(insitu(time_index).spacecraft.local_time),2),color=[0,255,0], locations=[-1.99,1.3,0])
+      paraText5 = obj_new('IDLgrText','Local Time:'+strtrim(string(insitu1(time_index).spacecraft.local_time),2),color=[0,255,0], locations=[-1.99,1.3,0])
       parameterModel->add,paraText5    
-      paraText6 = obj_new('IDLgrText','SubMaven Lat:'+strtrim(string(insitu(time_index).spacecraft.sub_sc_latitude),2),color=[0,255,0], locations=[-1.99,1.2,0])
+      paraText6 = obj_new('IDLgrText','SubMaven Lat:'+strtrim(string(insitu1(time_index).spacecraft.sub_sc_latitude),2),color=[0,255,0], locations=[-1.99,1.2,0])
       parameterModel->add,paraText6
-      paraText7 = obj_new('IDLgrText','SubMaven Lon:'+strtrim(string(insitu(time_index).spacecraft.sub_sc_longitude),2),color=[0,255,0], locations=[-1.99,1.1,0])
+      paraText7 = obj_new('IDLgrText','SubMaven Lon:'+strtrim(string(insitu1(time_index).spacecraft.sub_sc_longitude),2),color=[0,255,0], locations=[-1.99,1.1,0])
       parameterModel->add,paraText7
       view->add,parameterModel
       parameterModel->setproperty,hide=1
 
     ;CREATE THE ORBITAL PATH
-      x_orbit = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
-      y_orbit = fltarr(n_elements(insitu.spacecraft.geo_y)*2)
-      z_orbit = fltarr(n_elements(insitu.spacecraft.geo_z)*2)
-      path_connections = lonarr(n_elements(insitu.spacecraft.geo_x)*3)
-      for i=0L,n_elements(insitu.spacecraft.geo_x)-1 do begin
-        x_orbit[i*2] = insitu[i].spacecraft.geo_x/10000.0
-        x_orbit[(i*2)+1] = insitu[i].spacecraft.geo_x/10000.0
-        y_orbit[i*2] = insitu[i].spacecraft.geo_y/10000.0
-        y_orbit[(i*2)+1] = (insitu[i].spacecraft.geo_y/10000.0)+0.0001
-        z_orbit[i*2] = (insitu[i].spacecraft.geo_z/10000.0)+0.0001
-        z_orbit[(i*2)+1] = (insitu[i].spacecraft.geo_z/10000.0)+0.0001
-        path_connections[i*3] = 2
-        path_connections[(i*3)+1] = (i*2L)
-        path_connections[(i*3)+2] = (i*2L)+1L
-      endfor
+      if coord_sys eq 0 then begin
+        x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+        y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+        z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+        path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
+        for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+          x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0
+          y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_y/10000.0)+0.00001
+          z_orbit[i*2] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
+          path_connections[i*3] = 2
+          path_connections[(i*3)+1] = (i*2L)
+          path_connections[(i*3)+2] = (i*2L)+1L
+        endfor
+      endif else begin
+        x_orbit = fltarr(n_elements(insitu1.spacecraft.mso_x)*2)
+        y_orbit = fltarr(n_elements(insitu1.spacecraft.mso_y)*2)
+        z_orbit = fltarr(n_elements(insitu1.spacecraft.mso_z)*2)
+        path_connections = lonarr(n_elements(insitu1.spacecraft.mso_x)*3)
+        for i=0L,n_elements(insitu1.spacecraft.mso_x)-1 do begin
+          x_orbit[i*2] = insitu1[i].spacecraft.mso_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.mso_x/10000.0
+          y_orbit[i*2] = insitu1[i].spacecraft.mso_y/10000.0
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_y/10000.0)+0.00001
+          z_orbit[i*2] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
+          path_connections[i*3] = 2
+          path_connections[(i*3)+1] = (i*2L)
+          path_connections[(i*3)+2] = (i*2L)+1L
+        endfor
+      endelse
+      
 
       ;DEFINE THE COLORS ALONG THE FLIGHT PATH
         if keyword_set(color_table) then begin
@@ -921,7 +1025,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         loadct,path_color_table,/silent
         
         if keyword_set(field) then begin      ;if parameter not selected, pass an invalid value
-          MVN_KP_TAG_VERIFY, insitu, field,base_tag_count, first_level_count, base_tags,  $
+          MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array
           if check ne 0 then begin         ;if requested parameter doesn't exist, default to none
             print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2)+' IS NOT PART OF THE DATA STRUCTURE.'
@@ -931,7 +1035,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             level1_index = -9
           endif else begin
             plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-            current_plotted_value = insitu[time_index].(level0_index).(level1_index)
+            current_plotted_value = insitu1[time_index].(level0_index).(level1_index)
           endelse             
         endif else begin                ;if no parameter selected, default to none
           plotted_parameter_name = ''
@@ -940,8 +1044,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           level1_index = -9
         endelse 
 
-        vert_color = intarr(3,n_elements(insitu.spacecraft.geo_x)*2)        
-        MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks,path_color_min,path_color_max,path_color_stretch   
+        vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
+        MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, path_color_table, vert_color,colorbar_ticks,path_color_min,path_color_max,path_color_stretch   
         orbit_model = obj_new('IDLgrModel')
         view -> add, orbit_model
         orbit_path = obj_new('IDLgrPolyline', x_orbit,y_orbit,z_orbit, polylines=path_connections, thick=2,vert_color=vert_color,shading=1)
@@ -950,12 +1054,29 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
     ;CREATE THE VECTOR MODEL TO HOLD SUCH DATA
     
+        ;IF SET, FILL THE VECTOR MODEL AND DISPLAY
+        if keyword_set(whiskers) ne 1 then begin
+          vector_scale = 1.0
+          vector_color = [255,0,0]
+          vector_data = ''
+        endif else begin
+           if size(whiskers,/type) ne 8 then begin
+            vector_scale = 1.0
+            vector_color = [255,0,0]
+            vector_data = ''
+           endif else begin
+            vector_scale = whiskers.vector_scale
+            vector_color = whiskers.vector_color
+            vector_name = whiskers.vector_data
+           endelse
+        endelse
+    
       vector_model = obj_new('IDLgrModel')
-      x_vector = fltarr(n_elements(insitu.spacecraft.geo_x)*2)
-      y_vector = fltarr(n_elements(insitu.spacecraft.geo_y)*2)
-      z_vector = fltarr(n_elements(insitu.spacecraft.geo_z)*2)
-      vector_polylines = lonarr(3*n_elements(insitu.spacecraft.geo_x))
-      for i=0l,n_elements(insitu.spacecraft.geo_x)-1 do begin
+      x_vector = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+      y_vector = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+      z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+      vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
+      for i=0l,n_elements(insitu1.spacecraft.geo_x)-1 do begin
         x_vector[i*2] = x_orbit[i*2]
         y_vector[i*2] = y_orbit[i*2]
         z_vector[i*2] = z_orbit[i*2]       
@@ -970,9 +1091,21 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       for i=0l,n_elements(vector_path)-1 do vector_model->add,vector_path[i]
       view -> add,vector_model
       vector_model->setProperty,hide=1  
-      if keyword_set(whiskers) then vector_model->setproperty,hide=0
-
-
+      if keyword_set(whiskers) then begin
+        if size(whiskers,/type) eq 8 then begin
+          vector_path->getproperty,data=old_data
+          MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insitu1
+          vector_path->setproperty,data=old_data
+          vector_path->getproperty, vert_color=vert_color
+          for i=0l,(n_elements(insitu1.spacecraft.geo_x)*2)-1 do begin
+            vert_color[*,i] = vector_color
+          endfor
+          vector_path->setproperty, vert_color=vert_color
+        endif
+        vector_model->setproperty,hide=0
+      endif
+      
+      
     ;CREATE A LABEL FOR WHAT IS PLOTTED ALONG THE SPACECRAFT ORBIT
       if keyword_set(plotname) then begin
         if n_elements(plotname) eq 3 then begin
@@ -986,7 +1119,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       plottedNameModel = obj_new('IDLgrModel')
       plotText1 = obj_new('IdlgrText',plotted_parameter_name, color=plotname_color,locations=[1.99,1.9,0],alignment=1.0)
       plotText2 = obj_new('IdlgrText',strtrim(string(current_plotted_value),2), color=plotname_color, locations=[1.99,1.82,0],alignment=1.0)
-      plottedNameModel->add,plotText1
+      plottedNameModel->add,plotText1 
       plottedNameModel->add,plotText2
       view->add,plottedNameModel
       plottedNameModel->setproperty,hide=1
@@ -1031,7 +1164,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
          maven_location[1] = y_orbit(time_index*2)
          maven_location[2] = z_orbit(time_index*2)
          maven_location[3] = 1.0                        ;default scale factor
-        maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, color=[100,80,25], shading=1,reject=1)
+        maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, color=[255,102,0], shading=1,reject=1)
         maven_model -> add, maven_poly
         view -> add, maven_model
 
@@ -1061,12 +1194,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         
         plot_model = obj_new('IDLgrModel')
         view->add,plot_model
-        plot_x = insitu.time
-        plot_y = fltarr(n_elements(insitu.spacecraft.altitude))
+        plot_x = insitu1.time
+        plot_y = fltarr(n_elements(insitu1.spacecraft.altitude))
         if keyword_set(field) then begin
-          plot_y = insitu.(level0_index).(level1_index)
+          plot_y = insitu1.(level0_index).(level1_index)
         endif else begin
-          plot_y = insitu.spacecraft.altitude
+          plot_y = insitu1.spacecraft.altitude
         endelse
         ;set the plot colors before and after the selected time
           plot_colors = intarr(3,n_elements(plot_x))
@@ -1219,9 +1352,126 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
         endif 
 
+
+    z_position = [0.0,0.0,1.0,1.0]
      
 
     window->draw, view
+
+  ;ROTATE EVERYTHING TO THE PREFERRED INITIAL VIEW
+  if keyword_set(initialview) then begin
+    
+    
+    
+    ;SCALE
+    if n_elements(initialview) eq 5 then begin
+      ;TRANSLATE THE ENTIRE SCENE
+      
+        model->translate, initialview[3],initialview[4],0
+        atmModel1 ->translate, initialview[3],initialview[4],0
+        atmModel2->translate, initialview[3],initialview[4],0
+        atmModel3->translate, initialview[3],initialview[4],0
+        atmModel4->translate, initialview[3],initialview[4],0
+        atmModel5->translate, initialview[3],initialview[4],0
+        atmModel6->translate, initialview[3],initialview[4],0
+        gridlines->translate, initialview[3],initialview[4],0
+        orbit_model->translate, initialview[3],initialview[4],0
+        maven_model->translate, initialview[3],initialview[4],0
+        sub_solar_model->translate, initialview[3],initialview[4],0
+        sub_maven_model->translate, initialview[3],initialview[4],0
+        sub_maven_model_mso->translate, initialview[3],initialview[4],0
+        vector_model->translate, initialview[3],initialview[4],0
+        axesmodel->translate, initialview[3],initialview[4],0
+        sun_model->translate, initialview[3],initialview[4],0
+        axesmodel_msox->translate, initialview[3],initialview[4],0
+        axesmodel_msoy->translate, initialview[3],initialview[4],0
+        axesmodel_msoz->translate, initialview[3],initialview[4],0
+        if instrument_array[8] eq 1 then begin
+          periapse_limb_model->translate, initialview[3],initialview[4],0
+        endif
+      ;ROTATE SCENE TO REQUESTED SUB-CAMERA POINT
+        ;latitude
+          if initialview[0] ge 0.0 then rot_angle = (90.-initialview[0])
+          if initialview[0] lt 0.0 then rot_angle = (90.+initialview[0]) 
+          
+          model->rotate,[1,0,0],-rot_angle
+          atmModel1->rotate,[1,0,0],-rot_angle
+          atmModel2->rotate,[1,0,0],-rot_angle
+          atmModel3->rotate,[1,0,0],-rot_angle
+          atmModel4->rotate,[1,0,0],-rot_angle
+          atmModel5->rotate,[1,0,0],-rot_angle
+          atmModel6->rotate,[1,0,0],-rot_angle
+          gridlines->rotate,[1,0,0],-rot_angle
+          orbit_model -> rotate,[1,0,0],-rot_angle
+          maven_model ->rotate,[1,0,0],-rot_angle
+          sub_solar_model->rotate,[1,0,0],-rot_angle
+          sub_maven_model->rotate,[1,0,0],-rot_angle
+          sub_maven_model_mso->rotate,[1,0,0],-rot_angle
+          vector_model->rotate,[1,0,0],-rot_angle
+          axesmodel ->rotate,[1,0,0],-rot_angle
+          sun_model ->rotate,[1,0,0],-rot_angle
+          axesmodel_msox->rotate,[1,0,0],-rot_angle
+          axesmodel_msoy->rotate,[1,0,0],-rot_angle
+          axesmodel_msoz->rotate,[1,0,0],-rot_angle
+          if instrument_array[8] eq 1 then begin
+            periapse_limb_model ->rotate,[1,0,0],-rot_angle
+          endif
+        ;longitude
+          lon_angle = -90. + initialview[1] 
+          model->rotate,[0,1,0],lon_angle
+          atmModel1->rotate,[0,1,0],lon_angle
+          atmModel2->rotate,[0,1,0],lon_angle
+          atmModel3->rotate,[0,1,0],lon_angle
+          atmModel4->rotate,[0,1,0],lon_angle
+          atmModel5->rotate,[0,1,0],lon_angle
+          atmModel6->rotate,[0,1,0],lon_angle
+          gridlines->rotate,[0,1,0],lon_angle
+          orbit_model -> rotate,[0,1,0],lon_angle
+          maven_model ->rotate,[0,1,0],lon_angle
+          sub_solar_model->rotate,[0,1,0],lon_angle
+          sub_maven_model->rotate,[0,1,0],lon_angle
+          sub_maven_model_mso->rotate,[0,1,0],lon_angle
+          vector_model->rotate,[0,1,0],lon_angle
+          axesmodel ->rotate,[0,1,0],lon_angle
+          sun_model ->rotate,[0,1,0],lon_angle
+          axesmodel_msox->rotate,[0,1,0],lon_angle
+          axesmodel_msoy->rotate,[0,1,0],lon_angle
+          axesmodel_msoz->rotate,[0,1,0],lon_angle
+          if instrument_array[8] eq 1 then begin
+            periapse_limb_model ->rotate,[0,1,0],lon_angle
+          endif
+          
+      ;SET THE ALTITUDE OF THE CAMERA
+        s = 5./(initialview[2]/10000.)
+        model->scale, s, s, s
+        atmModel1->scale,s,s,s
+        atmModel2->scale,s,s,s
+        atmModel3->scale,s,s,s
+        atmModel4->scale,s,s,s
+        atmModel5->scale,s,s,s
+        atmModel6->scale,s,s,s
+        gridlines->scale,s,s,s
+        orbit_model->scale,s,s,s
+        maven_model->scale,s,s,s
+        sub_solar_model->scale,s,s,s
+        sub_maven_model->scale,s,s,s
+        sub_maven_model_mso->scale,s,s,s
+        axesmodel->scale,s,s,s
+        vector_model->scale,s,s,s
+        sun_model -> scale,s,s,s
+        axesmodel_msox->scale, s,s,s
+        axesmodel_msoy->scale, s,s,s
+        axesmodel_msoz->scale, s,s,s
+        if instrument_array[8] eq 1 then begin
+          periapse_limb_model->scale,s,s,s
+        endif
+        maven_location = maven_location*s
+        z_position = z_position*s
+    endif
+    
+    window->draw, view
+  endif
+
 
   ;SET THE GLOBAL VARIABLES TO KEEP EVERYTHING IN CHECK
 
@@ -1300,10 +1550,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  draw: draw, $
                  backgroundcolor: backgroundcolor, $
                  subbaseR: subbaseR, subbaseR1: subbaseR1, subbaseR2: subbaseR2, subbaseR3: subbaseR3, subbaseR4: subbaseR4, $
-                 subbaseR5: subbaseR5, subbaseR6: subbaseR6, subbaseR7: subbaseR7, subbaseR8: subbaseR8, subbaseR9:subbaseR9, $
+                 subbaseR5: subbaseR5, subbaseR6: subbaseR6, subbaseR7: subbaseR7, subbaseR8: subbaseR8, subbaseR9:subbaseR9, subbaseR10:subbaseR10, $
+                 subbaseR10a:subbaseR10a, subbaseR10b: subbaseR10B, $
                  text: text, $
                  view: view, $
-                 model: model, $
+                 model: model, mars_globe:mars_globe,$
                  opolygons: opolygons, mars_base_map:mars_base_map, $
                  atmModel1: atmModel1, atmModel2: atmModel2, atmModel3: atmModel3, atmModel4: atmModel4, atmModel5: atmModel5, atmModel6: atmModel6, $
                  opolygons1: opolygons1, opolygons2: opolygons2, opolygons3: opolygons3, opolygons4: opolygons4, opolygons5: opolygons5, opolygons6: opolygons6, $
@@ -1312,17 +1563,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  gridlines: gridlines, $
                  axesmodel: axesmodel, $
                  dirlight: dirlight,  lightmodel: lightmodel, ambientlight: ambientlight, $
-                 track: track, $
+                 track: track, coord_sys: coord_sys, $
                  textModel: textModel, $
                  timetext: timetext, $
                  orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
-                 vector_model:vector_model, vector_path: vector_path, $
+                 vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, $
                  maven_model: maven_model, $
-                 sun_model: sun_model, $
+                 sun_model: sun_model, sun_vector: sun_vector, $
+                 axesModel_msox:axesModel_msox, axesModel_msoy:axesModel_msoy, axesModel_msoz:axesModel_msoz, $
                  sub_solar_line: sub_solar_line, $
                  sub_solar_model: sub_solar_model, $
-                 sub_maven_line: sub_maven_line, $
-                 sub_maven_model: sub_maven_model, $
+                 sub_maven_line: sub_maven_line, sub_maven_model: sub_maven_model, $
+                 sub_maven_line_mso: sub_maven_line_mso, sub_maven_model_mso: sub_maven_model_mso, $
                  parametermodel:parametermodel, $
                  plottednamemodel:plottednamemodel, $
                  colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
@@ -1337,13 +1589,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
                  subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
                  submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $
-                 insitu: insitu, $
+                 submaven_x_coord_mso: submaven_x_coord_mso, submaven_y_coord_mso: submaven_y_coord_mso, submaven_z_coord_mso: submaven_z_coord_mso, $
+                 insitu: insitu1, $
                  time_index:time_index, initial_time:initial_time, $
                  base: base, $
                  level0_index: level0_index, level1_index: level1_index, $
                  install_directory: install_directory, $
                  instrument_array:instrument_array, $
-                 camera_view: camera_view, maven_location:maven_location $
+                 camera_view: camera_view, maven_location:maven_location, z_position:z_position $
                  }
      
       
@@ -1365,7 +1618,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           widget_control,(*pstate).subbaseR7, map=0
           widget_control,(*pstate).subbaseR8, map=0
           widget_control,(*pstate).subbaseR9, map=0
-      
+          widget_control,(*pstate).subbaseR10, map=0
+          
       widget_control, base, set_uvalue=pstate
     
       xmanager, 'MVN_KP_3D', base,/no_block, cleanup='MVN_KP_3D_cleanup', event_handler='MVN_KP_3D_event'
