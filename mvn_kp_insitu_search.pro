@@ -128,7 +128,6 @@ endif       ;END OF ALL SEARCH ROUTINES
 
 ; UNSET DEBUG ENV VARIABLE
 setenv, 'MVNTOOLKIT_DEBUG='
-e
-end
 
+end
  
