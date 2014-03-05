@@ -20,12 +20,12 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
  
 ; Default if no arguments passed
 if n_params() eq 0 then begin
-;  SAVEFILES="TRUE"
+ ; SAVEFILES="TRUE"
  ; CDF="TRUE"
  ; INSITU_SEARCH="TRUE"
-;  ASCII="TRUE"
-;  COMPAREINSITU="TRUE"
-;  COMPAREIUVS="TRUE"
+ ; ASCII="TRUE"
+ ; COMPAREINSITU="TRUE"
+ ; COMPAREIUVS="TRUE"
 endif
 
 
@@ -67,11 +67,6 @@ if keyword_set(CDF) then begin
   ;; Test range time input - binary
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs"]
   
-  ;; Test single time input - ascii  FIXME not working
-  ;; Test range time input - ascii   FIXME not working
-  
-  ;; Test specifying just iuvs FIXME not working
-  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /iuvs"]
   
   ;; Test specifying certain instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/ngims,/sep,/iuvs_periapse"]
@@ -126,11 +121,7 @@ if keyword_set(SAVEFILES) then begin
   ;; Test range time input - binary
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs, /savefiles"]
 
-  ;; Test single time input - ascii  FIXME not working
-  ;; Test range time input - ascii   FIXME not working
 
-  ;; Test specifying just iuvs FIXME not working
-  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /savefiles, /iuvs"]
 
   ;; Test specifying certain instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse"]
@@ -167,19 +158,26 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /textfiles, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-10/17:01:05'] , insitu, /textfiles, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:00', '2015-04-11/00:00:01'] , insitu, /textfiles, /swia, /mag, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /textfiles, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-29/17:01:05'] , insitu, /textfiles, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-24/17:01:05'] , insitu, /textfiles, /insitu_all, /insitu_only"]
   
   
-  ;; Orbit Numer
-  cmd_list = [cmd_list, "mvn_kp_read, 1022 , insitu, /textfiles, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, /textfiles, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, /textfiles, /swia, /mag, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, /textfiles, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1021, 2022] , insitu, /textfiles, /insitu_all, /insitu_only"]
+  ;; Orbit Numer ascii & insitu
+  cmd_list = [cmd_list, "mvn_kp_read, 1024 , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /textfiles, /swia, /mag, /iuvs_all"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, iuvs, /textfiles, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021, 2022] , insitu, iuvs, /textfiles"]
   
   
-  ;; NO IUVS ASCI READER YET - FIXME
+  ;; *** Test reading in INSITU & IUVS ascii data ****
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-02/03:04:00' , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/00:00:00', '2015-04-19/17:01:05'] , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:15', '2015-04-11/00:00:01'] , insitu, iuvs, /textfiles, /swia, /mag, /iuvs_periapse, /iuvs_apoapse"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-27/17:01:05'] , insitu, iuvs, /textfiles, /insitu_all, /iuvs_all"]
+  
+
+  
   
 endif
 
@@ -244,12 +242,7 @@ if keyword_set(COMPAREIUVS) then begin
   cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]
 
 
-  
-  ;; Test single time input - ascii  FIXME not working
-  ;; Test range time input - ascii   FIXME not working
-  
-  ;; Test specifying just iuvs FIXME not working
-  ;;cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/14:00:00', insitu, iuvs, /savefiles, /iuvs"]
+
   
   ;; Test specifying certain instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/savefiles,/ngims,/sep,/iuvs_periapse"]
@@ -266,8 +259,34 @@ if keyword_set(COMPAREIUVS) then begin
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs2"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2"]  
 
-  
 
+    ;; Compare Ascii to CDF
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu2, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
+  
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-02/01:00:00', '2015-04-06/17:01:05'] , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-02/01:00:00', '2015-04-06/17:01:05'] , insitu2, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
+  
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-11/13:01:59' , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-11/13:01:59' , insitu2, iuvs2"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-15/00:00:01'] , insitu, iuvs, /iuvs_periapse, /iuvs_coronaLoresDisk, /iuvs_coronaEchelleLimb, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/00:00:00', '2015-04-15/00:00:01'] , insitu2, iuvs2, /iuvs_periapse, /iuvs_coronaLoresDisk, /iuvs_coronaEchelleLimb"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
+
+  
+  ;; Compare Ascii to Save
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-22/00:00:01' , insitu, iuvs, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, '2015-04-22/00:00:01' , insitu2, iuvs2, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
+  
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/23:59:59', '2015-04-15/00:00:01'] , insitu, iuvs, /iuvs_periapse, /iuvs_coronaLoresDisk, /iuvs_coronaEchelleLimb, /textfiles"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-10/23:59:59', '2015-04-15/00:00:01'] , insitu2, iuvs2, /iuvs_periapse, /iuvs_coronaLoresDisk, /iuvs_coronaEchelleLimb, /savefiles"]
+  cmd_list = [cmd_list, "mvn_kp_compare_data, iuvs, iuvs2, /approx"]
   
 endif
 
