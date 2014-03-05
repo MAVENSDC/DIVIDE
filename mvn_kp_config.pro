@@ -1,7 +1,7 @@
 
 
 function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_file_spec, data_retrieval=data_retrieval, $
-                        orbit_number=orbit_number
+                        orbit_number=orbit_number, iuvs_data=iuvs_data
  
   if keyword_set(insitu_file_spec) then begin
     ;  insitu_filename_spec = create_struct('pattern', 'mvn_KP_l2_pf*', $
@@ -92,6 +92,14 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
       'orbit_template', 'orbit_template.sav')
       
       return, orbit_number_spec
+  endif
+  
+  
+  if keyword_set(iuvs_data) then begin
+    iuvs_data_spec = create_struct($
+      'num_common', 23 )
+      
+    return, iuvs_data_spec
   endif
   
   

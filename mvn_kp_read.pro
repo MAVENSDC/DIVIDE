@@ -522,44 +522,20 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     iuvs_index=0
     if iuvs_filenames[0] ne 'None' then begin
     
-      if keyword_set(savefiles) then begin
-        for file=0,n_elements(iuvs_filenames)-1 do begin
-        
-          MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
-          
-          fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
-          MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
-            instrument_array=instrument_array, /savefiles
-            
-          ;; Add single iuvs_record to array of iuvs records
-          iuvs_data_temp[iuvs_index] = iuvs_record
-          iuvs_index++
-          
-        endfor
-      endif else if keyword_set(textfiles) then begin
-        print, "No TEXT reader for IUVS yet."   ;; FIXME NEED TO DO 
-        iuvs_data_temp = 0
-        iuvs_index = 1
+      ;; Loop through each file
+      for file=0,n_elements(iuvs_filenames)-1 do begin
       
-      endif else begin
+        MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
-        ;; DEFAULT BEHAVIOR IS TO READ CDF FILES
-        for file=0,n_elements(iuvs_filenames)-1 do begin
-        
-          MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
+        fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
+        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
+          instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
           
-          fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
-          MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
-            instrument_array=instrument_array, instruments=instruments
-            
-          ;; Add single iuvs_record to array of iuvs records
-          iuvs_data_temp[iuvs_index] = iuvs_record
-          iuvs_index++
-          
-        endfor
+        ;; Add single iuvs_record to array of iuvs records
+        iuvs_data_temp[iuvs_index] = iuvs_record
+        iuvs_index++
         
-      endelse
-      
+      endfor
       
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED
       iuvs_output = iuvs_data_temp[0:iuvs_index-1]
@@ -571,7 +547,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   endif
 
   
-  
   ;TIME TO RUN ROUTINE 
   overall_end_time = systime(1)
   print,'Your query took ', overall_end_time - overall_start_time,' seconds to complete.'
@@ -580,7 +555,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ; UNSET DEBUG ENV VARIABLE
   setenv, 'MVNTOOLKIT_DEBUG='
   
-  break1: ; FIXME - Why break?
 end
 
 
