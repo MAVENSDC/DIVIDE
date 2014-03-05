@@ -27,25 +27,43 @@ pro mvn_kp_compare_nonfinite, val1, val2
 end
 
 
-pro mvn_kp_compare_scalars, input1, input2, i=i, j=j, k=k, l=l, x=x, y=y, z=z, si=si
+pro mvn_kp_compare_scalars, input1, input2, i=i, j=j, k=k, l=l, x=x, y=y, z=z, si=si, approx=approx
   ;; Check first if NAN or Infinity
   if size(input1, /TYPE) eq 4 or size(input1, /TYPE) eq 5 then begin
     if not finite(input1) then begin
       mvn_kp_compare_nonfinite, input1, input2
     endif else begin
-      if input1 ne input2 then message, "values not equal in array: " +string(input1) + " and "+string(input2)
+    
+      ;; If not approx keyword, compare exact values
+      if not keyword_set(approx) then begin
+        if input1 ne input2 then message, "values not equal in array: " +string(input1) + " and "+string(input2)
+        
+        ;; If approx keyword, then compare absolute difference of values
+      endif else begin
+      
+        if input1 ne 0 then begin
+          if abs(((input1 - input2)/input1)) gt .000009 then begin
+            print, input1, input2, format='(f20.5)'
+            stop
+          endif
+        endif else begin
+          if input2 ne 0 then message, "values not equal in array: " +string(input1) + " and "+string(input2)
+        endelse
+      endelse
     endelse
+    
   endif else begin
     if input1 ne input2 then message, "values not equal in array: " +string(input1) + " and "+string(input2)
+    
   endelse
 
 end
 
-pro mvn_kp_compare_arrays, input1, input2, dim, i=i, j=j, k=k, l=l, si=si
+pro mvn_kp_compare_arrays, input1, input2, dim, i=i, j=j, k=k, l=l, si=si, approx=approx
   
   ;; 0 dim array - Scalar
   if dim eq 0 then begin
-    mvn_kp_compare_scalars, input1, input2, i=i, j=j, k=k, l=l, si=si
+    mvn_kp_compare_scalars, input1, input2, i=i, j=j, k=k, l=l, si=si, approx=approx
   endif
     
   ;; 1 dmin array
@@ -55,7 +73,7 @@ pro mvn_kp_compare_arrays, input1, input2, dim, i=i, j=j, k=k, l=l, si=si
     if xdim1 ne xdim2 then message, "Dimensions not equal xdim1: "+string(xdmin1)+ " xdim2: "+string(xdim2)
     
     for x=0, xdim1-1 do begin     
-      mvn_kp_compare_scalars, input1[x], input2[x], i=i, j=j, k=k, si=si, l=l, x=x
+      mvn_kp_compare_scalars, input1[x], input2[x], i=i, j=j, k=k, si=si, l=l, x=x, approx=approx
     endfor
   
   endif
@@ -72,7 +90,7 @@ pro mvn_kp_compare_arrays, input1, input2, dim, i=i, j=j, k=k, l=l, si=si
     
     for x=0, xdim1-1 do begin
       for y=0, ydim1-1 do begin
-        mvn_kp_compare_scalars, input1[x,y], input2[x,y], i=i, j=j, k=k, l=l, si=si, x=x, y=y
+        mvn_kp_compare_scalars, input1[x,y], input2[x,y], i=i, j=j, k=k, l=l, si=si, x=x, y=y, approx=approx
       endfor
     endfor
 
@@ -95,7 +113,7 @@ pro mvn_kp_compare_arrays, input1, input2, dim, i=i, j=j, k=k, l=l, si=si
     for x=0, xdim1-1 do begin
       for y=0, ydim1-1 do begin
         for z=0, zdim1-1 do begin
-          mvn_kp_compare_scalars, input1[x,y,z], input2[x,y,z], i=i, j=j, k=k, l=l, si=si, x=x, y=y, z=z
+          mvn_kp_compare_scalars, input1[x,y,z], input2[x,y,z], i=i, j=j, k=k, l=l, si=si, x=x, y=y, z=z, approx=approx
         endfor
       endfor
     endfor
@@ -116,7 +134,7 @@ end
 ;; and compares them element by element. 
 ;;
 ;;
-pro mvn_kp_compare_data, input1, input2
+pro mvn_kp_compare_data, input1, input2, approx=approx
 
 
 ;mvn_kp_read, ['2015-04-01/13:06:51', '2015-04-04/14:59:00'] , insitu1, /insitu_only
@@ -170,7 +188,7 @@ for i=0, numElements1-1 do begin
       dim2 = size(input2[i].(j), /N_DIMENSIONS)
       
       if dim1 ne dim2 then message, "Inconsistent array dimensions at top array #: "+string(i)+" and tag position: "+string(j)            
-      mvn_kp_compare_arrays, input1[i].(j), input2[i].(j), dim1, i=i, j=j
+      mvn_kp_compare_arrays, input1[i].(j), input2[i].(j), dim1, i=i, j=j, approx=approx
 
 
     ;; If type IS a struct then handle it as such
@@ -206,7 +224,7 @@ for i=0, numElements1-1 do begin
             subDim2 = size(subStruct2.(l), /N_DIMENSIONS)
             
             if subDim1 ne subDim2 then message, "Inconsistent dimensions on sub structure element at i:"+string(i)+" j:"+string(j)+" k:"+string(k)+" l:"+string(l)
-            mvn_kp_compare_arrays, subStruct1.(l), subStruct2.(l), subDim1, i=i, j=j, si=si, k=k, l=l
+            mvn_kp_compare_arrays, subStruct1.(l), subStruct2.(l), subDim1, i=i, j=j, si=si, k=k, l=l, approx=approx
   
           endfor
         endfor        
