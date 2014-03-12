@@ -356,14 +356,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; FIXME variable names
   MVN_KP_FILE_SEARCH, begin_time, end_time, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
      kp_iuvs_data_directory, savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
-
-  
-  total_KP_file_count = n_elements(target_KP_filenames) ; FIXME shouldn't need this here
  
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS & INITIALIZE ARRAY OF DATA STRUTURES 
   MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
-  kp_data_temp = replicate(insitu_record,21600L*total_KP_file_count)
+  kp_data_temp = replicate(insitu_record,21600L*n_elements(target_KP_filenames))
     
   if not keyword_set(insitu_only) then begin  
     MVN_KP_IUVS_STRUCT_INIT, iuvs_record,   instrument_array
@@ -382,139 +379,35 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ; high_count = 0
   ; low_count = 0
   if target_kp_filenames[0] ne 'None' then begin
-    if keyword_set(textfiles) then begin
-      index=0L
-      within_time_bounds = 0
-      for file=0,total_KP_file_count[0]-1 do begin
+    totalEntries=0L
+    start_index=0L
+    for file=0,n_elements(target_KP_filenames)-1 do begin
+    
+      ;UPDATE THE READ STATUS BAR
+      MVN_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
-        ;UPDATE THE READ STATUS BAR
-        MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
-        ;OPEN THE KP DATA FILE
-        openr,lun,kp_insitu_data_directory+target_KP_filenames[file,0],/get_lun
-        ;READ IN A LINE, EXTRACTING THE TIME
-        while not eof(lun) do begin
-          temp = ''
-          readf,lun,temp
-          data = strsplit(temp,' ',/extract)
-          if data[0] ne '#' then begin
-          
-            ;KICK TO ROUTINE TO CHECK IF TIME FALLS WITHIN SEARCH BOUNDS
-            within_time_bounds = MVN_KP_TIME_BOUNDS(data[0],begin_time,end_time)
-            ;IF WITHIN BOUNDS, EXTRACT AND STORE DATA
-            if within_time_bounds then begin
-            
-              ; TEMPLATE STRUCTURE TO READ DATA INTO
-              orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(212)}
-              
-              ;READ IN AND INIT TEMP STRUCTURE OF DATA
-              orbit.time_string = data[0]
-              orbit.time = time_double(data[0])
-              orbit.orbit = data[198]
-              orbit.IO_bound = data[199]
-              orbit.data[0:196] = data[1:197]
-              orbit.data[197:211] = data[200:214]
-              
-              ;CHECK time_string FORMAT FOR A SLASH DELIMITER INSTEAD OF A "T" AND SWITCH IF NECESSARY
-              ts_split=strsplit(orbit.time_string, '/', COUNT=ts_count, /EXTRACT)
-              if ts_count gt 1 then orbit.time_string = ts_split[0]+'T'+ts_split[1]
-              
-              if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
-                MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instrument_array
-                kp_data_temp[index] = insitu_record
-                index=index+1
-              endif
-            endif
-          endif
-        endwhile
+      fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
+      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time, end_time=end_time, io_flag=io_flag, $
+        instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
         
-        free_lun,lun
-      endfor      ;file loop, open/read each KP file
-      
-      start_index=0
-      stop_index=index-1
-      
-    endif else if keyword_set(savefiles) then begin
-      index=0L
-      within_time_bounds=0
-      for file=0,total_KP_file_count[0]-1 do begin
-        ;UPDATE THE READ STATUS BAR
-        MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
-        restore,kp_insitu_data_directory+target_kp_filenames[file]
-        ;LOAD THE NEEDED IN-SITU DATA FILES FOR EACH INSTRUMENT
-        for saved_records = 0, n_elements(orbit) -1 do begin
-          within_time_bounds = MVN_KP_TIME_BOUNDS(orbit[saved_records].time_string, begin_time, end_time)
-          if within_time_bounds then begin            ;IF WITHIN TIME RANGE, EXTRACT AND STORE DATA
-          
-            if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
-            
-              MVN_KP_INSITU_ASSIGN, insitu_record, orbit[saved_records], instrument_array
-              kp_data_temp[index] = insitu_record
-              index=index+1
-              
-            endif
-          endif
-        endfor
-      endfor
-  
-      start_index=0
-      stop_index=index-1
-      
-    endif else begin
-      
-      index=0L
-      ;; Default behavior of reading in CDF files. 
-      for file=0, total_kp_file_count[0]-1 do begin
-        ;UPDATE THE READ STATUS BAR
-        MVN_LOOP_PROGRESS,file,0,total_kp_file_count-1,message='In-situ KP File Read Progress'
         
-        filename = kp_insitu_data_directory+target_kp_filenames[file]
-        MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments, instrument_array=instrument_array ;; FIXME
-        kp_data_temp[index] = insitu_record
-        index+= n_elements(insitu_record)
-        
-      endfor
-      
-      ;; ----------FIXME Maybe make more efficent/
-      ;; ------------more testing of edge cases - Re think make sure this is grabbing correct time range
-      ;
-      ;; Strip out times not in range
-      start_index=-1L
-      stop_index=index-1L
-      
-      for i=0, index-1 do begin
-        within_time_bounds = MVN_KP_TIME_BOUNDS(kp_data_temp[i].time_string, begin_time, end_time)
-        if within_time_bounds then begin
-          start_index=i
-          i++
-          break
-        endif
-      endfor
-
-      ;; Search backwards from end
-      j = index-1
-      while (j ge 0 ) do begin
-        within_time_bounds = MVN_KP_TIME_BOUNDS(kp_data_temp[j].time_string, begin_time, end_time)
-        if within_time_bounds eq 1 then begin
-          stop_index=j
-          break
-        endif
-        j--
-      endwhile
-      
-    endelse
+      kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
+      start_index += n_elements(kp_data)
+      totalEntries += n_elements(kp_data)
+    endfor
     
     
     ;OUTPUT INSITU DATA STRUCTURE
-    insitu_output = kp_data_temp[start_index:stop_index]
-    print,'A total of ',strtrim(string(stop_index-start_index),2),' INSITU KP data records were found that met the search criteria.'
+    insitu_output = kp_data_temp[0:totalEntries-1]
+    print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
     
   endif else begin
     printf,-2, "Warning: No Insitu files found for input timerange."
   endelse
-
+  
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Main read loop: IUVS  data   ------------------------------- ;;
- 
+  
   
   ;IF ANY IUVS DATA IS REQUESTED & NOT IN INSITU ONLY MODE
   if not keyword_set (insitu_only) and ((instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $
@@ -556,6 +449,3 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   setenv, 'MVNTOOLKIT_DEBUG='
   
 end
-
-
-
