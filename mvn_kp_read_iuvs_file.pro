@@ -76,8 +76,19 @@ end
 
 
 pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_time=end_time, $
-                           instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles, instruments=instruments
-
+  instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles, instruments=instruments
+  
+  
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+  
+  
   ;; Default to filing all instruments if not specified
   if not keyword_set(instrument_array) then begin
     instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
