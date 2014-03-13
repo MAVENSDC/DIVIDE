@@ -8,7 +8,7 @@
 ;; FIXME - Needs better header
 ;;
 
-pro mvn_kp_iuvs_cdf_write, infiles, outpath, debug=debug
+pro mvn_kp_iuvs_cdf_write, infiles, outpath, savefiles=savefiles, debug=debug
 
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -35,19 +35,27 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath, debug=debug
   masterCDFechelle = cdf_tools_directory+'/mvn_kp_iuvs_echelle_master.cdf'  
   
   ;; Global that defines the number of common variables amongst all observation modes
-  N_common = 23
+  iuvs_data_spec = mvn_kp_config(/iuvs_data)
+  N_common = iuvs_data_spec.num_common
 
   ;LOOP THROUGH ALL INPUT FILES AND CREATE A CDF VERSION OF EACH IN THE OUTPATH
   foreach file , infiles do begin
   
-    ;; Strip out the date from input filenames.
-    base = file_basename(file, '.sav')                    ;; FIXME - Currently only works with save files.
-    
+    ;; If keyword set savefiles, read in savefiles, otherwise read in textfiles
+    if not keyword_set(savefiles) then begin
+      ;; Strip out the date from input filenames.
+      base = file_basename(file, '.txt')
+      ;; Read the file into an iuvs structure in memory
+      mvn_kp_read_iuvs_file, file, iuvs, /textfiles
+    endif else begin
+      ;; Strip out the date from input filenames.
+      base = file_basename(file, '.sav')
+      ;; Read the file into an iuvs structure in memory
+      mvn_kp_read_iuvs_file, file, iuvs, /savefiles
+    endelse
     ;; Output file
     outcdffile = outpath+'/'+base+'.cdf'
     
-    ;; Read the file into an iuvs structure in memory
-    mvn_kp_read_iuvs_file, file, iuvs, /savefiles
     
     iuvs_cut = iuvs[0]                ;; FIXME, I don't think this is necessary anymore because mvn_kp_read_iuvs_file should only return one item.
     ;; Release insitu and iuvs
@@ -83,11 +91,30 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath, debug=debug
       cdfi_p = cdf_load_vars(masterCDFechelle, /ALL)
       
       ;; Set time variable and obs mode
-      ptr = PTR_NEW([0]) ; FIXME
-      cdfi_p.vars[0].dataptr = ptr
-      ptr = PTR_NEW(["periapse1", "periapse2", "periapse3", "c_e_disk", "c_e_limb", "c_e_high", "apoapse"])
-      cdfi_p.vars[1].dataptr = ptr
+      mvn_kp_time_split_string, periapse1.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse1_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, periapse2.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse2_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, periapse3.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse3_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_e_disk.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_e_disk_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_e_limb.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_e_limb_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_e_high.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_e_high_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, apoapse.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, apoapse_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
       
+      ;; Fill var[0] with tt2000 version of time_start 
+      ptr = PTR_NEW([periapse1_tt2000_start, periapse2_tt2000_start, periapse3_tt2000_start, $
+                     c_e_disk_tt2000_start, c_e_limb_tt2000_start, c_e_high_tt2000_start, apoapse_tt2000_start])                                               
+      cdfi_p.vars[0].dataptr = ptr 
+      
+      ;; Set time variables and obs mode
+      ptr = PTR_NEW(["periapse1", "periapse2", "periapse3", "Corona Echelle disk", "Corona Echelle limb", "Corona Echelle high", "apoapse"])
+      cdfi_p.vars[1].dataptr = ptr
+          
       ptr = PTR_NEW([periapse1.time_start, periapse2.time_start, periapse3.time_start, $
                      c_e_disk.time_start, c_e_limb.time_start, c_e_high.time_start, apoapse.time_start])
       cdfi_p.vars[2].dataptr = ptr
@@ -174,9 +201,28 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath, debug=debug
       cdfi_p = cdf_load_vars(masterCDFlores, /ALL)
       
       ;; Set time variable and obs mode
-      ptr = PTR_NEW([0]) ; FIXME
+      mvn_kp_time_split_string, periapse1.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse1_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, periapse2.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse2_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, periapse3.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, periapse3_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_l_disk.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_l_disk_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_l_limb.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_l_limb_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, c_l_high.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, c_l_high_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      mvn_kp_time_split_string, apoapse.time_start, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      cdf_tt2000, apoapse_tt2000_start, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+      
+      ;; Fill var[0] with tt2000 version of time_start
+      ptr = PTR_NEW([periapse1_tt2000_start, periapse2_tt2000_start, periapse3_tt2000_start, $
+                     c_l_disk_tt2000_start, c_l_limb_tt2000_start, c_l_high_tt2000_start, apoapse_tt2000_start])
       cdfi_p.vars[0].dataptr = ptr
-      ptr = PTR_NEW(["periapse1", "periapse2", "periapse3", "c_l_disk", "c_l_limb", "c_l_high", "apoapse"])
+      
+      ;; Set time variables and obs mode
+      ptr = PTR_NEW(["periapse1", "periapse2", "periapse3", "Corona Lores disk", "Corona Lores limb", "Corona Lores high", "apoapse"])
       cdfi_p.vars[1].dataptr = ptr
       
       ptr = PTR_NEW([periapse1.time_start, periapse2.time_start, periapse3.time_start, $

@@ -8,7 +8,7 @@
 ;; Currently only reating from Save files.
 
 
-pro mvn_kp_insitu_cdf_write, infiles, outpath, debug=debug
+pro mvn_kp_insitu_cdf_write, infiles, outpath,  savefiles=savefiles, debug=debug
 
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -35,19 +35,15 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath, debug=debug
   
   ;LOOP THROUGH ALL INPUT FILES AND CREATE A CDF VERSION OF EACH IN THE OUTPATH
   foreach file , infiles do begin
-  
-  
-    ;; Strip out the date from input filenames.
-    filename_spec=mvn_kp_config(/insitu_file_spec)
-    base = file_basename(file, '.sav')
-    year =strmid(base, filename_spec.year_index, 4)
-    month=strmid(base, filename_spec.month_index, 2)
-    day  =strmid(base, filename_spec.day_index, 2)
-
-    ;; Read in data files for exactly 1 day range
-    startdate = year+'-'+month+'-'+day+'/00:00:00'
-    enddate = year+'-'+month+'-'+day+'/23:59:59'
-    mvn_kp_read, [startdate, enddate] , insitu, /savefiles, /insitu_only, debug=debug
+    
+    ;; Read in insitu data from either textfile or savefile 
+    if not keyword_set(savefiles) then begin
+      base = file_basename(file, '.txt')
+      MVN_KP_READ_INSITU_FILE, file, insitu, /textfiles
+    endif else begin
+      base = file_basename(file, '.sav')
+      MVN_KP_READ_INSITU_FILE, file, insitu, /savefiles
+    endelse
     
     
     ;; Top level data
@@ -71,21 +67,23 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath, debug=debug
     ;; Load CDF Master file (empty) that we will fill in
     cdfi_insitu=0
     cdfi_insitu = cdf_load_vars(masterCDF, /ALL)
+
+    ;; Set top level variables    
+    mvn_kp_time_split_string, time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    cdf_tt2000, tt2000_time, yr, mo, dy, hr, min, sec, /COMPUTE_EPOCH
+    ptr = PTR_NEW(tt2000_time)
+    cdfi_insitu.vars[0].dataptr = ptr
     
-    
-    ;; Set top level variables
     ptr = PTR_NEW(time_string)
     cdfi_insitu.vars[1].dataptr = ptr
-    ptr = PTR_NEW(time)
-    cdfi_insitu.vars[2].dataptr = ptr
     ptr = PTR_NEW(orbit)
-    cdfi_insitu.vars[3].dataptr = ptr
+    cdfi_insitu.vars[2].dataptr = ptr
     ptr = PTR_NEW(io_bound)
-    cdfi_insitu.vars[4].dataptr = ptr
+    cdfi_insitu.vars[3].dataptr = ptr
     
     
     ;; Loop through varialbes, create a pointer to a (copy) of a paramter
-    j=5
+    j=4
     NV=n_tags(lpw)
     for i=0, NV-1 Do begin
       ptr = PTR_NEW(lpw.(i))
@@ -169,7 +167,7 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath, debug=debug
     
 
     ; Now actually write output CDF file containing all data.
-    dummy = cdf_save_vars(cdfi_insitu,outpath+'/'+base+'.cdf')
+    dummy = mvn_kp_cdf_save_vars(cdfi_insitu,outpath+'/'+base+'.cdf')
     
     ;; Release insitu
     insitu=0

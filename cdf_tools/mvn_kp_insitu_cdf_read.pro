@@ -12,15 +12,15 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
   endif
 
   insitu = []  ; Fixme won't work on idl 7
-  lpw_start        = 5
-  static_start     = 23
-  swia_start       = 77
-  swea_start       = 89
-  mag_start        = 107
-  sep_start        = 121
-  ngims_start      = 149
-  spacecraft_start = 179
-  app_start        = 211
+  lpw_start        = 4
+  static_start     = 22
+  swia_start       = 76
+  swea_start       = 88
+  mag_start        = 106
+  sep_start        = 120
+  ngims_start      = 148
+  spacecraft_start = 178
+  app_start        = 210
   
   lpw_total        = 18
   static_total     = 51
@@ -53,10 +53,11 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
     kp_data = replicate(insitu_record,NV)
     
     ;; Top level data
+    ;; time_tt2000      = *cdfi_insitu.vars[0].dataptr      ;; Ignore vars[0].
+    kp_data.time        = time_double(*cdfi_insitu.vars[1].dataptr)
     kp_data.time_string = *cdfi_insitu.vars[1].dataptr
-    kp_data.time        = *cdfi_insitu.vars[2].dataptr
-    kp_data.orbit       = *cdfi_insitu.vars[3].dataptr
-    kp_data.io_bound    = *cdfi_insitu.vars[4].dataptr
+    kp_data.orbit       = *cdfi_insitu.vars[2].dataptr
+    kp_data.io_bound    = *cdfi_insitu.vars[3].dataptr
     
     
     ;; Read in LPW data

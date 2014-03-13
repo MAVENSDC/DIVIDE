@@ -63,6 +63,7 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, instrument_arr
     if in_mode eq 'echelle' then begin
     
       ;; Fill in common values
+      ;; Index into cdf_in.vars with i+2, first two values are time_start_tt2000&obs mode which we're ignoring.
       for i=0, N_common-1 DO begin
         
         ;; 3 PERIAPSE entries per observation
