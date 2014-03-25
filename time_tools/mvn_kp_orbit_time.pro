@@ -15,6 +15,7 @@
 ;-
 pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
 
+  ;; FIXME - Take care of sanitizing input, right now orbits can be decimals which can have weird behavior
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -79,8 +80,9 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
 
   ;FIND THE TIME FOR THE ENDING ORBIT
 
-  end_index = where(orbits.orbitnum eq end_orbit) + 1        ;ADD ONE TO GET THE END TIME OF THE END ORBIT
-  if begin_index lt 0 then message, "Couldn't find time range for end orbit"
+  end_index = where(orbits.orbitnum eq end_orbit)
+  if end_index lt 0 then message, "Couldn't find time range for end orbit"
+  end_index+= 1        ;ADD ONE TO GET THE END TIME OF THE END ORBIT
   end_time = orbits.time(end_index)  
   
   et_split = strsplit(end_time, ' ', /extract)
