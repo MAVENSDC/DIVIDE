@@ -2,8 +2,15 @@ pro mvn_kp_time_split_one_string, time_in, year=year, month=month, day=day, hour
   ;; Copy time input
   time_string = time_in
   
-  ;; Split apart Date & Time from 'T' delimiter
-  first_split = strsplit(time_string, 'T', /EXTRACT)
+  ;; If String contains a 'T' Then split assuming time "YYYY-MM-DDTHH:MM:SS'
+  if strmatch(time_string, '*T*') then begin
+    first_split = strsplit(time_string, 'T', /EXTRACT)
+  
+  ;; Otherwise assume string format "YYYY-MM-DD/HH:MM:SS'
+  endif else begin
+    first_split = strsplit(time_string, '/', /EXTRACT)
+  endelse
+
 
   date_string = first_split[0]
   
@@ -55,7 +62,6 @@ pro mvn_kp_time_split_string, time_in, year=year, month=month, day=day, hour=hou
   ;; Copy input  
   time_string = time_in
    
-
   ;; If size is greater than 1 we have a list of strings
   if size(time_string, /n_elements) gt 1 then begin
 
