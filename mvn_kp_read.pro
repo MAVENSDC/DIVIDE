@@ -74,11 +74,10 @@
 ;-
 
 @time_string
-@mvn_time_convert
 @mvn_kp_download_files
 @mvn_kp_file_search
 @mvn_kp_insitu_struct_init
-@mvn_kp_iuvs_struct_init
+@mvn_kp_iuvs_struct_init        ;; FIXME UPDATE ALL OF THESE
 @mvn_loop_progress
 @mvn_kp_time_bounds
 @mvn_kp_insitu_assign
@@ -129,12 +128,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
 
-  ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT 
-  if keyword_set(duration) eq 0 then begin
-    if size(time,/type) eq 7 then duration = 86400
-    if size(time,/type) eq 2 then duration = 1
-  endif
-  
+
   ;SET UP instrument_array WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
   if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
     keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
@@ -307,54 +301,93 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Process input time/orbit range  ---------------------------- ;;
 
-  ;IF ORBIT(s) SUPPLIED - FIXME I DON"T THINK THIS IS WORKING AND DURATION IS ALWAYS DEFINED BY THIS POINT
+  
+  ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT
+  if keyword_set(duration) eq 0 then begin
+    if size(time,/type) eq 7 then duration = 86400
+    if size(time,/type) eq 2 then duration = 1
+  endif
+
+  ;IF ORBIT(s) SUPPLIED 
+  ;;============================
   if size(time, /type) eq 2 then begin
+  
+    ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
     if n_elements(time) eq 1 then begin
-      if keyword_set(duration) then begin
         print,'Retrieving KP data for ',strtrim(string(duration),2),' orbits beginning at orbit #',strtrim(string(time),2)
         begin_orbit = time[0]
         end_orbit = time[0] + duration
-        MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
-      endif
     endif else begin
-      print,'Retrieving KP data between orbits ',strtrim(string(time(0)),2),' and ',strtrim(string(time(1)),2)
       begin_orbit = time[0]
       end_orbit   = time[1]
-      MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
     endelse
+    
+    ;; Use orbit file look up to get time strings for each orbit       -- FIXME check output of this to ensure we found orbits.
+    MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time_string, end_time_string
+    
+    ;; Create Jul day versions
+    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    begin_time_jul = julday(mo, dy, yr, hr, min, sec)
+    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    end_time_jul = julday(mo, dy, yr, hr, min, sec) 
   endif
   
   ;IF TIME STRING(s) SUPPLIED
+  ;;============================
   if size(time, /type) eq 7 then begin 
     if n_elements(time) eq 1 then begin 
       ; IF ONE TIME SUPPLIED USE IT AS START. DETERMINE END TIME BASED ON duration (DEFAULT 1 DAY OR USER SUPPLIED)
-      begin_time = MVN_TIME_CONVERT(time,1)
-      end_time   = MVN_TIME_MATH(begin_time,duration)
+      begin_time_string = time[0]
+      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      begin_time_jul = julday(mo, dy, yr, hr, min, sec)
+
+      ;; Add seconds onto begin jul date to get end jul date
+      end_time_jul = begin_time_jul + (duration/86400.0D)
+      end_time_string = MVN_KP_TIME_CREATE_STRING(end_time_jul)
+      
     endif else begin
-      ;IF THE USER SUPPLIES A 2-VALUE ARRAY OF TIMES, CONVERT TO START AND END TIMES
-      begin_time = MVN_TIME_CONVERT(time[0],1)
-      end_time   = MVN_TIME_convert(time[1],1)
+      ;IF THE USER SUPPLIES A 2-VALUE ARRAY OF TIMES, USE THESE AS TIME STRINGS   - FIXME VALIDATE TIMES HERE?
+      begin_time_string = time[0]
+      end_time_string   = time[1]
+      
+      ;; Create Jul day versions
+      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      begin_time_jul = julday(mo, dy, yr, hr, min, sec)
+      mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      end_time_jul = julday(mo, dy, yr, hr, min, sec)
     endelse
   endif
   
-  ;IF LONG INTEGER TIME SUPPLIED (FIXME: SECONDS?)
+  ;IF LONG INTEGER TIME SUPPLIED CONVERT FROM UNIX TIME TO TIME STRING (FIXME: SECONDS?)
+  ;;============================
   if size(time,/type) eq 3 then begin
     if n_elements(time) eq 1 then begin
-      begin_time = MVN_TIME_CONVERT(time,3)
-      end_time   = MVN_TIME_CONVERT((time+86400),3)
+      begin_time_string = time_string(time, format=0)
+      end_time_string   = time_string((time+duration), format=0)
     endif else begin
-      begin_time = MVN_TIME_CONVERT(time[0],3)
-      end_time   = MVN_TIME_CONVERT(time[1],3)
+      begin_time_string = time_string(time[0],format=0)
+      end_time_string   = time_string(time[1],format=0)
     endelse
+    
+    ;; Create Jul day versions
+    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    begin_time_jul = julday(mo, dy, yr, hr, min, sec)
+    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    end_time_jul = julday(mo, dy, yr, hr, min, sec)
   endif
-   
   
+  
+  ;; Create structs for both begin/end times containing string versions and jul days
+  begin_time_struct = create_struct('string', begin_time_string, 'jul', begin_time_jul)
+  end_time_struct   = create_struct('string', end_time_string,   'jul', end_time_jul)
+
+
   ;; ------------------------------------------------------------------------------------ ;;
   ;; -------------- Find files which contain data in input time range ------------------- ;;
   ;; -------------- and initialize data structures for holding data --------------------- ;;
 
   ;; FIXME variable names
-  MVN_KP_FILE_SEARCH, begin_time, end_time, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
+  MVN_KP_FILE_SEARCH, begin_time_struct.string, end_time_struct.string, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
      kp_iuvs_data_directory, savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
  
 
@@ -387,7 +420,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       MVN_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
       fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
-      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time, end_time=end_time, io_flag=io_flag, $
+      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct.string, end_time=end_time_struct.string, io_flag=io_flag, $
         instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
         
         
@@ -421,7 +454,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
         fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
-        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time, end_time=end_time, $
+        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct.string, end_time=end_time_struct.string, $
           instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
           
         ;; Add single iuvs_record to array of iuvs records
