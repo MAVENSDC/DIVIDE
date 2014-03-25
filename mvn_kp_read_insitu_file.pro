@@ -33,12 +33,16 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
                                 'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)
   endif
 
-  if not keyword_set(begin_time) then begin
-    begin_time='2000-01-01/12:00:00'
+  if not keyword_set(begin_time) then begin                ;; FIXME is this necessary
+    begin_time_string = '2000-01-01/12:00:00'
+    begin_time_jul    = julday(1, 1, 2000, 12, 0, 0)
+    begin_time        = create_struct('string', begin_time_string, 'jul',  begin_time_jul) 
   endif
   
   if not keyword_set(end_time) then begin
-    end_time='2200-01-01/12:00:00'
+    end_time_string = '2200-01-01/12:00:00'
+    end_time_jul    = julday(1, 1, 2200, 12, 0, 0)
+    end_time        = create_struct('string', end_time_string,   'jul', end_time_jul)
   endif
   
  if not keyword_set(io_flag) then begin
