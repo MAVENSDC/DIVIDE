@@ -81,7 +81,6 @@
 @mvn_loop_progress
 @mvn_kp_time_bounds
 @mvn_kp_insitu_assign
-@mvn_kp_iuvs_timecheck
 @mvn_kp_iuvs_binary_assign
 @mvn_kp_read_iuvs_file
 @mvn_kp_iuvs_cdf_read
@@ -387,7 +386,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; -------------- and initialize data structures for holding data --------------------- ;;
 
   ;; FIXME variable names
-  MVN_KP_FILE_SEARCH, begin_time_struct.string, end_time_struct.string, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
+  MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
      kp_iuvs_data_directory, savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
  
 
@@ -420,7 +419,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       MVN_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
       fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
-      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct.string, end_time=end_time_struct.string, io_flag=io_flag, $
+      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
         
         
@@ -454,7 +453,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
         fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
-        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct.string, end_time=end_time_struct.string, $
+        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
           instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
           
         ;; Add single iuvs_record to array of iuvs records
