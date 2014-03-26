@@ -128,14 +128,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   endif
 
 
-  ;SET UP instrument_array WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
+  ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
   if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
     keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
     keyword_set(iuvs_coronaEchelleDisk) or keyword_set(iuvs_coronaEchelleLimb) or keyword_set(iuvs_coronaEchelleHigh) or keyword_set(iuvs_coronaLoresHigh) or $
     keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu_all) then begin
-   
-    instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    
+
 
   ;; Setup instrument struct which is used for creating data structure & controlling which instruments to read
     instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
@@ -144,51 +142,25 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                                 'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
                                 'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, 'stellarocc', 0)                            
    
-
+    if keyword_set(lpw)    then instruments.lpw    = 1 & print,'Returning All LPW Instrument KP Data.'  
+    if keyword_set(static) then instruments.static = 1 & print,'Returning All STATIC Instrument KP Data.'
+    if keyword_set(swia)   then instruments.swia   = 1 & print,'Returning All SWIA Instrument KP Data.'
+    if keyword_set(swea)   then instruments.swea   = 1 & print,'Returning All SWEA Instrument KP Data.'
+    if keyword_set(mag)    then instruments.mag    = 1 & print,'Returning All MAG Instrument KP Data.'
+    if keyword_set(sep)    then instruments.sep    = 1 & print,'Returning All SEP Instrument KP Data.'
+    if keyword_set(ngims)  then instruments.ngims  = 1 & print,'Returning All NGIMS Instrument KP Data.'
     
-    if keyword_set(lpw) then begin
-      instrument_array[0] = 1
-      instruments.lpw = 1
-      print,'Returning All LPW Instrument KP Data.'
-    endif
-    if keyword_set(static) then begin
-      instrument_array[1] = 1
-      instruments.static = 1
-      print,'Returning All STATIC Instrument KP Data.'
-    endif
-    if keyword_set(swia) then begin
-      instrument_array[2] = 1
-      instruments.swia = 1
-      print,'Returning All SWIA Instrument KP Data.'
-    endif
-    if keyword_set(swea) then begin
-      instrument_array[3] = 1
-      instruments.swea = 1
-      print,'Returning All SWEA Instrument KP Data.'
-    endif
-    if keyword_set(mag) then begin
-      instrument_array[4] = 1
-      instruments.mag = 1
-      print,'Returning All MAG Instrument KP Data.'
-    endif
-    if keyword_set(sep) then begin
-      instrument_array[5] = 1
-      instruments.sep = 1
-      print,'Returning All SEP Instrument KP Data.'
-    endif
-    if keyword_set(ngims) then begin
-      instrument_array[6] = 1
-      instruments.ngims = 1
-      print,'Returning All NGIMS Instrument KP Data.'
-    endif
+    if keyword_set(iuvs_periapse)          then instruments.periapse   = 1 & print,'Returning All IUVS Instrument Periapse KP Data.'  
+    if keyword_set(iuvs_apoapse)           then instruments.apoapse    = 1 & print,'Returning All IUVS Instrument Apoapse KP Data.'
+    if keyword_set(iuvs_coronaEchellehigh) then instruments.c_e_high   = 1 & print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
+    if keyword_set(iuvs_coronaEchellelimb) then instruments.c_e_limb   = 1 & print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
+    if keyword_set(iuvs_stellarocc)        then instruments.stellarocc = 1 & print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
+    if keyword_set(iuvs_coronaLoreshigh)   then instruments.c_l_high   = 1 & print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
+    if keyword_set(iuvs_coronaLoreslimb)   then instruments.c_l_limb   = 1 & print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
+    if keyword_set(iuvs_coronaLoresdisk)   then instruments.c_l_disk   = 1 & print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
+    if keyword_set(iuvs_coronaechelledisk) then instruments.c_e_disk   = 1 & print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
+    
     if keyword_set(insitu_all) then begin
-      instrument_array[0] = 1
-      instrument_array[1] = 1
-      instrument_array[2] = 1
-      instrument_array[3] = 1
-      instrument_array[4] = 1
-      instrument_array[5] = 1
-      instrument_array[6] = 1
       instruments.lpw    = 1
       instruments.static = 1
       instruments.swia   = 1
@@ -199,15 +171,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       print, 'Returning all INSITU Instrument KP Data.'
     endif
     if keyword_set(iuvs_all) then begin
-      instrument_array[7] = 1
-      instrument_array[8] = 1
-      instrument_array[9] = 1
-      instrument_array[10] = 1
-      instrument_array[11] = 1
-      instrument_array[12] = 1
-      instrument_array[13] = 1
-      instrument_array[14] = 1
-      instrument_array[15] = 1
       instruments.periapse   = 1
       instruments.c_e_disk   = 1
       instruments.c_e_limb   = 1
@@ -219,55 +182,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       instruments.stellarocc = 1
       print,'Returning All IUVS Instrument KP Data.'
     endif
-    if keyword_set(iuvs_periapse) then begin
-      instrument_array[7] = 1
-      instruments.periapse = 1
-      print,'Returning All IUVS Instrument Periapse KP Data.'
-    endif
-    if keyword_set(iuvs_apoapse) then begin
-      instrument_array[8] = 1
-      instruments.apoapse = 1
-      print,'Returning All IUVS Instrument Apoapse KP Data.'
-    endif
-    if keyword_set(iuvs_coronaEchellehigh) then begin
-      instrument_array[9] = 1
-      instruments.c_e_high = 1
-      print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
-    endif
-    if keyword_set(iuvs_coronaEchellelimb) then begin
-      instrument_array[10] = 1
-      instruments.c_e_limb = 1
-      print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
-    endif
-    if keyword_set(iuvs_stellarocc) then begin
-      instrument_array[11] = 1
-      instruments.stellarocc = 1
-      print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
-    endif
-    if keyword_set(iuvs_coronaLoreshigh) then begin
-      instrument_array[12] = 1
-      instruments.c_l_high = 1
-      print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
-    endif
-    if keyword_set(iuvs_coronaLoreslimb) then begin
-      instrument_array[13] = 1
-      instruments.c_l_limb = 1
-      print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
-    endif
-    if keyword_set(iuvs_coronaLoresdisk) then begin
-      instrument_array[14] = 1
-      instruments.c_l_disk = 1
-      print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
-    endif
-    if keyword_set(iuvs_coronaechelledisk) then begin
-      instrument_array[15] = 1
-      instruments.c_e_disk = 1
-      print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
-    endif
+
+
   endif else begin
-    ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE FOR ALL INSTRUMENT DATA
-    instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] 
     
+    ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE FOR ALL INSTRUMENT DATA
     instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
                                 'swea',     1, 'mag',      1, 'sep',      1, $
                                 'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
@@ -392,16 +311,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
  
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS & INITIALIZE ARRAY OF DATA STRUTURES 
-  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
+  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   kp_data_temp = replicate(insitu_record,21600L*n_elements(target_KP_filenames))
     
   if not keyword_set(insitu_only) then begin  
-    MVN_KP_IUVS_STRUCT_INIT, iuvs_record,   instrument_array
+    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
     iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
   endif
 
  
-
   
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Main read loop: In situ data    ---------------------------- ;;
@@ -421,7 +339,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       
       fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
-        instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
+        instruments=instruments, savefiles=savefiles, textfiles=textfiles
         
         
       kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
@@ -443,8 +361,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   
   
   ;IF ANY IUVS DATA IS REQUESTED & NOT IN INSITU ONLY MODE
-  if not keyword_set (insitu_only) and ((instrument_array[7] eq 1) or (instrument_array[8] eq 1) or (instrument_array[9] eq 1) or (instrument_array[10] eq 1) or $
-    (instrument_array[11] eq 1) or (instrument_array[12] eq 1)  or (instrument_array[13] eq 1)  or (instrument_array[14] eq 1)  or (instrument_array[15] eq 1)) then begin
+  if not keyword_set(insitu_only) and (instruments.periapse or instruments.c_e_disk or instruments.c_e_limb or instruments.c_e_high or $
+                                      instruments.apoapse  or instruments.c_l_disk or instruments.c_l_limb or instruments.c_l_high or $ 
+                                      instruments.stellarocc) then begin
     iuvs_index=0
     if iuvs_filenames[0] ne 'None' then begin
     
@@ -455,7 +374,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         
         fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
-          instruments=instruments, instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles
+          instruments=instruments, savefiles=savefiles, textfiles=textfiles
           
         ;; Add single iuvs_record to array of iuvs records
         iuvs_data_temp[iuvs_index] = iuvs_record

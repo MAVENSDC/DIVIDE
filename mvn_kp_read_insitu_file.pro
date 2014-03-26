@@ -6,7 +6,7 @@
 
 
 pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time, end_time=end_time, $
-  instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles, instruments=instruments, io_flag=io_flag
+                             savefiles=savefiles, textfiles=textfiles, instruments=instruments, io_flag=io_flag
   
   
   ;; Check ENV variable to see if we are in debug mode
@@ -18,20 +18,6 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
     on_error, 1
   endif
   
-
-  ;; Default to filing all instruments if not specified
-  if not keyword_set(instrument_array) then begin
-    instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-  endif
-  
-  ;; Default to filling all instruments if not specified
-  if not keyword_set(instruments) then begin
-    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
-                                'swea',     1, 'mag',      1, 'sep',      1, $
-                                'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
-                                'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
-                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)
-  endif
 
   if not keyword_set(begin_time) then begin                ;; FIXME is this necessary
     begin_time_string = '2000-01-01/12:00:00'
@@ -50,7 +36,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
  endif
  
   ;; Init array of insitu structures big enough for one file
-  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array  
+  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   kp_data_temp = replicate(insitu_record,21600L)
   
   
@@ -88,7 +74,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
           if ts_count gt 1 then orbit.time_string = ts_split[0]+'T'+ts_split[1]
           
           if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
-            MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instrument_array
+            MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments
             kp_data_temp[index] = insitu_record
             index=index+1
           endif
@@ -113,7 +99,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
       
         if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
         
-          MVN_KP_INSITU_ASSIGN, insitu_record, orbit[saved_records], instrument_array
+          MVN_KP_INSITU_ASSIGN, insitu_record, orbit[saved_records], instruments
           kp_data_temp[index] = insitu_record
           index=index+1
           
@@ -131,7 +117,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
     ;; Default behavior of reading in CDF files.
     
     
-    MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments, instrument_array=instrument_array ;; FIXME
+    MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments ;; FIXME ? not sure what this was for
     kp_data_temp[index] = insitu_record
     index+= n_elements(insitu_record)
     

@@ -4,13 +4,13 @@
 ; :Params:
 ;    iuvs_record: in, required, type=structure
 ;       the single data record structure to hold IUVS KP data
-;    instrument_array: in, required, type=intarr(13)
-;       an array that signals which types of data have been requested, so that only those fields are included in the structures.
+;    instruments: in, optional, type=struct
+;      a struct that signals which types of data have been requested, so that only those fields are included in the structures.
 ;
 
 
 ;-
-pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
+pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 
 
   ;; Check ENV variable to see if we are in debug mode
@@ -22,6 +22,15 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
     on_error, 1
   endif
   
+  
+  ;; Default to filling all instruments if not specified
+  if not keyword_set(instruments) then begin
+    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
+                                'swea',     1, 'mag',      1, 'sep',      1, $
+                                'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
+                                'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
+                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)
+  endif
   
   ;; ------------------------------------------------------------------------------------ ;;
   ;; -------------------------- Create IUVS structure ----------------------------------- ;;
@@ -57,7 +66,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
 
   ;INCLUDE IUVS STELLAR OCCULTATION DATA STRUCTURE
-  if instrument_array[11] eq 1 then begin
+  if instruments.stellarocc then begin
     i5 = {stellar, test1:0.0}
     
     iuvs_record_temp1 = create_struct(['stellar_occ'],i5,iuvs_record_temp)
@@ -65,7 +74,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
 
   ;INCLUDE IUVS APOAPSE DATA STRUCTURE
-  if instrument_array[8] eq 1 then begin
+  if instruments.apoapse then begin
     i2 = create_struct(                        $
       NAME               ='apoapse',       $
       iuvs_record_common ,                 $
@@ -87,7 +96,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
   
   ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
-  if instrument_array[12] eq 1 then begin
+  if instruments.c_l_high then begin
     i6 = create_struct(                          $
       NAME                    ='c_l_high',   $
       iuvs_record_common      ,              $
@@ -107,7 +116,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
  
   ;INCLUDE IUVS LO RES LIMB CORONA DATA STRUCTURE
-  if instrument_array[13] eq 1 then begin
+  if instruments.c_l_limb then begin
     i7 = create_struct(                       $
       NAME               ='c_l_limb',     $
       iuvs_record_common ,                $
@@ -130,7 +139,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
   
   ;INCLUDE IUVS LO RES DISK CORONA DATA STRUCTURE
-  if instrument_array[14] eq 1 then begin
+  if instruments.c_l_disk then begin
     i8 = create_struct(                    $
       NAME               ='c_l_disk',  $
       iuvs_record_common ,             $
@@ -148,7 +157,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
   
   ;INCLUDE IUVS ECHELLE HIGH ALTITUDE CORONA DATA STRUCTURE 
-  if instrument_array[9] eq 1 then begin    
+  if instruments.c_e_high then begin    
     i3 = create_struct(                           $
           NAME                     ='c_e_high',   $
           iuvs_record_common ,                    $
@@ -165,7 +174,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
   
   ;INCLUDE IUVS ECHELLE LIMB CORONA DATA STRUCTURE
-  if instrument_array[10] eq 1 then begin
+  if instruments.c_e_limb then begin
     i4 = create_struct(                           $
       NAME                     ='c_e_limb',   $
       iuvs_record_common ,                    $
@@ -182,7 +191,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
   
   
   ;INCLUDE IUVS ECHELLE DISK CORONA DATA STRUCTURE
-  if instrument_array[15] eq 1 then begin
+  if instruments.c_e_disk then begin
     i9 = create_struct(                 $
       NAME            ='c_e_disk',  $
       iuvs_record_common ,          $
@@ -195,7 +204,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array, iuvs_common
 
   
   ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
-  if instrument_array[7] eq 1 then begin
+  if instruments.periapse then begin
     i1 = create_struct(                          $
       NAME                ='periapse',       $
       iuvs_record_common,                    $

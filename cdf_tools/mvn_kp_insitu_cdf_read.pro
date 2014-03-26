@@ -1,6 +1,6 @@
-;; Testing CDF Generation of insitu
+;; Read in a CDF file of insitu data
 
-pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, instruments=instruments
+pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -32,7 +32,6 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
   spacecraft_total = 32
   app_total        = 6
   
-  if not keyword_set(instruments) then message, "Need to specify instruments option right now." ;; FIXME 
   
   ;;FOR EAC FILE INPUT, READ INTO MEMORY
   foreach file , infiles do begin
@@ -46,10 +45,9 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
     
     ;; Create array of insitu records with the # of variables
     NV=(size(*cdfi_insitu.vars[1].dataptr))[1]
-    if not keyword_set(instrument_array) then instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     
     
-    MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
+    MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
     kp_data = replicate(insitu_record,NV)
     
     ;; Top level data
