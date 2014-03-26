@@ -43,7 +43,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   
   ;; Default behavior is to download KP data
   if keyword_set(iuvs) then begin
-    if not keyword_set(data_level) then data_level='kp'        ;;;; FIXME - Commented out for INsitu
+    if not keyword_set(data_level) then data_level='kp'        ;; FIXME - Commented out for INsitu
   endif
   
   ; Web API defined with lower case.
