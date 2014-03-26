@@ -137,6 +137,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
     instrument_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     
 
+  ;; Setup instrument struct which is used for creating data structure & controlling which instruments to read
     instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
                                 'swea',     0, 'mag',      0, 'sep',      0, $
                                 'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
