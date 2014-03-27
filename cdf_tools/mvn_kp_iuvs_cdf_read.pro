@@ -3,7 +3,7 @@
 ;; Testing CDF Generation of insitu
 ;;
 
-pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, instrument_array=instrument_array
+pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -44,8 +44,7 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, instrument_arr
     cdfi_in = cdf_load_vars(file, VARFORMAT='*')
     
     ;; Initialize IUVS structure for data to be read into
-    if not keyword_set (instrument_array) then instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array
+    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 
     
     ;; Determine which mode we are in (echelle or lores) based on the number of variables

@@ -1,9 +1,3 @@
-; Download the files of the given type using the given query parameters.
-; If 'local_dir' is defined, save the files there, otherwise use the current directory.
-;
-; The 'query' is directly passed to the web service.
-; See the web service documentation for valid query options.
-
 
 
 function mvn_kp_relative_comp, local, server  
@@ -22,9 +16,15 @@ end
 
 
 
+; Download the files of the given type using the given query parameters.
+; If 'local_dir' is defined, save the files there, otherwise use the current directory.
+;
+; The 'query' is directly passed to the web service.
+; See the web service documentation for valid query options.
+
 
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=start_date, end_date=end_date, $
-                           insitu=insitu, iuvs=iuvs, $
+                           insitu=insitu, iuvs=iuvs, textfiles=textfiles,$
                            descriptor=descriptor, latest=latest, status=status, new_files=new_files, $
                            update_prefs=update_prefs, list_files=list_files, data_level=data_level
   
@@ -42,8 +42,9 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow.
   
   ;; Default behavior is to download KP data
-  if not keyword_set(data_level) then data_level='kp'
-
+  if keyword_set(iuvs) then begin
+    if not keyword_set(data_level) then data_level='kp'        ;; FIXME - Commented out for INsitu
+  endif
   
   ; Web API defined with lower case.
   ;if n_elements(data_rate_mode) gt 0 then data_rate_mode = strlowcase(data_rate_mode)
@@ -110,21 +111,31 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   endif
   
   
-
+  stop
   ; If user supplied NEW_FILES option, determine which files they have downloaded
   if keyword_set (new_files) then begin
     
     ; Check config file for directories to data
     mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, update_prefs=update_prefs
     
+    ;; Get filename convetion information from config
+    insitu_file_spec = mvn_kp_config(/insitu_file_spec)
+    iuvs_file_spec   = mvn_kp_config(/iuvs_file_spec)
+    insitu_pattern = insitu_file_spec.pattern
+    iuvs_pattern   = iuvs_file_spec.pattern
+    
+    ;; Append appropriate extension
+    if keyword_set(textfiles) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
+    if keyword_set(textfiles) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
+    
     ; Get list of all files currently downloaded
     if keyword_set(insitu) then begin 
       local_dir = insitu_data_dir
-      local_files = file_basename(file_search(insitu_data_dir, "mvn*.txt"))
+      local_files = file_basename(file_search(insitu_data_dir, insitu_pattern))
     endif
     if keyword_set(iuvs) then begin
       local_dir = iuvs_data_dir 
-      local_files = file_basename(file_search(iuvs_data_dir  , "mvn*.txt"))                                ;; Fixme add CDF
+      local_files = file_basename(file_search(iuvs_data_dir  , iuvs_pattern))
     endif
         
     ; Get list of files on server (within a time span if entereted), that are not on local machine

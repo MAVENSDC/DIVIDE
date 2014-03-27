@@ -1,17 +1,17 @@
 ;+
-; Searches the input line of kp data based on the search parameters
+; Takes input array of insitu data and assigns the values to input structure
 ;
 ; :Params:
 ;    record : in, required, type=structure
 ;       the named structure for the sorted and output INSITU KP data
 ;    data_array: in, required, type=fltarr(ndims)
 ;       the KP data read from the ascii or binary files, includes all instrument data
-;    instrument_array: in, required, type=fltarr(13)
-;       the instrument choice flags that determine which data will be returned from data_array
+;    instruments: in, required, type=struct
+;       the instrument choice flags that determine which data will be returned from struct
 ;
 
 ;-
-pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
+pro MVN_KP_INSITU_ASSIGN, record, data_array, instruments
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -27,7 +27,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
   record.orbit       = data_array.orbit
   record.io_bound    = data_array.io_bound
   
-  if instrument_array[0] eq 1 then begin            ;return all the LPW data
+  if instruments.lpw then begin            ;return all the LPW data
     record.lpw.electron_density           = data_array.data[0]
     record.lpw.electron_density_qual      = data_array.data[1]
     record.lpw.electron_temperature       = data_array.data[2]
@@ -47,7 +47,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.lpw.euv_irradiance_high        = data_array.data[16]
     record.lpw.euv_irradiance_high_qual   = data_array.data[17]
   endif
-  if instrument_array[1] eq 1 then begin          ;return all teh Static data
+  if instruments.static then begin          ;return all teh Static data
     record.static.hplus_density                       = data_array.data[48]
     record.static.hplus_density_qual                  = data_array.data[49]
     record.static.oplus_density                       = data_array.data[50]
@@ -103,7 +103,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.static.pickup_ion_char_angular_width       = data_array.data[100]
     record.static.pickup_ion_char_angular_width_qual  = data_array.data[101]
   endif
-  if instrument_array[2] eq 1 then begin      ;return all the swia data
+  if instruments.swia then begin      ;return all the swia data
     record.swia.hplus_density                    = data_array.data[36]
     record.swia.hplus_density_qual               = data_array.data[37]
     record.swia.hplus_flow_v_msox                = data_array.data[38]
@@ -117,7 +117,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.swia.solarwind_dynamic_pressure       = data_array.data[46]
     record.swia.solarwind_dynamic_pressure_qual  = data_array.data[47]
   endif
-  if instrument_array[3] eq 1 then begin      ;return all the swea data
+  if instruments.swea then begin      ;return all the swea data
     record.swea.solarwind_e_density                   = data_array.data[18]
     record.swea.solarwind_e_density_qual              = data_array.data[19]
     record.swea.solarwind_e_temperature               = data_array.data[20]
@@ -137,7 +137,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.swea.electron_spectrum_shape               = data_array.data[34]
     record.swea.electron_spectrum_shape_qual          = data_array.data[35]
   endif
-  if instrument_array[4] eq 1 then begin      ;retunr all the mag data
+  if instruments.mag then begin      ;retunr all the mag data
     record.mag.mso_x       = data_array.data[130]
     record.mag.mso_x_qual  = data_array.data[131]
     record.mag.mso_y       = data_array.data[132]
@@ -153,7 +153,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.mag.rms         = data_array.data[142]
     record.mag.rms_qual    = data_array.data[143]
   endif
-  if instrument_array[5] eq 1 then begin    ;return atll the SEP data
+  if instruments.sep then begin    ;return atll the SEP data
     record.sep.ion_energy_flux_1            = data_array.data[102]
     record.sep.ion_energy_flux_1_qual       = data_array.data[103]
     record.sep.ion_energy_flux_2            = data_array.data[104]
@@ -183,7 +183,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instrument_array
     record.sep.look_direction_4_msoy        = data_array.data[128]
     record.sep.look_direction_4_msoz        = data_array.data[129]
   endif
-  if instrument_array[6] eq 1 then begin        ;return all the NGIMS data
+  if instruments.ngims then begin        ;return all the NGIMS data
     record.ngims.he_density            = data_array.data[144]
     record.ngims.he_density_qual       = data_array.data[145]
     record.ngims.o_density             = data_array.data[146]
