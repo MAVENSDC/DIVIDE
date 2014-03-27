@@ -432,9 +432,8 @@ end
 pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
   
   
-  ;; Init struct with all instruments
-  instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]  
-  MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array
+  ;; Init IUVS struct
+  MVN_KP_IUVS_STRUCT_INIT, iuvs_record
  
   ;; Set for collecting orbit number later
   orbit_number = -1

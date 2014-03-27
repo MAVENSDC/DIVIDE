@@ -1,4 +1,4 @@
-pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, instrument_array, instruments
+pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, instruments
 
 
   ;;
@@ -6,8 +6,8 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
   ;;
 
 
-  ;; Init new structure with only instruments in instrument_array
-  MVN_KP_IUVS_STRUCT_INIT, iuvs_record_time_temp, instrument_array
+  ;; Init new structure with only instruments in instruments struct
+  MVN_KP_IUVS_STRUCT_INIT, iuvs_record_time_temp, instruments=instruments
   
   if instruments.periapse then begin
     for peri_index = 0, n_elements(iuvs_record_temp.periapse.time_start)-1 do begin
@@ -76,7 +76,7 @@ end
 
 
 pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_time=end_time, $
-  instrument_array=instrument_array, savefiles=savefiles, textfiles=textfiles, instruments=instruments
+                           savefiles=savefiles, textfiles=textfiles, instruments=instruments
   
   
   ;; Check ENV variable to see if we are in debug mode
@@ -86,21 +86,6 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
     on_error, 1
-  endif
-  
-  
-  ;; Default to filing all instruments if not specified
-  if not keyword_set(instrument_array) then begin
-    instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-  endif
-
-  ;; Default to filling all instruments if not specified
-  if not keyword_set(instruments) then begin
-    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
-                                'swea',     1, 'mag',      1, 'sep',      1, $
-                                'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
-                                'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
-                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)
   endif
   
   if keyword_set(begin_time) and keyword_set(end_time) then begin
@@ -113,7 +98,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
   if keyword_set(savefiles) then begin
     
     ;INITIALIZE IUVS_RECORD TO CONTAIN DEFAULT VALUES
-    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instrument_array
+    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
     ;SET EACH IUVS OBSERVATION DATA TYPE TO 0 BEFORE READING
     periapse = 0
@@ -128,7 +113,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
     
     restore,filename
     
-    if instrument_array[7] eq 1 then begin                                    ;READ AND PARSE PERIAPSE DATA
+    if instruments.periapse then begin                                    ;READ AND PARSE PERIAPSE DATA
       if size(periapse,/type) eq 8 then begin
         for peri_index = 0,n_elements(periapse.time_start)-1 do begin
           if time_bounds eq 1 then begin
@@ -144,7 +129,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       endif
     endif
     
-    if instrument_array[8] eq 1 then begin                                    ;READ AND PARSE APOAPSE DATA
+    if instruments.apoapse then begin                                      ;READ AND PARSE APOAPSE DATA
       if size(apoapse,/type) eq 8 then begin                                    ;ONLY EXECUTE IF THIS DATA TYPE IS AVAILABLE IN THE READ FILE
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(apoapse.time_start, begin_time, end_time)
@@ -158,7 +143,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       endif
     endif
     
-    if instrument_array[9] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
+    if instruments.c_e_high then begin                                    ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
       if size(corona_echelle_high,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_echelle_high.time_start, begin_time, end_time)
@@ -171,7 +156,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    if instrument_array[10] eq 1 then begin                                    ;READ AND PARSE CORONA ECHELLE LIMB DATA
+    if instruments.c_e_limb then begin                                    ;READ AND PARSE CORONA ECHELLE LIMB DATA
       if size(corona_echelle_limb,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_echelle_limb.time_start, begin_time, end_time)
@@ -184,10 +169,10 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    ;          if instrument_array[11] eq 1 then begin                                    ;READ AND PARSE STELLAR OCCULTATION DATA
+    ;          if instruments.stellarocc eq 1 then begin                                    ;READ AND PARSE STELLAR OCCULTATION DATA
     ;
     ;          endif
-    if instrument_array[12] eq 1 then begin                                    ;READ AND PARSE CORONA LORES HIGH ALT DATA
+    if instruments.c_l_high then begin                                    ;READ AND PARSE CORONA LORES HIGH ALT DATA
       if size(corona_lores_high,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_lores_high.time_start, begin_time, end_time)
@@ -200,7 +185,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    if instrument_array[13] eq 1 then begin                                    ;READ AND PARSE CORONA LORES LIMB DATA
+    if instruments.c_l_limb then begin                                    ;READ AND PARSE CORONA LORES LIMB DATA
       if size(corona_lores_limb,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_lores_limb.time_start, begin_time, end_time)
@@ -213,7 +198,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    if instrument_array[14] eq 1 then begin                                    ;READ AND PARSE CORONA LORES DISK DATA
+    if instruments.c_l_disk then begin                                    ;READ AND PARSE CORONA LORES DISK DATA
       if size(corona_lores_disk,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_lores_disk.time_start, begin_time, end_time)
@@ -226,7 +211,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    if instrument_array[15] eq 1 then begin                                    ;READ AND PARSE CORONA Echelle DISK DATA
+    if instruments.c_e_disk then begin                                    ;READ AND PARSE CORONA Echelle DISK DATA
       if size(corona_echelle_disk,/type) eq 8 then begin
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(corona_echelle_disk.time_start, begin_time, end_time)
@@ -251,7 +236,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       
     ;; If timebounds or instrument array - FIXME 
     if time_bounds then begin
-      mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, end_time, instrument_array, instruments
+      mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, end_time, instruments
     endif
     
   
@@ -259,11 +244,11 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
     ;; Default is to read CDF files
 
     ;; Read in CDF version of file
-    MVN_KP_IUVS_CDF_READ, iuvs_record, filename, instruments=instruments, instrument_array=instrument_array
+    MVN_KP_IUVS_CDF_READ, iuvs_record, filename, instruments=instruments
    
     ;; If checking time bounds or instrument array - FIXME
     if time_bounds then begin
-      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, end_time, instrument_array, instruments
+      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, end_time, instruments
     endif
 
   endelse
