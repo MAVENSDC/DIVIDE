@@ -52,7 +52,7 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
     
     ;; Top level data
     ;; time_tt2000      = *cdfi_insitu.vars[0].dataptr      ;; Ignore vars[0].
-    kp_data.time        = time_double(*cdfi_insitu.vars[1].dataptr)
+    kp_data.time        = time_double(*cdfi_insitu.vars[1].dataptr, tformat='YYYY-MM-DDThh:mm:ss')
     kp_data.time_string = *cdfi_insitu.vars[1].dataptr
     kp_data.orbit       = *cdfi_insitu.vars[2].dataptr
     kp_data.io_bound    = *cdfi_insitu.vars[3].dataptr
