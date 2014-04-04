@@ -63,7 +63,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
           
           ;READ IN AND INIT TEMP STRUCTURE OF DATA
           orbit.time_string = data[0]
-          orbit.time = time_double(data[0])
+          orbit.time = time_double(data[0], tformat='YYYY-MM-DDThh:mm:ss')
           orbit.orbit = data[198]
           orbit.IO_bound = data[199]
           orbit.data[0:196] = data[1:197]
@@ -117,7 +117,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
     ;; Default behavior of reading in CDF files.
     
     
-    MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments ;; FIXME ? not sure what this was for
+    MVN_KP_INSITU_CDF_READ, insitu_record, filename, instruments=instruments ;; FIXME ? not sure what this fixme was for
     kp_data_temp[index] = insitu_record
     index+= n_elements(insitu_record)
     
