@@ -23,7 +23,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instruments
   endif
   
   record.time_string = data_array.time_string
-  record.time        = time_double(record.time_string)
+  record.time        = time_double(record.time_string, tformat='YYYY-MM-DDThh:mm:ss')
   record.orbit       = data_array.orbit
   record.io_bound    = data_array.io_bound
   

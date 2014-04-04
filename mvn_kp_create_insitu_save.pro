@@ -68,7 +68,7 @@ pro mvn_kp_create_insitu_save, infiles, outdir, debug=debug
       
         ;READ IN AND INIT TEMP STRUCTURE OF DATA
         orbit[i].time_string = data[0]
-        orbit[i].time = time_double(data[0])
+        orbit[i].time = time_double(data[0], tformat='YYYY-MM-DDThh:mm:ss')
         orbit[i].orbit = data[198]
         orbit[i].IO_bound = data[199]
         orbit[i].data[0:196] = data[1:197]
