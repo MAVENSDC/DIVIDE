@@ -23,7 +23,7 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
   app_start        = 210
   
   lpw_total        = 18
-  static_total     = 51
+  static_total     = 54
   swia_total       = 12
   swea_total       = 18
   mag_total        = 14
