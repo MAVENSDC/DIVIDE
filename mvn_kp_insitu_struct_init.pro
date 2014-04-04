@@ -36,96 +36,277 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   ;; ------------------------- Create In situ structure --------------------------------- ;;
   
   ;DEFINE THE ALWAYS INCLUDED STRUCTURES OF SPACECRAFT AND APP PARAMETERS 
-  s1 = {spacecraft, geo_x:0.0, geo_y:0.0, geo_z:0.0, mso_x:0.0, mso_y:0.0, mso_z:0.0, $
-        sub_sc_longitude:0.0, sub_sc_latitude:0.0, sza:0.0, local_time:0.0, altitude:0.0, attitude_geo_x:0.0, $
-        attitude_geo_y:0.0, attitude_geo_z:0.0, attitude_mso_x:0.0, $
-        attitude_mso_y:0.0, attitude_mso_z:0.0, mars_season:0.0, $
-        mars_sun_distance:0.0, subsolar_point_GEO_longitude:0.0, subsolar_point_GEO_latitude:0.0, $
-        submars_point_solar_longitude:0.0, submars_point_solar_latitude:0.0, $
-        t11:0.0, t12:0.0, t13:0.0, t21:0.0, t22:0.0, t23:0.0, t31:0.0, t32:0.0, t33:0.0}
-  S2 = {app, attitude_geo_x:0.0, attitude_geo_y:0.0, attitude_geo_z:0.0, attitude_mso_x:0.0,  $
-        attitude_mso_y:0.0,  attitude_mso_z:0.0}                                
+  s1 = {spacecraft,                                   $
+        geo_x                         :!VALUES.F_NAN, $
+        geo_y                         :!VALUES.F_NAN, $
+        geo_z                         :!VALUES.F_NAN, $
+        mso_x                         :!VALUES.F_NAN, $
+        mso_y                         :!VALUES.F_NAN, $
+        mso_z                         :!VALUES.F_NAN, $
+        sub_sc_longitude              :!VALUES.F_NAN, $
+        sub_sc_latitude               :!VALUES.F_NAN, $
+        sza                           :!VALUES.F_NAN, $
+        local_time                    :!VALUES.F_NAN, $
+        altitude                      :!VALUES.F_NAN, $
+        attitude_geo_x                :!VALUES.F_NAN, $
+        attitude_geo_y                :!VALUES.F_NAN, $
+        attitude_geo_z                :!VALUES.F_NAN, $
+        attitude_mso_x                :!VALUES.F_NAN, $
+        attitude_mso_y                :!VALUES.F_NAN, $
+        attitude_mso_z                :!VALUES.F_NAN, $
+        mars_season                   :!VALUES.F_NAN, $
+        mars_sun_distance             :!VALUES.F_NAN, $
+        subsolar_point_GEO_longitude  :!VALUES.F_NAN, $
+        subsolar_point_GEO_latitude   :!VALUES.F_NAN, $
+        submars_point_solar_longitude :!VALUES.F_NAN, $
+        submars_point_solar_latitude  :!VALUES.F_NAN, $
+        t11                           :!VALUES.F_NAN, $
+        t12                           :!VALUES.F_NAN, $
+        t13                           :!VALUES.F_NAN, $
+        t21                           :!VALUES.F_NAN, $
+        t22                           :!VALUES.F_NAN, $
+        t23                           :!VALUES.F_NAN, $
+        t31                           :!VALUES.F_NAN, $
+        t32                           :!VALUES.F_NAN, $
+        t33                           :!VALUES.F_NAN}
+  
+  S2 = {app,                           $
+        attitude_geo_x :!VALUES.F_NAN, $
+        attitude_geo_y :!VALUES.F_NAN, $
+        attitude_geo_z :!VALUES.F_NAN, $
+        attitude_mso_x :!VALUES.F_NAN, $
+        attitude_mso_y :!VALUES.F_NAN, $
+        attitude_mso_z :!VALUES.F_NAN}                                
                                    
   record_temp1 = create_struct(['spacecraft','app'],s1,s2)
 
   ;CREATE THE BASE ARRAY FOR THE INSITU DATA, BASED ON WHAT DATA WILL BE RETURNED
   if instruments.lpw then begin    ;INCLUDE LPW DATA STRUCTURE
-    s3 = {lpw, electron_density:0.0, electron_density_qual:0.0, electron_temperature:0.0, electron_temperature_qual:0.0,$
-          spacecraft_potential:0.0, spacecraft_potential_qual:0.0, ewave_low:0.0, ewave_low_qual:0.0, ewave_mid:0.0, $
-          ewave_mid_qual:0.0, ewave_high:0.0, ewave_high_qual:0.0, euv_irradiance_low:0.0, euv_irradiance_low_qual:0.0, $
-          euv_irradiance_mid:0.0, euv_irradiance_mid_qual:0.0, euv_irradiance_high:0.0, euv_irradiance_high_qual:0.0}
+    s3 = {lpw,                                      $
+          electron_density          :!VALUES.F_NAN, $
+          electron_density_qual     :!VALUES.F_NAN, $
+          electron_temperature      :!VALUES.F_NAN, $
+          electron_temperature_qual :!VALUES.F_NAN, $
+          spacecraft_potential      :!VALUES.F_NAN, $
+          spacecraft_potential_qual :!VALUES.F_NAN, $
+          ewave_low                 :!VALUES.F_NAN, $
+          ewave_low_qual            :!VALUES.F_NAN, $
+          ewave_mid                 :!VALUES.F_NAN, $
+          ewave_mid_qual            :!VALUES.F_NAN, $
+          ewave_high                :!VALUES.F_NAN, $
+          ewave_high_qual           :!VALUES.F_NAN, $
+          euv_irradiance_low        :!VALUES.F_NAN, $
+          euv_irradiance_low_qual   :!VALUES.F_NAN, $
+          euv_irradiance_mid        :!VALUES.F_NAN, $
+          euv_irradiance_mid_qual   :!VALUES.F_NAN, $
+          euv_irradiance_high       :!VALUES.F_NAN, $
+          euv_irradiance_high_qual  :!VALUES.F_NAN}
+          
     record_temp2 = create_struct(['lpw'],s3,record_temp1)
   endif else begin
     record_temp2 = create_struct(record_temp1)
   endelse
   if instruments.static then begin  ;INCLUDE STATIC DATA STRUCTURE
-    s4 = {static, hplus_density:0.0, hplus_density_qual:0.0, oplus_density:0.0, oplus_density_qual:0.0,$
-          o2plus_density:0.0, o2plus_density_qual:0.0, hplus_temperature:0.0, hplus_temperature_qual:0.0, oplus_temperature:0.0, $
-          oplus_temperature_qual:0.0, o2plus_temperature:0.0, o2plus_temperature_qual:0.0, hplus_flow_v_msox:0.0, $
-          hplus_flow_v_msox_qual:0.0, hplus_flow_v_msoy:0.0, hplus_flow_v_msoy_qual:0.0, hplus_flow_v_msoz:0.0, $
-          hplus_flow_v_msoz_qual:0.0, oplus_flow_v_msox:0.0, oplus_flow_v_msox_qual:0.0, oplus_flow_v_msoy:0.0,$
-          oplus_flow_v_msoy_qual:0.0, oplus_flow_v_msoz:0.0, oplus_flow_v_msoz_qual:0.0, o2plus_flow_v_msox:0.0,  o2plus_flow_v_msox_qual:0.0, $
-          o2plus_flow_v_msoy:0.0, o2plus_flow_v_msoy_qual:0.0, o2plus_flow_v_msoz:0.0, o2plus_flow_v_msoz_qual:0.0, $
-          hhe_omni_flux:0.0, hhe_omni_flux_qual:0.0, hhe_char_energy:0.0, hhe_char_energy_qual:0.0, hhe_char_dir_msox:0.0, $
-          hhe_char_dir_msox_qual:0.0, hhe_char_dir_msoy:0.0, hhe_char_dir_msoy_qual:0.0, hhe_char_dir_msoz:0.0, hhe_char_dir_msoz_qual:0.0, $
-          hhe_char_angular_width:0.0, hhe_char_angular_width_qual:0.0, pickup_ion_omni_flux:0.0, pickup_ion_omni_flux_qual:0.0, pickup_ion_char_energy:0.0, $
-          pickup_ion_char_energy_qual:0.0, pickup_ion_char_dir_msox:0.0, pickup_ion_char_dir_msox_qual:0.0, pickup_ion_char_dir_msoy:0.0, pickup_ion_char_dir_msoy_qual:0.0, $
-          pickup_ion_char_dir_msoz:0.0, pickup_ion_char_dir_msoz_qual:0.0, pickup_ion_char_angular_width:0.0, pickup_ion_char_angular_width_qual:0.0}
+    s4 = {static,                                            $
+          hplus_density                      :!VALUES.F_NAN, $
+          hplus_density_qual                 :!VALUES.F_NAN, $
+          oplus_density                      :!VALUES.F_NAN, $
+          oplus_density_qual                 :!VALUES.F_NAN, $
+          o2plus_density                     :!VALUES.F_NAN, $
+          o2plus_density_qual                :!VALUES.F_NAN, $
+          hplus_temperature                  :!VALUES.F_NAN, $
+          hplus_temperature_qual             :!VALUES.F_NAN, $
+          oplus_temperature                  :!VALUES.F_NAN, $
+          oplus_temperature_qual             :!VALUES.F_NAN, $
+          o2plus_temperature                 :!VALUES.F_NAN, $
+          o2plus_temperature_qual            :!VALUES.F_NAN, $
+          hplus_flow_v_msox                  :!VALUES.F_NAN, $
+          hplus_flow_v_msox_qual             :!VALUES.F_NAN, $
+          hplus_flow_v_msoy                  :!VALUES.F_NAN, $
+          hplus_flow_v_msoy_qual             :!VALUES.F_NAN, $
+          hplus_flow_v_msoz                  :!VALUES.F_NAN, $
+          hplus_flow_v_msoz_qual             :!VALUES.F_NAN, $
+          oplus_flow_v_msox                  :!VALUES.F_NAN, $
+          oplus_flow_v_msox_qual             :!VALUES.F_NAN, $
+          oplus_flow_v_msoy                  :!VALUES.F_NAN, $
+          oplus_flow_v_msoy_qual             :!VALUES.F_NAN, $
+          oplus_flow_v_msoz                  :!VALUES.F_NAN, $
+          oplus_flow_v_msoz_qual             :!VALUES.F_NAN, $
+          o2plus_flow_v_msox                 :!VALUES.F_NAN, $
+          o2plus_flow_v_msox_qual            :!VALUES.F_NAN, $
+          o2plus_flow_v_msoy                 :!VALUES.F_NAN, $
+          o2plus_flow_v_msoy_qual            :!VALUES.F_NAN, $
+          o2plus_flow_v_msoz                 :!VALUES.F_NAN, $
+          o2plus_flow_v_msoz_qual            :!VALUES.F_NAN, $
+          hhe_omni_flux                      :!VALUES.F_NAN, $
+          hhe_omni_flux_qual                 :!VALUES.F_NAN, $
+          hhe_char_energy                    :!VALUES.F_NAN, $
+          hhe_char_energy_qual               :!VALUES.F_NAN, $
+          hhe_char_dir_msox                  :!VALUES.F_NAN, $
+          hhe_char_dir_msox_qual             :!VALUES.F_NAN, $
+          hhe_char_dir_msoy                  :!VALUES.F_NAN, $
+          hhe_char_dir_msoy_qual             :!VALUES.F_NAN, $
+          hhe_char_dir_msoz                  :!VALUES.F_NAN, $
+          hhe_char_dir_msoz_qual             :!VALUES.F_NAN, $
+          hhe_char_angular_width             :!VALUES.F_NAN, $
+          hhe_char_angular_width_qual        :!VALUES.F_NAN, $
+          pickup_ion_omni_flux               :!VALUES.F_NAN, $
+          pickup_ion_omni_flux_qual          :!VALUES.F_NAN, $
+          pickup_ion_char_energy             :!VALUES.F_NAN, $
+          pickup_ion_char_energy_qual        :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msox           :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msox_qual      :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msoy           :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msoy_qual      :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msoz           :!VALUES.F_NAN, $
+          pickup_ion_char_dir_msoz_qual      :!VALUES.F_NAN, $
+          pickup_ion_char_angular_width      :!VALUES.F_NAN, $
+          pickup_ion_char_angular_width_qual :!VALUES.F_NAN}
+          
     record_temp3 = create_struct(['static'],s4,record_temp2)
   endif else begin
     record_temp3 = create_struct(record_temp2)
   endelse
-  if instruments.swia eq 1 then begin   ;INCLUDE SWIA DATA STRUCTURE
-    s5 = {swia, hplus_density:0.0, hplus_density_qual:0.0, hplus_flow_v_msox:0.0, hplus_flow_v_msox_qual:0.0, $
-          hplus_flow_v_msoy:0.0, hplus_flow_v_msoy_qual:0.0, hplus_flow_v_msoz:0.0, hplus_flow_v_msoz_qual:0.0, hplus_temperature:0.0, $
-          hplus_temperature_qual:0.0, solarwind_dynamic_pressure:0.0, solarwind_dynamic_pressure_qual:0.0}
+  if instruments.swia then begin   ;INCLUDE SWIA DATA STRUCTURE
+    s5 = {swia,                                           $
+          hplus_density                   :!VALUES.F_NAN, $
+          hplus_density_qual              :!VALUES.F_NAN, $
+          hplus_flow_v_msox               :!VALUES.F_NAN, $
+          hplus_flow_v_msox_qual          :!VALUES.F_NAN, $
+          hplus_flow_v_msoy               :!VALUES.F_NAN, $
+          hplus_flow_v_msoy_qual          :!VALUES.F_NAN, $
+          hplus_flow_v_msoz               :!VALUES.F_NAN, $
+          hplus_flow_v_msoz_qual          :!VALUES.F_NAN, $
+          hplus_temperature               :!VALUES.F_NAN, $
+          hplus_temperature_qual          :!VALUES.F_NAN, $
+          solarwind_dynamic_pressure      :!VALUES.F_NAN, $
+          solarwind_dynamic_pressure_qual :!VALUES.F_NAN}
+          
     record_temp4 = create_struct(['swia'],s5,record_temp3)
   endif else begin
     record_temp4 = create_struct(record_temp3)
   endelse
   if instruments.swea eq 1 then begin   ;INCLUDE SWEA DATA STRUCTURE
-    s6 = {swea, solarwind_e_density:0.0, solarwind_e_density_qual:0.0, solarwind_e_temperature:0.0, solarwind_e_temperature_qual:0.0, $
-          electron_parallel_flux_low:0.0, electron_parallel_flux_low_qual:0.0, electron_parallel_flux_mid:0.0, electron_parallel_flux_mid_qual:0.0, $
-          electron_parallel_flux_high:0.0, electron_parallel_flux_high_qual:0.0, electron_antiparallel_flux_low:0.0, electron_antiparallel_flux_low_qual:0.0,$
-          electron_antiparallel_flux_mid:0.0, electron_antiparallel_flux_mid_qual:0.0, electron_antiparallel_flux_high:0.0, electron_antiparallel_flux_high_qual:0.0,$
-          electron_spectrum_shape:0.0, electron_spectrum_shape_qual:0.0}
+    s6 = {swea,                                                $
+          solarwind_e_density                  :!VALUES.F_NAN, $
+          solarwind_e_density_qual             :!VALUES.F_NAN, $
+          solarwind_e_temperature              :!VALUES.F_NAN, $
+          solarwind_e_temperature_qual         :!VALUES.F_NAN, $
+          electron_parallel_flux_low           :!VALUES.F_NAN, $
+          electron_parallel_flux_low_qual      :!VALUES.F_NAN, $
+          electron_parallel_flux_mid           :!VALUES.F_NAN, $
+          electron_parallel_flux_mid_qual      :!VALUES.F_NAN, $
+          electron_parallel_flux_high          :!VALUES.F_NAN, $
+          electron_parallel_flux_high_qual     :!VALUES.F_NAN, $
+          electron_antiparallel_flux_low       :!VALUES.F_NAN, $
+          electron_antiparallel_flux_low_qual  :!VALUES.F_NAN, $
+          electron_antiparallel_flux_mid       :!VALUES.F_NAN, $
+          electron_antiparallel_flux_mid_qual  :!VALUES.F_NAN, $
+          electron_antiparallel_flux_high      :!VALUES.F_NAN, $
+          electron_antiparallel_flux_high_qual :!VALUES.F_NAN, $
+          electron_spectrum_shape              :!VALUES.F_NAN, $
+          electron_spectrum_shape_qual         :!VALUES.F_NAN}
+          
     record_temp5 = create_struct(['swea'], s6, record_temp4)
   endif else begin
     record_temp5 = create_struct(record_temp4)
   endelse
   if instruments.mag eq 1 then begin   ;INCLUDE MAG DATA STRUCTURE
-    s7 = {mag, mso_x:0.0, mso_x_qual:0.0, mso_y:0.0, mso_y_qual:0.0, mso_z:0.0, mso_z_qual:0.0, geo_x:0.0, geo_x_qual:0.0, $
-          geo_y:0.0, geo_y_qual:0.0, geo_z:0.0, geo_z_qual:0.0, rms:0.0, rms_qual:0.0  }
+    s7 = {mag,                       $
+          mso_x      :!VALUES.F_NAN, $
+          mso_x_qual :!VALUES.F_NAN, $
+          mso_y      :!VALUES.F_NAN, $
+          mso_y_qual :!VALUES.F_NAN, $
+          mso_z      :!VALUES.F_NAN, $
+          mso_z_qual :!VALUES.F_NAN, $
+          geo_x      :!VALUES.F_NAN, $
+          geo_x_qual :!VALUES.F_NAN, $
+          geo_y      :!VALUES.F_NAN, $
+          geo_y_qual :!VALUES.F_NAN, $
+          geo_z      :!VALUES.F_NAN, $
+          geo_z_qual :!VALUES.F_NAN, $
+          rms        :!VALUES.F_NAN, $
+          rms_qual   :!VALUES.F_NAN}
+          
     record_temp6 = create_struct(['mag'], s7, record_temp5)
   endif else begin
     record_temp6 = create_struct(record_temp5)
   endelse
   if instruments.sep eq 1 then begin   ;INCLUDE SEP DATA STRUCTURE
-    s8 = {sep, ion_energy_flux_1:0.0, ion_energy_flux_1_qual:0.0, ion_energy_flux_2:0.0, ion_energy_flux_2_qual:0.0,$
-          ion_energy_flux_3:0.0, ion_energy_flux_3_qual:0.0, ion_energy_flux_4:0.0, ion_energy_flux_4_qual:0.0,$'
-          electron_energy_flux_1:0.0, electron_energy_flux_1_qual:0.0, electron_energy_flux_2:0.0, electron_energy_flux_2_qual:0.0,$
-          electron_energy_flux_3:0.0, electron_energy_flux_3_qual:0.0, electron_energy_flux_4:0.0, electron_energy_flux_4_qual:0.0,$
-          look_direction_1_msox:0.0, look_direction_1_msoy:0.0, look_direction_1_msoz:0.0, $
-          look_direction_2_msox:0.0, look_direction_2_msoy:0.0, look_direction_2_msoz:0.0, $
-          look_direction_3_msox:0.0, look_direction_3_msoy:0.0, look_direction_3_msoz:0.0, $
-          look_direction_4_msox:0.0, look_direction_4_msoy:0.0, look_direction_4_msoz:0.0}
+    s8 = {sep,                                        $
+          ion_energy_flux_1           :!VALUES.F_NAN, $ 
+          ion_energy_flux_1_qual      :!VALUES.F_NAN, $ 
+          ion_energy_flux_2           :!VALUES.F_NAN, $ 
+          ion_energy_flux_2_qual      :!VALUES.F_NAN, $
+          ion_energy_flux_3           :!VALUES.F_NAN, $ 
+          ion_energy_flux_3_qual      :!VALUES.F_NAN, $ 
+          ion_energy_flux_4           :!VALUES.F_NAN, $ 
+          ion_energy_flux_4_qual      :!VALUES.F_NAN, $
+          electron_energy_flux_1      :!VALUES.F_NAN, $ 
+          electron_energy_flux_1_qual :!VALUES.F_NAN, $
+          electron_energy_flux_2      :!VALUES.F_NAN, $ 
+          electron_energy_flux_2_qual :!VALUES.F_NAN, $
+          electron_energy_flux_3      :!VALUES.F_NAN, $ 
+          electron_energy_flux_3_qual :!VALUES.F_NAN, $ 
+          electron_energy_flux_4      :!VALUES.F_NAN, $ 
+          electron_energy_flux_4_qual :!VALUES.F_NAN, $
+          look_direction_1_msox       :!VALUES.F_NAN, $ 
+          look_direction_1_msoy       :!VALUES.F_NAN, $ 
+          look_direction_1_msoz       :!VALUES.F_NAN, $
+          look_direction_2_msox       :!VALUES.F_NAN, $ 
+          look_direction_2_msoy       :!VALUES.F_NAN, $ 
+          look_direction_2_msoz       :!VALUES.F_NAN, $
+          look_direction_3_msox       :!VALUES.F_NAN, $ 
+          look_direction_3_msoy       :!VALUES.F_NAN, $ 
+          look_direction_3_msoz       :!VALUES.F_NAN, $
+          look_direction_4_msox       :!VALUES.F_NAN, $ 
+          look_direction_4_msoy       :!VALUES.F_NAN, $ 
+          look_direction_4_msoz       :!VALUES.F_NAN}
+          
     record_temp7 = create_struct(['sep'], s8, record_temp6)
   endif else begin
     record_temp7 = create_struct(record_temp6)
   endelse
   if instruments.ngims eq 1 then begin   ;INCLUDE NGIMS DATA STRUCTURE
-    s9 = {ngims, he_density:0.0, he_density_qual:0.0, o_density:0.0, o_density_qual:0.0, co_density:0.0, co_density_qual:0.0,$
-          n2_density:0.0, n2_density_qual:0.0, no_density:0.0, no_density_qual:0.0, ar_density:0.0, ar_density_qual:0.0,$
-          co2_density:0.0, co2_density_qual:0.0, o2plus_density:0.0, o2plus_density_qual:0.0, co2plus_density:0.0, $
-          co2plus_density_qual:0.0, noplus_density:0.0, noplus_density_qual:0.0, oplus_density:0.0, $
-          oplus_density_qual:0.0, conplus_density:0.0, conplus_density_qual:0.0, cplus_density:0.0, cplus_density_qual:0.0, $
-          ohplus_density:0.0, ohplus_density_qual:0.0, nplus_density:0.0, nplus_density_qual:0.0}
+    s9 = {ngims,                                $ 
+          he_density            :!VALUES.F_NAN, $ 
+          he_density_qual       :!VALUES.F_NAN, $ 
+          o_density             :!VALUES.F_NAN, $ 
+          o_density_qual        :!VALUES.F_NAN, $ 
+          co_density            :!VALUES.F_NAN, $ 
+          co_density_qual       :!VALUES.F_NAN, $
+          n2_density            :!VALUES.F_NAN, $ 
+          n2_density_qual       :!VALUES.F_NAN, $ 
+          no_density            :!VALUES.F_NAN, $ 
+          no_density_qual       :!VALUES.F_NAN, $ 
+          ar_density            :!VALUES.F_NAN, $ 
+          ar_density_qual       :!VALUES.F_NAN, $
+          co2_density           :!VALUES.F_NAN, $ 
+          co2_density_qual      :!VALUES.F_NAN, $ 
+          o2plus_density        :!VALUES.F_NAN, $ 
+          o2plus_density_qual   :!VALUES.F_NAN, $ 
+          co2plus_density       :!VALUES.F_NAN, $
+          co2plus_density_qual  :!VALUES.F_NAN, $ 
+          noplus_density        :!VALUES.F_NAN, $ 
+          noplus_density_qual   :!VALUES.F_NAN, $ 
+          oplus_density         :!VALUES.F_NAN, $
+          oplus_density_qual    :!VALUES.F_NAN, $ 
+          conplus_density       :!VALUES.F_NAN, $ 
+          conplus_density_qual  :!VALUES.F_NAN, $ 
+          cplus_density         :!VALUES.F_NAN, $ 
+          cplus_density_qual    :!VALUES.F_NAN, $
+          ohplus_density        :!VALUES.F_NAN, $ 
+          ohplus_density_qual   :!VALUES.F_NAN, $ 
+          nplus_density         :!VALUES.F_NAN, $ 
+          nplus_density_qual    :!VALUES.F_NAN}
+          
+          
     record_temp8 = create_struct( ['ngims'], s9, record_temp7)
   endif else begin
     record_temp8 = create_struct(record_temp7)
   endelse
   
   insitu_record = 0
-  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0l,0L,'',record_temp8)
+  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0l,-1L,'',record_temp8)
 
 end
