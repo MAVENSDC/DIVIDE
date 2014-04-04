@@ -12,7 +12,7 @@
 ;;
 
 
-pro mvn_kp_compare_nonfinite, val1, val2
+pro mvn_kp_compare_nonfinite, val1, val2, i=i, j=j, k=k, l=l, x=x, y=y, z=z, si=si
 
     ;; If Numbers are NaNs
     if finite(val1, /NAN) then begin
@@ -30,8 +30,8 @@ end
 pro mvn_kp_compare_scalars, input1, input2, i=i, j=j, k=k, l=l, x=x, y=y, z=z, si=si, approx=approx
   ;; Check first if NAN or Infinity
   if size(input1, /TYPE) eq 4 or size(input1, /TYPE) eq 5 then begin
-    if not finite(input1) then begin
-      mvn_kp_compare_nonfinite, input1, input2
+    if not finite(input1) or not finite(input2) then begin
+      mvn_kp_compare_nonfinite, input1, input2, i=i, j=j, k=k, l=l, x=x, y=y, z=z, si=si
     endif else begin
     
       ;; If not approx keyword, compare exact values
