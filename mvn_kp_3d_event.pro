@@ -1332,14 +1332,108 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                            if result eq 1 then begin
                             (*pstate).vector_model->setProperty,hide=0
                             widget_control,(*pstate).subbaseR10a, sensitive=1
+                            widget_control,(*pstate).subbaseR10c, sensitive=1
+                            widget_control,(*pstate).subbaseR10d, sensitive=1
                            endif
                            if result eq 0 then begin
                             (*pstate).vector_model->setProperty,hide=1
                             widget_control,(*pstate).subbaseR10a, sensitive=0
+                            widget_control,(*pstate).subbaseR10c, sensitive=0
+                            widget_control,(*pstate).subbaseR10d, sensitive=0
                            endif
                            (*pstate).window ->draw,(*pstate).view
                           end
           
+        'vector_color_method': begin
+                                  widget_control, event.id, get_value = newval
+                                  case newval of 
+                                    'Proximity':begin
+                                                  (*pstate).vector_color_method = 0
+                                                end
+                                    
+                                    'All': begin
+                                            (*pstate).vector_color_method = 1
+                                           end
+                                  endcase
+                               end
+        'lpw_list_vec': begin
+                          (*pstate).vector_color_source[0] = 'LPW'
+                          index = widget_info(event.id, /droplist_select)
+                          widget_control, event.id, get_value=newval
+                          (*pstate).vector_color_source[1] = newval(index)
+                          (*pstate).vector_path->getproperty,vert_color=vert_color
+                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          (*pstate).vector_path->setproperty,vert_color=vert_color
+                          (*pstate).window ->draw,(*pstate).view
+                        end
+                        
+        'static_list_vec': begin
+                            (*pstate).vector_color_source[0] = 'STATIC'
+                            index = widget_info(event.id, /droplist_select)
+                            widget_control, event.id, get_value=newval
+                            (*pstate).vector_color_source[1] = newval(index)
+                            (*pstate).vector_path->getproperty,vert_color=vert_color
+                            MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                            (*pstate).vector_path->setproperty,vert_color=vert_color
+                            (*pstate).window ->draw,(*pstate).view
+                           end
+        
+        'swia_list_vec': begin
+                          (*pstate).vector_color_source[0] = 'SWIA'
+                          index = widget_info(event.id, /droplist_select)
+                          widget_control, event.id, get_value=newval
+                          (*pstate).vector_color_source[1] = newval(index)
+                          (*pstate).vector_path->getproperty,vert_color=vert_color
+                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          (*pstate).vector_path->setproperty,vert_color=vert_color
+                          (*pstate).window ->draw,(*pstate).view
+                         end
+                        
+        'swea_list_vec': begin
+                          (*pstate).vector_color_source[0] = 'SWEA'
+                          index = widget_info(event.id, /droplist_select)
+                          widget_control, event.id, get_value=newval
+                          (*pstate).vector_color_source[1] = newval(index)
+                          (*pstate).vector_path->getproperty,vert_color=vert_color
+                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          (*pstate).vector_path->setproperty,vert_color=vert_color
+                          (*pstate).window ->draw,(*pstate).view
+                        end
+                        
+        'mag_list_vec': begin
+                          (*pstate).vector_color_source[0] = 'MAG'
+                          index = widget_info(event.id, /droplist_select)
+                          widget_control, event.id, get_value=newval
+                          (*pstate).vector_color_source[1] = newval(index)
+                          (*pstate).vector_path->getproperty,vert_color=vert_color
+                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          (*pstate).vector_path->setproperty,vert_color=vert_color
+                          (*pstate).window ->draw,(*pstate).view
+                        end                               
+        
+        'sep_list_vec': begin
+                          (*pstate).vector_color_source[0] = 'SEP'
+                          index = widget_info(event.id, /droplist_select)
+                          widget_control, event.id, get_value=newval
+                          (*pstate).vector_color_source[1] = newval(index)
+                          (*pstate).vector_path->getproperty,vert_color=vert_color
+                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          (*pstate).vector_path->setproperty,vert_color=vert_color
+                          (*pstate).window ->draw,(*pstate).view
+                        end
+                        
+        'ngims_list_vec': begin
+                            (*pstate).vector_color_source[0] = 'NGIMS'
+                            index = widget_info(event.id, /droplist_select)
+                            widget_control, event.id, get_value=newval
+                            (*pstate).vector_color_source[1] = newval(index)
+                            (*pstate).vector_path->getproperty,vert_color=vert_color
+                            MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                            (*pstate).vector_path->setproperty,vert_color=vert_color
+                            (*pstate).window ->draw,(*pstate).view
+                        end               
+                        
+                                        
         'overplots': begin
                        result = (*pstate).plot_model.hide
                        if result eq 1 then (*pstate).plot_model->setProperty,hide=0
