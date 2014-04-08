@@ -37,9 +37,9 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 @mvn_kp_map2d_iuvs_plot
-@MVN_KP_3D_OPTIMIZE
-@MVN_KP_TIME_FIND
-@oplotimage
+@mvn_kp_3d_optimize
+@mvn_kp_time_find
+@mvn_kp_plotimage
 
 
 pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=parameter, list=list, basemap=basemap, $
