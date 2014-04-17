@@ -118,7 +118,7 @@ pro mvn_kp_bin, kp_data, data, output, binsize=binsize, res, list=list, average=
         nbins[i] = nb
         total_bins = total_bins*nb
     endfor
-  stop
+  
     xyz_bins = input[0,*]
     for i=1,total_fields-1 do begin
       bin_multiplier = 1.0d

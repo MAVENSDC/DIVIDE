@@ -47,7 +47,8 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
                   periapse_temp=periapse_temp, optimize=optimize, direct=direct, log=log, i_colortable=i_colortable, $
                   corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
                   corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $
-                  corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad
+                  corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $
+                  map_limit=map_limit, map_location=map_location
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
                 
@@ -189,8 +190,12 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
      if basemap eq 'user' then begin
         input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
         read_jpeg,input_file,mapimage
-        map_limit = [-90,-180,90,180]
-        map_location = [-180,-90]
+        if keyword_set(map_limit) eq 0 then begin
+          map_limit = [-90,-180,90,180]
+        endif
+        if keyword_set(map_location) eq 0 then begin
+          map_location = [-180,-90]
+        endif
      endif
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=map_limit, GRID_UNITS=2, IMAGE_LOCATION=map_location, IMAGE_DIMENSIONS=[360,180],$
@@ -206,12 +211,25 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
       endif    
      endelse
   endif else begin      ;blank canvas for the MSO plot
-    mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
-    if keyword_set(direct) eq 0 then begin
-      i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata)
-      plot_color = "Black"
-    endif
+    if keyword_set(basemap) then begin
+      if basemap eq 'user' then begin
+        input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
+        read_jpeg,input_file,mapimage
+        if keyword_set(map_limit) eq 0 then begin
+          map_limit = [-90,-180,90,180]
+        endif
+        if keyword_set(map_location) eq 0 then begin
+          map_location = [-180,-90]
+        endif
+     endif
+    endif else begin
+      mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
+      if keyword_set(direct) eq 0 then begin
+        i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
+                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata)
+        plot_color = "Black"
+      endif
+    endelse
   endelse 
 
   
