@@ -234,16 +234,48 @@ pro MVN_KP_IUVS_TAG_LIST_MODE, observation, observation_name
 end
 
 function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
-
+  
+ 
   numObs = n_tags(data)
   tagNames = tag_names(data)
+  
+  ;; Determine how many total observations exsist, including arrays of observations (PERIAPSE)
+  totalObsIncludingArrays = 0  
+  totalObsTags = ["hack"]
+
+  
+  for i=0, numObs-1 do begin
+    obsDim = size(data.(i), /DIMENSIONS)
+    
+    if (n_elements(obsDim) gt 1) then begin
+      for innerDimI = 0, obsDim[0]-1 do begin
+        totalObsIncludingArrays += 1
+        
+        ;; If observation has more than one entry (PERIAPSE), append index number onto tag name
+        totalObsTags = [totalObsTags, strtrim(string(tagNames[i]),2) + strtrim(string(innerDimI), 2)] 
+      endfor
+ 
+    endif else begin
+      totalObsIncludingArrays += 1
+      totalObsTags = [totalObsTags, tagNames[i]]
+    endelse
+ 
+  endfor
+
+  ;; Remove first entry - IDL 7 hack  
+  totalObsTags = totalObsTags[1:-1]
+
+  
+  ;; 2 by 2 array to contain information about which observations matched the search criteria
+  tagMatchesPerObs = make_array(n_elements(data), totalObsIncludingArrays, /integer)
 
   ;; Search accross all observations
   meets_criteria = [-1] ;; hack for idl 7
+  tagsMatchesIndex = 0
   for i=0, numObs-1 do begin
      
-    ;; Disclude stellar_occ & orbit
-    if tagNames[i] ne 'STELLAR_OCC' and tagNames[i] ne 'ORBIT' then begin
+    ;; Disclude stellar_occ, orbit, and matching_tags 
+    if tagNames[i] ne 'STELLAR_OCC' and tagNames[i] ne 'ORBIT' and tagNames[i] ne 'MATCHING_OBS' then begin
       
       ;; Loop through multiple instances of observation (PERIAPSE)
       for j=0, n_elements(data[0].(i)) -1 do begin
@@ -252,26 +284,105 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
       
         if counter gt 0 then begin
           meets_criteria = [meets_criteria, meets_criteria_temp] 
+          tagMatchesPerObs[meets_criteria_temp, tagsMatchesIndex] = 1
+    
         endif
+        tagsMatchesIndex += 1
 
       endfor          
    endif
   endfor
+  
+
 
   ;; Create array of uniq indicies of matches
   if n_elements(meets_criteria) gt 1 then begin
     meets_criteria = meets_criteria[1:*]  ;; remove first element for idl 7 hack
     meets_criteria = meets_criteria[uniq(meets_criteria, sort(meets_criteria))]
+    
+    
+    ;;
+    ;; If 'MATCHING_OBS' tag doesn't already exist in structure, we need to create a new
+    ;; structure and a full new array of these structures.
+    ;;
+    tagMatchingI = where(tagNames eq 'MATCHING_OBS', counterTag)
+    if (counterTag le 0) then begin
+    
+      data_temp = create_struct(data[meets_criteria[i]], 'matching_obs', '')
+      matched_data = replicate(data_temp, n_elements(meets_criteria))
+      
+    
+    ;; Else, tag already exists so can just update each matching_obs entry
+    endif else begin
+       
+       matched_data = data[meets_criteria]
+      
+    endelse
+  
+  
+    ;; Loop back through each orbit, create and add array of tags containing which observation matched the search
+    for i=0L, n_elements(meets_criteria) -1 do begin
+      
+      matchingObsTags = where(tagMatchesPerObs[meets_criteria[i], *] eq 1, counter)
+
+      ;; Counter should never be zero here
+      if(counter le 0) then message, "Problem with searching, code should not be here. "
+
+      ;; Create string of all matched observations:
+      matchingObsString = ''      
+      for tagI=0, n_elements(matchingObsTags)-1 do begin
+
+        matchingObsString += totalObsTags[matchingObsTags[tagI]] + ' '  
+      endfor
+      
+
+      ;; If 'MATCHING_OBS' didn't exist, need to copy over all observations into new structure
+      ;;
+      if (counterTag le 0) then begin
+        ;; Add in all obesrvations from original data structure to new array of structures
+        for j=0, numObs-1 do begin
+          matched_data[i].(j) = data[meets_criteria[i]].(j)
+        endfor
+      
+        ;; add in string with matching observationse
+        matched_data[i].(j) = matchingObsString
+      
+
+      ;; If tag did exist, just update the structure
+      endif else begin
+        matched_data[i].(tagMatchingI) = matchingObsString
+        
+      endelse
+      
+      
+
+
+
+             
+    endfor
+    
+
+  
   endif else begin
     meets_criteria = -1
   endelse
-
+  
+  
+  ;; Output structure ------------------------------------------------------------------------------------------- 
+  ;;
+  ;;
+  ;;   Added this in now for testing...
+  
+  data = matched_data
+  
+  
   return, meets_criteria
 end
 
 
-function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=species, min=min_value, max=max_value
+function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=species, min=min_value, max=max_value, altitude=altitude
 
+  
   ;; Find instance of obesrvation that doesn't contain blank string for time. From this we
   ;; will assume this observation has data
   obsIndex = -1
@@ -286,7 +397,8 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
   ;; If we didnt' find an observation that contained data, return
   if obsIndex lt 0 then begin
     print, "Can't proceed with search."
-    message, "Couldn't find observation with data in input structure"
+    print, "Couldn't find observation with data in input structure"
+    return, -1
   endif
   
     ;; Check species valid
@@ -318,7 +430,7 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
       speciesID = where(observation[obsIndex].temperature_id eq species)
     end
     
-    ;; The following measurements don't have species associated with them, the are scalars and we can
+    ;; The following measurements don't have species associated with them, they are scalars and we can
     ;; use the same logic below by just setting the speciesID to 0 (which shall access the scalar)
     'OZONE_DEPTH': begin
       speciesID = 0
@@ -338,38 +450,99 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
   if measureI  lt 0 then message, "Invalid measure+ "+measure+" for mode PERIAPSE"
   if speciesID lt 0 then message, "Invalid species for: "+measure
   
+
+  ;; decipher alitutde if input
+  ;;------------------------------------------------------
+  if keyword_set(altitude) then begin
+
+    obs_tags = tag_names(observation)
+    
+    ;; Ensure this observation contains an altitude tag
+    altitude_tagI = where(obs_tags eq 'ALT', counter)
+    if counter le 0 then message, "Altitude option provided, but no altitude tag for observation"
+    
+    ;; Make sure altitude has two entries
+    if n_elements(altitude) ne 2 then message, "Altitude option must be array of two items, min and max. Example: ALTITUDE=[1000,1600]"
+    
+    altInd = where((observation[obsIndex].alt ge altitude[0]) and (observation[obsIndex].alt le altitude[1]), counter)
+    
+    if counter le 0 then message, "No altitude entries found for input altitude range"
+
+    ;; Ensure altitude index entries are sorted, save off start and end index
+    altInd = altInd[sort(altInd)]
+    altStartI = altInd[0]
+    altEndI   = altInd[-1]
+    
+  endif else begin
+    ;; If no altitude keyword, assume search full altitude range if applicable
+    altStartI = 0
+    altEndI = -1
+    
+  endelse
+
+
   
+  ;; Search for all instances of input species for a measure within min/max and within altitude min/max
+  ;; ---------------------------------------------------------------------------------------------------
   
   ;; If dimension of observation is two, this is periapse and treat as such
   if size(observation, /N_DIMENSIONS) eq 2 then begin
-    obsLastI = n_elements(observation[*,0])
+    ;;obsLastI = n_elements(observation[*,0])
     measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
     numDimOne = (size(observation, /DIMENSION))[0]
+    numOrbits = n_elements(observation[0,*])
     
+    meets_criteria=[-1]
     for i=0, numDimOne-1 do begin
       
-      ;; Search for all instances of input species for a measure within min/max
-      ;; If One dimeension
-      if (measureDim eq 1) then begin
-        meets_criteria = where(observation[i:*].(measureI)[speciesID] ge min_value and $
-          observation[i:*].(measureI)[speciesID] le max_value ,counter)
+      ;; If scalar or one dimensional array of measurements
+      if (measureDim le 1) then begin
+      
+        meets_criteria_hack=[-1]
+        for x=0L, numOrbits-1 do begin
+          where_results = where(observation[i,x].(measureI)[speciesID] ge min_value and $
+            observation[i,x].(measureI)[speciesID] le max_value ,counter)
+            
+          if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
+        endfor
+        
+        if n_elements(meets_criteria_hack) gt 1 then begin
+          meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
+        endif 
+        
       endif
-      ;; If Two dimension
+      
+      ;; If Two dimensional array of measurements  (assume 2nd dim is altitude)
       if (measureDim eq 2) then begin
-        meets_criteria = where(observation[i,*].(measureI)[speciesID,*] ge min_value and $
-          observation[i,*].(measureI)[speciesID,*] le max_value ,counter)
+        meets_criteria_hack=[-1]
+        for x=0L, numOrbits-1 do begin
+          where_results = where(observation[i,x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
+            observation[i,x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
+            
+          if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
+        endfor
+        
+        if n_elements(meets_criteria_hack) gt 1 then begin
+          meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
+        endif 
+        
       endif
-    
+      
     endfor
+    
+    if n_elements(meets_criteria) gt 1 then begin
+      meets_criteria=meets_criteria[1:*]
+      meets_criteria = meets_criteria[uniq(meets_criteria, sort(meets_criteria))]  ;; Only keep unique values
+    endif else begin
+      meets_criteria = -1
+    endelse
+      
     
     
   endif else if size(observation, /N_DIMENSIONS) eq 1 then begin
     
-    ;;
-    ;; Working (I think) - FIXME - needs altitutde 
-    ;;
     
-    measureDim = size(observation[0].(measureI), /N_DIMENSIONS)
+    measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
     numObs = n_elements(observation)
     
     
@@ -395,8 +568,8 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
     if (measureDim eq 2) then begin
       meets_criteria_hack=[-1]
       for x=0L, numObs-1 do begin
-        where_results = where(observation[x].(measureI)[speciesID,*] ge min_value and $
-          observation[x].(measureI)[speciesID,*] le max_value ,counter)
+        where_results = where(observation[x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
+          observation[x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
         
         if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
       endfor
@@ -416,7 +589,8 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
 end
 
 
-pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species=species, observation=observation, min=min_value, max=max_value, list=list, range=range, debug=debug
+pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species=species, observation=observation, $
+                          min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude
 
   ; IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -445,42 +619,52 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
   if keyword_set(observation) then begin
     
     observation_up = strupcase(strtrim(observation,2))
+    observation_tags = tag_names(kp_data)
     
     case observation_up of
       'PERIAPSE': begin
         kp_data_obs = kp_data.periapse
+        kp_data_obs_index = where(observation_tags eq 'PERIAPSE',  counter)
         kp_data_str = "Periapse"
       end
       'CORONAECHELLEHIGH': begin
         kp_data_obs = kp_data.corona_e_high
+        kp_data_obs_index = where(observation_tags eq 'CORONA_E_HIGH',  counter)
         kp_data_str = "Corona Echelle High"
       end
       'CORONAECHELLELIMB': begin
         kp_data_obs = kp_data.corona_e_limb
+        kp_data_obs_index = where(observation_tags eq 'CORONA_E_LIMB',  counter)
         kp_data_str = "Corona Echelle Limb"
       end
       'CORONAECHELLEDISK': begin
         kp_data_obs = kp_data.corona_e_disk
+        kp_data_obs_index = where(observation_tags eq 'CORONA_E_DISK',  counter)
         kp_data_str = "Corona Echelle Disk"
       end
       'CORONALORESHIGH': begin
         kp_data_obs = kp_data.corona_lo_high
+        kp_data_obs_index = where(observation_tags eq 'CORONA_LO_HIGH',  counter)
         kp_data_str = "Corona Lores High"
       end
       'CORONALORESLIMB': begin
          kp_data_obs = kp_data.corona_lo_limb
+         kp_data_obs_index = where(observation_tags eq 'CORONA_LO_LIMB',  counter)
          kp_data_str = "Corona Lores Limb"
       end
       'CORONALORESDISK': begin
         kp_data_obs = kp_data.corona_lo_disk
+        kp_data_obs_index = where(observation_tags eq 'CORONA_LO_DISK',  counter)
         kp_data_str = "Corona Lores Disk"
       end
       'APOAPSE': begin
          kp_data_obs = kp_data.apoapse
+         kp_data_obs_index = where(observation_tags eq 'APOPASE',  counter)
          kp_data_str = "Apoapse"
       end
       'STELLAROCC' : begin
          kp_data_obs = kp_data.stellarocc
+         kp_data_obs_index = where(observation_tags eq 'STELLAR_OCC',  counter)
          kp_data_str = "Stellar Occultation"
       end 
       
@@ -501,6 +685,11 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
          message, "Error: Unknown observation input. Cannot Proceed."
       end
     endcase
+    
+    ;; Make sure kp_data_obs_index was found
+    if counter le 0 then begin
+      message, "Could not find observation: "+str(observation)+" in input data."
+    endif
     
   endif
 
@@ -562,6 +751,8 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
 
   ;; Loop through all input tags and search for each
   meets_criteria = [-1]
+  kp_data_temp = kp_data
+  
   for i=0, n_elements(tag)-1 do begin
   
     ;; Find out if common tag and level1 index if applicable
@@ -569,229 +760,66 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
     
     ;; If common value/tag
     if common_tag then begin
-      meets_criteria_temp = MVN_KP_IUVS_SEARCH_COMMON(kp_data, level1_index, min_value, max_value)
+      meets_criteria = MVN_KP_IUVS_SEARCH_COMMON(kp_data_temp, level1_index, min_value[i], max_value[i])
     
     
     ;; Observation specific search
     endif else begin
       
       if not keyword_set(observation) then message, "If searching observation specific measurement, must specify which observation"
-      meets_criteria_temp = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_obs, measure=tag[i], species=species, min=min_value, max=max_value)
+      meets_criteria = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_temp.(kp_data_obs_index[0]), measure=tag[i], species=species, min=min_value[i], max=max_value[i], altitude=altitude)
+      
+      
+      
+      ;;
+      ;;;
+      ;;;  Updated here - Moved meets_criteria logic into here, search_common now returns updated kp_data_temp
+      ;;;  instead of meets_critiera. 
+      ;;;
+      ;;;
+      ;
+      
+      ;; If there were no matches, break out now with no results
+      if meets_criteria[0] eq -1 then begin
+        kp_data_temp = -1
+        break
+        
+        ;; Otherwise, trim down kp_data_temp with meets_criteria index, and continue on with search
+      endif else begin
+        kp_data_temp = kp_data_temp[meets_criteria]
+      endelse
+      
       
     endelse
-    
-    if meets_criteria_temp[0] ne -1 then begin
-      meets_criteria = [meets_criteria, meets_criteria_temp]
-    endif
-    
+   
     
   endfor
   
-  ;; Create array of uniq indicies of matches
-  if n_elements(meets_criteria) gt 1 then begin
-    meets_criteria = meets_criteria[1:*]  ;; remove first element for idl 7 hack
-    meets_criteria = meets_criteria[uniq(meets_criteria, sort(meets_criteria))]
+  
+  
+  ;; Fill in output and inform user of results
+  ;-----------------------------------------------
+  
+  if n_elements(kp_data_temp) gt 1 then begin
+    kp_data_out = kp_data_temp
     
     ;; Fill output structure with matches
-    print, "Total matching records: "+string(n_elements(meets_criteria))
-    kp_data_out = kp_data[meets_criteria]
+    print, "Total matching records: "+string(n_elements(kp_data_out))
   endif else begin
-
+  
     ;; If no matches, return 0 in kp_data_out
     print, "No records match input range"
-    kp_data_out =0
-    
+    kp_data_out = 0
   endelse
   
   
+  
+  ; UNSET DEBUG ENV VARIABLE
+  setenv, 'MVNTOOLKIT_DEBUG='
+  
+  
+end
 
-
-  ;;meets_critera = MVN_KP_IUVS_SEARCH_MEASUREMENTS( kp_data.periapse, tag=tag, measure=measure, species=species, min=min_value, max=max_value)
-  
-  ;;kp_data[3].corona_e_limb.radiance = indgen(n_elements(kp_data[0].corona_e_limb.radiance)-1)
-  ;;kp_data[1].corona_e_limb.half_int_distance[0] = 5
-  ;;kp_data[2].corona_lo_disk.dust_depth = 3
-  
-
-
-  ;;
-
-  
-  
-  ;; Old code to list
-  ;; 
-;;  if keyword_set(list) then begin                              ;LIST ALL THE SUB-STRUCTURES INLUDED IN A GIVEN KP DATA STRUCTURE
-;;    MVN_KP_IUVS_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
- ;;   return
- ;; endif
-  
- 
-  
-;;  Old call to parser
-   ;;   MVN_KP_IUVS_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-  
-
-;  
-;  MVN_KP_TAG_VERIFY, kp_data_temp, tag[0],base_tag_count, first_level_count, base_tags,  $
-;    first_level_tags, check, level0_index, level1_index, tag_array
-;    
-;    
-;  instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
-;                              'swea',     0, 'mag',      0, 'sep',      0, $
-;                              'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
-;                              'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
-;                              'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, 'stellarocc', 0)
-;    
-;  for i=0, n_elements(tag)-1 do begin
-;    MVN_KP_TAG_VERIFY, kp_data_temp, tag[i],base_tag_count, first_level_count, base_tags,  $
-;      first_level_tags, check, level0_index, level1_index, tag_array
-;    print,tag_array
-;    
-;    case tag_array[0] of
-;      'APOAPSE': begin
-;        instruments.apoapse = 1
-;      end
-;      'PERIAPSE': begin
-;        instruments.periapse = 1
-;      end
-;      'CORONA_LO_DISK': begin
-;        instruments.c_l_disk = 1
-;      end
-;      'CORONA_LO_LIMB': begin
-;        instruments.c_l_limb = 1
-;      end
-;      'CORONA_LO_HIGH': begin
-;        instruments.c_l_high = 1
-;      end
-;      'CORONA_E_DISK':  begin
-;        instruments.c_e_disk = 1
-;      end
-;      'CORONA_E_LIMB': begin
-;        instruments.c_e_limb = 1
-;      end
-;      'CORONA_E_HIGH': begin
-;        instruments.c_e_high = 1
-;      end
-;      'STELLAR_OCC': begin
-;        instruments.stellar_occ = 1
-;      end
-;    endcase
-;
-;    endfor
-;    ;BUILD THE NEW DATA STRUCTURE TO HOLD THE STORED DATA
-;    
-;    MVN_KP_IUVS_STRUCT_INIT,iuvs_record, instrument_array
-;    kp_data_temp = replicate(iuvs_record, n_elements(kp_data))
-;    
-;    stop
-;    
-;    if keyword_set(tag) then begin
-;      if size(tag,/type) eq 2 then begin            ;INTEGER TAG INDICES
-;        count = intarr(n_elements(tag))
-;        species_count = 0
-;        for i=0,n_elements(tag) -1 do begin
-;          MVN_KP_TAG_VERIFY, kp_data_temp, tag[i],base_tag_count, first_level_count, base_tags,  $
-;            first_level_tags, check, level0_index, level1_index, tag_array
-;          if check eq 1 then begin
-;            print,'Tag #',strtrim(string(tag[i]),2),' is not included in the KP data structure.'
-;            return
-;          endif
-;          
-;          ;CHECK IF RADIANCE OR DENSITIES ARE REQUESTED AND IF PROPER SPECIES LISTED
-;          if (tag_array[1] eq 'SCALE_HEIGHT') or (tag_array[1] eq 'DENSITY') or (tag_array[1] eq 'RADIANCE') then begin
-;            if keyword_set(species) ne 1 then begin
-;              print, 'Please identify the atmospheric species of interest.'
-;              return
-;            endif
-;            MVN_KP_IUVS_SPECIES, tag_array, species[species_count], species_index
-;          endif else begin
-;            species_index = -9
-;          endelse
-;          if species_index eq -1 then begin
-;            print, 'Invalid species profile to search on. Try again.'
-;            return
-;          endif
-;          if species_index eq -9 then begin
-;            print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-;          endif else begin
-;            print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-;            print,'Additionally, species index '+strtrim(string(species_index),2)+' will be the searched parameter'
-;          endelse
-;          
-;          
-;        endfor
-;        
-;      endif       ;END INTEGER OPTION
-;    endif
-;    
-;    kp_data_out = kp_data_temp
-;    
-    
-    ;;if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET, RUN A SEARCH ON THAT DATA FIELD BETWEEN MIN AND MAX
-    ;   tag_size = size(tag,/type)
-    ;   if tag_size eq 2 then begin
-    ;    count = intarr(n_elements(tag))
-    ;    kp_data_temp = kp_data
-    ;    for i=0,n_elements(tag) -1 do begin
-    ;                 MVN_KP_TAG_VERIFY, kp_data, tag[i],base_tag_count, first_level_count, base_tags,  $
-    ;                      first_level_tags, check, level0_index, level1_index, tag_array
-    ;            if check eq 1 then begin
-    ;              print,'Tag #',strtrim(string(tag[i]),2),' is not included in the KP data structure.'
-    ;              return
-    ;            endif
-    ;
-    ;            ;CHECK IF RADIANCE OR DENSITIES ARE REQUESTED AND IF PROPER SPECIES LISTED
-    ;            if (tag_array[1] eq 'SCALE_HEIGHT') or (tag_array[1] eq 'DENSITY') or (tag_array[1] eq 'RADIANCE') then begin
-    ;                MVN_KP_IUVS_SPECIES, tag_array, species[i], species_index
-    ;            endif else begin
-    ;              species_index = -9
-    ;            endelse
-    ;            if species_index eq -1 then begin
-    ;              print, 'Invalid species profile to search on. Try again.'
-    ;              return
-    ;            endif
-    ;            if species_index eq -9 then begin
-    ;              print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-    ;            endif else begin
-    ;              print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-    ;              print,'Additionally, species index '+strtrim(string(species_index),2)+' will be the searched parameter'
-    ;            endelse
-    ;
-    ;            ;FIRST THE SIMPLE CASE OF A NON-SPECIES SEARCH ON KP DATA
-    ;            if specs_index eq -9 then begin
-    ;              meets_criteria = where(kp_data_temp.(level0_index).(level1_index) ge min_value[i] and kp_data_temp.(level0_index).(level1_index) le max_value[i],counter)
-    ;              count[i] = counter
-    ;              kp_data_temp = kp_data_temp[meets_criteria]
-    ;            endif
-    ;    endfor            ;END THE LOOP OVER THE VARIOUS SEARHC PARAMETERS
-    ;    print,strtrim(string(counter),2),' records found that meet the search criteria.'
-    ;    kp_data_out = kp_data_temp
-    ;   endif
-    ;   if tag_size eq 7 then begin
-    ;    count = intarr(n_elements(tag))
-    ;    kp_data_temp = kp_data
-    ;    for i=0,n_elements(tag)-1 do begin
-    ;                       MVN_KP_TAG_VERIFY, kp_data, tag[i],base_tag_count, first_level_count, base_tags,  $
-    ;                      first_level_tags, check, level0_index, level1_index, tag_array
-    ;             print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
-    ;              ;SPLIT THE SEARCH TAG INTO UPPER AND LOWER LEVEL COMPONENTS
-    ;
-    ;             meets_criteria = where(kp_data_temp.(level0_index).(level1_index) ge min_value[i] and kp_data_temp.(level0_index).(level1_index) le max_value[i], counter)
-    ;             count[i] = counter
-    ;             kp_data_temp = kp_data_temp[meets_criteria]
-    ;    endfor
-    ;    print,strtrim(string(counter),2),' records found that meet the search criteria.'
-    ;    kp_data_out = kp_data_temp
-    ;  endif
-    ;
-    ;endif       ;END OF ALL SEARCH ROUTINES
-    
-    ; UNSET DEBUG ENV VARIABLE
-    setenv, 'MVNTOOLKIT_DEBUG='
-    
-    
-  end
-  
   
   
   
