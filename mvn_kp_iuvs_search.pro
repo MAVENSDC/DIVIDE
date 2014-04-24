@@ -116,43 +116,8 @@ pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observ
       
         
    endif
-
-  
-
 end
 
-pro MVN_KP_IUVS_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-  
-  index1 = 0
-  index2 = 1
-  
-  if base_tags[0] eq 'TIME_STRING' then begin
-    dataset = 'INSITU'
-  endif else begin
-    dataset = 'IUVS'
-  endelse
-  
-  ;if dataset eq 'INSITU' then begin
-  print,'Fields available for searching are as follows'
-  print,'*********************************************'
-  print,''
-  print,dataset+' DATA SET VARIABLES'
-  print,'-----------------------------'
-  for i=0,base_tag_count-1 do begin
-    if first_level_count[i] ne 0 then begin
-      print,strtrim(base_tags[i])
-      for j=0,first_level_count[i]-1 do begin
-        if first_level_count[i] ne 0 then begin
-          print,'   #'+strtrim(string(index2),2)+' '+strtrim(string(first_level_tags[index2-1]),2)
-          index2 = index2+1
-        endif
-      endfor
-      print,'-----------------------------'
-    endif
-  endfor
-
-  print,'USE ANY OF THESE TAG NAMES, OR ASSOCIATED INDICES, TO SEARCH ON THE KP DATA FILE.'
-end
 
 
 pro MVN_KP_IUVS_TAG_LIST_COMMON, data
@@ -232,6 +197,7 @@ pro MVN_KP_IUVS_TAG_LIST_MODE, observation, observation_name
 
 
 end
+
 
 function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
   
@@ -386,7 +352,7 @@ end
 
 function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=species, min=min_value, max=max_value, altitude=altitude
 
-  
+  stop
   ;; Find instance of obesrvation that doesn't contain blank string for time. From this we
   ;; will assume this observation has data
   obsIndex = -1
