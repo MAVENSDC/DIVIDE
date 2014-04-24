@@ -373,7 +373,11 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
   ;;
   ;;   Added this in now for testing...
   
-  data = matched_data
+  if meets_criteria[0] ne -1 then begin
+    data = matched_data
+  endif else begin
+    data = -1
+  endelse
   
   
   return, meets_criteria
@@ -620,6 +624,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
     
     observation_up = strupcase(strtrim(observation,2))
     observation_tags = tag_names(kp_data)
+   
     
     case observation_up of
       'PERIAPSE': begin
@@ -762,6 +767,11 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
     if common_tag then begin
       meets_criteria = MVN_KP_IUVS_SEARCH_COMMON(kp_data_temp, level1_index, min_value[i], max_value[i])
     
+      ;; If there were no matches, break out now with no results
+      if meets_criteria[0] eq -1 then begin
+        kp_data_temp = -1
+        break 
+       endif
     
     ;; Observation specific search
     endif else begin
