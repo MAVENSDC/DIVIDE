@@ -58,20 +58,53 @@
 ;  endfor
 ;end
 
-pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observation=observation
+pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observation=observation, species=species, index_species=index_species
+
 
   iuvs_data_info = MVN_KP_CONFIG(/IUVS_DATA)
   common_tags_num = iuvs_data_info.num_common
-  common_tag_names = tag_names(kp_data.(0)[0])
-  common_tag_names = common_tag_names[0:common_tags_num-1]
+  all_tag_names = tag_names(kp_data.(0)[0])
+  common_tag_names = all_tag_names[0:common_tags_num-1]
+  
+  
+  ;; If observation keyword supplied, find an orbit with data for that observation. We use this information
+  ;; later when searching.
+  if keyword_set(observation) then begin
+  
+  
+    ;; Find instance of obesrvation that doesn't contain blank string for time. From this we
+    ;; will assume this observation has data
+    obsIndex = -1
+    for i=0L, n_elements(observation)-1 do begin
+      if observation[i].time_start ne '' then begin
+        ;; Use this observation (only need one for listing)
+        obsIndex = i
+        break
+      endif
+    endfor
+    
+    ;; If we didnt' find an observation that contained data, return     -----------FIXME TEST THIS
+    if obsIndex lt 0 then begin
+      print, "Can't proceed with search."
+      print, "Couldn't find observation with data in input structure"
+      level1_index = -1
+      return
+    endif
+    
+    observationSample = observation[obsIndex]
+    obs_tag_names = tag_names(observation)
+    
+  endif
+  
 
    ;; If input_tag is an INT
    if size(input_tag, /type) eq 2 then begin
    
       ;; If input_tag number falls within the common tags range
-      if input_tag le common_tags_num then begin
+      if input_tag lt common_tags_num then begin
         level1_index = input_tag
         common_tag = 1 ;; Indicate common value
+        return
 
       ;; Check if tag matches observation
       endif else begin
@@ -80,13 +113,17 @@ pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observ
           errorStr += "ensure you provide OBSERVATION keyword indicating which observation"
           message, errorStr
         endif
+
+
         
-        obs_tag_num = n_tags(observation)
         level1_index = input_tag
         common_tag = 0
-        if (obs_tag_num ge n_tags(observation)) then message, "Not a valid tag number."
+        if (input_tag ge n_tags(observationSample)) then message, "Tag number out of bounds or nto valid for observation."
+
+        measure_tag_name = obs_tag_names[input_tag]
 
       endelse
+    
     
     endif
     
@@ -97,6 +134,7 @@ pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observ
       
       if counter gt 0 then begin
         common_tag = 1 ;; Indicate common value
+        return
       
       ;; Check if tag matches observation
       endif else begin
@@ -107,17 +145,83 @@ pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observ
           message, errorStr
         endif
         
-        obs_tag_names = tag_names(observation)
+        input_tag = strupcase(input_tag)
         level1_index =  where(input_tag eq obs_tag_names, counter)
         common_tag = 0
-        if counter ne 1 then message, "Not a valid tag tag."
+        if counter ne 1 then message, "Not a valid tag tag: "+string(input_tag)
+        
+        measure_tag_name = input_tag
         
       endelse
-      
-        
+           
    endif
+   
+   
+   ;; Handle observation specific tags & species
+   ;-------------------------------------------------------
+   
+   ;; Check species valid
+   if keyword_set (species) then species = strupcase(strtrim(species,2))
+   measure_tag_name = strupcase(strtrim(measure_tag_name,2))
+   
+   
+   switch measure_tag_name of
+     'SCALE_HEIGHT_ERR': 
+     'SCALE_HEIGHT': begin
+       if not keyword_set(species) then message, "Must specify a species to search"
+       index_species   = where(observationSample.scale_height_id eq species)
+       break
+     end
+     'DENSITY_ERR':
+     'DENSITY': begin
+       if not keyword_set(species) then message, "Must specify a species to search"
+       index_species   = where(observationSample.density_id eq species)
+       break
+     end
+     'RADIANCE_ERR':
+     'RADIANCE': begin
+       if not keyword_set(species) then message, "Must specify a species to search"
+       index_species   = where(observationSample.radiance_id eq species)
+       break
+     END
+     'HALF_INT_DISTANCE_ERR':
+     'HALF_INT_DISTANCE': begin
+       if not keyword_set(species) then message, "Must specify a species to search"
+       index_species   = where(observationSample.half_int_distance_id eq species)
+       break
+     end
+     'TEMPERATURE_ERR':
+     'TEMPERATURE': begin
+       if not keyword_set(species) then message, "Must specify a species to search"
+       index_species = where(observationSample.temperature_id eq species)
+       break
+     end
+     
+     ;; The following measurements don't have species associated with them, they are scalars and we can
+     ;; use the same logic below by just setting the index_species to 0 (which shall access the scalar)
+     'OZONE_DEPTH_ERR':
+     'OZONE_DEPTH': 
+     'AURORAL_INDEX':
+     'DUST_DEPTH_ERR':
+     'DUST_DEPTH':
+     'SZA_BP':
+     'LOCAL_TIME_BP':
+     'LON_BINS':
+     'LAT_BINS': begin
+       index_species = 0
+       if keyword_set(species) then print, "Warning - species option entered but intput tag doens't expect species"
+       break
+     end
+     
+     else: message, "Tag not found/allowed: "+string(measure_tag_name)       ;; FIXME
+      
+   endswitch
+   
+   ;; If species not found
+   if index_species lt 0 then message, "Invalid species for: "+measure_tag_name
+   
+   
 end
-
 
 
 pro MVN_KP_IUVS_TAG_LIST_COMMON, data
@@ -350,71 +454,28 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
 end
 
 
-function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=species, min=min_value, max=max_value, altitude=altitude
+function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, observation_name, measureI, speciesID, min=min_value, max=max_value, altitude=altitude
 
-  stop
-  ;; Find instance of obesrvation that doesn't contain blank string for time. From this we
-  ;; will assume this observation has data
-  obsIndex = -1
-  for i=0, n_elements(observation)-1 do begin
-    if observation[i].time_start ne '' then begin
-      ;; Use this observation (only need one for listing)
-      obsIndex = i
-      break
+
+    
+   ;; Find instance of obesrvation that doesn't contain blank string for time. From this we
+    ;; will assume this observation has data
+    obsIndex = -1
+    for i=0L, n_elements(observation)-1 do begin
+      if observation[i].time_start ne '' then begin
+        ;; Use this observation (only need one for listing)
+        obsIndex = i
+        break
+      endif
+    endfor
+    
+    ;; If we didnt' find an observation that contained data, return
+    if obsIndex lt 0 then begin
+      print, "Can't proceed with search."
+      print, "Couldn't find observation with data in input structure"
+      return, -1
     endif
-  endfor
   
-  ;; If we didnt' find an observation that contained data, return
-  if obsIndex lt 0 then begin
-    print, "Can't proceed with search."
-    print, "Couldn't find observation with data in input structure"
-    return, -1
-  endif
-  
-    ;; Check species valid
-  if not keyword_set(measure) then message, "Must specifcy a measurement (measure keyword) to search(e.g. RADIANCE or OZONE_DEPTH)"
-  if keyword_set (species) then species = strupcase(strtrim(species,2))
-  measure = strupcase(strtrim(measure,2))
-  measureI = where(tag_names(observation[obsIndex]) eq measure)
-
-
-  case measure of
-    'SCALE_HEIGHT': begin
-      if not keyword_set(species) then message, "Must specify a species to search"
-      speciesID   = where(observation[obsIndex].scale_height_id eq species)
-    end
-    'DENSITY': begin
-      if not keyword_set(species) then message, "Must specify a species to search"
-      speciesID   = where(observation[obsIndex].density_id eq species)
-    end
-    'RADIANCE': begin
-      if not keyword_set(species) then message, "Must specify a species to search"
-      speciesID   = where(observation[obsIndex].radiance_id eq species)
-    end
-    'HALF_INT_DISTANCE': begin
-      if not keyword_set(species) then message, "Must specify a species to search"
-      speciesID   = where(observation[obsIndex].half_int_distance_id eq species)
-    end
-    'TEMPERATURE': begin
-      if not keyword_set(species) then message, "Must specify a species to search"
-      speciesID = where(observation[obsIndex].temperature_id eq species)
-    end
-    
-    ;; The following measurements don't have species associated with them, they are scalars and we can
-    ;; use the same logic below by just setting the speciesID to 0 (which shall access the scalar)
-    'OZONE_DEPTH': begin
-      speciesID = 0
-    end
-    'AURORAL_INDEX': begin
-      speciesID = 0
-    end
-    'DUST_DEPTH': begin
-      speciesID = 0
-    end
-      
-    else: message, "Measure option not found/allowed"
-    
-  endcase
 
   ;; If tag not found
   if measureI  lt 0 then message, "Invalid measure+ "+measure+" for mode PERIAPSE"
@@ -455,105 +516,191 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, measure=measure, species=
   ;; Search for all instances of input species for a measure within min/max and within altitude min/max
   ;; ---------------------------------------------------------------------------------------------------
   
-  ;; If dimension of observation is two, this is periapse and treat as such
-  if size(observation, /N_DIMENSIONS) eq 2 then begin
-    ;;obsLastI = n_elements(observation[*,0])
-    measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
-    numDimOne = (size(observation, /DIMENSION))[0]
-    numOrbits = n_elements(observation[0,*])
-    
-    meets_criteria=[-1]
-    for i=0, numDimOne-1 do begin
+  
+  ;; Treat Apoapse special (Breaks the pattern of all other observations) 
+  if observation_name ne 'APOAPSE' then begin
+  
+    ;; If dimension of observation is two, this is periapse and treat as such
+    if size(observation, /N_DIMENSIONS) eq 2 then begin
+      ;;obsLastI = n_elements(observation[*,0])
+      measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
+      numDimOne = (size(observation, /DIMENSION))[0]
+      numOrbits = n_elements(observation[0,*])
+      
+      meets_criteria=[-1]
+      for i=0, numDimOne-1 do begin
+        
+        ;; If scalar or one dimensional array of measurements
+        if (measureDim le 1) then begin
+        
+          meets_criteria_hack=[-1]
+          for x=0L, numOrbits-1 do begin
+            where_results = where(observation[i,x].(measureI)[speciesID] ge min_value and $
+              observation[i,x].(measureI)[speciesID] le max_value ,counter)
+              
+            if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
+          endfor
+          
+          if n_elements(meets_criteria_hack) gt 1 then begin
+            meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
+          endif 
+          
+        endif
+        
+        ;; If Two dimensional array of measurements  (assume 2nd dim is altitude)
+        if (measureDim eq 2) then begin
+          meets_criteria_hack=[-1]
+          for x=0L, numOrbits-1 do begin
+            where_results = where(observation[i,x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
+              observation[i,x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
+              
+            if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
+          endfor
+          
+          if n_elements(meets_criteria_hack) gt 1 then begin
+            meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
+          endif 
+          
+        endif
+        
+      endfor
+      
+      if n_elements(meets_criteria) gt 1 then begin
+        meets_criteria=meets_criteria[1:*]
+        meets_criteria = meets_criteria[uniq(meets_criteria, sort(meets_criteria))]  ;; Only keep unique values
+      endif else begin
+        meets_criteria = -1
+      endelse
+        
+      
+      
+    endif else if size(observation, /N_DIMENSIONS) eq 1 then begin
+      
+      
+      measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
+      numObs = n_elements(observation)
+      
       
       ;; If scalar or one dimensional array of measurements
       if (measureDim le 1) then begin
-      
+        
         meets_criteria_hack=[-1]
-        for x=0L, numOrbits-1 do begin
-          where_results = where(observation[i,x].(measureI)[speciesID] ge min_value and $
-            observation[i,x].(measureI)[speciesID] le max_value ,counter)
+        for x=0L, numObs-1 do begin
+          where_results = where(observation[x].(measureI)[speciesID] ge min_value and $
+            observation[x].(measureI)[speciesID] le max_value ,counter)
             
           if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
         endfor
         
         if n_elements(meets_criteria_hack) gt 1 then begin
-          meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
-        endif 
-        
+          meets_criteria=meets_criteria_hack[1:*]
+        endif else begin
+          meets_criteria=meets_criteria_hack
+        endelse    
       endif
-      
+   
       ;; If Two dimensional array of measurements  (assume 2nd dim is altitude)
       if (measureDim eq 2) then begin
         meets_criteria_hack=[-1]
-        for x=0L, numOrbits-1 do begin
-          where_results = where(observation[i,x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
-            observation[i,x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
-            
+        for x=0L, numObs-1 do begin
+          where_results = where(observation[x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
+            observation[x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
+          
           if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
         endfor
         
-        if n_elements(meets_criteria_hack) gt 1 then begin
-          meets_criteria=[meets_criteria, meets_criteria_hack[1:*]]
-        endif 
-        
+        if n_elements(meets_criteria_hack) gt 1 then begin 
+          meets_criteria=meets_criteria_hack[1:*]
+        endif else begin
+          meets_criteria=meets_criteria_hack
+        endelse        
       endif
       
-    endfor
-    
-    if n_elements(meets_criteria) gt 1 then begin
-      meets_criteria=meets_criteria[1:*]
-      meets_criteria = meets_criteria[uniq(meets_criteria, sort(meets_criteria))]  ;; Only keep unique values
     endif else begin
-      meets_criteria = -1
+      message, "Problem with input data, too many dimensions in observation"
     endelse
-      
+    
+  
+  
+  endif else begin
+    ;; APOAPSE OBSERVATION - Special logic to search here because data form is 
+    ;; different than the rest of the observations
+    
+    obs_tag_names = tag_names(observation[obsIndex])
+    measure_name = obs_tag_names[measureI]
+    numOrbits = n_elements(observation)
     
     
-  endif else if size(observation, /N_DIMENSIONS) eq 1 then begin
+    ;; RADIANCE OR RADIANCE ERR - search based on SPECIES ID 
+    if measure_name eq 'RADIANCE' or measure_name eq 'RADIANCE_ERR' then begin
     
-    
-    measureDim = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
-    numObs = n_elements(observation)
-    
-    
-    ;; If scalar or one dimensional array of measurements
-    if (measureDim le 1) then begin
-      
+      ;; Loop through each orbit and search for criteria
+      ;-----------------------------------------------------------
       meets_criteria_hack=[-1]
-      for x=0L, numObs-1 do begin
-        where_results = where(observation[x].(measureI)[speciesID] ge min_value and $
-          observation[x].(measureI)[speciesID] le max_value ,counter)
+      for i = 0L, numOrbits-1 do begin
+        where_results = where(observation[i].(measureI)[speciesID, *, *] ge min_value and $
+          observation[i].(measureI)[speciesID, *, *] le max_value, counter)
           
-        if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
+        if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, i]
+        
       endfor
       
+      ;; Remove first element - idl 7 compatibility 
       if n_elements(meets_criteria_hack) gt 1 then begin
         meets_criteria=meets_criteria_hack[1:*]
       endif else begin
         meets_criteria=meets_criteria_hack
-      endelse    
-    endif
- 
-    ;; If Two dimensional array of measurements  (assume 2nd dim is altitude)
-    if (measureDim eq 2) then begin
-      meets_criteria_hack=[-1]
-      for x=0L, numObs-1 do begin
-        where_results = where(observation[x].(measureI)[speciesID,altStartI:altEndI] ge min_value and $
-          observation[x].(measureI)[speciesID,altStartI:altEndI] le max_value ,counter)
-        
-        if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, x]
-      endfor
+      endelse
+    
+    
+    ;; Anything other than radiance
+    endif else begin
+      numDimMeasure = size(observation[obsIndex].(measureI), /N_DIMENSIONS)
       
-      if n_elements(meets_criteria_hack) gt 1 then begin 
+      
+      ;; Loop through each orbit and search for criteria
+      ;-------------------------------------------------------
+      ;
+      
+      ;; If one dimension
+      if (numDimMeasure eq 1) then begin
+      
+        meets_criteria_hack=[-1]
+        for i = 0L, numOrbits-1 do begin
+          where_results = where(observation[i].(measureI)[*] ge min_value and $
+            observation[i].(measureI)[*] le max_value, counter)
+            
+          if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, i]
+          
+        endfor
+        
+        ;; If two dimensions
+      endif else if (numDimMeasure eq 2) then begin
+      
+        meets_criteria_hack=[-1]
+        for i = 0L, numOrbits-1 do begin
+          where_results = where(observation[i].(measureI)[*, *] ge min_value and $
+            observation[i].(measureI)[*, *] le max_value, counter)
+            
+          if (counter gt 0) then meets_criteria_hack = [meets_criteria_hack, i]
+          
+        endfor
+        
+        
+      endif else begin
+        message, "Problem. found more than 2 dimensions for a search item in APOPASE other than periapse"
+      endelse
+      
+      ;; Remove first element - idl 7 compatibility
+      if n_elements(meets_criteria_hack) gt 1 then begin
         meets_criteria=meets_criteria_hack[1:*]
       endif else begin
         meets_criteria=meets_criteria_hack
-      endelse        
-    endif
-    
-  endif else begin
-    message, "Problem with input data, too many dimensions in observation"
-  endelse
+      endelse
+      
+    endelse
+
+  endelse 
   
   return, meets_criteria
 end
@@ -588,11 +735,11 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
   ;; If user supplied the observation keyword, parse it to decide which observation
   if keyword_set(observation) then begin
     
-    observation_up = strupcase(strtrim(observation,2))
+    observation_name = strupcase(strtrim(observation,2))
     observation_tags = tag_names(kp_data)
    
     
-    case observation_up of
+    case observation_name of
       'PERIAPSE': begin
         kp_data_obs = kp_data.periapse
         kp_data_obs_index = where(observation_tags eq 'PERIAPSE',  counter)
@@ -630,7 +777,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
       end
       'APOAPSE': begin
          kp_data_obs = kp_data.apoapse
-         kp_data_obs_index = where(observation_tags eq 'APOPASE',  counter)
+         kp_data_obs_index = where(observation_tags eq 'APOAPSE',  counter)
          kp_data_str = "Apoapse"
       end
       'STELLAROCC' : begin
@@ -725,9 +872,9 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
   kp_data_temp = kp_data
   
   for i=0, n_elements(tag)-1 do begin
-  
+
     ;; Find out if common tag and level1 index if applicable
-    mvn_kp_iuvs_tag_parser, kp_data, tag[i], common_tag, level1_index, observation = kp_data_obs
+    mvn_kp_iuvs_tag_parser, kp_data, tag[i], common_tag, level1_index, observation = kp_data_obs, species=species, index_species=index_species
     
     ;; If common value/tag
     if common_tag then begin
@@ -743,7 +890,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
     endif else begin
       
       if not keyword_set(observation) then message, "If searching observation specific measurement, must specify which observation"
-      meets_criteria = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_temp.(kp_data_obs_index[0]), measure=tag[i], species=species, min=min_value[i], max=max_value[i], altitude=altitude)
+      meets_criteria = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_temp.(kp_data_obs_index[0]), observation_name, level1_index, index_species, min=min_value[i], max=max_value[i], altitude=altitude)
       
       
       
@@ -775,8 +922,9 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
   
   ;; Fill in output and inform user of results
   ;-----------------------------------------------
-  
-  if n_elements(kp_data_temp) gt 1 then begin
+ 
+  ;; If kp_data_temp is not an integer (-1 from search) then there are results.
+  if size(kp_data_temp, /type) ne 2 then begin
     kp_data_out = kp_data_temp
     
     ;; Fill output structure with matches
