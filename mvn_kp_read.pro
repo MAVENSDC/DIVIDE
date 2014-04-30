@@ -376,12 +376,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
           instruments=instruments, savefiles=savefiles, textfiles=textfiles
           
-        ;; Add single iuvs_record to array of iuvs records
-        iuvs_data_temp[iuvs_index] = iuvs_record
-        iuvs_index++
+        ;; If iuvs_record not eq -1 (Indicating some observation within time range) add to temp array
+        if size(iuvs_record, /type) eq 8 then begin
+          ;; Add single iuvs_record to array of iuvs records
+          iuvs_data_temp[iuvs_index] = iuvs_record
+          iuvs_index++
+        endif
         
       endfor
-      
+
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED
       iuvs_output = iuvs_data_temp[0:iuvs_index-1]
       print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
