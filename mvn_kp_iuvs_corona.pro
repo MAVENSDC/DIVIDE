@@ -18,7 +18,7 @@
 pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $
                         radiance=radiance, halfint=halfint, density=density, scaleheight=scaleheight, aurora=aurora, dust=dust, ozone=ozone, $
                         species_expand=species_expand, profile_expand=profile_expand, $
-                        list=list, range=range, legend=legend, colortable=colortable, window=window, labels=labels, nolegend=nolegend
+                        list=list, range=range, legend=legend, colortable=colortable, window=window, nolabels=nolabels, nolegend=nolegend
 
 
 ;CHECK THAT THE INPUT DATA STRUCTURE CONTAINS THE NECESSARY DATA
@@ -39,7 +39,6 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
     if check ne -1 then data_choice[4] = 1
     check = where(base_tags eq 'CORONA_LO_HIGH')
     if check ne -1 then data_choice[5] = 1
-    print,data_choice
   ;SET CHOICES BASED ON KEYWORDS
     disp_check = data_choice
     if (keyword_set(echelle) and keyword_set(lores)) then begin
@@ -97,13 +96,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
           endif
     endif
   endif
-  ;  if keyword_set(disk) then begin
-  ;    if data_choice[0] eq 1 then begin
-  ;      disp_check[0] = 1 
-        
-  ;    if data_choice[3] eq 1 then disp_check[3] = 1
- ;     if (keyword_set(echelle) and data_choice[0] eq 1) then 
-  ;  endif 
+
 
   if error eq 1 then begin
     print,'The data structure does not include the necessary data. Check your structure and try again.'
@@ -476,7 +469,7 @@ print,'legend',legend_count
         oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
       endfor
     endfor
-    if keyword_set(labels) then xyouts, e_rad_high_title[0],e_rad_high_title[1],'Radiance',/normal
+    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_high_title[0],e_rad_high_title[1],'Radiance',/normal
   endif 
   if e_l_r eq 1 then begin        ;echelle limb radiance
     plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.2,.1,.57]
@@ -485,14 +478,14 @@ print,'legend',legend_count
         oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
       endfor
     endfor   
-    if keyword_set(labels) then xyouts, e_rad_limb_title[0],e_rad_limb_title[1],'Radiance',/normal 
+    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_limb_title[0],e_rad_limb_title[1],'Radiance',/normal 
   endif
   if e_d_r eq 1 then begin        ;echelle disk radiance
     plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5, position=[.025,.05,.1,.17]
     for i=0, e_disk_total-1 do begin
       oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
     endfor
-    if keyword_set(labels) then xyouts, e_rad_disk_title[0],e_rad_disk_title[1],'Radiance',/normal
+    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_disk_title[0],e_rad_disk_title[1],'Radiance',/normal
   endif
   if e_h_h eq 1 then begin        ;echelle high half int dist
     plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.125,.6,.2,.95],/ylog
@@ -501,7 +494,7 @@ print,'legend',legend_count
         oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
       endfor
     endfor     
-    if keyword_set(labels) then xyouts, e_half_high_title[0], e_half_high_title[1], '1/2 Int Dist', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, e_half_high_title[0], e_half_high_title[1], '1/2 Int Dist', /normal
   endif
   if e_l_h eq 1 then begin        ;echelle limb half int dist
     plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.125,.2,.2,.57]
@@ -510,7 +503,7 @@ print,'legend',legend_count
         oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
       endfor
     endfor    
-    if keyword_set(labels) then xyouts, e_half_limb_title[0],e_half_limb_title[1],'1/2 Int Dist',/normal
+    if (keyword_set(nolabels) ne 1) then xyouts, e_half_limb_title[0],e_half_limb_title[1],'1/2 Int Dist',/normal
   endif
   if l_h_r eq 1 then begin        ;lores high radiance
     plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.225,.6,.3,.95],/ylog
@@ -519,7 +512,7 @@ print,'legend',legend_count
         oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
       endfor
     endfor
-    if keyword_set(labels) then xyouts, lo_rad_high_title[0], lo_rad_high_title[1], 'Radiance', /normal    
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_high_title[0], lo_rad_high_title[1], 'Radiance', /normal    
   endif
   if l_l_r eq 1 then begin        ;lores limb radiance
     plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.225,.2,.3,.57]
@@ -528,14 +521,14 @@ print,'legend',legend_count
         oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
       endfor
     endfor   
-    if keyword_set(labels) then xyouts, lo_rad_limb_title[0], lo_rad_limb_title[1], 'Radiance', /normal  
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_limb_title[0], lo_rad_limb_title[1], 'Radiance', /normal  
   endif
   if l_d_r eq 1 then begin        ;lores disk radiance
     plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.225,.05,.3,.17]
     for i=0, lo_disk_total-1 do begin
       oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
     endfor    
-    if keyword_set(labels) then xyouts, lo_rad_disk_title[0], lo_rad_disk_title[1], 'Radiance', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_disk_title[0], lo_rad_disk_title[1], 'Radiance', /normal
   endif
   if l_h_d eq 1 then begin        ;lores high density
     plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.325,.6,.4,.95],/ylog
@@ -544,7 +537,7 @@ print,'legend',legend_count
         oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
       endfor
     endfor    
-    if keyword_set(labels) then xyouts, lo_den_high_title[0], lo_den_high_title[1], 'Density', /normal 
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_den_high_title[0], lo_den_high_title[1], 'Density', /normal 
   endif
   if l_l_d eq 1 then begin        ;lores limb density
     plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.325,.2,.4,.57]
@@ -553,14 +546,14 @@ print,'legend',legend_count
         oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
       endfor
     endfor 
-    if keyword_set(labels) then xyouts, lo_den_limb_title[0], lo_den_limb_title[1], 'Density', /normal    
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_den_limb_title[0], lo_den_limb_title[1], 'Density', /normal    
   endif
   if l_d_d eq 1 then begin        ;lores disk density
     plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.325,.05,.4,.17]
     for i=0, lo_disk_total-1 do begin
       oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
     endfor       
-    if keyword_set(labels) then xyouts, lo_dust_disk_title[0], lo_dust_disk_title[1], 'Dust', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_dust_disk_title[0], lo_dust_disk_title[1], 'Dust', /normal
   endif
   if l_l_s eq 1 then begin        ;lores limb scale
     plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.425,.2,.5,.57]
@@ -569,14 +562,14 @@ print,'legend',legend_count
         oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
       endfor
     endfor      
-    if keyword_set(labels) then xyouts, lo_scale_limb_title[0], lo_scale_limb_title[1], 'Scale Height', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_scale_limb_title[0], lo_scale_limb_title[1], 'Scale Height', /normal
   endif
   if l_d_a eq 1 then begin        ;lores disk aurora
     plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.425,.05,.5,.17]
     for i=0, lo_disk_total-1 do begin
       oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
     endfor      
-    if keyword_set(labels) then xyouts, lo_aurora_disk_title[0], lo_aurora_disk_title[1], 'Auroral', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_aurora_disk_title[0], lo_aurora_disk_title[1], 'Auroral', /normal
   endif
   if l_h_h eq 1 then begin        ;lores high half int
     plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.525,.6,.6,.95],/ylog
@@ -585,24 +578,24 @@ print,'legend',legend_count
         oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
       endfor
     endfor      
-    if keyword_set(labels) then xyouts, lo_half_high_title[0], lo_half_high_title[1], '1/2 Int Dist', /normal 
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_half_high_title[0], lo_half_high_title[1], '1/2 Int Dist', /normal 
   endif
   if l_d_o eq 1 then begin        ;lores disk ozone
     plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.525,.05,.6,.17]
     for i=0, lo_disk_total-1 do begin
       oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
     endfor     
-    if keyword_set(labels) then xyouts, lo_ozone_disk_title[0], lo_ozone_disk_title[1], 'Ozone', /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_ozone_disk_title[0], lo_ozone_disk_title[1], 'Ozone', /normal
   endif
 
 
 ;ADD IN TITLES AND PLOT LABELS
 
   if (disp_check[0] eq 1) or (disp_check[1] eq 1) or (disp_check[2] eq 1) then begin
-    if keyword_set(labels) then xyouts, e_title_pos[0], e_title_pos[1], 'Echelle Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, e_title_pos[0], e_title_pos[1], 'Echelle Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
   endif
   if (disp_check[3] eq 1) or (disp_check[4] eq 1) or (disp_check[5] eq 1) then begin
-    if keyword_set(labels) then xyouts, lo_title_pos[0], lo_title_pos[1], 'Lo-Res Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
+    if (keyword_set(nolabels) ne 1) then xyouts, lo_title_pos[0], lo_title_pos[1], 'Lo-Res Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
   endif
   
 ;ADD THE LEGEND ALONG THE RIGHTHAND SIDE

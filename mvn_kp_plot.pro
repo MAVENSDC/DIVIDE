@@ -33,7 +33,7 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_PLOT, kp_data, parameter, time=time, list=list, range=range, $
+pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=range, $
                     title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
                     directgraphic=directgraphic, log=log   
 
@@ -45,13 +45,13 @@ pro MVN_KP_PLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
   if keyword_set(list) then begin
     MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    goto,finish
+    return
   endif
   
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
-    goto,finish
+    return
   endif
   
   ;SET THE VARIOUS PLOT OPTIONS, SHOULD THEY REQUIRE IT
@@ -81,245 +81,373 @@ pro MVN_KP_PLOT, kp_data, parameter, time=time, list=list, range=range, $
   
   ;CREATE THE PLOT VECTORS
   
-  if n_elements(parameter) eq 1 then begin        ;only going to plot a single altitude plot
-      pos = strpos(parameter,',')      ;check if there's more than one parameter being overplot
-      if pos ne -1 then goto,overplots                                          
-    if size(parameter,/type) eq 2 then begin      ;INTEGER PARAMETER INDEX
-          MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-       if check eq 0 then begin            ;CHECK THAT THE REQUESTED PARAMETER EXISTS
+  overplot_check=0
+  for i=0,n_elements(parameter)-1 do begin
+    pos = strpos(parameter[i],',')
+    if pos ne -1 then overplot_check = 1
+  endfor
 
-         x = kp_data[kp_start_index:kp_end_index].time
-         y = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+  if overplot_check ne 1 then begin  
+
+        if n_elements(parameter) eq 1 then begin        ;only going to plot a single altitude plot
+                                              
+                MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, base_tags,  $
+                            first_level_tags, check, level0_index, level1_index, tag_array
+             if check eq 0 then begin            ;CHECK THAT THE REQUESTED PARAMETER EXISTS
+      
+               x = kp_data[kp_start_index:kp_end_index].time
+               y = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+              
+              if keyword_set(error) then begin
+                mvn_kp_tag_verify, kp_data, error, base_tag_count, first_level_count, base_tags, $
+                                   first_level_tags, err_check, err_level0, err_level1, temp_tag
+                   if err_check eq 0 then begin
+                     y_error = dblarr(2,n_elements(kp_data[kp_start_index:kp_end_index].time))      
+                     y_error[0,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)-kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)               
+                     y_error[1,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)+kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)   
+                   endif else begin
+                    print,'Requested error parameter is not included in the data structure. Try /LIST to check for it.'
+                    print,'Creating requested plot WITHOUT error bars'
+                   endelse            
+              endif else err_check = 1
+              
+             endif else begin
+               print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
+               return
+             endelse
+        endif ;end of single altitude plot loop
         
-       endif else begin
-         print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
-         goto,finish
-       endelse
-    endif ;end of integer parameter loop
-    if size(parameter,/type) eq 7 then begin      ;STRING PARAMETER NAME  
-          MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
+        
+        ;CREATE SINGLE  PLOT
+        
+        if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
+          if n_elements(parameter) eq 1 then begin
+           if err_check eq 0 then begin
+             err_plot = errorplot(x,y,y_error,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+           endif else begin
+                 plot1 = plot(x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+           endelse 
+          endif
+        endif
+        if directgraphic ne 0 then begin                                    ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
+          if n_elements(parameter) eq 1 then begin
+            device,decomposed=0
+            loadct,0,/silent
+            !P.MULTI = [0, n_elements(parameter), 1]
+              plot,x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                         title=title,thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255, color=0
+            if err_check eq 0 then begin
+              errplot,x, y_error[0,*], y_error[1,*]
+            endif
+          endif
+        endif
+        
+        ;CREATE MULTIPLE  PLOT VECTORS
+      
+        if n_elements(parameter) gt 1 then begin
+          if size(parameter,/type) eq 2 then begin                                  ;INTEGER ARRAY PARAMETER LOOP
+            y = fltarr(n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time))
+            x = kp_data[kp_start_index:kp_end_index].time
+            y_axis_title = strarr(n_elements(parameter))
+            if keyword_set(error) then begin
+              y_error = dblarr(2,n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time)) 
+            endif
+              err_check = intarr(n_elements(parameter))
+            for i=0,n_elements(parameter)-1 do begin
+                MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
+                            first_level_tags, check, level0_index, level1_index, tag_array
+             if check eq 0 then begin
+               y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+               y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+               if keyword_set(error) then begin
+                   mvn_kp_tag_verify, kp_data, error[i], base_tag_count, first_level_count, base_tags, $
+                                   first_level_tags, err_check[i], err_level0, err_level1, temp_tag
+                   if err_check[i] eq 0 then begin                
+                     y_error[0,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)-kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)               
+                     y_error[1,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)+kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)  
+                   endif else begin
+                       print,'Requested error parameter is not included in the data structure. Try /LIST to check for it.'
+                    print,'Creating requested plot WITHOUT error bars'
+                   endelse
+               endif else err_check[i]=1
+             endif else begin
+               print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
+               return
+             endelse
+            endfor
+          endif                                                                 ;END OF THE INTEGER ARRAY PARAMETER LOOP
+          if size(parameter,/type) eq 7 then begin
 
-       if check eq 1 then begin
-         print,'Whoops, ',strupcase(parameter),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
-         goto,finish
-       endif else begin
+            y = fltarr(n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time))
+            x = kp_data[kp_start_index:kp_end_index].time
+            y_axis_title = strarr(n_elements(parameter))
+            if keyword_set(error) then begin
+              y_error = dblarr(2,n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time)) 
+            endif
+              err_check = intarr(n_elements(parameter))
+            for i=0,n_elements(parameter)-1 do begin
+                MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
+                            first_level_tags, check, level0_index, level1_index, tag_array
+             if check eq 1 then begin
+                 print,'Whoops, ',strupcase(parameter[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
+                 return
+               endif else begin            
+                 
+                 y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+                 x = kp_data[kp_start_index:kp_end_index].time  
+                 y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
+                 if keyword_set(error) then begin
+                   mvn_kp_tag_verify, kp_data, error[i], base_tag_count, first_level_count, base_tags, $
+                                   first_level_tags, err_check[i], err_level0, err_level1, temp_tag
+                   if err_check[i] eq 0 then begin                
+                     y_error[0,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)-kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)               
+                     y_error[1,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)+kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)  
+                   endif else begin
+                    print,'Requested error parameter is not included in the data structure. Try /LIST to check for it.'
+                    print,'Creating requested plot WITHOUT error bars'
+                   endelse
+                 endif else err_check[i] = 1
+               endelse  
+             endfor   
+          endif
+        endif 
+      
+        ;CREATE THE MULTPLE ALTITUDE PLOT
+        
+      
+        if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
+          if n_elements(parameter) gt 1 then begin
             
-         x = kp_data[kp_start_index:kp_end_index].time   
-         y = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-         
-       endelse  
-    endif ;end of string parameter loop
-  endif ;end of single altitude plot loop
+            plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], layout=[1,n_elements(parameter),1],nodata=1,$
+                         title=title[0],ylog=yaxis_log,xmajor=5,axis_style=0)
+            for i = 0, n_elements(parameter) -1 do begin
+              if err_check[i] ne 0 then begin
+               plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+              endif else begin
+                 plot1 = errorplot(x, y[i,*],reform(y_error[*,i,*]), xtitle='Time', ytitle=y_axis_title[i], layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+              endelse 
+            endfor
+          endif
+        endif
+        if directgraphic ne 0 then begin                                    ;PLOT USING THE OLD IDL DIRECT GRAPHICS
+          device,decomposed=0
+          !P.MULTI = [0, 1, n_elements(parameter)]
+          if n_elements(parameter) gt 1 then begin
+            plot,x,y[0,*],xtitle='Time', ytitle=y_axis_title[0],$
+                          title=title[0],thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255,color=0,charsize=2,font=-1
+            if err_check[0] eq 0 then begin
+              errplot,x, y_error[0,0,*], y_error[1,0,*]
+            endif              
+            for i=1,n_elements(parameter)-1 do begin
+             plot,x,y[i,*],xtitle='Time', ytitle=y_axis_title[i],$
+                          title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,color=0,charsize=2,font=-1
+             if err_check[i] eq 0 then begin
+              errplot,x, y_error[0,i,*], y_error[1,i,*]
+            endif
+            endfor 
+          endif
+        endif
+        
+    endif else begin
   
-  
-  ;CREATE SINGLE  PLOT
-  
-  if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
-    if n_elements(parameter) eq 1 then begin
-     plot1 = plot(x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                   title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
-    endif
-  endif
-  if directgraphic ne 0 then begin                                    ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
-    if n_elements(parameter) eq 1 then begin
-      device,decomposed=0
-      loadct,0,/silent
-      !P.MULTI = [0, n_elements(parameter), 1]
-      plot,x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                   title=title,thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255, color=0
-    endif
-  endif
-  
-  ;CREATE MULTIPLE  PLOT VECTORS
-
-  if n_elements(parameter) gt 1 then begin
-    if size(parameter,/type) eq 2 then begin                                  ;INTEGER ARRAY PARAMETER LOOP
-      y = fltarr(n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time))
-      x = kp_data[kp_start_index:kp_end_index].time
-      y_axis_title = strarr(n_elements(parameter))
-      for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-       if check eq 0 then begin
-         y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-         y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-       endif else begin
-         print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
-         goto,finish
-       endelse
-      endfor
-    endif                                                                 ;END OF THE INTEGER ARRAY PARAMETER LOOP
-    if size(parameter,/type) eq 7 then begin
-     for i=0, n_elements(parameter) -1 do begin
-      pos = strpos(parameter[i],',')
-      if pos ne -1 then goto,overplots
-     endfor
-      y = fltarr(n_elements(parameter),n_elements(kp_data[kp_start_index:kp_end_index].time))
-      x = kp_data[kp_start_index:kp_end_index].time
-      y_axis_title = strarr(n_elements(parameter))
-      for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-       if check eq 1 then begin
-           print,'Whoops, ',strupcase(parameter[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
-           goto,finish
-         endif else begin            
+        
+      ;overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
+      
+        ;ANALYZE THE INPUT STRINGS TO DETERMINE PARAMETERS AND SIZES
+          
+          plot_count =intarr(n_elements(parameter))
+          total_lines = 0
+          true_index = intarr(50)
+          
+          for i=0, n_elements(parameter)-1 do begin
+            check = strmatch(parameter[i],'*,*')
+            if check eq 1 then begin                      ;over plots 
+              extract = strmid(strsplit(parameter[i],',',/extract) ,0,1)
+              new_param = strsplit(parameter[i],',',/extract)
+              for j=0,n_elements(extract)-1 do begin
+                if strmatch(extract[j],'[0123456789]') eq 1 then begin        ;structure index call
+                  true_index[total_lines] = fix(new_param[j])
+                endif else begin                      ;call based on structure names
+                  mvn_kp_structure_index, kp_data, new_param[j], new_index, first_level_tags
+                  true_index[total_lines] = new_index            
+                endelse
+                total_lines = total_lines+1
+                plot_count[i] = plot_count[i]+1
+              endfor    
+            endif else begin                              ;single plots
+              extract = strmid(parameter[i],0,1)
+              new_param = strsplit(parameter[i],',',/extract)
+              if strmatch(extract,'[0123456789]') eq 1 then begin       ;structure index call
+                true_index[total_lines] = fix(parameter[i])
+              endif else begin                        ;structure name call
+                mvn_kp_structure_index, kp_data, new_param, new_index, first_level_tags
+                true_index[total_lines] = new_index
+              endelse
+              total_lines = total_lines + 1
+              plot_count[i] = 1
+            endelse
+          endfor
            
-           y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-           x = kp_data[kp_start_index:kp_end_index].time  
-           y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
-         endelse  
-       endfor   
-    endif
-  endif 
+          true_index = true_index[0:total_lines-1]
+      
+        ;same thing as above, but for the error bar options
+          total_lines = 0
+          true_err_index = intarr(50)
+        
+          if keyword_set(error) then begin
+           for i=0, n_elements(error)-1 do begin
+            check1 = strmatch(error[i],'*,*')
+            if check1 eq 1 then begin                      ;over plots 
+              extract = strmid(strsplit(error[i],',',/extract) ,0,1)
+              new_param = strsplit(error[i],',',/extract)
+              for j=0,n_elements(extract)-1 do begin
+                if strmatch(extract[j],'[0123456789]') eq 1 then begin        ;structure index call
+                  true_err_index[total_lines] = fix(new_param[j])
+                endif else begin                      ;call based on structure names
+                  mvn_kp_structure_index, kp_data, new_param[j], new_err_index, first_level_tags
+                  true_err_index[total_lines] = new_err_index            
+                endelse
+                total_lines = total_lines+1
+              endfor    
+            endif else begin                              ;single plots
+              extract = strmid(error[i],0,1)
+              new_param = strsplit(error[i],',',/extract)
+              if strmatch(extract,'[0123456789]') eq 1 then begin       ;structure index call
+                true_err_index[total_lines] = fix(error[i])
+              endif else begin                        ;structure name call
+                mvn_kp_structure_index, kp_data, new_param, new_err_index, first_level_tags
+                true_err_index[total_lines] = new_err_index
+              endelse
+              total_lines = total_lines + 1
+            endelse
+          endfor
+          endif
+          true_err_index = true_err_index[0:total_lines-1]
+          
+      
+        ;CHECK PARAMETER VALIDITY AND EXTRACT DATA
+        
+            x = kp_data[kp_start_index:kp_end_index].time
+            y = fltarr(n_elements(true_index),n_elements(kp_data[kp_start_index:kp_end_index].time))
+            y_axis_title = strarr(n_elements(true_index))
+            err_check = intarr(n_elements(true_index))
+            if keyword_set(error) then begin
+              y_error = dblarr(2, n_elements(true_index), n_elements(kp_data.time))
+            endif
+            for i=0,n_elements(true_index)-1 do begin
+                MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, first_level_count, base_tags,  $
+                            first_level_tags, check, level0_index, level1_index, tag_array
+             if check eq 1 then begin
+                 print,'Whoops, ',strupcase(true_index[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
+                 return
+               endif else begin            
+                 y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+                 x = kp_data[kp_start_index:kp_end_index].time 
+                 y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+                 if keyword_set(error) then begin
+                  mvn_kp_tag_verify, kp_data, true_err_index[i], base_tag_count, first_level_count, base_tags, $
+                                   first_level_tags, err_check[i], err_level0, err_level1, temp_tag
+                   if err_check[i] eq 0 then begin                
+                     y_error[0,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)-kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)               
+                     y_error[1,i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)+kp_data[kp_start_index:kp_end_index].(err_level0).(err_level1)  
+                   endif else begin
+                    print,'Requested error parameter is not included in the data structure. Try /LIST to check for it.'
+                    print,'Creating requested plot WITHOUT error bars'
+                   endelse
+                 endif else err_check[i] = 1
+                    
+               endelse  
+             endfor   
+        
+        ;CREATE THE PLOTS
+        
+        if directgraphic eq 0 then begin
+            oplot_index = 0
+             w = window(window_title='MAVEN Plots',dimensions=[800,600])
+            for i = 0, n_elements(parameter) -1 do begin
+              if plot_count[i] eq 1 then begin
+                if err_check[i] eq 0 then begin
+                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', ytitle=y_axis_title[oplot_index], layout=[1,n_elements(parameter),i+1],/current,$
+                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+                endif else begin
+                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', ytitle=y_axis_title[oplot_index], layout=[1,n_elements(parameter),i+1],/current,$
+                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
+                endelse          
+                oplot_index= oplot_index+1
+              endif else begin
+                ymin = min(y[oplot_index:(oplot_index+plot_count[i]-1)])
+                ymax = max(y[oplot_index:(oplot_index+plot_count[i]-1)])
+                if keyword_set(error) then begin
+                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,yrange=[ymin,ymax],xmajor=5)
+                  l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
+                            /normal,linestyle=0,font_size=8)
+                  oplot_index = oplot_index+1
+                  for j=1,plot_count[i]-1 do begin      
+                    plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,yrange=[ymin,ymax],overplot=1,xmajor=5)
+                     l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
+                            /normal,linestyle=j,font_size=8)
+                    oplot_index=oplot_index+1
+                  endfor
+                endif else begin
+                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,yrange=[ymin,ymax],xmajor=5)
+                  l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
+                            /normal,linestyle=0,font_size=8)
+                  oplot_index = oplot_index+1
+                  for j=1,plot_count[i]-1 do begin      
+                    plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
+                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,yrange=[ymin,ymax],overplot=1,xmajor=5)
+                     l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
+                            /normal,linestyle=j,font_size=8)
+                    oplot_index=oplot_index+1
+                  endfor 
+                endelse   
+              endelse
+            endfor
+        endif 
+        if directgraphic eq 1 then begin
+          device,decomposed=1
+            !P.MULTI = [0, 1, n_elements(parameter)]
+            oplot_index = 0 
+            for i = 0, n_elements(parameter) -1 do begin
+              if plot_count[i] eq 1 then begin
+                plot,x,y[oplot_index,*],xtitle='Time', ytitle=y_axis_title[oplot_index],$
+                     title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,color=0,$
+                     charsize=2,font=-1
+                if err_check[i] eq 0 then begin
+                  errplot,x, y_error[0,i,*], y_error[1,i,*]
+                endif
+                oplot_index = oplot_index+1
+              endif else begin 
+                ymin = min(y[oplot_index:(oplot_index+plot_count[i]-1)])
+                ymax = max(y[oplot_index:(oplot_index+plot_count[i]-1)])
+                plot,x,y[oplot_index,*],xtitle='Time',$
+                      title=title[oplot_index],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,$
+                      yrange=[ymin,ymax],color=0,charsize=2.
+                if err_check[i] eq 0 then begin
+                  errplot,x, y_error[0,i,*], y_error[1,i,*]
+                endif
+                plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
+                xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,y_axis_title[oplot_index],color=0,/normal
+                oplot_index = oplot_index+1
+                for j=1,plot_count[i]-1 do begin      
+                  oplot,x,y[oplot_index,*],linestyle=j,thick=thick,color=0
+                  plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81+(j*0.03),.81+(j*0.03)],linestyle=j,color=0,/normal
+                  xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8+(j*.03),y_axis_title[oplot_index],color=0,/normal
+                  oplot_index=oplot_index+1
+                endfor        
+              endelse 
+            endfor 
+      
+           
+        endif
+  
+  endelse
 
-  ;CREATE THE MULTPLE ALTITUDE PLOT
-  
-
-  if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
-    if n_elements(parameter) gt 1 then begin
-      print,n_elements(parameter)
-      plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], layout=[1,n_elements(parameter),1],nodata=1,$
-                   title=title[0],ylog=yaxis_log,xmajor=5)
-      for i = 0, n_elements(parameter) -1 do begin
-       plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], layout=[1,n_elements(parameter),i+1],/current,$
-                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
-      endfor
-    endif
-  endif
-  if directgraphic ne 0 then begin                                    ;PLOT USING THE OLD IDL DIRECT GRAPHICS
-    device,decomposed=0
-    !P.MULTI = [0, 1, n_elements(parameter)]
-    if n_elements(parameter) gt 1 then begin
-      plot,x,y[0,*],xtitle='Time', ytitle=y_axis_title[0],$
-                    title=title[0],thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255,color=0,charsize=2,font=-1
-      for i=1,n_elements(parameter)-1 do begin
-       plot,x,y[i,*],xtitle='Time', ytitle=y_axis_title[i],$
-                    title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,color=0,charsize=2,font=-1
-      endfor 
-    endif
-  endif
-  goto,finish       ;SKIP OVER THE OVERPLOT OPTIONS
-  
-  
-overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
-
-  ;ANALYZE TEH INPUT STRINGS TO DETERMINE PARAMETERS AND SIZES
-    
-    plot_count =intarr(n_elements(parameter))
-    total_lines = 0
-    true_index = intarr(50)
-    
-    for i=0, n_elements(parameter)-1 do begin
-      check = strmatch(parameter[i],'*,*')
-      if check eq 1 then begin                      ;over plots 
-        extract = strmid(strsplit(parameter[i],',',/extract) ,0,1)
-        new_param = strsplit(parameter[i],',',/extract)
-        for j=0,n_elements(extract)-1 do begin
-          if strmatch(extract[j],'[0123456789]') eq 1 then begin        ;structure index call
-            true_index[total_lines] = fix(new_param[j])
-          endif else begin                      ;call based on structure names
-            mvn_kp_structure_index, kp_data, new_param[j], new_index, first_level_tags
-            true_index[total_lines] = new_index            
-          endelse
-          total_lines = total_lines+1
-          plot_count[i] = plot_count[i]+1
-        endfor    
-      endif else begin                              ;single plots
-        extract = strmid(parameter[i],0,1)
-        new_param = strsplit(parameter[i],',',/extract)
-        if strmatch(extract,'[0123456789]') eq 1 then begin       ;structure index call
-          true_index[total_lines] = fix(parameter[i])
-        endif else begin                        ;structure name call
-          mvn_kp_structure_index, kp_data, new_param, new_index, first_level_tags
-          true_index[total_lines] = new_index
-        endelse
-        total_lines = total_lines + 1
-        plot_count[i] = 1
-      endelse
-    endfor
-     
-    true_index = true_index[0:total_lines-1]
-
-  ;CHECK PARAMETER VALIDITY AND EXTRACT DATA
-  
-      x = kp_data[kp_start_index:kp_end_index].time
-      y = fltarr(n_elements(true_index),n_elements(kp_data[kp_start_index:kp_end_index].time))
-      y_axis_title = strarr(n_elements(true_index))
-      for i=0,n_elements(true_index)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, first_level_count, base_tags,  $
-                      first_level_tags, check, level0_index, level1_index, tag_array
-       if check eq 1 then begin
-           print,'Whoops, ',strupcase(true_index[i]),' is not part of the KP data structure. Check the spelling, or the structure tags with the /LIST keyword.'
-           goto,finish
-         endif else begin            
-           y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-           x = kp_data[kp_start_index:kp_end_index].time 
-           y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
-         endelse  
-       endfor   
-  
-  ;CREATE THE PLOTS
-  
-  if directgraphic eq 0 then begin
-      oplot_index = 0
-       w = window(window_title='MAVEN Plots',dimensions=[800,600])
-      for i = 0, n_elements(parameter) -1 do begin
-        if plot_count[i] eq 1 then begin
-          plot1 = plot(x, y[oplot_index,*], xtitle='Time', ytitle=y_axis_title[oplot_index], layout=[1,n_elements(parameter),i+1],/current,$
-                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5)
-          oplot_index= oplot_index+1
-        endif else begin
-          ymin = min(y[oplot_index:(oplot_index+plot_count[i]-1)])
-          ymax = max(y[oplot_index:(oplot_index+plot_count[i]-1)])
-          plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
-                    title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,yrange=[ymin,ymax],xmajor=5)
-          l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
-                    /normal,linestyle=0,font_size=8)
-          oplot_index = oplot_index+1
-          for j=1,plot_count[i]-1 do begin      
-            plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,$
-                    title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,yrange=[ymin,ymax],overplot=1,xmajor=5)
-             l = legend(target=plot1,/auto_text_color,label=y_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
-                    /normal,linestyle=j,font_size=8)
-            oplot_index=oplot_index+1
-          endfor    
-        endelse
-      endfor
-  endif 
-  if directgraphic eq 1 then begin
-    device,decomposed=1
-      !P.MULTI = [0, 1, n_elements(parameter)]
-      oplot_index = 0 
-      for i = 0, n_elements(parameter) -1 do begin
-        if plot_count[i] eq 1 then begin
-          plot,x,y[oplot_index,*],xtitle='Time', ytitle=y_axis_title[oplot_index],$
-               title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,color=0,$
-               charsize=2,font=-1
-          oplot_index = oplot_index+1
-        endif else begin 
-          ymin = min(y[oplot_index:(oplot_index+plot_count[i]-1)])
-          ymax = max(y[oplot_index:(oplot_index+plot_count[i]-1)])
-          plot,x,y[oplot_index,*],xtitle='Time',$
-                title=title[oplot_index],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,$
-                yrange=[ymin,ymax],color=0,charsize=2.
-          plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
-          xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,y_axis_title[oplot_index],color=0,/normal
-          oplot_index = oplot_index+1
-          for j=1,plot_count[i]-1 do begin      
-            oplot,x,y[oplot_index,*],linestyle=j,thick=thick,color=0
-            plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81+(j*0.03),.81+(j*0.03)],linestyle=j,color=0,/normal
-            xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8+(j*.03),y_axis_title[oplot_index],color=0,/normal
-            oplot_index=oplot_index+1
-          endfor        
-        endelse 
-      endfor 
-
-     
-  endif
-  
-  
-finish:
 end
