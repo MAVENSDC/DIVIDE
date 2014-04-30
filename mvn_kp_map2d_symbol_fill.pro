@@ -34,4 +34,5 @@ pro MVN_KP_MAP2D_SYMBOL_FILL, input, fill_color, color_default, colorbars
   colorbars[1,*] = g_curr
   colorbars[2,*] = b_curr
 
+
 END

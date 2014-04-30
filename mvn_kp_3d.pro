@@ -355,7 +355,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Mars/Label Options', uname='mars',$
                                 xsize=300, ysize=30)
         button1 = widget_button(subbaseR1, value='In-Situ Scalar Data', uname='insitu', xsize=300, ysize=30)
-        button1 = widget_button(subbaseR1, value='In-Situ Vector Data', uname='insitu_vector', xsize=300,ysize=30)
+        if (instrument_array[1] eq 1) or (instrument_array[2] eq 1) or (instrument_array[4] eq 1) or (instrument_array[5] eq 1) then begin
+          button1 = widget_button(subbaseR1, value='In-Situ Vector Data', uname='insitu_vector', xsize=300,ysize=30)
+        endif
         if instrument_array[7] eq 1 then begin
           button1 = widget_button(subbaseR1, value='IUVS Data', uname='iuvs', xsize=300, ysize=30)
         endif
@@ -600,7 +602,59 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=300,ysize=33,uname='vec_scale', value=100)
                    vector_scale = 1.0
                    
-                   if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0    
+                   subbaseR10c = widget_base(subbaseR10, /column,/frame)
+                     label10 = widget_label(subbaseR10c, value='Vector Magnitude Colors')
+                      vert_align = 15
+                      if instrument_array[0] eq 1 then begin
+                        lpw_list = tag_names(insitu1.lpw)
+                        drop1=widget_droplist(subbaseR10c, value=lpw_list, uname='lpw_list_vec',title='LPW',frame=5, yoffset=vert_alignf)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[1] eq 1 then begin
+                        static_list = tag_names(insitu1.static)
+                        drop1=widget_droplist(subbaseR10c, value=static_list, uname='static_list_vec', title='STATIC', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[2] eq 1 then begin
+                        swia_list = tag_names(insitu1.swia)
+                        drop1=widget_droplist(subbaseR10c, value=swia_list, uname='swia_list_vec', title='SWIA', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[3] eq 1 then begin
+                        swea_list = tag_names(insitu1.swea)
+                        drop1=widget_droplist(subbaseR10c, value=swea_list, uname='swea_list_vec', title='SWEA', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[4] eq 1 then begin
+                        mag_list = tag_names(insitu1.mag)
+                        drop1=widget_droplist(subbaseR10c, value=mag_list, uname='mag_list_vec', title='MAG', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[5] eq 1 then begin
+                        sep_list = tag_names(insitu1.sep)
+                        drop1=widget_droplist(subbaseR10c, value=sep_list, uname='sep_list_vec', title='SEP', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[6] eq 1 then begin
+                        ngims_list = tag_names(insitu1.ngims)
+                        drop1=widget_droplist(subbaseR10c, value=ngims_list, uname='ngims_list_vec', title='NGIMS', frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                   vector_color_source = ['','']   
+                   
+                   subbaseR10d = widget_base(subbaseR10, /column,/frame)
+                     label10 = widget_label(subbaseR10d, value='Vector Magnitude Color Method',/align_center)
+                      subbaseR10e = widget_base(subbaseR10d, /row,/exclusive)
+                        button10 = widget_button(subbaseR10e, value='All', uname='vector_color_method',/no_release)
+                        widget_control,button10,/set_button
+                        vector_color_method = 0
+                        button10 = widget_button(subbaseR10e, value='Proximity', uname='vector_color_method',/no_release)
+                   
+                   
+                   if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0
+                   if keyword_set(whiskers) ne 1 then widget_control, subbaseR10c, sensitive=0
+                   if keyword_set(whiskers) ne 1 then widget_control, subbaseR10d, sensitive=0
+                       
               button10 = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=300,ysize=30)
 
 
@@ -1059,15 +1113,20 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           vector_scale = 1.0
           vector_color = [255,0,0]
           vector_data = ''
+          vector_level1 = 0
+          vector_level2 = 0
         endif else begin
            if size(whiskers,/type) ne 8 then begin
             vector_scale = 1.0
             vector_color = [255,0,0]
             vector_data = ''
+            vector_level1 = 0
+            vector_level2 = 0
            endif else begin
             vector_scale = whiskers.vector_scale
             vector_color = whiskers.vector_color
             vector_name = whiskers.vector_data
+            
            endelse
         endelse
     
@@ -1354,40 +1413,35 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
 
     z_position = [0.0,0.0,1.0,1.0]
-     
-
-    window->draw, view
-
+    
   ;ROTATE EVERYTHING TO THE PREFERRED INITIAL VIEW
   if keyword_set(initialview) then begin
     
-    
-    
-    ;SCALE
     if n_elements(initialview) eq 5 then begin
       ;TRANSLATE THE ENTIRE SCENE
-      
-        model->translate, initialview[3],initialview[4],0
-        atmModel1 ->translate, initialview[3],initialview[4],0
-        atmModel2->translate, initialview[3],initialview[4],0
-        atmModel3->translate, initialview[3],initialview[4],0
-        atmModel4->translate, initialview[3],initialview[4],0
-        atmModel5->translate, initialview[3],initialview[4],0
-        atmModel6->translate, initialview[3],initialview[4],0
-        gridlines->translate, initialview[3],initialview[4],0
-        orbit_model->translate, initialview[3],initialview[4],0
-        maven_model->translate, initialview[3],initialview[4],0
-        sub_solar_model->translate, initialview[3],initialview[4],0
-        sub_maven_model->translate, initialview[3],initialview[4],0
-        sub_maven_model_mso->translate, initialview[3],initialview[4],0
-        vector_model->translate, initialview[3],initialview[4],0
-        axesmodel->translate, initialview[3],initialview[4],0
-        sun_model->translate, initialview[3],initialview[4],0
-        axesmodel_msox->translate, initialview[3],initialview[4],0
-        axesmodel_msoy->translate, initialview[3],initialview[4],0
-        axesmodel_msoz->translate, initialview[3],initialview[4],0
+        xtrans = initialview[3]/10000.
+        ytrans = initialview[4]/10000.
+        model->translate, xtrans,ytrans,0
+        atmModel1 ->translate, xtrans,ytrans,0
+        atmModel2->translate, xtrans,ytrans,0
+        atmModel3->translate, xtrans,ytrans,0
+        atmModel4->translate, xtrans,ytrans,0
+        atmModel5->translate, xtrans,ytrans,0
+        atmModel6->translate, xtrans,ytrans,0
+        gridlines->translate, xtrans,ytrans,0
+        orbit_model->translate, xtrans,ytrans,0
+        maven_model->translate, xtrans,ytrans,0
+        sub_solar_model->translate, xtrans,ytrans,0
+        sub_maven_model->translate, xtrans,ytrans,0
+        sub_maven_model_mso->translate, xtrans,ytrans,0
+        vector_model->translate, xtrans,ytrans,0
+        axesmodel->translate, xtrans,ytrans,0
+        sun_model->translate, xtrans,ytrans,0
+        axesmodel_msox->translate, xtrans,ytrans,0
+        axesmodel_msoy->translate, xtrans,ytrans,0
+        axesmodel_msoz->translate, xtrans,ytrans,0
         if instrument_array[8] eq 1 then begin
-          periapse_limb_model->translate, initialview[3],initialview[4],0
+          periapse_limb_model->translate, xtrans,ytrans,0
         endif
       ;ROTATE SCENE TO REQUESTED SUB-CAMERA POINT
         ;latitude
@@ -1468,10 +1522,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         maven_location = maven_location*s
         z_position = z_position*s
     endif
-    
-    window->draw, view
+
   endif
 
+    
+    window->draw, view
 
   ;SET THE GLOBAL VARIABLES TO KEEP EVERYTHING IN CHECK
 
@@ -1551,7 +1606,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  backgroundcolor: backgroundcolor, $
                  subbaseR: subbaseR, subbaseR1: subbaseR1, subbaseR2: subbaseR2, subbaseR3: subbaseR3, subbaseR4: subbaseR4, $
                  subbaseR5: subbaseR5, subbaseR6: subbaseR6, subbaseR7: subbaseR7, subbaseR8: subbaseR8, subbaseR9:subbaseR9, subbaseR10:subbaseR10, $
-                 subbaseR10a:subbaseR10a, subbaseR10b: subbaseR10B, $
+                 subbaseR10a:subbaseR10a, subbaseR10b: subbaseR10B, subbaseR10c:subbaseR10c, subbaseR10d:subbaseR10d, $
                  text: text, $
                  view: view, $
                  model: model, mars_globe:mars_globe,$
@@ -1567,7 +1622,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  textModel: textModel, $
                  timetext: timetext, $
                  orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
-                 vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, $
+                 vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, vector_color_method:vector_color_method, vector_color_source:vector_color_source, $
                  maven_model: maven_model, $
                  sun_model: sun_model, sun_vector: sun_vector, $
                  axesModel_msox:axesModel_msox, axesModel_msoy:axesModel_msoy, axesModel_msoz:axesModel_msoz, $
