@@ -82,86 +82,82 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
 
   ;CREATE THE BASE ARRAY FOR THE INSITU DATA, BASED ON WHAT DATA WILL BE RETURNED
   if instruments.lpw then begin    ;INCLUDE LPW DATA STRUCTURE
-    s3 = {lpw,                                      $
-          electron_density          :!VALUES.F_NAN, $
-          electron_density_qual     :!VALUES.F_NAN, $
-          electron_temperature      :!VALUES.F_NAN, $
-          electron_temperature_qual :!VALUES.F_NAN, $
-          spacecraft_potential      :!VALUES.F_NAN, $
-          spacecraft_potential_qual :!VALUES.F_NAN, $
-          ewave_low                 :!VALUES.F_NAN, $
-          ewave_low_qual            :!VALUES.F_NAN, $
-          ewave_mid                 :!VALUES.F_NAN, $
-          ewave_mid_qual            :!VALUES.F_NAN, $
-          ewave_high                :!VALUES.F_NAN, $
-          ewave_high_qual           :!VALUES.F_NAN, $
-          euv_irradiance_low        :!VALUES.F_NAN, $
-          euv_irradiance_low_qual   :!VALUES.F_NAN, $
-          euv_irradiance_mid        :!VALUES.F_NAN, $
-          euv_irradiance_mid_qual   :!VALUES.F_NAN, $
-          euv_irradiance_high       :!VALUES.F_NAN, $
-          euv_irradiance_high_qual  :!VALUES.F_NAN}
+    s3 = {lpw,                                          $
+          electron_density              :!VALUES.F_NAN, $
+          electron_density_qual_min     :!VALUES.F_NAN, $   
+          electron_density_qual_max     :!VALUES.F_NAN, $    
+          electron_temperature          :!VALUES.F_NAN, $
+          electron_temperature_qual_min :!VALUES.F_NAN, $   
+          electron_temperature_qual_max :!VALUES.F_NAN, $   
+          spacecraft_potential          :!VALUES.F_NAN, $
+          spacecraft_potential_error    :!VALUES.F_NAN, $   
+          spacecraft_potential_qual     :!VALUES.F_NAN, $   
+          ewave_low                     :!VALUES.F_NAN, $
+          ewave_low_qual                :!VALUES.F_NAN, $
+          ewave_mid                     :!VALUES.F_NAN, $
+          ewave_mid_qual                :!VALUES.F_NAN, $
+          ewave_high                    :!VALUES.F_NAN, $
+          ewave_high_qual               :!VALUES.F_NAN, $
+          euv_irradiance_low            :!VALUES.F_NAN, $
+          euv_irradiance_low_qual       :!VALUES.F_NAN, $
+          euv_irradiance_mid            :!VALUES.F_NAN, $
+          euv_irradiance_mid_qual       :!VALUES.F_NAN, $
+          euv_irradiance_high           :!VALUES.F_NAN, $
+          euv_irradiance_high_qual      :!VALUES.F_NAN}
           
     record_temp2 = create_struct(['lpw'],s3,record_temp1)
   endif else begin
     record_temp2 = create_struct(record_temp1)
   endelse
   if instruments.static then begin  ;INCLUDE STATIC DATA STRUCTURE
-    s4 = {static,                                            $
-          hplus_density                      :!VALUES.F_NAN, $
-          hplus_density_qual                 :!VALUES.F_NAN, $
-          oplus_density                      :!VALUES.F_NAN, $
-          oplus_density_qual                 :!VALUES.F_NAN, $
-          o2plus_density                     :!VALUES.F_NAN, $
-          o2plus_density_qual                :!VALUES.F_NAN, $
-          hplus_temperature                  :!VALUES.F_NAN, $
-          hplus_temperature_qual             :!VALUES.F_NAN, $
-          oplus_temperature                  :!VALUES.F_NAN, $
-          oplus_temperature_qual             :!VALUES.F_NAN, $
-          o2plus_temperature                 :!VALUES.F_NAN, $
-          o2plus_temperature_qual            :!VALUES.F_NAN, $
-          hplus_flow_v_msox                  :!VALUES.F_NAN, $
-          hplus_flow_v_msox_qual             :!VALUES.F_NAN, $
-          hplus_flow_v_msoy                  :!VALUES.F_NAN, $
-          hplus_flow_v_msoy_qual             :!VALUES.F_NAN, $
-          hplus_flow_v_msoz                  :!VALUES.F_NAN, $
-          hplus_flow_v_msoz_qual             :!VALUES.F_NAN, $
-          oplus_flow_v_msox                  :!VALUES.F_NAN, $
-          oplus_flow_v_msox_qual             :!VALUES.F_NAN, $
-          oplus_flow_v_msoy                  :!VALUES.F_NAN, $
-          oplus_flow_v_msoy_qual             :!VALUES.F_NAN, $
-          oplus_flow_v_msoz                  :!VALUES.F_NAN, $
-          oplus_flow_v_msoz_qual             :!VALUES.F_NAN, $
-          o2plus_flow_v_msox                 :!VALUES.F_NAN, $
-          o2plus_flow_v_msox_qual            :!VALUES.F_NAN, $
-          o2plus_flow_v_msoy                 :!VALUES.F_NAN, $
-          o2plus_flow_v_msoy_qual            :!VALUES.F_NAN, $
-          o2plus_flow_v_msoz                 :!VALUES.F_NAN, $
-          o2plus_flow_v_msoz_qual            :!VALUES.F_NAN, $
-          hhe_omni_flux                      :!VALUES.F_NAN, $
-          hhe_omni_flux_qual                 :!VALUES.F_NAN, $
-          hhe_char_energy                    :!VALUES.F_NAN, $
-          hhe_char_energy_qual               :!VALUES.F_NAN, $
-          hhe_char_dir_msox                  :!VALUES.F_NAN, $
-          hhe_char_dir_msox_qual             :!VALUES.F_NAN, $
-          hhe_char_dir_msoy                  :!VALUES.F_NAN, $
-          hhe_char_dir_msoy_qual             :!VALUES.F_NAN, $
-          hhe_char_dir_msoz                  :!VALUES.F_NAN, $
-          hhe_char_dir_msoz_qual             :!VALUES.F_NAN, $
-          hhe_char_angular_width             :!VALUES.F_NAN, $
-          hhe_char_angular_width_qual        :!VALUES.F_NAN, $
-          pickup_ion_omni_flux               :!VALUES.F_NAN, $
-          pickup_ion_omni_flux_qual          :!VALUES.F_NAN, $
-          pickup_ion_char_energy             :!VALUES.F_NAN, $
-          pickup_ion_char_energy_qual        :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msox           :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msox_qual      :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msoy           :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msoy_qual      :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msoz           :!VALUES.F_NAN, $
-          pickup_ion_char_dir_msoz_qual      :!VALUES.F_NAN, $
-          pickup_ion_char_angular_width      :!VALUES.F_NAN, $
-          pickup_ion_char_angular_width_qual :!VALUES.F_NAN}
+    s4 = {static,                                                     $
+          static_qual_flag                            :!VALUES.F_NAN, $
+          co2plus_density                             :!VALUES.F_NAN, $
+          co2plus_density_qual                        :!VALUES.F_NAN, $
+          oplus_density                               :!VALUES.F_NAN, $
+          oplus_density_qual                          :!VALUES.F_NAN, $
+          o2plus_density                              :!VALUES.F_NAN, $
+          o2plus_density_qual                         :!VALUES.F_NAN, $
+          co2plus_temperature                         :!VALUES.F_NAN, $
+          co2plus_temperature_qual                    :!VALUES.F_NAN, $
+          oplus_temperature                           :!VALUES.F_NAN, $
+          oplus_temperature_qual                      :!VALUES.F_NAN, $
+          o2plus_temperature                          :!VALUES.F_NAN, $
+          o2plus_temperature_qual                     :!VALUES.F_NAN, $
+          o2plus_flow_v_appx                          :!VALUES.F_NAN, $  
+          o2plus_flow_v_appx_qual                     :!VALUES.F_NAN, $  
+          o2plus_flow_v_appy                          :!VALUES.F_NAN, $  
+          o2plus_flow_v_appy_qual                     :!VALUES.F_NAN, $  
+          o2plus_flow_v_appz                          :!VALUES.F_NAN, $
+          o2plus_flow_v_appz_qual                     :!VALUES.F_NAN, $
+          o2plus_flow_v_msox                          :!VALUES.F_NAN, $
+          o2plus_flow_v_msox_qual                     :!VALUES.F_NAN, $
+          o2plus_flow_v_msoy                          :!VALUES.F_NAN, $
+          o2plus_flow_v_msoy_qual                     :!VALUES.F_NAN, $
+          o2plus_flow_v_msoz                          :!VALUES.F_NAN, $
+          o2plus_flow_v_msoz_qual                     :!VALUES.F_NAN, $
+          hplus_omni_flux                             :!VALUES.F_NAN, $
+          hplus_char_energy                           :!VALUES.F_NAN, $
+          hplus_char_energy_qual                      :!VALUES.F_NAN, $
+          heplus_omni_flux                            :!VALUES.F_NAN, $
+          heplus_char_energy                          :!VALUES.F_NAN, $
+          heplus_char_energy_qual                     :!VALUES.F_NAN, $
+          oplus_omni_flux                             :!VALUES.F_NAN, $
+          oplus_char_energy                           :!VALUES.F_NAN, $
+          oplus_char_energy_qual                      :!VALUES.F_NAN, $
+          o2plus_omni_flux                            :!VALUES.F_NAN, $
+          o2plus_char_energy                          :!VALUES.F_NAN, $
+          o2plus_char_energy_qual                     :!VALUES.F_NAN, $         
+          hplus_char_dir_msox                         :!VALUES.F_NAN, $
+          hplus_char_dir_msoy                         :!VALUES.F_NAN, $
+          hplus_char_dir_msoz                         :!VALUES.F_NAN, $
+          hplus_char_angular_width                    :!VALUES.F_NAN, $
+          hplus_char_angular_width_qual               :!VALUES.F_NAN, $
+          dominant_pickup_ion_char_dir_msox           :!VALUES.F_NAN, $
+          dominant_pickup_ion_char_dir_msoy           :!VALUES.F_NAN, $
+          dominant_pickup_ion_char_dir_msoz           :!VALUES.F_NAN, $
+          dominant_pickup_ion_char_angular_width      :!VALUES.F_NAN, $
+          dominant_pickup_ion_char_angular_width_qual :!VALUES.F_NAN}    
           
     record_temp3 = create_struct(['static'],s4,record_temp2)
   endif else begin
@@ -234,34 +230,34 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   endelse
   if instruments.sep eq 1 then begin   ;INCLUDE SEP DATA STRUCTURE
     s8 = {sep,                                        $
-          ion_energy_flux_1           :!VALUES.F_NAN, $ 
-          ion_energy_flux_1_qual      :!VALUES.F_NAN, $ 
-          ion_energy_flux_2           :!VALUES.F_NAN, $ 
-          ion_energy_flux_2_qual      :!VALUES.F_NAN, $
-          ion_energy_flux_3           :!VALUES.F_NAN, $ 
-          ion_energy_flux_3_qual      :!VALUES.F_NAN, $ 
-          ion_energy_flux_4           :!VALUES.F_NAN, $ 
-          ion_energy_flux_4_qual      :!VALUES.F_NAN, $
-          electron_energy_flux_1      :!VALUES.F_NAN, $ 
-          electron_energy_flux_1_qual :!VALUES.F_NAN, $
-          electron_energy_flux_2      :!VALUES.F_NAN, $ 
-          electron_energy_flux_2_qual :!VALUES.F_NAN, $
-          electron_energy_flux_3      :!VALUES.F_NAN, $ 
-          electron_energy_flux_3_qual :!VALUES.F_NAN, $ 
-          electron_energy_flux_4      :!VALUES.F_NAN, $ 
-          electron_energy_flux_4_qual :!VALUES.F_NAN, $
-          look_direction_1_msox       :!VALUES.F_NAN, $ 
-          look_direction_1_msoy       :!VALUES.F_NAN, $ 
-          look_direction_1_msoz       :!VALUES.F_NAN, $
-          look_direction_2_msox       :!VALUES.F_NAN, $ 
-          look_direction_2_msoy       :!VALUES.F_NAN, $ 
-          look_direction_2_msoz       :!VALUES.F_NAN, $
-          look_direction_3_msox       :!VALUES.F_NAN, $ 
-          look_direction_3_msoy       :!VALUES.F_NAN, $ 
-          look_direction_3_msoz       :!VALUES.F_NAN, $
-          look_direction_4_msox       :!VALUES.F_NAN, $ 
-          look_direction_4_msoy       :!VALUES.F_NAN, $ 
-          look_direction_4_msoz       :!VALUES.F_NAN}
+          ion_energy_flux_1_front           :!VALUES.F_NAN, $
+          ion_energy_flux_1_front_qual      :!VALUES.F_NAN, $
+          ion_energy_flux_1_back            :!VALUES.F_NAN, $
+          ion_energy_flux_1_back_qual       :!VALUES.F_NAN, $
+          ion_energy_flux_2_front           :!VALUES.F_NAN, $
+          ion_energy_flux_2_front_qual      :!VALUES.F_NAN, $
+          ion_energy_flux_2_back            :!VALUES.F_NAN, $
+          ion_energy_flux_2_back_qual       :!VALUES.F_NAN, $ 
+          electron_energy_flux_1_front      :!VALUES.F_NAN, $
+          electron_energy_flux_1_front_qual :!VALUES.F_NAN, $
+          electron_energy_flux_1_back       :!VALUES.F_NAN, $ 
+          electron_energy_flux_1_back_qual  :!VALUES.F_NAN, $
+          electron_energy_flux_2_front      :!VALUES.F_NAN, $ 
+          electron_energy_flux_2_front_qual :!VALUES.F_NAN, $ 
+          electron_energy_flux_2_back       :!VALUES.F_NAN, $ 
+          electron_energy_flux_2_back_qual  :!VALUES.F_NAN, $
+          look_direction_1_front_msox       :!VALUES.F_NAN, $
+          look_direction_1_front_msoy       :!VALUES.F_NAN, $    
+          look_direction_1_front_msoz       :!VALUES.F_NAN, $
+          look_direction_1_back_msox        :!VALUES.F_NAN, $
+          look_direction_1_back_msoy        :!VALUES.F_NAN, $ 
+          look_direction_1_back_msoz        :!VALUES.F_NAN, $
+          look_direction_2_front_msox       :!VALUES.F_NAN, $
+          look_direction_2_front_msoy       :!VALUES.F_NAN, $ 
+          look_direction_2_front_msoz       :!VALUES.F_NAN, $
+          look_direction_2_back_msox        :!VALUES.F_NAN, $
+          look_direction_2_back_msoy        :!VALUES.F_NAN, $ 
+          look_direction_2_back_msoz        :!VALUES.F_NAN}
           
     record_temp7 = create_struct(['sep'], s8, record_temp6)
   endif else begin
