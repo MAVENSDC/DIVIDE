@@ -52,22 +52,27 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
       readf,lun,temp
       data = strsplit(temp,' ',/extract)
       if data[0] ne '#' then begin
-      
+
         ;KICK TO ROUTINE TO CHECK IF TIME FALLS WITHIN SEARCH BOUNDS
         within_time_bounds = MVN_KP_TIME_BOUNDS(data[0],begin_time,end_time)
         ;IF WITHIN BOUNDS, EXTRACT AND STORE DATA
         if within_time_bounds then begin
         
           ; TEMPLATE STRUCTURE TO READ DATA INTO
-          orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(212)}
+          orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(211)}
+          
           
           ;READ IN AND INIT TEMP STRUCTURE OF DATA
           orbit.time_string = data[0]
           orbit.time = time_double(data[0], tformat='YYYY-MM-DDThh:mm:ss')
-          orbit.orbit = data[198]
-          orbit.IO_bound = data[199]
-          orbit.data[0:196] = data[1:197]
-          orbit.data[197:211] = data[200:214]
+          orbit.orbit = data[194]
+          orbit.IO_bound = data[195]
+          
+          ;; Disclude data[0], data[194], data[195] - Strings won't go in data arry nicely,
+          ;; and we've extracted these three points just above into the top level structure.
+          orbit.data[1:193] = data[1:193]
+          orbit.data[196:210] = data[196:210]
+
           
           ;CHECK time_string FORMAT FOR A SLASH DELIMITER INSTEAD OF A "T" AND SWITCH IF NECESSARY
           ts_split=strsplit(orbit.time_string, '/', COUNT=ts_count, /EXTRACT)
