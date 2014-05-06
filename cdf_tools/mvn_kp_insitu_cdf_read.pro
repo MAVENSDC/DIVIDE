@@ -13,6 +13,21 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
 
   insitu = []  ; Fixme won't work on idl 7
 
+  
+  lpw_start              = 2   ;  lpw_end                = 22
+  swea_start             = 23  ;  swea_end               = 40
+  swia_start             = 41  ;  swia_end               = 52
+  static_start           = 53  ;  static_end             = 99
+  sep_start              = 100 ;  sep_end                = 127
+  mag_start              = 128 ;  mag_end                = 141
+  ngims_start            = 142 ;  ngims_end              = 171
+  spacecraft_part1_start = 172 ;  spacecraft_part1_end   = 188
+  app_start              = 189 ;  app_end                = 194
+  orbit_number_index     = 195
+  io_bound_index         = 196
+  spacecraft_part2_start = 197 ;  spacecraft_part2_end   = 211
+  
+  
   lpw_total              = 21
   static_total           = 47
   swia_total             = 12
@@ -24,29 +39,7 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
   spacecraft_total       = 32
   app_total              = 6
   
-  
-  lpw_start = 2
-;  lpw_end   = 22
-  swea_start = 23
-;  swea_end   = 40
-  swia_start = 41
-;  swia_end   = 52
-  static_start = 53
-;  static_end   = 99
-  sep_start = 100
-;  sep_end   = 127
-  mag_start = 128
-;  mag_end   = 141
-  ngims_start = 142
-;  ngims_end   = 171
-  spacecraft_part1_start = 172
-;  spacecraft_part1_end   = 188
-  app_start = 189
-;  app_end   = 194
-  orbit_number_index = 195
-  io_bound_index     = 196
-  spacecraft_part2_start = 197
-;  spacecraft_part2_end   = 211
+
   
   
   ;;FOR EAC FILE INPUT, READ INTO MEMORY
