@@ -142,23 +142,61 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                                 'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
                                 'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, 'stellarocc', 0)                            
    
-    if keyword_set(lpw)    then instruments.lpw    = 1 & print,'Returning All LPW Instrument KP Data.'  
-    if keyword_set(static) then instruments.static = 1 & print,'Returning All STATIC Instrument KP Data.'
-    if keyword_set(swia)   then instruments.swia   = 1 & print,'Returning All SWIA Instrument KP Data.'
-    if keyword_set(swea)   then instruments.swea   = 1 & print,'Returning All SWEA Instrument KP Data.'
-    if keyword_set(mag)    then instruments.mag    = 1 & print,'Returning All MAG Instrument KP Data.'
-    if keyword_set(sep)    then instruments.sep    = 1 & print,'Returning All SEP Instrument KP Data.'
-    if keyword_set(ngims)  then instruments.ngims  = 1 & print,'Returning All NGIMS Instrument KP Data.'
+    if keyword_set(lpw)    then begin
+      instruments.lpw    = 1 & print,'Returning All LPW Instrument KP Data.'  
+    endif
+    if keyword_set(static) then begin
+      instruments.static = 1 & print,'Returning All STATIC Instrument KP Data.'
+    endif
+    if keyword_set(swia)   then begin
+      instruments.swia   = 1 & print,'Returning All SWIA Instrument KP Data.'
+    endif
+    if keyword_set(swea)   then begin
+      instruments.swea   = 1 & print,'Returning All SWEA Instrument KP Data.'
+    endif
+    if keyword_set(mag)    then begin
+      instruments.mag    = 1 & print,'Returning All MAG Instrument KP Data.'
+    endif
+    if keyword_set(sep)    then begin
+      instruments.sep    = 1 & print,'Returning All SEP Instrument KP Data.'
+    endif
+    if keyword_set(ngims)  then begin
+      instruments.ngims  = 1 & print,'Returning All NGIMS Instrument KP Data.'
+    endif
+    if keyword_set(inbound) then begin
+                               print,'Returning only inbound in situ data'
+    endif
+    if keyword_set(outbound) then begin
+                               print,'Returning only outbound in situ data'
+    endif
     
-    if keyword_set(iuvs_periapse)          then instruments.periapse   = 1 & print,'Returning All IUVS Instrument Periapse KP Data.'  
-    if keyword_set(iuvs_apoapse)           then instruments.apoapse    = 1 & print,'Returning All IUVS Instrument Apoapse KP Data.'
-    if keyword_set(iuvs_coronaEchellehigh) then instruments.c_e_high   = 1 & print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
-    if keyword_set(iuvs_coronaEchellelimb) then instruments.c_e_limb   = 1 & print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
-    if keyword_set(iuvs_stellarocc)        then instruments.stellarocc = 1 & print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
-    if keyword_set(iuvs_coronaLoreshigh)   then instruments.c_l_high   = 1 & print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
-    if keyword_set(iuvs_coronaLoreslimb)   then instruments.c_l_limb   = 1 & print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
-    if keyword_set(iuvs_coronaLoresdisk)   then instruments.c_l_disk   = 1 & print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
-    if keyword_set(iuvs_coronaechelledisk) then instruments.c_e_disk   = 1 & print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
+    if keyword_set(iuvs_periapse)          then begin
+      instruments.periapse   = 1 & print,'Returning All IUVS Instrument Periapse KP Data.'  
+    endif
+    if keyword_set(iuvs_apoapse)           then begin
+      instruments.apoapse    = 1 & print,'Returning All IUVS Instrument Apoapse KP Data.'
+    endif
+    if keyword_set(iuvs_coronaEchellehigh) then begin
+      instruments.c_e_high   = 1 & print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
+    endif
+    if keyword_set(iuvs_coronaEchellelimb) then begin
+      instruments.c_e_limb   = 1 & print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
+    endif
+    if keyword_set(iuvs_stellarocc)        then begin
+      instruments.stellarocc = 1 & print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
+    endif
+    if keyword_set(iuvs_coronaLoreshigh)   then begin
+      instruments.c_l_high   = 1 & print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
+    endif
+    if keyword_set(iuvs_coronaLoreslimb)   then begin
+      instruments.c_l_limb   = 1 & print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
+    endif
+    if keyword_set(iuvs_coronaLoresdisk)   then begin
+      instruments.c_l_disk   = 1 & print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
+    endif
+    if keyword_set(iuvs_coronaechelledisk) then begin
+      instruments.c_e_disk   = 1 & print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
+    endif
     
     if keyword_set(insitu_all) then begin
       instruments.lpw    = 1
