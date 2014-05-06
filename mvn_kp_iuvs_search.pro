@@ -378,7 +378,7 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
     tagMatchingI = where(tagNames eq 'MATCHING_OBS', counterTag)
     if (counterTag le 0) then begin
     
-      data_temp = create_struct(data[meets_criteria[i]], 'matching_obs', '')
+      data_temp = create_struct(data[0], 'matching_obs', '')
       matched_data = replicate(data_temp, n_elements(meets_criteria))
       
     
@@ -423,16 +423,9 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
         matched_data[i].(tagMatchingI) = matchingObsString
         
       endelse
-      
-      
-
-
-
              
     endfor
-    
-
-  
+     
   endif else begin
     meets_criteria = -1
   endelse
