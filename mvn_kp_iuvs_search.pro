@@ -23,40 +23,7 @@
 ;       are setup and errors will return to main.
 ;       ;-
 
-;pro MVN_KP_IUVS_TAG_PARSER, data, base_tag_count, first_level_count, second_level_count, $
-;  base_tags,  first_level_tags, second_level_tags, common_block=common_block
-;
-;  ;DETERMINE WHETHER THE DATA INCLUDES IUVS DATA AS WELL AS INSITU
-;  
-;  base_tags = tag_names(data)
-;  base_tag_count = n_elements(base_tags)
-;
-;
-;  
-;  
-;  first_level_count = intarr(n_elements(base_tags))
-;  for i=0,base_tag_count-1 do begin
-;    tag_count = n_tags(data.(i))
-;    if tag_count eq 0 then begin
-;      first_level_count[i] = tag_count
-;    endif else begin
-;      temp1 = tag_names(data.(i))
-;      first_level_count[i] = n_elements(temp1)
-;    endelse
-;  endfor
-;  first_level_tags = strarr(total(first_level_count))
-;  count1 = 0
-;  count2 = 0
-;  for i=0,base_tag_count-1 do begin
-;    tag_count = n_tags(data.(i))
-;    if tag_count ne 0 then begin
-;      temp1 = tag_names(data.(i))
-;      count2 = count1 + n_elements(temp1)-1
-;      first_level_tags[count1:count2] = temp1
-;      count1 = count2+1
-;    endif
-;  endfor
-;end
+
 
 pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observation=observation, species=species, index_species=index_species
 
@@ -130,6 +97,8 @@ pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observ
     
    ;; IF input tag[i] is a STRING
    if size(input_tag, /type) eq 7 then begin
+      input_tag = strupcase(input_tag)
+    
       level1_index = where(common_tag_names eq input_tag, counter)
       
       if counter gt 0 then begin
@@ -305,7 +274,16 @@ end
 
 function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
   
- 
+
+  ;; FIXME --
+  ;; Currently don't support searching on 3 common variables - spacecraft_geo, spacecraft_mso
+  ;; and sun_geo. This is because these are 3 item arrays and break the mold for all other 
+  ;; common searchs. Currently not sure how to best suupport this type of search
+  if (tag_index eq 10) or (tag_index eq 11) or (tag_index eq 12) then begin
+    message, "Error. Currently don't support searching IUVS on spacecraft_geo, spacecraft_mso, or sun_geo.
+  endif
+  
+  
   numObs = n_tags(data)
   tagNames = tag_names(data)
   
