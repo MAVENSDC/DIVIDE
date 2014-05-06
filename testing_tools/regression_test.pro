@@ -23,14 +23,14 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
 if n_params() eq 0 then begin
  ; SAVEFILES="TRUE"
  ; CDF="TRUE"
- ; INSITU_SEARCH="TRUE"
+  INSITU_SEARCH="TRUE"
  ; ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
  ; COMPAREIUVS="TRUE"
  
   ;; Only makes sense to run one of the below two
  ; CREATE_TEST_SAVE="TRUE"
-  COMPARE_TEST_SAVE='TRUE'
+ ; COMPARE_TEST_SAVE='TRUE'
 endif
 
 ;; Make sure not both of these set:
@@ -411,7 +411,7 @@ endif
 if keyword_set(INSITU_SEARCH) then begin
   
   ;; read in two days worth of data and all instruments to do below testing
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs, /savefiles"]  ;; FIXME - using save files for now
 
   
   ;; Test search of insitu with /list option
@@ -430,17 +430,26 @@ if keyword_set(INSITU_SEARCH) then begin
   
   ;; Test searching with tag string and max
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='SPACECRAFT.ALTITUDE', max=5000"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.HPLUS_DENSITY', max=1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.CO2PLUS_DENSITY', max=1"]      ;;;;
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='LPW.ELECTRON_DENSITY', max=1"]
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='LPW.ELECTRON_DENSITY', max=2"]
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='NGIMS.HE_DENSITY', min=1"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.HPLUS_DENSITY', min=1, max=5"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.HPLUS_CHAR_DIR_MSOX', min=1, max=5"]      ;;;
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='APP.ATTITUDE_GEO_X', max=1000"]
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='spacecraft.t21', min=-1, max=1"]
   
   
+  ;; Test searching for multiple tags
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[1, 73] ,min=[-1,5], max=[4000,5000]"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=['NGIMS.NPLUS_DENSITY', 'SPACECRAFT.SZA', 'SEP.ION_ENERGY_FLUX_2_FRONT'] ,min=[-1,5,-1], max=[4000,5000, 1000]"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[185, 186,190], min=[-1,-1,-4], max=10"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[10, 12,40, 50], min=-1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[9, 21,191], min=[-1,-1,-4], max=[10,20,30]"]
   
   ;; Commands that should fail
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[185, 186,190], min=[-1,-1], max=10"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[10, 12,40, 50], max=[5,6,7,8,9]"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[9, 21,191], min=[-1,-1,-4], max=[10,20]"]
   cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag='SPACECRAFT.MADEUP', max=1"]
   cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=400, max=1"]
   cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=-1, max=1"]

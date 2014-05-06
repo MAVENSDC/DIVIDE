@@ -68,6 +68,11 @@ endif
     return
   endif
 
+  
+   
+  
+
+
 if keyword_set(min_value) eq 0 then begin             ;IF THE MINIMUM VALUE KEYWORD IS NOT SET, THEN ASSUME IT TO BE -INFINITY
  if size(tag,/dimensions) eq 0 then begin
   min_value = -!values.f_infinity
@@ -84,6 +89,27 @@ if keyword_set(max_value) eq 0 then begin             ;IF THE MAXIMUM VALUE KEYW
   max_value[*] = !values.f_infinity
  endelse
 endif
+
+
+;; If multiple tags input, check that correct number of min/max values present. If multiple tags
+;; and only one min and/or max, use that min/max for all tags. If the number doesn't match
+;; error out - don't know how to interpret that.
+if (n_elements(tag) ne n_elements(min_value)) then begin 
+  if(n_elements(min_value) eq 1) then begin
+    min_value = make_array(n_elements(tag), value=min_value)
+  endif else begin
+    message, "If input multiple tags, number of minimum values input must be either 1 or equal to number of tags"
+  endelse
+endif
+
+if (n_elements(tag) ne n_elements(max_value)) then begin 
+  if(n_elements(max_value) eq 1) then begin
+    max_value = make_array(n_elements(tag), value=max_value)
+  endif else begin
+    message, "If input multiple tags, number of maximum values input must be either 1 or equal to number of tags"
+  endelse
+endif  
+
 
 if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET, RUN A SEARCH ON THAT DATA FIELD BETWEEN MIN AND MAX
 

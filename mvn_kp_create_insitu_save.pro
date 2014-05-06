@@ -47,9 +47,9 @@ pro mvn_kp_create_insitu_save, infiles, outdir, debug=debug
     endwhile
     free_lun, lun
     
-    
+
     ;; Create Orbit array for structures to be put into
-    orbit_temp = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(212)}
+    orbit_temp = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', data:fltarr(211)}
     orbit = replicate(orbit_temp, data_count)
     
     
@@ -64,15 +64,18 @@ pro mvn_kp_create_insitu_save, infiles, outdir, debug=debug
       data = strsplit(temp,' ',/extract)
       if data[0] ne '#' then begin
       
-      
-      
+  
         ;READ IN AND INIT TEMP STRUCTURE OF DATA
         orbit[i].time_string = data[0]
         orbit[i].time = time_double(data[0], tformat='YYYY-MM-DDThh:mm:ss')
-        orbit[i].orbit = data[198]
-        orbit[i].IO_bound = data[199]
-        orbit[i].data[0:196] = data[1:197]
-        orbit[i].data[197:211] = data[200:214]
+        orbit[i].orbit = data[194]
+        orbit[i].IO_bound = data[195]
+
+        ;; Disclude data[0], data[194], data[195] - Strings won't go in data arry nicely,
+        ;; and we've extracted these three points just above into the top level structure. 
+        orbit[i].data[1:193] = data[1:193]
+        orbit[i].data[196:210] = data[196:210]
+
         
         i++
       endif
