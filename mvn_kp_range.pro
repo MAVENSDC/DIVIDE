@@ -1,19 +1,11 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
+; Print out time and/or orbit range of input kp data structure for in situ or IUVS data
 ;
-; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
 ;
 ; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;     kp_data : in, required, type array
+;       kp data to pull out time/orbit range for
+;    
 ;-
 pro MVN_KP_RANGE, kp_data
 
@@ -24,10 +16,12 @@ pro MVN_KP_RANGE, kp_data
       print,'Equivalently, this corresponds to orbits '+strtrim(string(kp_data[0].orbit),2)+' and '+strtrim(string(kp_data[n_elements(kp_data.orbit)-1].orbit),2)
   endif
   if (base_tags[0] eq 'CORONA_LO_LIMB') OR  (base_tags[0] eq 'CORONA_LO_HIGH') or  (base_tags[0] eq 'STELLAR_OCC') or  (base_tags[0] eq 'CORONA_E_DISK') OR $
-     (base_tags[0] eq 'CORONA_E_HIGH') OR  (base_tags[0] eq 'APOAPSE') OR  (base_tags[0] eq 'PERIAPSE ') THEN BEGIN
-      print,'The loaded KP data set contains data between '+kp_data[1].(0).time_start+' and '+kp_data[n_elements(kp_data.(0).time_stop)-1].(0).time_stop
-      print,'Equivalently, this corresponds to orbits '+strtrim(string(kp_data[0].orbit),2)+' and '+strtrim(string(kp_data[n_elements(kp_data.orbit)-1].orbit),2)     
-  endif
+     (base_tags[0] eq 'CORONA_E_HIGH') OR  (base_tags[0] eq 'APOAPSE') OR  (base_tags[0] eq 'PERIAPSE') THEN BEGIN
 
+     ;; IUVS too special and too much of a pain to try and parse otu the correct stand and end times for full data set
+     ;; Show orbits at least
+     ;; print,'The loaded KP data set contains data between '+kp_data[0].(0)[0].time_start+' and '+kp_data[n_elements(kp_data)-1].(0)[0].time_stop
+      print,'The loaded KP data set contains data between orbits '+strtrim(string(kp_data[0].orbit),2)+' and '+strtrim(string(kp_data[n_elements(kp_data.orbit)-1].orbit),2)     
+  endif
 
 end
