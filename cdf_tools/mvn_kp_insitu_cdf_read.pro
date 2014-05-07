@@ -1,6 +1,6 @@
-;; Testing CDF Generation of insitu
+;; Read in a CDF file of insitu data
 
-pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, instruments=instruments
+pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -12,27 +12,35 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
   endif
 
   insitu = []  ; Fixme won't work on idl 7
-  lpw_start        = 4
-  static_start     = 22
-  swia_start       = 76
-  swea_start       = 88
-  mag_start        = 106
-  sep_start        = 120
-  ngims_start      = 148
-  spacecraft_start = 178
-  app_start        = 210
+
   
-  lpw_total        = 18
-  static_total     = 51
-  swia_total       = 12
-  swea_total       = 18
-  mag_total        = 14
-  sep_total        = 28
-  ngims_total      = 30
-  spacecraft_total = 32
-  app_total        = 6
+  lpw_start              = 2   ;  lpw_end                = 22
+  swea_start             = 23  ;  swea_end               = 40
+  swia_start             = 41  ;  swia_end               = 52
+  static_start           = 53  ;  static_end             = 99
+  sep_start              = 100 ;  sep_end                = 127
+  mag_start              = 128 ;  mag_end                = 141
+  ngims_start            = 142 ;  ngims_end              = 171
+  spacecraft_part1_start = 172 ;  spacecraft_part1_end   = 188
+  app_start              = 189 ;  app_end                = 194
+  orbit_number_index     = 195
+  io_bound_index         = 196
+  spacecraft_part2_start = 197 ;  spacecraft_part2_end   = 211
   
-  if not keyword_set(instruments) then message, "Need to specify instruments option right now." ;; FIXME 
+  
+  lpw_total              = 21
+  static_total           = 47
+  swia_total             = 12
+  swea_total             = 18
+  mag_total              = 14
+  sep_total              = 28
+  ngims_total            = 30
+  spacecraft_part1_total = 17
+  spacecraft_total       = 32
+  app_total              = 6
+  
+
+  
   
   ;;FOR EAC FILE INPUT, READ INTO MEMORY
   foreach file , infiles do begin
@@ -46,18 +54,17 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
     
     ;; Create array of insitu records with the # of variables
     NV=(size(*cdfi_insitu.vars[1].dataptr))[1]
-    if not keyword_set(instrument_array) then instrument_array = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     
     
-    MVN_KP_INSITU_STRUCT_INIT, insitu_record, instrument_array
+    MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
     kp_data = replicate(insitu_record,NV)
     
     ;; Top level data
     ;; time_tt2000      = *cdfi_insitu.vars[0].dataptr      ;; Ignore vars[0].
-    kp_data.time        = time_double(*cdfi_insitu.vars[1].dataptr)
+    kp_data.time        = time_double(*cdfi_insitu.vars[1].dataptr, tformat='YYYY-MM-DDThh:mm:ss')
     kp_data.time_string = *cdfi_insitu.vars[1].dataptr
-    kp_data.orbit       = *cdfi_insitu.vars[2].dataptr
-    kp_data.io_bound    = *cdfi_insitu.vars[3].dataptr
+    kp_data.orbit       = *cdfi_insitu.vars[orbit_number_index].dataptr
+    kp_data.io_bound    = *cdfi_insitu.vars[io_bound_index].dataptr
     
     
     ;; Read in LPW data
@@ -123,9 +130,15 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instrument_array=instrument_array, 
       endfor
     endif
     
-    ;; Always read in SPACECRAFT data
-    j = spacecraft_start
-    for i=0, spacecraft_total-1 do begin
+    ;; Always read in SPACECRAFT data - (split into two parts because APP in middle)
+    j = spacecraft_part1_start
+    for i=0, spacecraft_part1_total-1 do begin
+      kp_data.spacecraft.(i) = *cdfi_insitu.vars[j].dataptr
+      j++
+    endfor
+    
+    j = spacecraft_part2_start
+    for i=i, spacecraft_total-1 do begin
       kp_data.spacecraft.(i) = *cdfi_insitu.vars[j].dataptr
       j++
     endfor

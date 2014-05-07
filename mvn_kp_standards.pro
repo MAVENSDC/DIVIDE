@@ -88,7 +88,7 @@ pro MVN_KP_STANDARDS, kp_data, $
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
-    goto,finish
+    return
   endif                      
                       
    ;set the default colors
@@ -639,5 +639,4 @@ pro MVN_KP_STANDARDS, kp_data, $
 
 
 
-finish:
 end
