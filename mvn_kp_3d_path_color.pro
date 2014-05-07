@@ -44,30 +44,32 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
     if colorbar_stretch eq 0 then begin                         ;STRAIGHT LINEAR DATA STRETCH
       delta = (maximum_value-minimum_value)/255.
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do begin
-        t = floor((insitu[i].(level0_index).(level1_index)-minimum_value)/delta)
-        if t gt 255 then begin
-          vert_color[0,(i*2)] = r_orig[255]
-          vert_color[1,(i*2)] = g_orig[255]
-          vert_color[2,(i*2)] = b_orig[255]
-          vert_color[0,(i*2)+1] = r_orig[255]
-          vert_color[1,(i*2)+1] = g_orig[255]
-          vert_color[2,(i*2)+1] = b_orig[255]          
-        endif
-        if t lt 0 then begin
-          vert_color[0,(i*2)] = r_orig[0]
-          vert_color[1,(i*2)] = g_orig[0]
-          vert_color[2,(i*2)] = b_orig[0]
-          vert_color[0,(i*2)+1] = r_orig[0]
-          vert_color[1,(i*2)+1] = g_orig[0]
-          vert_color[2,(i*2)+1] = b_orig[0]
-        endif
-        if t ge 0 and t le 255 then begin
-          vert_color[0,(i*2)] = r_orig[t]
-          vert_color[1,(i*2)] = g_orig[t]
-          vert_color[2,(i*2)] = b_orig[t]
-          vert_color[0,(i*2)+1] = r_orig[t]
-          vert_color[1,(i*2)+1] = g_orig[t]
-          vert_color[2,(i*2)+1] = b_orig[t]
+        if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
+          t = floor((insitu[i].(level0_index).(level1_index)-minimum_value)/delta)
+          if t gt 255 then begin
+            vert_color[0,(i*2)] = r_orig[255]
+            vert_color[1,(i*2)] = g_orig[255]
+            vert_color[2,(i*2)] = b_orig[255]
+            vert_color[0,(i*2)+1] = r_orig[255]
+            vert_color[1,(i*2)+1] = g_orig[255]
+            vert_color[2,(i*2)+1] = b_orig[255]          
+          endif
+          if t lt 0 then begin
+            vert_color[0,(i*2)] = r_orig[0]
+            vert_color[1,(i*2)] = g_orig[0]
+            vert_color[2,(i*2)] = b_orig[0]
+            vert_color[0,(i*2)+1] = r_orig[0]
+            vert_color[1,(i*2)+1] = g_orig[0]
+            vert_color[2,(i*2)+1] = b_orig[0]
+          endif
+          if t ge 0 and t le 255 then begin
+            vert_color[0,(i*2)] = r_orig[t]
+            vert_color[1,(i*2)] = g_orig[t]
+            vert_color[2,(i*2)] = b_orig[t]
+            vert_color[0,(i*2)+1] = r_orig[t]
+            vert_color[1,(i*2)+1] = g_orig[t]
+            vert_color[2,(i*2)+1] = b_orig[t]
+          endif
         endif
       endfor
     endif 
@@ -76,30 +78,32 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
       exponent = 2
       data_mean = 0.5
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do  begin
-        if insitu[i].(level0_index).(level1_index) lt minimum_value then begin
-          vert_color[0,(i*2)] = r_orig[0]
-          vert_color[1,(i*2)] = g_orig[0]
-          vert_color[2,(i*2)] = b_orig[0]
-          vert_color[0,(i*2)+1] = r_orig[0]
-          vert_color[1,(i*2)+1] = g_orig[0]
-          vert_color[2,(i*2)+1] = b_orig[0]
-        endif
-        if insitu[i].(level0_index).(level1_index) gt maximum_value then begin
-          vert_color[0,(i*2)] = r_orig[255]
-          vert_color[1,(i*2)] = g_orig[255]
-          vert_color[2,(i*2)] = b_orig[255]
-          vert_color[0,(i*2)+1] = r_orig[255]
-          vert_color[1,(i*2)+1] = g_orig[255]
-          vert_color[2,(i*2)+1] = b_orig[255]
-        endif
-        if (insitu[i].(level0_index).(level1_index) gt minimum_value) and (insitu[i].(level0_index).(level1_index) lt maximum_value) then begin
-          t = 255./(1.+(data_mean/insitu[i].(level0_index).(level1_index))^exponent)
-          vert_color[0,(i*2)] = r_orig[t]
-          vert_color[1,(i*2)] = g_orig[t]
-          vert_color[2,(i*2)] = b_orig[t]
-          vert_color[0,(i*2)+1] = r_orig[t]
-          vert_color[1,(i*2)+1] = g_orig[t]
-          vert_color[2,(i*2)+1] = b_orig[t]
+        if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
+          if insitu[i].(level0_index).(level1_index) lt minimum_value then begin
+            vert_color[0,(i*2)] = r_orig[0]
+            vert_color[1,(i*2)] = g_orig[0]
+            vert_color[2,(i*2)] = b_orig[0]
+            vert_color[0,(i*2)+1] = r_orig[0]
+            vert_color[1,(i*2)+1] = g_orig[0]
+            vert_color[2,(i*2)+1] = b_orig[0]
+          endif
+          if insitu[i].(level0_index).(level1_index) gt maximum_value then begin
+            vert_color[0,(i*2)] = r_orig[255]
+            vert_color[1,(i*2)] = g_orig[255]
+            vert_color[2,(i*2)] = b_orig[255]
+            vert_color[0,(i*2)+1] = r_orig[255]
+            vert_color[1,(i*2)+1] = g_orig[255]
+            vert_color[2,(i*2)+1] = b_orig[255]
+          endif
+          if (insitu[i].(level0_index).(level1_index) gt minimum_value) and (insitu[i].(level0_index).(level1_index) lt maximum_value) then begin
+            t = 255./(1.+(data_mean/insitu[i].(level0_index).(level1_index))^exponent)
+            vert_color[0,(i*2)] = r_orig[t]
+            vert_color[1,(i*2)] = g_orig[t]
+            vert_color[2,(i*2)] = b_orig[t]
+            vert_color[0,(i*2)+1] = r_orig[t]
+            vert_color[1,(i*2)+1] = g_orig[t]
+            vert_color[2,(i*2)+1] = b_orig[t]
+          endif
         endif
       endfor      
     endif
