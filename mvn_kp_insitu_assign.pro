@@ -47,8 +47,8 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instruments
     record.lpw.euv_irradiance_low_qual       = data_array.data[17]
     record.lpw.euv_irradiance_mid            = data_array.data[18]
     record.lpw.euv_irradiance_mid_qual       = data_array.data[19]
-    record.lpw.euv_irradiance_high           = data_array.data[20]
-    record.lpw.euv_irradiance_high_qual      = data_array.data[21]
+    record.lpw.euv_irradiance_lyman          = data_array.data[20]
+    record.lpw.euv_irradiance_lyman_qual     = data_array.data[21]
     
   endif
   if instruments.static then begin          ;return all teh Static data    
