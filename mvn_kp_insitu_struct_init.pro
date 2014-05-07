@@ -102,8 +102,8 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           euv_irradiance_low_qual       :!VALUES.D_NAN, $
           euv_irradiance_mid            :!VALUES.D_NAN, $
           euv_irradiance_mid_qual       :!VALUES.D_NAN, $
-          euv_irradiance_high           :!VALUES.D_NAN, $
-          euv_irradiance_high_qual      :!VALUES.D_NAN}
+          euv_irradiance_lyman          :!VALUES.D_NAN, $
+          euv_irradiance_lyman_qual     :!VALUES.D_NAN}
           
     record_temp2 = create_struct(['lpw'],s3,record_temp1)
   endif else begin
