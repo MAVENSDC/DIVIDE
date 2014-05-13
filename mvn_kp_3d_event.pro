@@ -136,10 +136,10 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
      'time': begin
                 widget_control, event.id, get_value=newval
-                
+               
                 ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
                   t = min(abs(((*pstate).insitu.time - newval)),t_index)
-                  
+
     ;              data = *(*pstate).orbit_path.data
                   (*pstate).orbit_path -> getproperty, data=data
                   (*pstate).orbit_model->GetProperty,transform=curtrans
@@ -316,6 +316,21 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
            
                 (*pstate).window->draw, (*pstate).view
              end                   
+                 
+     'timestep_define': begin
+                          widget_control, event.id, get_value=newval
+                          (*pstate).time_step_size = fix(newval)
+                        end
+     'timeminusone': begin
+                        mvn_3d_time_increment, (*pstate), -(*pstate).time_step_size
+                        (*pstate).window->draw, (*pstate).view
+                        widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
+                     end
+     'timeplusone':  begin
+                        mvn_3d_time_increment, (*pstate), (*pstate).time_step_size
+                        (*pstate).window->draw, (*pstate).view
+                        widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
+                     end
                  
      'basemap1': begin
               widget_control,event.id,get_value=newval
@@ -800,11 +815,24 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       end      
        
        'config_save': begin
-                          t1 = dialog_message('Coming Soon . . . .',/information)
+                          file = dialog_pickfile(/write, title="Pick a file to save your viz configuration",filter='*.sav')
+                          
+                          (*pstate).model->getproperty,transform=model_trans
+    
+                          config_struct = {config, model_trans:model_trans}
+                          
+                          save,config_struct,filename=file
+
+                  
                       end
                     
        'config_load': begin
-                          t1 = dialog_message('Coming Soon . . . .',/information)
+                          file = dialog_pickfile(/read, title="Restore a vizualization configuration", filter='*.sav')
+                          
+                          restore,file
+                          
+                          (*pstate).model->setproperty,transform = config_struct.model_trans
+                          (*pstate).window->draw,(*pstate).view
                       end
                       
        'save_view': begin
@@ -839,7 +867,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end           
@@ -867,7 +897,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                        end    
@@ -895,7 +927,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end
@@ -923,7 +957,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end 
@@ -951,7 +987,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end
@@ -979,7 +1017,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
@@ -1006,7 +1046,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                           xc = mg_linear_function(xr, [-1.7,1.4])
                           yc = mg_linear_function(yr, [-1.9,-1.5])
-                          (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          if finite(yc[0]) and finite(yc[1])  then begin
+                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                          endif
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                       end
