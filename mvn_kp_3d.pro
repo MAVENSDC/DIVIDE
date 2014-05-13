@@ -29,7 +29,7 @@
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
-               view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview
+               view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -51,6 +51,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
    ;************************************************** 
    ; *******NEED TO RESIZE IUVS CORRECTLY AS WELL******
    ; ************************************************** 
+    
+      time_step_size = 10
     
       start_time = double(insitu1[0].time)
       end_time = double(insitu1[n_elements(insitu1.time)-1].time)
@@ -347,6 +349,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                          /button_events, /motion_events, /wheel_events, uname='draw',$
                          retain=0, renderer=0)
     
+      if keyword_set(direct) then drawid=base
+    
     if keyword_set(direct) eq 0 then begin          ;SKIP THIS IF /DIRECT IS SET, SKIPPING THE GUI INTERFACE
                          
       ;TOP LEVEL MENU                  
@@ -369,15 +373,22 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
  
       ;TIME BAR ACROSS THE BOTTOM
 
-        timebarbase = widget_base(base, /column,/frame, /align_center, xsize=1100)
+        tbase = widget_base(base,/row)
+        timebarbase = widget_base(tbase, /column,/frame, /align_left, xsize=1000)
         time_min = start_time                     ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
         time_max = end_time
-        timelabelbase = widget_base(timebarbase, xsize=1100, ysize=20, /row)
+        timelabelbase = widget_base(timebarbase, xsize=1000, ysize=20, /row)
         label5 = widget_label(timelabelbase, value=strtrim(string(time_string(time_min,format=4)),2), scr_xsize=200, /align_left)
         label6 = widget_label(timelabelbase, value='Time Range', /align_center, scr_xsize=590)
         label7 = widget_label(timelabelbase, value=strtrim(string(time_string(time_max,format=4)),2), scr_xsize=200, /align_right)
         timeline = cw_fslider(timebarbase, /drag, maximum=time_max, minimum=time_min, /double, $
-                              uname='time', title='Displayed Time',xsize=1100,/edit,/suppress_value)
+                              uname='time', title='Displayed Time',xsize=1000,/edit,/suppress_value)
+        tbase1 = widget_base(tbase,/column,/align_center)
+        label1 = widget_label(tbase1, value='Step Size')
+        text1 = widget_text(tbase1, value=strtrim(string(time_step_size),2), uname='timestep_define',/editable,xsize=7,ysize=1,/align_center)
+        tbase2 = widget_base(tbase1,/row)
+        button1 = widget_button(tbase2, value='-', uname='timeminusone',xsize=50) 
+        button1 = widget_button(tbase2, value='+', uname='timeplusone',xsize=50)                     
         widget_control,timeline,set_value=mid_time
         
        ;MARS GLOBE/LABEL OPTIONS MENU 
@@ -1227,6 +1238,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         maven_model -> add, maven_poly
         view -> add, maven_model
 
+    ;ROTATE THE SPACECRAFT TO ITS INITIAL POSITION
+      
+
+
       ;CREATE THE PARAMETER PLOT ALONG THE BOTTOM EDGE OF THE DISPLAY
       
         if keyword_set(parameterplot) ne 1 then begin
@@ -1417,10 +1432,48 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   ;ROTATE EVERYTHING TO THE PREFERRED INITIAL VIEW
   if keyword_set(initialview) then begin
     
+    if n_elements(initialview) eq 3 then begin
+      ;set the latitude rotation angle
+        if initialview[0] ge 0.0 then rot_angle = (90.-initialview[0])
+        if initialview[0] lt 0.0 then rot_angle = (90.+initialview[0]) 
+      ;set the longitude rotation angle
+        lon_angle = -90. + initialview[1] 
+      ;set the default height (km)
+         s = 5./(initialview[2]/10000.)
+      ;set the x_offset (km)
+         xtrans = 0.0
+      ;set the y_offset (km)
+         ytrans = 0.0
+    endif
     if n_elements(initialview) eq 5 then begin
-      ;TRANSLATE THE ENTIRE SCENE
+      ;set the latitude rotation angle
+        if initialview[0] ge 0.0 then rot_angle = (90.-initialview[0])
+        if initialview[0] lt 0.0 then rot_angle = (90.+initialview[0])
+      ;set the longitude rotation angle 
+        lon_angle = -90. + initialview[1] 
+      ;set the default height (km)
+         s = 5./(initialview[2]/10000.)
+      ;set the x_offset (km)
         xtrans = initialview[3]/10000.
+      ;set the y_offset (km)
         ytrans = initialview[4]/10000.
+    endif
+    if (n_elements(initialview) ne 5) and (n_elements(initialview) ne 3) then begin
+      print, 'Wrong number of parameters input for INITIALVIEW (expected either 3 or 5). Check your input and try again. Using default values for now.'
+      ;set the latitude rotation angle (degrees north)
+        rot_angle = 90.0
+      ;set the longitude rotation angle (degrees west)
+        lon_angle = -90.
+      ;set the default height (km)
+         s = 2.
+      ;set the x_offset (km)
+         xtrans = 0.0
+      ;set the y_offset (km)
+         ytrans = 0.0
+    endif
+    
+      ;TRANSLATE THE ENTIRE SCENE
+        
         model->translate, xtrans,ytrans,0
         atmModel1 ->translate, xtrans,ytrans,0
         atmModel2->translate, xtrans,ytrans,0
@@ -1445,9 +1498,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endif
       ;ROTATE SCENE TO REQUESTED SUB-CAMERA POINT
         ;latitude
-          if initialview[0] ge 0.0 then rot_angle = (90.-initialview[0])
-          if initialview[0] lt 0.0 then rot_angle = (90.+initialview[0]) 
-          
+                    
           model->rotate,[1,0,0],-rot_angle
           atmModel1->rotate,[1,0,0],-rot_angle
           atmModel2->rotate,[1,0,0],-rot_angle
@@ -1471,7 +1522,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             periapse_limb_model ->rotate,[1,0,0],-rot_angle
           endif
         ;longitude
-          lon_angle = -90. + initialview[1] 
+          
           model->rotate,[0,1,0],lon_angle
           atmModel1->rotate,[0,1,0],lon_angle
           atmModel2->rotate,[0,1,0],lon_angle
@@ -1496,7 +1547,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           endif
           
       ;SET THE ALTITUDE OF THE CAMERA
-        s = 5./(initialview[2]/10000.)
+       
         model->scale, s, s, s
         atmModel1->scale,s,s,s
         atmModel2->scale,s,s,s
@@ -1521,7 +1572,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endif
         maven_location = maven_location*s
         z_position = z_position*s
-    endif
 
   endif
 
@@ -1620,7 +1670,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  dirlight: dirlight,  lightmodel: lightmodel, ambientlight: ambientlight, $
                  track: track, coord_sys: coord_sys, $
                  textModel: textModel, $
-                 timetext: timetext, $
+                 timetext: timetext, timeline:timeline,  $
                  orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
                  vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, vector_color_method:vector_color_method, vector_color_source:vector_color_source, $
                  maven_model: maven_model, $
@@ -1646,7 +1696,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $
                  submaven_x_coord_mso: submaven_x_coord_mso, submaven_y_coord_mso: submaven_y_coord_mso, submaven_z_coord_mso: submaven_z_coord_mso, $
                  insitu: insitu1, $
-                 time_index:time_index, initial_time:initial_time, $
+                 time_index:time_index, initial_time:initial_time, time_step_size:time_step_size, $
                  base: base, $
                  level0_index: level0_index, level1_index: level1_index, $
                  install_directory: install_directory, $
