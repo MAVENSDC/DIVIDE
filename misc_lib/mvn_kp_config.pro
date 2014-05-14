@@ -57,16 +57,16 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
 ;      'expire_duration', 86400)
     
     ;; Unrestricted dev
-    sdc_server_spec = create_struct($
-    'url_path_file_names', '/unrestricted/api/v1/file_names/science', $
-    'url_path_download', '/unrestricted/api/v1/download/science', $
-    'host', '10.247.10.27', $
-    'port', 40080, $
-    'url_scheme', 'https', $
-    'authentication', 0, $
-    'check_max_files', 1, $
-    'max_files', 500, $
-    'expire_duration', 86400)
+;    sdc_server_spec = create_struct($
+;    'url_path_file_names', '/unrestricted/api/v1/file_names/science', $
+;    'url_path_download', '/unrestricted/api/v1/download/science', $
+;    'host', '10.247.10.27', $
+;    'port', 40080, $
+;    'url_scheme', 'https', $
+;    'authentication', 0, $
+;    'check_max_files', 1, $
+;    'max_files', 500, $
+;    'expire_duration', 86400)
     
     
     ;; Rstricted dev
@@ -80,6 +80,18 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
 ;    'check_max_files', 0, $
 ;    'max_files', 500, $
 ;    'expire_duration', 86400)
+
+    ;; Unrestricted dev
+    sdc_server_spec = create_struct($
+      'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
+      'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
+      'host', 'sdc-webdev1', $
+      'port', 80, $
+      'url_scheme', 'http', $
+      'authentication', 0, $
+      'check_max_files', 1, $
+      'max_files', 500, $
+      'expire_duration', 86400)
   
     
     return, sdc_server_spec
