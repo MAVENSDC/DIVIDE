@@ -6,9 +6,11 @@ pro mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ----------------------- Read or create preferences file ---------------------------- ;;
 
+
 ;FIXME TAKE ANOTHER LOOK OVER LOGIC HERE, MAKE SURE SOLID ENOUGH
 install_result = routine_info('mvn_kp_config_file',/source)
 install_directory = strsplit(install_result.path,'mvn_kp_config_file.pro',/extract,/regex)
+install_directory = install_directory+path_sep()+'..'+path_sep()
 insitu_data_dir = ''
 iuvs_data_dir = ''
 if not keyword_set(update_prefs) then begin
