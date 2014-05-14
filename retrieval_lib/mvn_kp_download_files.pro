@@ -26,7 +26,8 @@ end
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=start_date, end_date=end_date, $
                            insitu=insitu, iuvs=iuvs, textfiles=textfiles,$
                            descriptor=descriptor, latest=latest, status=status, new_files=new_files, $
-                           update_prefs=update_prefs, list_files=list_files, data_level=data_level
+                           update_prefs=update_prefs, list_files=list_files, data_level=data_level, $
+                           extension=extension
   
   
  
@@ -76,6 +77,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   if n_elements(descriptor)     gt 0 then query_args = [query_args, "descriptor=" + strjoin(descriptor, ",")]
   if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
   if n_elements(end_date)       gt 0 then query_args = [query_args, "end_date=" + end_date]
+  if n_elements(extension)      gt 0 then query_args = [query_args, "file_extension=" + extension]
   
   
   
@@ -111,7 +113,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   endif
   
   
-  stop
+  
   ; If user supplied NEW_FILES option, determine which files they have downloaded
   if keyword_set (new_files) then begin
     
@@ -156,7 +158,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
 
   endif
   
-  
+
   
   ; Get the number of files that would be downloaded.
   ; If the 'latest' keyword is set, only return the latest,
