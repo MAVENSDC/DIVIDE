@@ -21,7 +21,7 @@ pro MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist, scale,cow=cow,install_directory
   if keyword_set(cow) then begin
     filename = filepath('cow10.sav', subdir=['examples','data'])
   endif else begin
-    filename = install_directory+'maven_model.sav'  
+    filename = install_directory+'/3d_lib/maven_model.sav'  
   endelse
   restore,filename=filename
 
