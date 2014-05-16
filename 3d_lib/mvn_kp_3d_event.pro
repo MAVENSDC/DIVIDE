@@ -322,12 +322,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).time_step_size = fix(newval)
                         end
      'timeminusone': begin
-                        mvn_3d_time_increment, (*pstate), -(*pstate).time_step_size
+                        mvn_kp_3d_time_increment, (*pstate), -(*pstate).time_step_size
                         (*pstate).window->draw, (*pstate).view
                         widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
                      end
      'timeplusone':  begin
-                        mvn_3d_time_increment, (*pstate), (*pstate).time_step_size
+                        mvn_kp_3d_time_increment, (*pstate), (*pstate).time_step_size
                         (*pstate).window->draw, (*pstate).view
                         widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
                      end
