@@ -16,7 +16,7 @@ iuvs_data_dir = ''
 if not keyword_set(update_prefs) then begin
 
   ;CHECK IF THE PREFERENCES FILE EXISTS & READ IF IT DOES
-  preference_exists = file_search(install_directory,'kp_preferences.txt',count=kp_pref_exists)
+  preference_exists = file_search(install_directory+path_sep()+'kp_preferences.txt',count=kp_pref_exists)
   if kp_pref_exists ne 0 then begin
   
     ;LOOP THROUGH KP PREFS FILE LOOKING FOR PARTICULAR PREFERENCES
