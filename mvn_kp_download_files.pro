@@ -17,48 +17,75 @@ end
 
 
 ; Download the files of the given type using the given query parameters.
-; If 'local_dir' is defined, save the files there, otherwise use the current directory.
+; If 'local_dir' is defined, save the files there, otherwise use the preferences file.
 ;
 ; The 'query' is directly passed to the web service.
 ; See the web service documentation for valid query options.
 
 
-pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=start_date, end_date=end_date, $
-                           insitu=insitu, iuvs=iuvs, textfiles=textfiles,$
-                           descriptor=descriptor, latest=latest, status=status, new_files=new_files, $
-                           update_prefs=update_prefs, list_files=list_files, data_level=data_level, $
-                           extension=extension
+pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insitu, iuvs=iuvs, new_files=new_files, $
+                           text_files=text_files, cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
+                           update_prefs=update_prefs, list_files=list_files, debug=debug
   
+
+  ;IF NOT IN DEBUG, SETUP ERROR HANDLER
+  if not keyword_set(debug) then begin
+    ;ESTABLISH ERROR HANDLER. WHEN ERRORS OCCUR, THE INDEX OF THE
+    ;ERROR IS RETURNED IN THE VARIABLE ERROR_STATUS:
+    catch, Error_status
+    
+    ;THIS STATEMENT BEGINS THE ERROR HANDLER:
+    if Error_status ne 0 then begin
+      ;HANDLE ERRORS BY RETURNING TO MAIN:
+      print, '**ERROR HANDLING - ', !ERROR_STATE.MSG
+      print, '**ERROR HANDLING - Cannot proceed. Returning to main'
+      Error_status = 0
+      catch, /CANCEL
+      return
+    endif
+  endif
   
- 
- 
+
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------ Check input options & set global variables----------------------- ;;
+ 
+  ; IF DEBUG SET, CREATE ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS CALLED CAN CHECK FOR IT
+  if keyword_set(debug) then begin
+    setenv, 'MVNTOOLKIT_DEBUG=TRUE'
+  endif
+  
  
   ;; Get SDC server specs
   sdc_server_spec = mvn_kp_config(/data_retrieval)
   
-  url_path = sdc_server_spec.url_path_download       ; Define the URL path for the download web service.
-  check_max_files = sdc_server_spec.check_max_files  ; Define if we want to check the number of files before dl
-  max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow.
+  url_path  = sdc_server_spec.url_path_download      ; Define the URL path for the download web service.
+  max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow w/o an extra warning.
   
   ;; Default behavior is to download KP data
-  if keyword_set(iuvs) then begin
-    if not keyword_set(data_level) then data_level='kp'        ;; FIXME - Commented out for INsitu
+  if keyword_set(insitu) then begin
+    data_level='l2'                              ;; FIXME - Currently inconcsistency between insitu/iuvs levels. 
+  endif else if keyword_set(iuvs) then begin
+    data_level='kp'
   endif
   
-  ; Web API defined with lower case.
-  ;if n_elements(data_rate_mode) gt 0 then data_rate_mode = strlowcase(data_rate_mode)
-  ;if n_elements(level)     gt 0 then data_level     = strlowcase(level)
-  
-  ; User must specify INSITU or IUVS, but not both
-  if keyword_set(insitu) and keyword_set(iuvs) then begin
-    printf, -2, "Error: Can't request both INSITU & IUVS data in one query. 
-    return
+  ;; Set extension keyword based of text_file option or cdf_files
+  if keyword_set(text_files) then begin
+    extension = 'txt'
+  endif else if keyword_set(cdf_files) then begin
+    extension = 'cdf'
+  endif else if n_elements(filenames) le 0 then begin
+    message, "If not specifying filename(s) to download, must specify either /TEXT_FILES or /CDF_FILES."
   endif
-  if not (keyword_set(insitu) or keyword_set(iuvs)) then begin
-    printf, -2, "Error: Must specify either INSITU keyword or IUVS keyword."
-    return
+  
+  ;; If specific filenames not specified, then user must specify insitu or iuvs
+  if n_elements(filenames) le 0 then begin
+
+    if keyword_set(insitu) and keyword_set(iuvs) then begin
+      message, "Can't request both INSITU & IUVS data in one query. 
+    endif
+    if not (keyword_set(insitu) or keyword_set(iuvs)) then begin
+      message, "If not specifying filename(s) to download, Must specify either /INSITU keyword or /IUVS."
+    endif
   endif
 
   
@@ -71,10 +98,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   
   if keyword_set(insitu)             then query_args = [query_args, "instrument=pfp"]
   if keyword_set(iuvs)               then query_args = [query_args, "instrument=rs"]
-  ;;if keyword_set(iuvs)               then query_args = [query_args, "instrument=iuv"]                                 ;; FIXME TESTING
   if n_elements(filename)       gt 0 then query_args = [query_args, "file=" + strjoin(filename, ",")]
   if n_elements(data_level)     gt 0 then query_args = [query_args, "level=" + strjoin(data_level, ",")]
-  if n_elements(descriptor)     gt 0 then query_args = [query_args, "descriptor=" + strjoin(descriptor, ",")]
   if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
   if n_elements(end_date)       gt 0 then query_args = [query_args, "end_date=" + end_date]
   if n_elements(extension)      gt 0 then query_args = [query_args, "file_extension=" + extension]
@@ -85,19 +110,21 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   if n_elements(query_args) lt 2 then query = '' $
   else query = strjoin(query_args[1:*], "&")
  
-  ; Set local_dir to current working dir if not specified.
-  if n_elements(local_dir) eq 0 then cd, current=local_dir
+  ; If local_dir not specified, check config file for insitu & iuvs dir.            
+  if n_elements(local_dir) eq 0 then begin
+    ; Check config file for directories to data
+    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, update_prefs=update_prefs
+
+    if keyword_set(insitu) then local_dir = insitu_data_dir
+    if keyword_set(iuvs)   then local_dir = iuvs_data_dir
+  endif
 
 
-
-  
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------------------ Main logic ------------------------------------------ ;;
 
-
-
   ; Get the IDLnetURL singleton. May prompt for password.
-  connection = mvn_kp_get_connection(authentication=authentication)
+  connection = mvn_kp_get_connection()
   
   ; If no input filename(s), then query the server to find available files for download
   if not keyword_set (filenames) then begin
@@ -107,18 +134,14 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
     ; Warn if no files. Error code or empty.
     if (size(filenames, /type) eq 3 || n_elements(filenames) eq 0) then begin
       printf, -2, "WARN: No files found for the query: " + query
-      status = -1 
       return
     endif
   endif
   
   
   
-  ; If user supplied NEW_FILES option, determine which files they have downloaded
+  ; If user supplied NEW_FILES option, determine which files they have locally
   if keyword_set (new_files) then begin
-    
-    ; Check config file for directories to data
-    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, update_prefs=update_prefs
     
     ;; Get filename convetion information from config
     insitu_file_spec = mvn_kp_config(/insitu_file_spec)
@@ -127,17 +150,15 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
     iuvs_pattern   = iuvs_file_spec.pattern
     
     ;; Append appropriate extension
-    if keyword_set(textfiles) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
-    if keyword_set(textfiles) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
+    if keyword_set(text_files) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
+    if keyword_set(text_files) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
     
     ; Get list of all files currently downloaded
     if keyword_set(insitu) then begin 
-      local_dir = insitu_data_dir
-      local_files = file_basename(file_search(insitu_data_dir, insitu_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep()+insitu_pattern))
     endif
     if keyword_set(iuvs) then begin
-      local_dir = iuvs_data_dir 
-      local_files = file_basename(file_search(iuvs_data_dir  , iuvs_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep()+iuvs_pattern))
     endif
         
     ; Get list of files on server (within a time span if entereted), that are not on local machine
@@ -153,54 +174,46 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
     print, "LIST_FILES option given, printing files instead of downloading"
     print, "Files that would be downloaded: "
     print, filenames
-    status = 0
     return 
 
   endif
   
 
-  
   ; Get the number of files that would be downloaded.
-  ; If the 'latest' keyword is set, only return the latest,
-  ;   which will be the first, so setting length to 1 will work. FIXME = I don't think we need/ using this "latest" flag
   nfiles = n_elements(filenames)
   
   ;; Hanlde the stupid case where IDL has an emptry string and n_elements will return 1.
   ;; Return from here if no files to download
   if (nfiles eq 1) and (strlen(filenames[0]) eq 0) then begin
-    print, "No new files on server to download."
-    status=0
+    if keyword_set(insitu)    then filetype = 'in situ' else filetype = 'IUVS'
+    if keyword_set(cdf_files) then extension = 'CDF' else extension = 'text'
+    
+    print, "No new "+filetype+" "+extension+" files on server to download."
     return
   endif
   
-  if KEYWORD_SET(latest) then nfiles = 1
-  
-  ; Error if too many files. (TODO: - Do we want this?)
-  if (check_max_files) and (nfiles gt max_files) then begin
-    printf, -2, "ERROR: The resulting set of files (" + strtrim(nfiles,2) + ") is too large for the query: " + query
-    status = -1 ;TODO: better error codes? http://www.exelisvis.com/docs/IDLnetURL.html#objects_network_1009015_1417867
-    return
-  endif
-
   ; Prompt user to ensure they want to download nfiles amount of files
   while(1) do begin 
     response = ''
     print, "Your request will download a total of: " +string(nfiles) +" files."
+    if (nfiles gt max_files) then print, "NOTE - This is a large number of files and may take a long time to download"
     print, "Would you like to proceed with this download:"
     read, response, PROMPT='(y/n) >'
     if (strlowcase(strmid(response,0,1)) eq 'y') then break
     if (strlowcase(strmid(response,0,1)) eq 'n') then begin
       print, "Canceled download. Returning..."
-      status=0
       return
     endif else print, "Invalid input. Please answer with yes or no."
   endwhile
   
   
-  stop                                                                       ;; FIXME - here to stop beforedownloading for testing
   ; Download files one at a time. 
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
+
+    ; Updated the download progress bar
+    MVN_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
+    
     ;TODO: flat or hierarchy? assume flat for now
     file = file_basename(filenames[i]) ;just the file name, no path
     local_file = local_dir + path_sep() + file ;all in one directory (i.e. flat)
@@ -215,10 +228,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, start_date=
   if nerrs gt 0 then begin
     msg = "WARN: " + strtrim(nerrs,2) + " out of " + strtrim(nfiles,2) + " file downloads failed." 
     printf, -2, msg
-    status = -1
     return
-  endif else begin
-  status = 0 
-  return
-  endelse
+  endif
+  
+  ; UNSET DEBUG ENV VARIABLE
+  setenv, 'MVNTOOLKIT_DEBUG='
+  
 end

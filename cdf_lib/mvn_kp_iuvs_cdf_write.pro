@@ -8,7 +8,7 @@
 ;; FIXME - Needs better header
 ;;
 
-pro mvn_kp_iuvs_cdf_write, infiles, outpath, savefiles=savefiles, debug=debug
+pro mvn_kp_iuvs_cdf_write, infiles, outpath, save_files=save_files, debug=debug
 
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -41,17 +41,17 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath, savefiles=savefiles, debug=debug
   ;LOOP THROUGH ALL INPUT FILES AND CREATE A CDF VERSION OF EACH IN THE OUTPATH
   foreach file , infiles do begin
   
-    ;; If keyword set savefiles, read in savefiles, otherwise read in textfiles
-    if not keyword_set(savefiles) then begin
+    ;; If keyword set save_files, read in save_files, otherwise read in text_files
+    if not keyword_set(save_files) then begin
       ;; Strip out the date from input filenames.
       base = file_basename(file, '.txt')
       ;; Read the file into an iuvs structure in memory
-      mvn_kp_read_iuvs_file, file, iuvs, /textfiles
+      mvn_kp_read_iuvs_file, file, iuvs, /text_files
     endif else begin
       ;; Strip out the date from input filenames.
       base = file_basename(file, '.sav')
       ;; Read the file into an iuvs structure in memory
-      mvn_kp_read_iuvs_file, file, iuvs, /savefiles
+      mvn_kp_read_iuvs_file, file, iuvs, /save_files
     endelse
     ;; Output file
     outcdffile = outpath+'/'+base+'.cdf'

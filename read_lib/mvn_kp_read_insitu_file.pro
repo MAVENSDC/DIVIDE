@@ -6,7 +6,7 @@
 
 
 pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time, end_time=end_time, $
-                             savefiles=savefiles, textfiles=textfiles, instruments=instruments, io_flag=io_flag
+                             save_files=save_files, text_files=text_files, instruments=instruments, io_flag=io_flag
   
   
   ;; Check ENV variable to see if we are in debug mode
@@ -40,7 +40,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
   kp_data_temp = replicate(insitu_record,21600L)
   
   
-  if keyword_set(textfiles) then begin
+  if keyword_set(text_files) then begin
     index=0L
     within_time_bounds = 0
     
@@ -92,7 +92,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
     start_index=0
     stop_index=index-1
     
-  endif else if keyword_set(savefiles) then begin
+  endif else if keyword_set(save_files) then begin
     index=0L
     within_time_bounds=0
     
