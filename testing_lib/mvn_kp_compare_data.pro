@@ -140,13 +140,13 @@ pro mvn_kp_compare_data, input1, input2, approx=approx
 
 
 ;mvn_kp_read, ['2015-04-01/13:06:51', '2015-04-04/14:59:00'] , insitu1, /insitu_only
-;mvn_kp_read, ['2015-04-01/13:06:51', '2015-04-04/14:59:00'] , insitu2, /savefiles, /insitu_only
+;mvn_kp_read, ['2015-04-01/13:06:51', '2015-04-04/14:59:00'] , insitu2, /save_files, /insitu_only
 ;input1 = insitu1
 ;input2 = insitu2
 
 
 ;mvn_kp_read, ['2015-04-01/13:00:02', '2015-04-06/11:00:59'] , insitu1, iuvs1
-;mvn_kp_read, ['2015-04-01/13:00:02', '2015-04-06/11:00:59'] , insitu2, iuvs2, /savefiles
+;mvn_kp_read, ['2015-04-01/13:00:02', '2015-04-06/11:00:59'] , insitu2, iuvs2, /save_files
 ;input1 = iuvs1
 ;input2 = iuvs2
 ;; Testing compare function by altering single values at a time.

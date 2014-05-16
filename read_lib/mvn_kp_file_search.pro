@@ -2,7 +2,7 @@
 
 
   ;; Get list of Insitu Files
-function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spec, savefiles=savefiles, textfiles=textfiles
+function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spec, save_files=save_files, text_files=text_files
 
   ;; File pattern details
   insitu_pattern     = filename_spec.pattern
@@ -13,15 +13,15 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
 
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR    - FIXME Make below more consistent
   ;; Default is CDF format
-  if keyword_set(savefiles) then begin 
+  if keyword_set(save_files) then begin 
     insitu_pattern += '.sav' 
-  endif else if keyword_set(textfiles) then begin
+  endif else if keyword_set(text_files) then begin
     insitu_pattern += '.txt' 
   endif else begin
     insitu_pattern += '.cdf' 
   endelse
   
-  local_insitu = file_search(insitu_dir, insitu_pattern, count=count)
+  local_insitu = file_search(insitu_dir+path_sep()+insitu_pattern, count=count)
   if (count gt 0) then begin
     local_insitu_base  = file_basename(local_insitu)
     ;local_times_insitu = strmid(local_insitu_base, 20, 8, /reverse_offset) ;;FIXME - cleaner way to get this part of the string
@@ -53,7 +53,7 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
 end
 
   ;; Get list of Iuvs files
-function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, savefiles=savefiles, textfiles=textfiles
+function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, save_files=save_files, text_files=text_files
 
   ;; File pattern details 
   iuvs_pattern     = filename_spec.pattern
@@ -68,16 +68,16 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
 
   ;; SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
   ;; Default is CDF format
-  if keyword_set(savefiles) then begin 
+  if keyword_set(save_files) then begin 
     iuvs_pattern += '.sav' 
-  endif else if keyword_set(textfiles) then begin
+  endif else if keyword_set(text_files) then begin
     iuvs_pattern += '.txt' 
   endif else begin
     iuvs_pattern += '.cdf' 
   endelse
  
  
-  local_iuvs = file_search(iuvs_dir, iuvs_pattern, count=count)
+  local_iuvs = file_search(iuvs_dir+path_sep()+iuvs_pattern, count=count)
   if (count gt 0) then begin
     local_iuvs_base = file_basename(local_iuvs)
     
@@ -204,7 +204,7 @@ end
 ;-
 
 pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs_filenames, iuvs_dir, $
-  savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
+  save_files=save_files, text_files=text_files, insitu_only=insitu_only, download_new=download_new
   
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -230,12 +230,17 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   ;; needed to complete the time range
   if keyword_set(download_new) then begin
   
+     ;; If text_files not set, set  cdf_files for call to mvn_kp_download_files
+     if not keyword_set(text_files) then cdf_files = 1
+  
      ;; Check for insitu files
-     mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, status=status, /new_files, textfiles=textfiles
+     mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, /new_files, $
+        text_files=text_files, cdf_files=cdf_files, debug=debug
   
     ;; Check for IUVS files
     if not keyword_set(insitu_only) then begin
-      mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, status=status, /new_files, textfiles=textfiles
+      mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, /new_files, $ 
+        text_files=text_files, cdf_files=cdf_files, debug=debug
       endif
   
   endif
@@ -244,12 +249,12 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   ;; Get list of files now (some may have been downloaded)
   ;; And trim list to only have highest versions/revisions of each file
   insitu_filenames = MVN_KP_LOCAL_INSITU_FILES(begin_time.Jul, end_time.Jul, insitu_dir, insitu_filename_spec, $
-                                               savefiles=savefiles, textfiles=textfiles)
+                                               save_files=save_files, text_files=text_files)
   insitu_filenames = MVN_KP_LATEST_VERSIONS(insitu_filenames, insitu_filename_spec) 
 
   if not keyword_set(insitu_only) then begin
     iuvs_filenames = MVN_KP_LOCAL_IUVS_FILES(begin_time.Jul, end_time.Jul, iuvs_dir, iuvs_filename_spec, $ 
-                                             savefiles=savefiles, textfiles=textfiles)
+                                             save_files=save_files, text_files=text_files)
     iuvs_filenames = MVN_KP_LATEST_VERSIONS(iuvs_filenames, iuvs_filename_spec)
   endif
 

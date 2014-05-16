@@ -103,7 +103,7 @@ end
 
 
 pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_time=end_time, $
-                           savefiles=savefiles, textfiles=textfiles, instruments=instruments
+                           save_files=save_files, text_files=text_files, instruments=instruments
   
   
   ;; Check ENV variable to see if we are in debug mode
@@ -124,7 +124,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
   endelse
   
 
-  if keyword_set(savefiles) then begin
+  if keyword_set(save_files) then begin
     
     ;INITIALIZE IUVS_RECORD TO CONTAIN DEFAULT VALUES
     MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
@@ -271,7 +271,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       iuvs_record = -1
     endif
     
-  endif else if keyword_set(textfiles) then begin  
+  endif else if keyword_set(text_files) then begin  
     ;READ IUVS DATA FROM ASCII FILES
 
     ;; Call IUVS ASCII reader to read one iuvs file in ascii format

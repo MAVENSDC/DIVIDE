@@ -95,7 +95,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
                    iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
                    iuvs_stellarocc=iuvs_stellarocc, insitu_all=insitu_all, $
                    inbound=inbound, outbound=outbound, debug=debug, insitu_only=insitu_only, $
-                   update_prefs=update_prefs, download_new=download_new, savefiles=savefiles, textfiles=textfiles
+                   update_prefs=update_prefs, download_new=download_new, save_files=save_files, text_files=text_files
 
   
   overall_start_time = systime(1)
@@ -345,7 +345,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
 
   ;; FIXME variable names
   MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
-     kp_iuvs_data_directory, savefiles=savefiles, textfiles=textfiles, insitu_only=insitu_only, download_new=download_new
+     kp_iuvs_data_directory, save_files=save_files, text_files=text_files, insitu_only=insitu_only, download_new=download_new
  
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS & INITIALIZE ARRAY OF DATA STRUTURES 
@@ -377,7 +377,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
       
       fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
-        instruments=instruments, savefiles=savefiles, textfiles=textfiles
+        instruments=instruments, save_files=save_files, text_files=text_files
         
         
       kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
@@ -412,7 +412,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
         
         fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
-          instruments=instruments, savefiles=savefiles, textfiles=textfiles
+          instruments=instruments, save_files=save_files, text_files=text_files
           
         ;; If iuvs_record not eq -1 (Indicating some observation within time range) add to temp array
         if size(iuvs_record, /type) eq 8 then begin
