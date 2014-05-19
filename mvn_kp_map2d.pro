@@ -54,8 +54,9 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
      install_result = routine_info('mvn_kp_map2d',/source)
-     install_directory = strsplit(install_result.path,'mvn_kp_map2d.pro',/extract,/regex)          
-                
+     install_directory = strsplit(install_result.path,'mvn_kp_map2d.pro',/extract,/regex)
+     install_directory = install_directory+'basemaps/'          
+              
 ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
   ;for the insitu data
     MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags

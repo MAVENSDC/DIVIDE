@@ -44,6 +44,4 @@ pro MVN_KP_TIME_FIND, time_match, orbit_match, time, time_out, orbit_index, max=
     orbit_index = max(where(orbit_match eq orbit_match(time_out)))
   endif
   
-  print,orbit_index
-  
 end
