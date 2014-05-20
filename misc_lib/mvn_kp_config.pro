@@ -55,8 +55,8 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     
     ;; Unrestricted dev
     sdc_server_spec = create_struct($
-      'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
-      'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
+      'url_path_file_names', 'maven/sdc/service/files/api/v1/search/science/fn_metadata/file_names', $
+      'url_path_download', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/download', $
       'host', 'sdc-webdev1', $
       'port', 80, $
       'url_scheme', 'http', $
