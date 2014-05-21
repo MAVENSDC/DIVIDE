@@ -111,12 +111,18 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   else query = strjoin(query_args[1:*], "&")
  
   ; If local_dir not specified, check config file for insitu & iuvs dir.            
-  if n_elements(local_dir) eq 0 then begin
+  if (n_elements(local_dir) eq 0) and ( (not keyword_set(list_files)) or keyword_set(new_files) or keyword_set(update_prefs)) then begin
     ; Check config file for directories to data
-    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, update_prefs=update_prefs
+    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
+                        update_prefs=update_prefs, insitu_only=insitu
 
-    if keyword_set(insitu) then local_dir = insitu_data_dir
-    if keyword_set(iuvs)   then local_dir = iuvs_data_dir
+    if keyword_set(insitu) then begin 
+      local_dir = insitu_data_dir
+    endif else if keyword_set(iuvs)   then begin 
+      local_dir = iuvs_data_dir
+    endif else begin
+      message, "If not specifying local_dir option, must specify /insitu or /iuvs"
+    endelse
   endif
 
 

@@ -1,7 +1,7 @@
 
 
 pro mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
-                        update_prefs=update_prefs
+                        update_prefs=update_prefs, insitu_only=insitu_only
 
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ----------------------- Read or create preferences file ---------------------------- ;;
@@ -42,20 +42,29 @@ if not keyword_set(update_prefs) then begin
     error_msg = 'Re run mvn_kp_read with /UPDATE_PREFS or manually fix kp_preferences.txt file.'
     message, error_msg
   endif
-  
+
+
   ;IF NO IUVS DIRECTORY AND NOT IN INSITU ONLY MODE, PROMPT USER FOR IUVS DIRECTORY
   if iuvs_data_dir eq '' and not keyword_set(insitu_only) then begin
     print, "kp_preferences.txt file only contains insitu path. Requesting path to IUVS data..."
+    
     iuvs_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+    if iuvs_data_dir eq '' then message, "Canceled directory choice. Must choose path to IUVS data. Exiting..."
+    
     update_prefs=1
   endif
   
 endif else begin
+
+  
   ;NO PREFS FILE EXISTS, PROMPT USER FOR PATHS
   insitu_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
+  if insitu_data_dir eq '' then message, "Canceled directory choice. Must choose path to in situ data. Exiting..."
   
   if not keyword_set(insitu_only) then begin
     iuvs_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+    if iuvs_data_dir eq '' then message, "Canceled directory choice. Must choose path to IUVS data. Exiting..."
+
   endif
   update_prefs=1
 endelse
@@ -63,9 +72,15 @@ endelse
 endif else begin
   ;WETHER OR NOT kp_preferences.txt FILE EXISTS, USE DIALOG BOXES TO REQUEST NEW LOCATIONS AND THEN WRITE (OR OVERWRITE) kp_preferences.txt
   ;FIXME - THIS LOGIC CAN BE CLEANED UP
-  
+
   insitu_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
-  iuvs_data_dir =   dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+  if insitu_data_dir eq '' then message, "Canceled directory choice. Not updating Preferences file. Exiting..."
+  
+  if not keyword_set(insitu_only) then begin
+    iuvs_data_dir =   dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
+    if iuvs_data_dir eq '' then message, "Canceled directory choice. Not updating Preferences file. Exiting..."
+  endif
+
   update_prefs=1
   
 endelse
