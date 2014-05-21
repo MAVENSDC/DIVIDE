@@ -50,8 +50,8 @@ pro MVN_KP_STANDARDS, kp_data, $
                       ionosphere = ionosphere, $
                       sc_pot = sc_pot, $
                       altitude = altitude, $
-                      title = title,$
-                      colortable = colortable
+                      plot_title = plot_title,$
+                      plot_color = plot_color
 
   ;IF /ALL IS CALLED, SET EVERY KEYWORD TO ACTIVE SO ALL PLOTS ARE CREATED
 
@@ -93,17 +93,21 @@ pro MVN_KP_STANDARDS, kp_data, $
   endif                      
                       
    ;set the default colors
+
+    if keyword_set(plot_color) then begin
+      colors = plot_color
+    endif else begin
+      colors=39
+    endelse
+   
     device,decompose=0
     !p.background='FFFFFF'x
     !p.color=0
-    if keyword_set(colortable) then begin
-      loadct,colortable,/silent
-    endif else begin
-      loadct,39,/silent
-    endelse
+    loadct,colors,/silent
 
-  if keyword_set(title) then begin
-    overall_title=title
+
+  if keyword_set(plot_title) then begin
+    overall_title=plot_title
   endif else begin
     overall_title=''
   endelse
