@@ -14,8 +14,6 @@
 ;       optional named search criteria structure (set by MAVEN_KP_PARAM_SET)
 ;    duration : in, optional, type=integer
 ;       optional length of time to return data, in seconds, only used if input time is a single value
-;    preferences: in, optional, type=string
-;       optional name of a text preferences file if the user wants to override the default name ; FIXME THIS IS WRONG
 ;    update_prefs: in, optional, type=boolean
 ;       option to use dialog boxes and re-define your data paths in preferences.txt
 ;    lpw: in, optional, type=boolean
@@ -87,7 +85,7 @@
 @mvn_kp_insitu_cdf_read
 
 
-pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCES=PREFERENCES,$
+pro MVN_KP_READ, time, insitu_output, iuvs_output, duration=duration,$
                    lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $
                    iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
                    iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
@@ -252,7 +250,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, DURATION=DURATION, PREFERENCE
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Read or create preferences file ---------------------------- ;;
 
-  MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, update_prefs=update_prefs
+  MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, $
+                      update_prefs=update_prefs, insitu_only=insitu_only
 
 
   ;; ------------------------------------------------------------------------------------ ;;
