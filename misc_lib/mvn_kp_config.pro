@@ -9,11 +9,11 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
 
     insitu_filename_spec = create_struct('pattern', 'mvn_pfp_l2_keyparam_*', $
       'year_index', 20, $
-      'month_index', 25, $
-      'day_index', 28, $
-      'basetrim', 30, $
-      'vpos', 7, $
-      'rpos', 8)
+      'month_index', 24, $
+      'day_index', 26, $
+      'basetrim', 28, $
+      'vpos', 5, $
+      'rpos', 6)
       
     return, insitu_filename_spec
   endif
