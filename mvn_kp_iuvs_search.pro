@@ -677,7 +677,7 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, observation_name, measure
 end
 
 
-pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species=species, observation=observation, $
+pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observation=observation, $
                           min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude
 
   ; IF NOT IN DEBUG, SETUP ERROR HANDLER
@@ -792,7 +792,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
       MVN_KP_IUVS_TAG_LIST_MODE, kp_data_obs, kp_data_str
     endif 
     
-    if keyword_set(tag) or keyword_set(measure) or keyword_set(species) or keyword_set(min) or $
+    if keyword_set(tag) or keyword_set(species) or keyword_set(min) or $
        keyword_set(max) or keyword_set(min) or keyword_set(max) then begin
         print, "NOTE: /LIST keyword entered. No searching done when /LIST keyword present, only a listing of variables to search on"
     end
@@ -860,7 +860,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, measure=measure, species
     ;; Observation specific search
     endif else begin
       
-      if not keyword_set(observation) then message, "If searching observation specific measurement, must specify which observation"
+      if not keyword_set(observation) then message, "If searching observation specific tag, must specify which observation"
       meets_criteria = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_temp.(kp_data_obs_index[0]), observation_name, level1_index, index_species, min=min_value[i], max=max_value[i], altitude=altitude)
       
       

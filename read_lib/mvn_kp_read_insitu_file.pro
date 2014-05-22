@@ -127,7 +127,6 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
     index+= n_elements(insitu_record)
     
     
-    
     ;; ----------FIXME Maybe make more efficent/
     ;; ------------more testing of edge cases - Re think make sure this is grabbing correct time range
     ;
@@ -155,10 +154,40 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
       j--
     endwhile
     
+    
   endelse
   
+  ;; if start_index eq -1, then didn't find any data falling within time bounds, return 0
+  if (start_index lt 0) then begin
+    insitu_record_out = 0
+    
+    
+    ;; Otherwise, set insitu_record_out to matching index range (falls within input time bounds
+  endif else begin
   
-  ;OUTPUT INSITU DATA STRUCTURE
-  insitu_record_out = kp_data_temp[start_index:stop_index]
+    ;OUTPUT INSITU DATA STRUCTURE
+    insitu_record_out = kp_data_temp[start_index:stop_index]
+    
+    ;; If io_bound is not [1,1], need to loop through and keep only what is desired (either inbound or outbound)
+    if (io_flag[0] ne 1) or (io_flag[1] ne 1) then begin
+    
+      ;; Set search criteria
+      if io_flag[0] eq 1 then bound = 'I'
+      if io_flag[1] eq 1 then bound = 'O'
+      if not keyword_set(bound) then message, "Problem with io_bound array. Cannot proceed. "
+      
+      results = where(insitu_record_out.IO_BOUND eq bound, count)
+      
+      ;; If no results found, return zero. Otherwise return only matches
+      if count eq 0 then begin
+        insitu_record_out = 0
+      endif else begin
+        insitu_record_out = insitu_record_out[results]
+      endelse
+      
+    endif
+    
+  endelse
+
 
 end
