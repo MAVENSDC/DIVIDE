@@ -378,10 +378,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, duration=duration,$
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
-        
-      kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
-      start_index += n_elements(kp_data)
-      totalEntries += n_elements(kp_data)
+    
+      ;; Ensure what was returned is a structure, (and not int 0 indicating no matches)
+      if size(kp_data, /TYPE) eq 8 then begin
+        kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
+        start_index += n_elements(kp_data)
+        totalEntries += n_elements(kp_data)
+      endif
     endfor
     
     
