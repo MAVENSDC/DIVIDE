@@ -16,9 +16,7 @@
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
 pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $
-                        radiance=radiance, halfint=halfint, density=density, scaleheight=scaleheight, aurora=aurora, dust=dust, ozone=ozone, $
-                        species_expand=species_expand, profile_expand=profile_expand, $
-                        list=list, range=range, legend=legend, colortable=colortable, window=window, nolabels=nolabels, nolegend=nolegend
+                        range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend
 
 
 ;CHECK THAT THE INPUT DATA STRUCTURE CONTAINS THE NECESSARY DATA
@@ -258,7 +256,6 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
   endif
 
 
-print,'legend',legend_count
 
 ;BUILD THE ARRAY THAT DEFINES HOW MANY PLOTS WILL BE DISPLAYED (ie the p.multi array)
   rows = 3
