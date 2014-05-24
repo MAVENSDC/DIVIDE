@@ -14,7 +14,8 @@
 ;-
 
 
-pro mvn_kp_add_data, kp_data, data_name, output, data1=data1, data2=data2, data3=data3, data4=data4
+pro mvn_kp_add_data, kp_data, data_name, output, data1=data1, data2=data2, data3=data3, data4=data4, data5=data5, $
+                     data6=data6, data7=data7, data8=data8, data9=data9
 
     MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
     

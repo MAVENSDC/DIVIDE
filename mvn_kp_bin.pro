@@ -15,8 +15,8 @@
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
-pro mvn_kp_bin, kp_data, to_bin, bin_by, output, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
-                std = std, density=density, loc=loc, std_out
+pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
+                std = std, density=density
 
   ;CHECK THAT ALL INPUT FIELDS MATCH IN SIZE (fields ,BINS,)
   

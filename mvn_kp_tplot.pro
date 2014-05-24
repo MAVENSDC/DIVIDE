@@ -27,7 +27,7 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_TPLOT, kp_data, field, time=time, list=list, ytitles=ytitles,range=range,$
+pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list, ytitles=ytitles,range=range,$
                   createall=createall, quiet=quiet
 
 
@@ -84,8 +84,8 @@ pro MVN_KP_TPLOT, kp_data, field, time=time, list=list, ytitles=ytitles,range=ra
 ;OTHERWISE CREAT ONLY THE TPLOT VARIABLES REQUESTED
   ;CREATE THE PLOT VECTORS
   
-  for i=0, n_elements(field)-1 do begin                                   
-          MVN_KP_TAG_VERIFY, kp_data, field[i],base_tag_count, first_level_count, base_tags,  $
+  for i=0, n_elements(parameter)-1 do begin                                   
+          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
                       first_level_tags, check, level0_index, level1_index, tag_array
 
        if check eq 0 then begin            ;CHECK THAT THE REQUESTED PARAMETER EXISTS
