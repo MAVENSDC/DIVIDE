@@ -42,7 +42,7 @@
 @mvn_kp_plotimage
 
 
-pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=parameter, list=list, basemap=basemap, $
+pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbit, list=list, basemap=basemap, $
                   colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $
                   periapse_temp=periapse_temp, optimize=optimize, direct=direct, log=log, i_colortable=i_colortable, $
                   corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
@@ -51,6 +51,7 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
                   map_limit=map_limit, map_location=map_location
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
+   !p.multi=0             
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
      install_result = routine_info('mvn_kp_map2d',/source)
@@ -190,7 +191,7 @@ pro MVN_KP_MAP2D, kp_data, iuvs=iuvs, time=time, orbit=orbit, parameter=paramete
      endif
      if basemap eq 'user' then begin
         input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
-        read_jpeg,input_file,mapimage
+        if input_file ne '' then read_jpeg,input_file,mapimage
         if keyword_set(map_limit) eq 0 then begin
           map_limit = [-90,-180,90,180]
         endif
