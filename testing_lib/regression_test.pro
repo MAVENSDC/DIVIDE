@@ -461,7 +461,6 @@ if keyword_set(INSITU_SEARCH) then begin
   
 endif
 
-stop
 
 ;; Remove 'hack' first entry from all arrays - IDL 7 cannot
 ;; have empty arrays init.
