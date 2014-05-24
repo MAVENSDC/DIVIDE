@@ -11,8 +11,6 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
     on_error, 1
   endif
 
-  insitu = []  ; Fixme won't work on idl 7
-
   
   lpw_start              = 2   ;  lpw_end                = 22
   swea_start             = 23  ;  swea_end               = 40
@@ -39,7 +37,8 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
   spacecraft_total       = 32
   app_total              = 6
   
-
+   ;; Cannot init empty array in IDL before version 8
+  insitu = 'hack' 
   
   
   ;;FOR EAC FILE INPUT, READ INTO MEMORY
@@ -150,8 +149,15 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
       j++
     endfor
 
-    ;; Append kp_data into insitu output structure
-    insitu=[insitu, kp_data]
+
+    ;; If insitu is a string, 'hack', then this is the first pass through loop
+    if size(insitu, /TYPE) eq 7 then begin
+      ;IDL doesn't allow empty arrays before version 8.
+      insitu = kp_data
+    endif else begin
+      ;; Append kp_data into insitu output structure
+      insitu = [insitu, kp_data]
+    endelse
     
   endforeach
   
