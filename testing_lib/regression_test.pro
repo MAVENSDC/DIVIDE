@@ -22,8 +22,8 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
 ; Default if no arguments passed
 if n_params() eq 0 then begin
  ; save_files="TRUE"
- ; CDF="TRUE"
-  INSITU_SEARCH="TRUE"
+  CDF="TRUE"
+ ; INSITU_SEARCH="TRUE"
  ; ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
  ; COMPAREIUVS="TRUE"
@@ -40,17 +40,20 @@ if keyword_set(CREATE_TEST_SAVE) and keyword_set(COMPARE_TEST_SAVE) then begin
 endif
 
 
+;;
+;; The following four arrays cannot be init empty for pre idl 8 compatability
+
 ;; Init array to hold results of the tests
-test_results = []
+test_results = ["hack"]
 
 ;; Init array to hold results of tests that SHOULD fail
-test_results_prob = []
+test_results_prob = ["hack"]
 
 ;; Init array to hold commands to execute
-cmd_list = []
+cmd_list = ["hack"]
 
 ;; Init array to hold commands that should fail, and we want to see how error handling deals with them
-cmd_list_prob = []
+cmd_list_prob = ["hack"]
 
 
 
@@ -458,6 +461,17 @@ if keyword_set(INSITU_SEARCH) then begin
   
 endif
 
+stop
+
+;; Remove 'hack' first entry from all arrays - IDL 7 cannot
+;; have empty arrays init.
+if n_elements(cmd_list) gt 1 then cmd_list = cmd_list[1:-1] $
+  else cmd_list= ''
+
+ 
+if n_elements(cmd_list_prob) gt 1 then cmd_list_prob = cmd_list_prob[1:-1] $
+  else cmd_list_prob = ''
+
 
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ------------------------- Excute all normal commands ------------------------------- ;;
@@ -510,6 +524,15 @@ endfor
 
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ---------------------------------- Print Results ----------------------------------- ;;
+
+
+;; Remove 'hack' first entry from all arrays - IDL 7 cannot
+;; have empty arrays init.
+if n_elements(test_results) gt 1 then test_results = test_results[1:-1] $
+  else test_results = 0
+  
+if n_elements(test_results_prob) gt 1 then test_results_prob = test_results_prob[1:-1] $
+  else test_results_prob = 0
 
 
 print, ""

@@ -1,6 +1,6 @@
 ;; FIXME - Needs Header
 ;;
-;; Testing CDF Generation of insitu
+;; Read iuvs CDF file
 ;;
 
 pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments
@@ -14,7 +14,6 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments
     on_error, 1
   endif
 
-  iuvs = []  ;; FIXME WONT WORK ON IDL 7
 
   ;; Global "constants" used for indicies into CDF input array  
   N_common = 23
@@ -32,7 +31,8 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments
   i_c_l_high_start     = 59
   i_c_l_apoapse_start  = 69
   
-
+  ;; Cannot init empty array in IDL before version 8
+  iuvs = 'hack'
 
   ;;FOR EAC FILE INPUT, READ INTO MEMORY
   foreach file , infiles do begin
@@ -333,10 +333,14 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments
     ;; Pull directly out of CDF (cdfi_in) 
     iuvs_record.orbit = (*cdfi_in.vars[orbit_number_i].dataptr)[0]
     
-    ;; Append iuvs_record into iuvs output structure
-    iuvs=[iuvs, iuvs_record]
+    ;; If iuvs is a string, 'hack', then this is the first pass through loop
+    if size(iuvs, /TYPE) eq 7 then begin
+      ;IDL doesn't allow empty arrays before version 8.
+      iuvs = iuvs_record
+    endif else begin
+      iuvs=[iuvs, iuvs_record]
+    endelse
     
   endforeach
-  
   
 end
