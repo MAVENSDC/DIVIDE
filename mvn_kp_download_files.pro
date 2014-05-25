@@ -25,7 +25,7 @@ end
 
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insitu, iuvs=iuvs, new_files=new_files, $
                            text_files=text_files, cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
-                           update_prefs=update_prefs, list_files=list_files, debug=debug
+                           update_prefs=update_prefs, list_files=list_files, debug=debug, only_update_prefs=only_update_prefs
   
 
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
@@ -54,6 +54,19 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
   
+  
+  if keyword_set(only_update_prefs) then begin
+    MVN_KP_CONFIG_FILE, /update_prefs
+    
+    ;; Warn user if other parameters supplied
+    if keyword_set(filenames) or keyword_set(cdf_files) or keyword_set(text_files) then begin
+      print, "Warning. /ONLY_UPDATE_PREFS option supplied, not querying server."
+      print, "If you want to update the preferences file & download data, use /UPDATE_PREFS instead"
+    endif
+    
+    ;; Only update prefs option, return now.
+    return
+  endif
  
   ;; Get SDC server specs
   sdc_server_spec = mvn_kp_config(/data_retrieval)
@@ -114,7 +127,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   if (n_elements(local_dir) eq 0) and ( (not keyword_set(list_files)) or keyword_set(new_files) or keyword_set(update_prefs)) then begin
     ; Check config file for directories to data
     mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
-                        update_prefs=update_prefs, insitu_only=insitu
+                        update_prefs=update_prefs
+                        
 
     if keyword_set(insitu) then begin 
       local_dir = insitu_data_dir

@@ -94,6 +94,7 @@ if keyword_set(update_prefs) then begin
   printf,lun,'insitu_data_dir: '+insitu_data_dir
   if iuvs_data_dir ne '' then printf,lun,'iuvs_data_dir: '+iuvs_data_dir
   free_lun,lun
+  print, "Updated/created kp_preferences.txt file."
 endif
 
 end
