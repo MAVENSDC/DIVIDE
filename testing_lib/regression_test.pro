@@ -18,12 +18,12 @@ PRO REGRESSION_TEST, CDF=CDF, save_files=save_files, INSITU_SEARCH=INSITU_SEARCH
 
 ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
  
- 
+
 ; Default if no arguments passed
 if n_params() eq 0 then begin
  ; save_files="TRUE"
-  CDF="TRUE"
- ; INSITU_SEARCH="TRUE"
+ ; CDF="TRUE"
+  INSITU_SEARCH="TRUE"
  ; ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
  ; COMPAREIUVS="TRUE"
@@ -284,7 +284,7 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_all"]
   cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, iuvs, /text_files, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1021, 2022] , insitu, iuvs, /text_files"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1021, 1022] , insitu, iuvs, /text_files"]
   
   
   ;; *** Test reading in INSITU & IUVS ascii data ****
@@ -294,7 +294,7 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-27/17:01:05'] , insitu, iuvs, /text_files, /insitu_all, /iuvs_all"]
   
-
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_read, [1021, 2022] , insitu, iuvs, /text_files"]
   
   
 endif
@@ -414,7 +414,7 @@ endif
 if keyword_set(INSITU_SEARCH) then begin
   
   ;; read in two days worth of data and all instruments to do below testing
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs, /save_files"]  ;; FIXME - using save files for now
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs"]  ;; FIXME - using save files for now
 
   
   ;; Test search of insitu with /list option
@@ -464,11 +464,11 @@ endif
 
 ;; Remove 'hack' first entry from all arrays - IDL 7 cannot
 ;; have empty arrays init.
-if n_elements(cmd_list) gt 1 then cmd_list = cmd_list[1:-1] $
+if n_elements(cmd_list) gt 1 then cmd_list = cmd_list[1:n_elements(cmd_list)-1] $
   else cmd_list= ''
 
  
-if n_elements(cmd_list_prob) gt 1 then cmd_list_prob = cmd_list_prob[1:-1] $
+if n_elements(cmd_list_prob) gt 1 then cmd_list_prob = cmd_list_prob[1:n_elements(cmd_list_prob)-1] $
   else cmd_list_prob = ''
 
 
@@ -527,10 +527,10 @@ endfor
 
 ;; Remove 'hack' first entry from all arrays - IDL 7 cannot
 ;; have empty arrays init.
-if n_elements(test_results) gt 1 then test_results = test_results[1:-1] $
+if n_elements(test_results) gt 1 then test_results = test_results[1:n_elements(test_results)-1] $
   else test_results = 0
   
-if n_elements(test_results_prob) gt 1 then test_results_prob = test_results_prob[1:-1] $
+if n_elements(test_results_prob) gt 1 then test_results_prob = test_results_prob[1:n_elements(test_results_prob)-1] $
   else test_results_prob = 0
 
 
