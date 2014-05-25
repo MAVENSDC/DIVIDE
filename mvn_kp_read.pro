@@ -1,5 +1,8 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
+; 
+; :Description:
+; Read local Maven KP data files into memory. Capable of reading both in situ KP data files
+; and IUVS KP data files. Capable of reading in either CDF or ASCII formated data files.   
 ;
 ; :Params:
 ;    time : in, required, type="lonarr(2)"
@@ -71,7 +74,6 @@
 ;       
 ;-
 
-@time_string
 @mvn_kp_download_files
 @mvn_kp_file_search
 @mvn_kp_insitu_struct_init
@@ -85,15 +87,16 @@
 @mvn_kp_insitu_cdf_read
 
 
-pro MVN_KP_READ, time, insitu_output, iuvs_output, duration=duration,$
-                   lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $
-                   iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
-                   iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
-                   iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
-                   iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
-                   iuvs_stellarocc=iuvs_stellarocc, insitu_all=insitu_all, $
-                   inbound=inbound, outbound=outbound, debug=debug, insitu_only=insitu_only, $
-                   update_prefs=update_prefs, download_new=download_new, save_files=save_files, text_files=text_files
+pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $
+                 debug=debug, duration=duration, text_files=text_files, save_files=save_files, $
+                 insitu_only=insitu_only, insitu_all=insitu_all, inbound=inbound, outbound=outbound, $
+                 lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    
+                 iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
+                 iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
+                 iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
+                 iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
+                 iuvs_stellarocc=iuvs_stellarocc, only_update_prefs=only_update_prefs
+                      
 
   
   overall_start_time = systime(1)
@@ -125,6 +128,25 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, duration=duration,$
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
 
+  ;; Read from and/or update preferences file 
+  if keyword_set(only_update_prefs) then begin
+    MVN_KP_CONFIG_FILE, /update_prefs, insitu_only=insitu_only
+    
+    ;; Warn user if other parameters supplied
+    if keyword_set(time) or keyword_set(insitu) or keyword_set(iuvs) then begin
+      print, "Warning. /ONLY_UPDATE_PREFS option supplied, not reading any data." 
+      print, "If you want to update the preferences file & read data, use /UPDATE_PREFS instead"
+    endif
+    
+    ;; Only update prefs option, return now. 
+    return
+  endif else begin
+
+    ;; Read or create preferences file 
+    MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, $
+      update_prefs=update_prefs, insitu_only=insitu_only
+  endelse
+    
 
   ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
   if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
@@ -246,12 +268,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, duration=duration,$
     io_flag[1] = 1
   endif
     
-  
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; ----------------------- Read or create preferences file ---------------------------- ;;
-
-  MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, $
-                      update_prefs=update_prefs, insitu_only=insitu_only
 
 
   ;; ------------------------------------------------------------------------------------ ;;
