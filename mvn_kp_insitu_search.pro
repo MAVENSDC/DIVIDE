@@ -113,8 +113,6 @@ endif
 
 if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET, RUN A SEARCH ON THAT DATA FIELD BETWEEN MIN AND MAX
 
-
-  count = intarr(n_elements(tag))
   kp_data_temp = kp_data
   for i=0,n_elements(tag) -1 do begin
   
@@ -143,8 +141,17 @@ if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET,
     print,'Retrieving records which have ',tag_array[0]+'.'+tag_array[1],' values between ',strtrim(string(min_value[i]),2),' and ',strtrim(string(max_value[i]),2)
     
     meets_criteria = where(kp_data_temp.(level0_index).(level1_index) ge min_value[i] and kp_data_temp.(level0_index).(level1_index) le max_value[i],counter)
-    count[i] = counter
+    
+
+    ;; If counter is zero, the final search will contain no elements. Break here
+    if counter le 0 then begin
+      kp_data_temp = 0
+      break
+    endif
+    
     kp_data_temp = kp_data_temp[meets_criteria]
+    
+    
   endfor
   print,strtrim(string(counter),2),' records found that meet the search criteria.'
   kp_data_out = kp_data_temp
