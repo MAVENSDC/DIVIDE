@@ -1,34 +1,54 @@
 ;+
-; Searches the input line of INSITU kp data based on the search parameters
+; :Name: mvn_kp_insitu_search
+;
+; :Author: Kris Larsen & John Martin
+;
+;
+; :Description:
+;    Searches input in situ KP data structure based on min and/or max search parameters
 ;
 ; :Params:
-;    KP_data : in, required, type=structure
-;       the named structure for the KP data 
-;    kp_data_out: out, require, type=structure
-;       the named structure with the data that meets search criteria
+;    insitu_in: in, required, type=array of structures
+;       in situ KP data structure (data structure output from mvn_kp_read)
+;    insitu_out: out, required, type=array of structures
+;       output KP data structure containing datat that met all search criteria
+;
 ; :Keywords:
-;    tag: in, required, type=intarr/strarr
-;       the name, or names, of the INSITU data parameter (or integer index) to search on
-;    min: in, optional, type=fltarr(ntags)
-;       the minimum value of the parameter to be searched on (or array of values)
-;    max: in, optional, type=fltarr(ntags)
-;       the maximum value of the parameter to be searced on (or array of values)
-;    range: in, optional, type=boolean
-;       if present, will simply list the start and end times of the passed data structure
 ;    list: in, optional, type=boolean
-;       if present, will simply list the available structure tags within the KP data structure
-;       ;-
-;    debug: in, optional, type=boolean
-;       optional keyword to execute in "debug" mode. On errors, IDL will halt in place so the user can
-;       have a chance to see what's going on. By default this will not occur, instead error handlers
-;       are setup and errors will return to main.
+;       List out possible tags names to search (& index identifiers associated with tags). No
+;       search performed.
+;    tag: in, optional, type=intarr/strarr
+;       Required if /list keyword not supplied. The name, or names, of the INSITU data parameter
+;       (or integer index) to search on. Use /list keyword to see possible names or index integers
+;       to search on.
+;    min: in, optional, type=fltarr
+;       the minimum value of the parameter to be searched on (or array of values).
+;       One or more minimum values. If multiple tags input & multiple min values input, each min
+;       value will correspond with each tag (by array position). If multiple tags & one min value,
+;       the min value is used for all tags. Cannot enter more min values than tags.
+;    max: in, optional, type=fltarr
+;       the maximum value of the parameter to be searced on (or array of values)
+;       One or more maximum values. If multiple tags input & multiple max values input, each max
+;       value will correspond with each tag (by array position). If multiple tags & one max value,
+;       the max value is used for all tags. Cannot enter more max values than tags.
+;    range: in, optional, type=boolean
+;       Print out TIME_STRING for first and last element of input data structure. Also prints
+;       corresponding orbit numbers.
+;    debug:  in, optional, type=boolean
+;       On error, - "Stop immediately at the statement that caused the error and print
+;       the current program stack." If not specified, error message will be printed and
+;       IDL with return to main program level and stop.
+;
+;-
 
 @mvn_kp_tag_parser
 @mvn_kp_tag_list
 @mvn_kp_range
 @mvn_kp_tag_verify
 
-pro MVN_KP_INSITU_SEARCH,  kp_data, kp_data_out, tag=tag, min=min_value, max=max_value, list=list, range=range, debug=debug
+
+pro MVN_KP_INSITU_SEARCH,  insitu_in, insitu_out, tag=tag, min=min_value, max=max_value, list=list, $
+                           range=range, debug=debug
   
   ; IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -54,17 +74,17 @@ pro MVN_KP_INSITU_SEARCH,  kp_data, kp_data_out, tag=tag, min=min_value, max=max
 
   
   
-  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+  MVN_KP_TAG_PARSER, insitu_in, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
 
 if keyword_set(list) then begin                              ;LIST ALL THE SUB-STRUCTURES INLUDED IN A GIVEN KP DATA STRUCTURE
-    MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+    MVN_KP_TAG_LIST, insitu_in, base_tag_count, first_level_count, base_tags,  first_level_tags
     return
 endif
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
-    MVN_KP_RANGE, kp_data
+    MVN_KP_RANGE, insitu_in
     return
   endif
 
@@ -113,7 +133,7 @@ endif
 
 if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET, RUN A SEARCH ON THAT DATA FIELD BETWEEN MIN AND MAX
 
-  kp_data_temp = kp_data
+  kp_data_temp = insitu_in
   for i=0,n_elements(tag) -1 do begin
   
     ;; If input is a number, make sure it's great than 0
@@ -124,7 +144,7 @@ if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET,
       endif
     endif
     
-    MVN_KP_TAG_VERIFY, kp_data, tag[i],base_tag_count, first_level_count, base_tags,  $
+    MVN_KP_TAG_VERIFY, insitu_in, tag[i],base_tag_count, first_level_count, base_tags,  $
       first_level_tags, check, level0_index, level1_index, tag_array
       
     ;; If we didn't find the tag in the input structure, exit now
@@ -154,7 +174,7 @@ if keyword_set(tag) then begin                  ;IF A TAG NAME OR NUMBER IS SET,
     
   endfor
   print,strtrim(string(counter),2),' records found that meet the search criteria.'
-  kp_data_out = kp_data_temp
+  insitu_out = kp_data_temp
   
 endif       ;END OF ALL SEARCH ROUTINES
 

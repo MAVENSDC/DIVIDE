@@ -1,31 +1,82 @@
 ;+
-; Searches the input line of INSITU kp data based on the search parameters
+; :Name: mvn_kp_iuvs_search
+; 
+; :Author: Kris Larsen & John Martin
+; 
+; 
+; :Description:
+;    Searches input IUVS KP data structure based on min and/or max search parameters
 ;
 ; :Params:
-;    KP_data : in, required, type=structure
-;       the named structure for the KP data
-;    kp_data_out: out, require, type=structure
-;       the named structure with the data that meets search criteria
+;    iuvs_in: in, required, type=array of structures
+;       IUVS KP data structure (data structure output from mvn_kp_read)
+;    iuvs_out: out, required, type=array of structures
+;       output KP data structure containing datat that met all search criteria
+;
 ; :Keywords:
-;    tag: in, required, type=intarr/strarr
-;       the name, or names, of the IUVS data parameter (or integer index) to search on
-;    min: in, optional, type=fltarr(ntags)
-;       the minimum value of the parameter to be searched on (or array of values)
-;    max: in, optional, type=fltarr(ntags)
-;       the maximum value of the parameter to be searced on (or array of values)
-;    range: in, optional, type=boolean
-;       if present, will simply list the start and end times of the passed data structure
 ;    list: in, optional, type=boolean
-;       if present, will simply list the available structure tags within the KP data structure
-;    debug: in, optional, type=boolean
-;       optional keyword to execute in "debug" mode. On errors, IDL will halt in place so the user can
-;       have a chance to see what's going on. By default this will not occur, instead error handlers
-;       are setup and errors will return to main.
-;       ;-
+;       List out possible tags names to search (& index identifiers associated with tags). No
+;       search performed. If no observation keyword supplied, will only list “common” variables 
+;       (geometry values which exist in all observation modes). If observation keyword supplied, 
+;       will also list tags for that observation mode. 
+;    
+;    tag: in, optional, type=intarr/strarr
+;       Required if /list keyword not supplied. The name, or names, of the IUVS data parameter
+;       (or integer index) to search on. Use /list keyword to see possible names or index integers
+;       to search on.
+;    
+;    observation: in, optional, type=string
+;       Specify a specific observation to either list or search within.
+;    
+;    species: in, optional, type=string
+;       Specify a species to search. Only applicable if searching a tag which has multiple species 
+;       (CO2, CO, H, O, C, N, N2 for periapse scale_height)
+;    
+;    min: in, optional, type=fltarr
+;       the minimum value of the parameter to be searched on (or array of values).
+;       One or more minimum values. If multiple tags input & multiple min values input, each min
+;       value will correspond with each tag (by array position). If multiple tags & one min value,
+;       the min value is used for all tags. Cannot enter more min values than tags.
+;    
+;    max: in, optional, type=fltarr
+;       the maximum value of the parameter to be searced on (or array of values)
+;       One or more maximum values. If multiple tags input & multiple max values input, each max
+;       value will correspond with each tag (by array position). If multiple tags & one max value,
+;       the max value is used for all tags. Cannot enter more max values than tags.
+;    
+;    altitude: in, optional, type=fltarr(2)
+;       Narrow down altitude bins to search within. Provide min/max as two item array. Only 
+;       applicable if searching for a tag that is binned by altitude (e.g. Periapse radiance values)
+;    
+;    range: in, optional, type=boolean
+;       Print out orbit number for first and last element of input data structure.
+;       
+;    debug:  in, optional, type=boolean
+;       On error, - "Stop immediately at the statement that caused the error and print
+;       the current program stack." If not specified, error message will be printed and
+;       IDL with return to main program level and stop.
+;       
+;       
+;       
+;       
+;    Note: When searching for common geometry values, if any observation mode during an orbit matches
+;    the search criteria, that orbit will be considered a match. All observation modes are kept and 
+;    stored in the iuvs_out data structure for that matching orbit, even if only one observation mode 
+;    had the common geometry value match the criteria. To see which observation mode matched the common 
+;    search, a new structure tag is added at the top level of the iuvs_out data structure 'MATCHING_OBS' 
+;    with a string containing which observation modes matched the common search criteria. If an observation 
+;    is sepcified (using the observation keyword), any common gemoetry value is still searched accross all 
+;    observation modes - not just the observation mode that was specified. If you want to search for a 
+;    common geometry value, only in a specific set of observation modes, then use mvn_kp_read, with 
+;    /iuvs_[mode] keywords to read in only the IUVS observation modes you want to search. Then use this 
+;    IUVS data structure, which only contains the observation modes you want to search, as the input to
+;    mvn_kp_iuvs_search. 
+;
+;-
 
 
-
-pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observation=observation, species=species, index_species=index_species
+pro MVN_KP_IUVS_TAG_PARSER, kp_data, input_tag, common_tag, level1_index, observation=observation, $
+                            species=species, index_species=index_species
 
 
   iuvs_data_info = MVN_KP_CONFIG(/IUVS_DATA)
@@ -199,7 +250,7 @@ pro MVN_KP_IUVS_TAG_LIST_COMMON, data
   common_tags_num = iuvs_data_info.num_common
   common_tags = tag_names(data.(0))
   
-  ;if dataset eq 'INSITU' then begin
+
   print, 'Common geometry fields available for searching accross all observations as follows'
   print,'*********************************************'
   print,''
@@ -677,7 +728,7 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, observation_name, measure
 end
 
 
-pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observation=observation, $
+pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observation=observation, $
                           min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude
 
   ; IF NOT IN DEBUG, SETUP ERROR HANDLER
@@ -707,52 +758,52 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observa
   if keyword_set(observation) then begin
     
     observation_name = strupcase(strtrim(observation,2))
-    observation_tags = tag_names(kp_data)
+    observation_tags = tag_names(iuvs_in)
    
     
     case observation_name of
       'PERIAPSE': begin
-        kp_data_obs = kp_data.periapse
+        kp_data_obs = iuvs_in.periapse
         kp_data_obs_index = where(observation_tags eq 'PERIAPSE',  counter)
         kp_data_str = "Periapse"
       end
       'CORONAECHELLEHIGH': begin
-        kp_data_obs = kp_data.corona_e_high
+        kp_data_obs = iuvs_in.corona_e_high
         kp_data_obs_index = where(observation_tags eq 'CORONA_E_HIGH',  counter)
         kp_data_str = "Corona Echelle High"
       end
       'CORONAECHELLELIMB': begin
-        kp_data_obs = kp_data.corona_e_limb
+        kp_data_obs = iuvs_in.corona_e_limb
         kp_data_obs_index = where(observation_tags eq 'CORONA_E_LIMB',  counter)
         kp_data_str = "Corona Echelle Limb"
       end
       'CORONAECHELLEDISK': begin
-        kp_data_obs = kp_data.corona_e_disk
+        kp_data_obs = iuvs_in.corona_e_disk
         kp_data_obs_index = where(observation_tags eq 'CORONA_E_DISK',  counter)
         kp_data_str = "Corona Echelle Disk"
       end
       'CORONALORESHIGH': begin
-        kp_data_obs = kp_data.corona_lo_high
+        kp_data_obs = iuvs_in.corona_lo_high
         kp_data_obs_index = where(observation_tags eq 'CORONA_LO_HIGH',  counter)
         kp_data_str = "Corona Lores High"
       end
       'CORONALORESLIMB': begin
-         kp_data_obs = kp_data.corona_lo_limb
+         kp_data_obs = iuvs_in.corona_lo_limb
          kp_data_obs_index = where(observation_tags eq 'CORONA_LO_LIMB',  counter)
          kp_data_str = "Corona Lores Limb"
       end
       'CORONALORESDISK': begin
-        kp_data_obs = kp_data.corona_lo_disk
+        kp_data_obs = iuvs_in.corona_lo_disk
         kp_data_obs_index = where(observation_tags eq 'CORONA_LO_DISK',  counter)
         kp_data_str = "Corona Lores Disk"
       end
       'APOAPSE': begin
-         kp_data_obs = kp_data.apoapse
+         kp_data_obs = iuvs_in.apoapse
          kp_data_obs_index = where(observation_tags eq 'APOAPSE',  counter)
          kp_data_str = "Apoapse"
       end
       'STELLAROCC' : begin
-         kp_data_obs = kp_data.stellarocc
+         kp_data_obs = iuvs_in.stellarocc
          kp_data_obs_index = where(observation_tags eq 'STELLAR_OCC',  counter)
          kp_data_str = "Stellar Occultation"
       end 
@@ -786,7 +837,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observa
   ;; If keyword list supplied, only list the searchable fields and return.
   if keyword_set(list) then begin
     
-    MVN_KP_IUVS_TAG_LIST_COMMON, kp_data
+    MVN_KP_IUVS_TAG_LIST_COMMON, iuvs_in
        
     if keyword_set(observation) then begin
       MVN_KP_IUVS_TAG_LIST_MODE, kp_data_obs, kp_data_str
@@ -802,7 +853,7 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observa
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
-    MVN_KP_RANGE, kp_data
+    MVN_KP_RANGE, iuvs_in
   endif
   
   ;; If either list or range specified, return (no actual seraching done).
@@ -836,16 +887,34 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observa
     endelse
   endif
   
+  ;; If multiple tags input, check that correct number of min/max values present. If multiple tags
+  ;; and only one min and/or max, use that min/max for all tags. If the number doesn't match
+  ;; error out - don't know how to interpret that.
+  if (n_elements(tag) ne n_elements(min_value)) then begin
+    if(n_elements(min_value) eq 1) then begin
+      min_value = make_array(n_elements(tag), value=min_value)
+    endif else begin
+      message, "If input multiple tags, number of minimum values input must be either 1 or equal to number of tags"
+    endelse
+  endif
   
+  if (n_elements(tag) ne n_elements(max_value)) then begin
+    if(n_elements(max_value) eq 1) then begin
+      max_value = make_array(n_elements(tag), value=max_value)
+    endif else begin
+      message, "If input multiple tags, number of maximum values input must be either 1 or equal to number of tags"
+    endelse
+  endif
+
 
   ;; Loop through all input tags and search for each
   meets_criteria = [-1]
-  kp_data_temp = kp_data
+  kp_data_temp = iuvs_in
   
   for i=0, n_elements(tag)-1 do begin
 
     ;; Find out if common tag and level1 index if applicable
-    mvn_kp_iuvs_tag_parser, kp_data, tag[i], common_tag, level1_index, observation = kp_data_obs, species=species, index_species=index_species
+    mvn_kp_iuvs_tag_parser, iuvs_in, tag[i], common_tag, level1_index, observation = kp_data_obs, species=species, index_species=index_species
     
     ;; If common value/tag
     if common_tag then begin
@@ -896,15 +965,15 @@ pro MVN_KP_IUVS_SEARCH,  kp_data, kp_data_out, tag=tag, species=species, observa
  
   ;; If kp_data_temp is not an integer (-1 from search) then there are results.
   if size(kp_data_temp, /type) ne 2 then begin
-    kp_data_out = kp_data_temp
+    iuvs_out = kp_data_temp
     
     ;; Fill output structure with matches
-    print, "Total matching records: "+string(n_elements(kp_data_out))
+    print, "Total matching records: "+string(n_elements(iuvs_out))
   endif else begin
   
-    ;; If no matches, return 0 in kp_data_out
+    ;; If no matches, return 0 iuvs_outout
     print, "No records match input range"
-    kp_data_out = 0
+    iuvs_out = 0
   endelse
   
   
