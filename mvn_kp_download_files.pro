@@ -1,3 +1,65 @@
+;+
+; :Name: mvn_kp_download_files
+;
+; :Author: John Martin
+;
+;
+; :Description:
+;     Download in situ or IUVS kp data files from the Maven SDC web service. Download
+;     either CDF or ASCII versions of the data files. 
+;
+;
+;
+; :Keywords:
+;    filenames: in, optional, type=string or strarr
+;       Scalar or array of filename strings to download
+;       
+;    list_files: in, optional, type=boolean
+;       Print to standard output a list of files instead of actually downloading
+;    
+;    insitu: in, optional, type=boolean
+;       Search/download in situ KP data files
+;
+;    iuvs: in, optional, type=boolean
+;       Search/download IUVS KP data files
+;    
+;    text_files: in, optional, type=boolean
+;       Search/download ASCII (.txt) versions of the KP data files
+;
+;    cdf_files: in, optional, type=boolean
+;       Search/download CDF (.cdf) versions of the KP data files
+;    
+;    new_files: in, optional, type=boolean
+;       Only download files you don't already have saved locally
+;    
+;    start_date: in, optional, type=string
+;       Beginning of time range to search/download files. Format='YYYY-MM-DD'   
+;
+;    end_date: in, optional, type=string
+;       End of time range to search/download files. Format='YYYY-MM-DD'
+;    
+;    update_prefs: in, optional, type=boolean
+;       Before searching or downloading data, allow user to update kp_preferences.txt - which 
+;       contains paths to the in situ data and IUVS data. After selecting new paths to data folders, 
+;       search or download of data files will continue.
+;
+;    only_update_prefs: in, optional, type=boolean
+;       Allow user to update kp_preferences.txt - which contains paths to the in situ data and
+;       IUVS data. After selecting new paths to data folders, procedure will return - not
+;       downloading any data.
+;    
+;    local_dir: in, optional, type=string
+;       Specify a directory to download files to - this overrides what's stored in
+;       kp_preferences.txt
+;        
+;    debug: in, optional, type=boolean
+;       On error, - "Stop immediately at the statement that caused the error and print 
+;       the current program stack." If not specified, error message will be printed and 
+;       IDL with return to main program level and stop.
+;
+;
+;   Credit to Doug Lindholm for initial version of this procedure. 
+;-
 
 
 function mvn_kp_relative_comp, local, server  
@@ -12,15 +74,6 @@ function mvn_kp_relative_comp, local, server
   endfor
   return, server_out
 end
-
-
-
-
-; Download the files of the given type using the given query parameters.
-; If 'local_dir' is defined, save the files there, otherwise use the preferences file.
-;
-; The 'query' is directly passed to the web service.
-; See the web service documentation for valid query options.
 
 
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insitu, iuvs=iuvs, new_files=new_files, $
