@@ -104,7 +104,7 @@
 
 @mvn_kp_file_search
 @mvn_kp_time_bounds
-@mvn_loop_progress
+@mvn_kp_loop_progress
 @mvn_kp_config_file
 @mvn_kp_config
 @mvn_kp_insitu_struct_init
@@ -418,7 +418,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     for file=0,n_elements(target_KP_filenames)-1 do begin
     
       ;UPDATE THE READ STATUS BAR
-      MVN_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
+      MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
       fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
@@ -456,7 +456,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       ;; Loop through each file
       for file=0,n_elements(iuvs_filenames)-1 do begin
       
-        MVN_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
+        MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
         fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $

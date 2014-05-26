@@ -18,7 +18,7 @@
 ;     cancel: in, optional, type=integer
 ;       a way out that isn't implemented as yet.
 ;-
-pro MVN_LOOP_PROGRESS,idx,loopbot,looptop,MODVAL=modval,MESSAGE=message,$
+pro MVN_KP_LOOP_PROGRESS,idx,loopbot,looptop,MODVAL=modval,MESSAGE=message,$
                     CANCEL=cancel
 
   ;; Check ENV variable to see if we are in debug mode

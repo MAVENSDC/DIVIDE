@@ -238,12 +238,12 @@ for i=0, numElements1-1 do begin
 
   if numElements1 gt 100 then begin
     if i MOD 1000  eq 0 then begin
-      MVN_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'  
+      MVN_KP_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'  
     endif else if i eq numElements1-1 then begin
-      MVN_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'
+      MVN_KP_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'
     endif
   endif else begin
-    MVN_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'
+    MVN_KP_LOOP_PROGRESS,i,0,numElements1-1,message='Progress'
   endelse
 
 endfor

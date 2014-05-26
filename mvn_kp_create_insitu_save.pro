@@ -30,7 +30,7 @@ pro mvn_kp_create_insitu_save, infiles, outdir, debug=debug
     base = (strsplit(base, '.', /extract))[0]
     
     ;UPDATE THE READ STATUS BAR
-    MVN_LOOP_PROGRESS,file,0,n_elements(infiles)-1,message='In-Situ Save file creation progress'
+    MVN_KP_LOOP_PROGRESS,file,0,n_elements(infiles)-1,message='In-Situ Save file creation progress'
     
     ;OPEN THE KP DATA FILE
     openr,lun,infiles[file,0],/get_lun
