@@ -285,7 +285,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   for i = 0, nfiles-1 do begin
 
     ; Updated the download progress bar
-    MVN_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
+    MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
     
     ;TODO: flat or hierarchy? assume flat for now
     file = file_basename(filenames[i]) ;just the file name, no path

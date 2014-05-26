@@ -12,7 +12,7 @@
  @mvn_kp_insitu_search
  
 
-PRO REGRESSION_TEST, CDF=CDF, save_files=save_files, INSITU_SEARCH=INSITU_SEARCH, ASCII=ASCII, $
+PRO MVN_KP_REGRESSION_TEST, CDF=CDF, save_files=save_files, INSITU_SEARCH=INSITU_SEARCH, ASCII=ASCII, $
                      COMPAREINSITU=COMPAREINSITU, COMPAREIUVS=COMPAREIUVS, CREATE_TEST_SAVE=CREATE_TEST_SAVE, $
                      COMPARE_TEST_SAVE=COMPARE_TEST_SAVE
 
@@ -22,7 +22,7 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
 ; Default if no arguments passed
 if n_params() eq 0 then begin
  ; save_files="TRUE"
- ; CDF="TRUE"
+  CDF="TRUE"
   INSITU_SEARCH="TRUE"
  ; ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
@@ -112,8 +112,8 @@ if keyword_set(CREATE_TEST_SAVE) then begin
 
  
   ;; Get directory to store tes files in  
-  test_loc = routine_info('regression_test',/source)
-  test_loc_dir = strsplit(test_loc.path,'regression_test.pro',/extract,/regex)
+  test_loc = routine_info('MVN_KP_REGRESSION_TEST',/source)
+  test_loc_dir = strsplit(test_loc.path,'MVN_KP_REGRESSION_TEST.pro',/extract,/regex)
   test_loc_dir = test_loc_dir + 'known_files/'
 
 
@@ -157,8 +157,8 @@ endif
 if keyword_set(COMPARE_TEST_SAVE) then begin
   
   ;; Get directory to store tes files in
-  test_loc = routine_info('regression_test',/source)
-  test_loc_dir = strsplit(test_loc.path,'regression_test.pro',/extract,/regex)
+  test_loc = routine_info('MVN_KP_REGRESSION_TEST',/source)
+  test_loc_dir = strsplit(test_loc.path,'MVN_KP_REGRESSION_TEST.pro',/extract,/regex)
   test_loc_dir = test_loc_dir + 'known_files/'
   
 
