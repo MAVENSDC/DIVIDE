@@ -757,24 +757,34 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     
       ;DEFINE THE BASEMAP
     if keyword_set(basemap) eq 0 then begin
-      read_jpeg,install_directory+'/basemaps/MDIM_2500x1250.jpg',image     ;USE MDIM AS DEFAULT BASEMAP FOR NOW
+      if !version.os_family eq 'unix' then begin
+        bm_install_directory = install_directory+'/basemaps/'
+      endif else begin
+        bm_install_directory = install_directory+'\basemaps\'
+      endelse
+      read_jpeg,bm_install_directory+'MDIM_2500x1250.jpg',image     ;USE MDIM AS DEFAULT BASEMAP FOR NOW
       mars_base_map = 'mdim'
     endif else begin
+      if !version.os_family eq 'unix' then begin
+        bm_install_directory = install_directory+'/basemaps/'
+      endif else begin
+        bm_install_directory = install_directory+'\basemaps\'
+      endelse
       case basemap of 
         'mdim':begin
-                read_jpeg,install_directory+'/basemaps/MDIM_2500x1250.jpg',image
+                read_jpeg,bm_install_directory+'MDIM_2500x1250.jpg',image
                 mars_base_map = 'mdim
                end
         'mola': begin
-                  read_jpeg,install_directory+'/basemaps/MOLA_color_2500x1250.jpg',image
+                  read_jpeg,bm_install_directory+'MOLA_color_2500x1250.jpg',image
                   mars_base_map = 'mola'
                 end
         'mola_bw': begin
-                    read_jpeg,install_directory+'/basemaps/MOLA_bw_2500x1250.jpg',image
+                    read_jpeg,bm_install_directory+'MOLA_bw_2500x1250.jpg',image
                     mars_base_map = 'mola_bw'
                    end
         'mag': begin
-                read_jpeg,install_directory+'/basemaps/Mars_Crustal_Magnetism_MGS.jpg',image
+                read_jpeg,bm_install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
                 mars_base_map = 'mag'
                end
         else: begin
