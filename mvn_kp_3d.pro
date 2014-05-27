@@ -1709,7 +1709,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  time_index:time_index, initial_time:initial_time, time_step_size:time_step_size, $
                  base: base, $
                  level0_index: level0_index, level1_index: level1_index, $
-                 install_directory: install_directory, $
+                 install_directory: install_directory, bm_install_directory:bm_install_directory, $
                  instrument_array:instrument_array, $
                  camera_view: camera_view, maven_location:maven_location, z_position:z_position $
                  }
