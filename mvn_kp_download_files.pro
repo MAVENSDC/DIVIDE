@@ -279,19 +279,20 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     endif else print, "Invalid input. Please answer with yes or no."
   endwhile
   
-  
+
+  print, "Starting download..."  
   ; Download files one at a time. 
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
 
-    ; Updated the download progress bar
-    MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
-    
     ;TODO: flat or hierarchy? assume flat for now
     file = file_basename(filenames[i]) ;just the file name, no path
     local_file = local_dir + path_sep() + file ;all in one directory (i.e. flat)
     file_query = "file=" + file
     result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
+    
+    ; Updated the download progress bar
+    MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
     ;count failures so we can report a 'partial' status
     ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
     if size(result, /type) eq 3 then nerrs = nerrs + 1
