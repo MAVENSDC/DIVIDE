@@ -347,28 +347,28 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             (*pstate).window ->draw,(*pstate).view
                         end
                 'MDIM': begin 
-                          read_jpeg,(*pstate).install_directory+'/basemaps/MDIM_2500x1250.jpg',image
+                          read_jpeg,(*pstate).bm_install_directory+'MDIM_2500x1250.jpg',image
                           oImage = OBJ_NEW('IDLgrImage', image )
                           (*pstate).mars_base_map = 'mdim'
                           (*pstate).opolygons -> setproperty, texture_map=oimage
                           (*pstate).window->draw, (*pstate).view 
                         end
                 'MOLA': begin
-                          read_jpeg,(*pstate).install_directory+'/basemaps/MOLA_color_2500x1250.jpg',image
+                          read_jpeg,(*pstate).bm_install_directory+'MOLA_color_2500x1250.jpg',image
                           oImage = OBJ_NEW('IDLgrImage', image )
                           (*pstate).mars_base_map = 'mola'
                           (*pstate).opolygons -> setproperty, texture_map=oimage
                           (*pstate).window->draw, (*pstate).view 
                         end
                 'MOLA_BW': begin
-                             read_jpeg,(*pstate).install_directory+'/basemaps/MOLA_bw_2500x1250.jpg',image
+                             read_jpeg,(*pstate).bm_install_directory+'MOLA_bw_2500x1250.jpg',image
                              oImage = OBJ_NEW('IDLgrImage', image )
                              (*pstate).mars_base_map = 'mola_bw'
                              (*pstate).opolygons -> setproperty, texture_map=oimage
                              (*pstate).window->draw, (*pstate).view 
                            end
                 'MAG': begin
-                         read_jpeg,(*pstate).install_directory+'/basemaps/Mars_Crustal_Magnetism_MGS.jpg',image
+                         read_jpeg,(*pstate).bm_install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
                          oImage = OBJ_NEW('IDLgrImage', image )
                          (*pstate).mars_base_map = 'mag'
                          (*pstate).opolygons -> setproperty, texture_map=oimage

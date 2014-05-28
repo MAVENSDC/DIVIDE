@@ -94,9 +94,9 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=
   ;BIN THE INPUT DATA ACCORDING TO THE VARIOUS FIELDS
   
       
-      output = make_array(total_bins,/double)
-      density = make_array(total_bins,/double)
-      index = intarr(total_fields)
+      output = make_array(total_bins+1,/double)
+      density = make_array(total_bins+1,/double)
+      index = intarr(total_fields+1)
       
       for i=0, n_elements(kp_data) -1 do begin
         for j=0, total_fields-1 do begin
