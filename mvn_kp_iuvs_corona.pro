@@ -456,7 +456,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
 ;CREATE EACH PLOT
 
   ;set up the plot window
-    a=get_screen_size()
+    a=get_screen_size()*0.8
     window,0,xsize=a[0],ysize=a[1]
 
   if e_h_r eq 1 then begin        ;echelle high radiance
@@ -597,7 +597,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
   
 ;ADD THE LEGEND ALONG THE RIGHTHAND SIDE
   if (keyword_set(nolegend) eq 0) then begin
-    a=get_screen_size()
+   
     window,!window+1,xsize=a[0],ysize=a[1]
      xyouts, 0.25, 0.97, 'High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
@@ -661,7 +661,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
         endfor
       endif
       
-  window,!window+1,xsize=a[0],ysize=a[1]    
+      window,!window+1,xsize=a[0],ysize=a[1]    
       xyouts, 0.25, 0.97, 'Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
       if e_l_r eq 1 then begin

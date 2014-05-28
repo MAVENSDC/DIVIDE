@@ -35,15 +35,15 @@ pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
   
   if size(time,/type) eq 7 then begin         ;IF USER SUPPLIED STRING BASED TIME
     if size(time,/dimensions) eq 0 then begin
-      time = time_double(time)
+      time = time_double(time, tformat="YYYY-MM-DDThh:mm:ss")
       t1 = min((kp_data.time - time),begin_index,/absolute)
-      t2 = min((kp_data.time - (time + 86400l)),end_index,/absolute)      
+      t2 = min((kp_data.time - (time + 86400l)),end_index,/absolute)
     endif
     if size(time,/dimensions) eq 2 then begin
-      time1 = time_double(time[0])
-      time2 = time_double(time[1])
+      time1 = time_double(time[0], tformat="YYYY-MM-DDThh:mm:ss")
+      time2 = time_double(time[1], tformat="YYYY-MM-DDThh:mm:ss")
       t1 = min((kp_data.time - time1),begin_index,/absolute)
-      t2 = min((kp_data.time - time2),end_index,/absolute)      
+      t2 = min((kp_data.time - time2),end_index,/absolute) 
     endif
   endif
   
