@@ -116,9 +116,10 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;CREATE SINGLE ALTITUDE PLOT
   
   if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
+    w = window(dimensions = [800,800])
     if n_elements(parameter) eq 1 then begin
      plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                   title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log)
+                   title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,/current)
     endif
   endif
   if directgraphic ne 0 then begin                                    ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
@@ -175,10 +176,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 
   ;CREATE THE MULTPLE ALTITUDE PLOT
   
+
+  
   if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
     if n_elements(parameter) gt 1 then begin
-      plot1 = plot(x[0,*],y, ytitle='Spacecraft Altitude, km',xtitle=x_axis_title[0], layout=[n_elements(parameter),1,1],nodata=1,$
-                   title=title[0],xlog=xaxis_log)
+    w = window(dimensions = [800,800])
       for i = 0, n_elements(parameter) -1 do begin
        plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i], layout=[n_elements(parameter),1,i+1],/current,$
                     title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log)
@@ -264,7 +266,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
   if directgraphic eq 0 then begin
   ;   if n_elements(parameter) gt 1 then begin
       oplot_index = 0
-       w = window(window_title='Altitude Plots',dimensions=[800,600])
+       w = window(window_title='Altitude Plots',dimensions=[800,800])
       for i = 0, n_elements(parameter) -1 do begin
         if plot_count[i] eq 1 then begin
           plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index], layout=[n_elements(parameter),1,i+1],/current,$
