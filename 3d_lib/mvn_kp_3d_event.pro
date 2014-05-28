@@ -1084,8 +1084,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                          end
                          
         'vector_field': begin
+                          index = widget_info(event.id, /droplist_select)
                           widget_control, event.id, get_value=newval
-                          case newval of
+                          case newval(index) of
                             'Magnetic Field': begin
                                                  (*pstate).vector_path->getproperty,data=old_data
                                                  if (*pstate).coord_sys eq 0 then begin
@@ -1132,32 +1133,32 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                      end
-                            'STATIC H+ Flow Velocity': begin
-                                                        (*pstate).vector_path->getproperty,data=old_data
-                                                        if (*pstate).coord_sys eq 0 then begin
-                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                            old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                            old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                            old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                  ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
-                                                          endfor
-                                                        endif
-                                                        if (*pstate).coord_sys eq 1 then begin
-                                                          for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                            old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msox
-                                                            old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoy
-                                                            old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoz
-                                                          endfor
-                                                        endif
-                                                        MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
-                                                        (*pstate).vector_path->setproperty,data=old_data
-                                                        (*pstate).window->draw,(*pstate).view
-                                                       end
+                          ;  'STATIC H+ Flow Velocity': begin
+                          ;                              (*pstate).vector_path->getproperty,data=old_data
+                          ;                              if (*pstate).coord_sys eq 0 then begin
+                          ;                                for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                          ;                                  old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t13)
+                          ;                                  old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t23)
+                          ;                                  old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hplus_flow_v_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                          ;                                                        ((*pstate).insitu[i].static.hplus_flow_v_msoz*(*pstate).insitu[i].spacecraft.t33)
+                          ;                                endfor
+                          ;                              endif
+                          ;                              if (*pstate).coord_sys eq 1 then begin
+                          ;                                for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                          ;                                  old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msox
+                          ;                                  old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoy
+                          ;                                  old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_flow_v_msoz
+                          ;                                endfor
+                          ;                              endif
+                          ;                              MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
+                          ;                              (*pstate).vector_path->setproperty,data=old_data
+                          ;                              (*pstate).window->draw,(*pstate).view
+                          ;                             end
                             'STATIC O+ Flow Velocity': begin
                                                         (*pstate).vector_path->getproperty,data=old_data
                                                         if (*pstate).coord_sys eq 0 then begin
@@ -1210,156 +1211,156 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                           (*pstate).vector_path->setproperty,data=old_data
                                                           (*pstate).window->draw,(*pstate).view
                                                         end  
-                            'STATIC H+/He++ Characteristic Direction': begin
+                            'STATIC H+ Characteristic Direction': begin
                                                                           (*pstate).vector_path->getproperty,data=old_data
                                                                           if (*pstate).coord_sys eq 0 then begin
                                                                             for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                              old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                                              old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                                              old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hhe_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                                    ((*pstate).insitu[i].static.hhe_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                                              old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.hplus_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                                              old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.hplus_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                                              old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.hplus_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                                    ((*pstate).insitu[i].static.hplus_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                                             endfor    
                                                                           endif 
                                                                           if (*pstate).coord_sys eq 1 then begin
                                                                             for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msox
-                                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoy
-                                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hhe_char_dir_msoz
+                                                                              old_data[0,(i*2)+1] = (*pstate).insitu[i].static.hplus_char_dir_msox
+                                                                              old_data[1,(i*2)+1] = (*pstate).insitu[i].static.hplus_char_dir_msoy
+                                                                              old_data[2,(i*2)+1] = (*pstate).insitu[i].static.hplus_char_dir_msoz
                                                                             endfor
                                                                           endif
                                                                           MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                                           (*pstate).vector_path->setproperty,data=old_data
                                                                           (*pstate).window->draw,(*pstate).view
                                                                        end
-                            'STATIC Pickup Ion Characteristic Direction': begin
+                            'STATIC Dominant Ion Characteristic Direction': begin
                                                                             (*pstate).vector_path->getproperty,data=old_data
                                                                             if (*pstate).coord_sys eq 0 then begin
                                                                               for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                                old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                                                old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                                                old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                                      ((*pstate).insitu[i].static.pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                                                old_data[0,(i*2)+1] = ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                                                old_data[1,(i*2)+1] = ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                                                old_data[2,(i*2)+1] = ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                                      ((*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                                               endfor
                                                                             endif
                                                                             if (*pstate).coord_sys eq 1 then begin
                                                                               for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                                                old_data[0,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msox
-                                                                                old_data[1,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoy
-                                                                                old_data[2,(i*2)+1] = (*pstate).insitu[i].static.pickup_ion_char_dir_msoz
+                                                                                old_data[0,(i*2)+1] = (*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msox
+                                                                                old_data[1,(i*2)+1] = (*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoy
+                                                                                old_data[2,(i*2)+1] = (*pstate).insitu[i].static.dominant_pickup_ion_char_dir_msoz
                                                                               endfor
                                                                             endif
                                                                             MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                                             (*pstate).vector_path->setproperty,data=old_data
                                                                             (*pstate).window->draw,(*pstate).view 
                                                                           end
-                            'SEP Look Direction 1': begin
+                            'SEP Look Direction 1 Front': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
                                                       if (*pstate).coord_sys eq 0 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_1_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_front_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_front_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_front_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_front_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if (*pstate).coord_sys eq 1 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_msoz
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_front_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_front_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_front_msoz
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view 
                                                     end     
-                            'SEP Look Direction 2': begin
+                            'SEP Look Direction 1 Back': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
                                                       if (*pstate).coord_sys eq 0 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_2_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_back_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_back_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_1_back_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_1_back_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if (*pstate).coord_sys eq 1 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_msoz
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_back_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_back_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_1_back_msoz
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                     end
-                            'SEP Look Direction 3': begin
+                            'SEP Look Direction 2 Front': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
                                                       if (*pstate).coord_sys eq 0 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_3_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_3_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_front_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_front_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_front_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_front_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if (*pstate).coord_sys eq 1 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_3_msoz
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_front_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_front_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_front_msoz
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
                                                       (*pstate).vector_path->setproperty,data=old_data
                                                       (*pstate).window->draw,(*pstate).view
                                                     end
-                            'SEP Look Direction 4': begin
+                            'SEP Look Direction 2 Back': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
                                                       if (*pstate).coord_sys eq 0 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t11)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t12)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t21)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t22)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_4_msox*(*pstate).insitu[i].spacecraft.t31)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoy*(*pstate).insitu[i].spacecraft.t32)+$
-                                                                                ((*pstate).insitu[i].sep.look_direction_4_msoz*(*pstate).insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_back_msox*(*pstate).insitu[i].spacecraft.t11)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoy*(*pstate).insitu[i].spacecraft.t12)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoz*(*pstate).insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_back_msox*(*pstate).insitu[i].spacecraft.t21)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoy*(*pstate).insitu[i].spacecraft.t22)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoz*(*pstate).insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = ((*pstate).insitu[i].sep.look_direction_2_back_msox*(*pstate).insitu[i].spacecraft.t31)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoy*(*pstate).insitu[i].spacecraft.t32)+$
+                                                                                ((*pstate).insitu[i].sep.look_direction_2_back_msoz*(*pstate).insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if (*pstate).coord_sys eq 1 then begin
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msox
-                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoy
-                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_4_msoz
+                                                          old_data[0,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_back_msox
+                                                          old_data[1,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_back_msoy
+                                                          old_data[2,(i*2)+1] = (*pstate).insitu[i].sep.look_direction_2_back_msoz
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale

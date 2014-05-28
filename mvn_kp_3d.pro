@@ -29,7 +29,8 @@
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
-               view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid
+               view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid, $
+               scale_factor=scale_factor
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -331,21 +332,27 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   
   ;BUILD THE WIDGET
 
+    if keyword_set(scale_factor) then begin
+      scale_factor = scale_factor
+    endif else begin
+      scale_factor = 1.0
+    endelse
+
     ;set the size of the draw window
     if keyword_set(view_size) then begin
-      xsize = view_size[0]
-      ysize = view_size[1]
+      draw_xsize = scale_factor*view_size[0]
+      draw_ysize = scale_factor*view_size[1]
     endif else begin
-      xsize=800
-      ysize=800
-    endelse
+        draw_xsize=scale_factor*800
+        draw_ysize=scale_factor*800
+   endelse
     
     base = widget_base(title='MAVEN Key Parameter Visualization',/column)
     subbase = widget_base(base,/row)
 
       ;BASE AND VISUALIZATION WINDOW
       subbaseL = widget_base(subbase)
-      draw = widget_draw(subbaseL, xsize=xsize, ysize=ysize, graphics_level=2, $
+      draw = widget_draw(subbaseL, xsize=scale_factor*draw_xsize, ysize=scale_factor*draw_ysize, graphics_level=2, $
                          /button_events, /motion_events, /wheel_events, uname='draw',$
                          retain=0, renderer=0)
     
@@ -357,97 +364,97 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       subbaseR = widget_base(subbase)
        subbaseR1 = widget_base(subbaseR,/column)
         button1 = widget_button(subbaseR1, value='Mars/Label Options', uname='mars',$
-                                xsize=300, ysize=30)
-        button1 = widget_button(subbaseR1, value='In-Situ Scalar Data', uname='insitu', xsize=300, ysize=30)
+                                xsize=scale_factor*300, ysize=scale_factor*30)
+        button1 = widget_button(subbaseR1, value='In-Situ Scalar Data', uname='insitu', xsize=scale_factor*300, ysize=scale_factor*30)
         if (instrument_array[1] eq 1) or (instrument_array[2] eq 1) or (instrument_array[4] eq 1) or (instrument_array[5] eq 1) then begin
-          button1 = widget_button(subbaseR1, value='In-Situ Vector Data', uname='insitu_vector', xsize=300,ysize=30)
+          button1 = widget_button(subbaseR1, value='In-Situ Vector Data', uname='insitu_vector', xsize=scale_factor*300,ysize=scale_factor*30)
         endif
         if instrument_array[7] eq 1 then begin
-          button1 = widget_button(subbaseR1, value='IUVS Data', uname='iuvs', xsize=300, ysize=30)
+          button1 = widget_button(subbaseR1, value='IUVS Data', uname='iuvs', xsize=scale_factor*300, ysize=scale_factor*30)
         endif
-        button1 = widget_button(subbaseR1, value='Viewing Geometries', uname='views', xsize=300, ysize=30)
-        button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=300,ysize=30)
-        button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=300,ysize=30)
-        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=300, ysize=30, sensitive=0)
-        button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=300,ysize=30)       
+        button1 = widget_button(subbaseR1, value='Viewing Geometries', uname='views', xsize=scale_factor*300, ysize=scale_factor*30)
+        button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=scale_factor*300,ysize=scale_factor*30)
+        button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=scale_factor*300,ysize=scale_factor*30)
+        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=scale_factor*300, ysize=scale_factor*30, sensitive=0)
+        button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=scale_factor*300,ysize=scale_factor*30)       
  
       ;TIME BAR ACROSS THE BOTTOM
 
         tbase = widget_base(base,/row)
-        timebarbase = widget_base(tbase, /column,/frame, /align_left, xsize=1000)
+        timebarbase = widget_base(tbase, /column,/frame, /align_left, xsize=scale_factor*1000)
         time_min = start_time                     ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
         time_max = end_time
-        timelabelbase = widget_base(timebarbase, xsize=1000, ysize=20, /row)
-        label5 = widget_label(timelabelbase, value=strtrim(string(time_string(time_min,format=4)),2), scr_xsize=200, /align_left)
-        label6 = widget_label(timelabelbase, value='Time Range', /align_center, scr_xsize=590)
-        label7 = widget_label(timelabelbase, value=strtrim(string(time_string(time_max,format=4)),2), scr_xsize=200, /align_right)
+        timelabelbase = widget_base(timebarbase, xsize=scale_factor*1000, ysize=scale_factor*20, /row)
+        label5 = widget_label(timelabelbase, value=strtrim(string(time_string(time_min,format=4)),2), scr_xsize=scale_factor*200, /align_left)
+        label6 = widget_label(timelabelbase, value='Time Range', /align_center, scr_xsize=scale_factor*590)
+        label7 = widget_label(timelabelbase, value=strtrim(string(time_string(time_max,format=4)),2), scr_xsize=scale_factor*200, /align_right)
         timeline = cw_fslider(timebarbase, /drag, maximum=time_max, minimum=time_min, /double, $
-                              uname='time', title='Displayed Time',xsize=1000,/edit,/suppress_value)
+                              uname='time', title='Displayed Time',xsize=scale_factor*1000,/edit,/suppress_value)
         tbase1 = widget_base(tbase,/column,/align_center)
         label1 = widget_label(tbase1, value='Step Size')
-        text1 = widget_text(tbase1, value=strtrim(string(time_step_size),2), uname='timestep_define',/editable,xsize=7,ysize=1,/align_center)
+        text1 = widget_text(tbase1, value=strtrim(string(time_step_size),2), uname='timestep_define',/editable,xsize=scale_factor*7,ysize=scale_factor*1,/align_center)
         tbase2 = widget_base(tbase1,/row)
-        button1 = widget_button(tbase2, value='-', uname='timeminusone',xsize=50) 
-        button1 = widget_button(tbase2, value='+', uname='timeplusone',xsize=50)                     
+        button1 = widget_button(tbase2, value='-', uname='timeminusone',xsize=scale_factor*50) 
+        button1 = widget_button(tbase2, value='+', uname='timeplusone',xsize=scale_factor*50)                     
         widget_control,timeline,set_value=mid_time
         
        ;MARS GLOBE/LABEL OPTIONS MENU 
        subbaseR2 = widget_base(subbaseR,/column)
        marsbase = widget_base(subbaseR2,/column)
 ;       ;BASEMAP OPTIONS
-        button1 = widget_button(marsbase, value='Spacecraft Orbit Track', uname='orbit_onoff', xsize=300, ysize=30)
+        button1 = widget_button(marsbase, value='Spacecraft Orbit Track', uname='orbit_onoff', xsize=scale_factor*300, ysize=scale_factor*30)
         label1 = widget_label(marsbase, value='Basemap')
         basemapbase = widget_base(marsbase, /column,/frame,/exclusive)
-          button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=300,ysize=30, /no_release)
+          button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)
           mars_base_map = 'mdim'
           widget_control,button1, /set_button                  
-          button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=300,ysize=30, /no_release)                  
-          button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=300,ysize=30, /no_release)                  
-          button1 = widget_button(basemapbase, value='MAG',uname='basemap1',xsize=300,ysize=30, /no_release)
-          button1 = widget_button(basemapbase, value='BLANK',uname='basemap1',xsize=300,ysize=30, /no_release) 
-          button1 = widget_button(basemapbase, value='User Defined',uname='basemap1',xsize=300,ysize=30, /no_release)                                          
+          button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                  
+          button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                  
+          button1 = widget_button(basemapbase, value='MAG',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)
+          button1 = widget_button(basemapbase, value='BLANK',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release) 
+          button1 = widget_button(basemapbase, value='User Defined',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                                          
 ;      ;LABEL OPTIONS
         label2 = widget_label(marsbase, value='Label Options')
         gridbase = widget_base(marsbase, /column,/frame)
-        button2 = widget_button(gridbase, value='Grid',uname='grid', xsize=300,ysize=30)
-        button2 = widget_button(gridbase, value='Sub-Solar Point', uname='subsolar',xsize=300,ysize=30)
-        button2 = widget_button(gridbase, value='Sub-Spacecraft', uname='submaven', xsize=300,ysize=30)
-        button2 = widget_button(gridbase, value='Terminator', uname='terminator', xsize=300,ysize=30,sensitive=0)
-        button2 = widget_button(gridbase, value='Sun Vector', uname='sunvector', xsize=300, ysize=30)
-        button2 = widget_button(gridbase, value='Planet Axes', uname='axes', xsize=300, ysize=30)
-        button2 = widget_button(gridbase, value='Parameters', uname='parameters', xsize=300, ysize=30)
-        button2 = widget_button(gridbase, value='Plotted Values', uname='orbitPlotName', xsize=300, ysize=30)
+        button2 = widget_button(gridbase, value='Grid',uname='grid', xsize=scale_factor*300,ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Sub-Solar Point', uname='subsolar',xsize=scale_factor*300,ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Sub-Spacecraft', uname='submaven', xsize=scale_factor*300,ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Terminator', uname='terminator', xsize=scale_factor*300,ysize=scale_factor*30,sensitive=0)
+        button2 = widget_button(gridbase, value='Sun Vector', uname='sunvector', xsize=scale_factor*300, ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Planet Axes', uname='axes', xsize=scale_factor*300, ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Parameters', uname='parameters', xsize=scale_factor*300, ysize=scale_factor*30)
+        button2 = widget_button(gridbase, value='Plotted Values', uname='orbitPlotName', xsize=scale_factor*300, ysize=scale_factor*30)
         
        ;COLOR OPTIONS
         label2 = widget_label(marsbase, value='Background Color Options')
         gridbase1 = widget_base(marsbase,/column,/frame)
         loadct,0,/silent
-        bgcolor = cw_clr_index(gridbase1, uname ='background_color',color_values=bg_colors,xsize=210,ysize=30)
+        bgcolor = cw_clr_index(gridbase1, uname ='background_color',color_values=bg_colors,xsize=scale_factor*210,ysize=scale_factor*30)
         
        ;ambient light slider
         label2 = widget_label(marsbase, value='Ambient Light Level')
-        slider2 = widget_slider(marsbase, frame=2, maximum=100, minimum=0, xsize=300,ysize=33,uname='ambient', value=50)
+        slider2 = widget_slider(marsbase, frame=2, maximum=100, minimum=0, xsize=scale_factor*300,ysize=scale_factor*33,uname='ambient', value=50)
          
-        button2 = widget_button(marsbase, value='Return',uname='mars_return', xsize=300,ysize=30)             
+        button2 = widget_button(marsbase, value='Return',uname='mars_return', xsize=scale_factor*300,ysize=scale_factor*30)             
 
         ;VIEWING GEOMETRY OPTIONS MENU
         subbaseR3 = widget_base(subbaseR,/column)
           label3 = widget_label(subbaseR3, value='Camera Options', /align_center)
           subbaseR3a = widget_base(subbaseR3,/column,/exclusive,/frame)
-            button3a = widget_button(subbaseR3a, value='Free-view Camera', uname='camera', xsize=300, ysize=30, /no_release)
+            button3a = widget_button(subbaseR3a, value='Free-view Camera', uname='camera', xsize=scale_factor*300, ysize=scale_factor*30, /no_release)
               if camera_view eq 0 then widget_control, button3a, /set_button
-            button3b = widget_button(subbaseR3a, value='Spacecraft Camera', uname='camera', xsize=300, ysize=30, /no_release)
+            button3b = widget_button(subbaseR3a, value='Spacecraft Camera', uname='camera', xsize=scale_factor*300, ysize=scale_factor*30, /no_release)
               if camera_view eq 1 then widget_control, button3b, /set_button
           label3 = widget_label(subbaseR3,value='Coordinate Systems', /align_center)
           subbaseR3b = widget_base(subbaseR3,/column,/exclusive,/frame)
-            button3c = widget_button(subbaseR3b, value='Planetocentric', uname='coordinates', xsize=300,ysize=30,/no_release)
+            button3c = widget_button(subbaseR3b, value='Planetocentric', uname='coordinates', xsize=scale_factor*300,ysize=scale_factor*30,/no_release)
               if coord_sys eq 0 then widget_control,button3c, /set_button
-            button3d = widget_button(subbaseR3b, value='Mars-Sun', uname='coordinates', xsize=300,ysize=30,/no_release)
+            button3d = widget_button(subbaseR3b, value='Mars-Sun', uname='coordinates', xsize=scale_factor*300,ysize=scale_factor*30,/no_release)
               if coord_sys eq 1 then widget_control, button3d, /set_button
               
           widget_control,subbaseR3a, sensitive=0
           
-          button3 = widget_button(subbaseR3, value='Return',uname='view_return', xsize=300,ysize=30)             
+          button3 = widget_button(subbaseR3, value='Return',uname='view_return', xsize=scale_factor*300,ysize=scale_factor*30)             
  
  
  
@@ -455,74 +462,74 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         subbaseR4 = widget_base(subbaseR, /column)
           label4 = widget_label(subbaseR4, value='Atmosphere Shells', /align_center)
           modbase1 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase1, value='Level 1', uname='atmLevel1', xsize=70, ysize=30)
-            button41c = widget_button(modbase1, value='Load', uname='atmLevel1Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase1, value='Level 1', uname='atmLevel1', xsize=scale_factor*70, ysize=scale_factor*30)
+            button41c = widget_button(modbase1, value='Load', uname='atmLevel1Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel1height = 100
-            button41a = widget_text(modbase1, value=strtrim(string(atmlevel1height),2), uname='atmLevel1height',/editable,xsize=7,ysize=1,sensitive=0)
+            button41a = widget_text(modbase1, value=strtrim(string(atmlevel1height),2), uname='atmLevel1height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase1, value='km')
             atmlevel1alpha = 100
-            button41b = widget_text(modbase1, value=strtrim(string(atmlevel1alpha),2), uname='atmLevel1alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button41b = widget_text(modbase1, value=strtrim(string(atmlevel1alpha),2), uname='atmLevel1alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase1, value='%')
           modbase2 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase2, value='Level 2', uname='atmLevel2', xsize=70, ysize=30)
-            button42c = widget_button(modbase2, value='Load', uname='atmLevel2Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase2, value='Level 2', uname='atmLevel2', xsize=scale_factor*70, ysize=scale_factor*30)
+            button42c = widget_button(modbase2, value='Load', uname='atmLevel2Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel2height = 200
-            button42a = widget_text(modbase2, value=strtrim(string(atmlevel2height),2), uname='atmLevel2height',/editable,xsize=7,ysize=1,sensitive=0)
+            button42a = widget_text(modbase2, value=strtrim(string(atmlevel2height),2), uname='atmLevel2height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase2, value='km')
             atmlevel2alpha = 100
-            button42b = widget_text(modbase2, value=strtrim(string(atmlevel2alpha),2), uname='atmLevel2alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button42b = widget_text(modbase2, value=strtrim(string(atmlevel2alpha),2), uname='atmLevel2alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase2, value='%')       
           modbase3 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase3, value='Level 3', uname='atmLevel3', xsize=70, ysize=30)
-            button43c = widget_button(modbase3, value='Load', uname='atmLevel3Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase3, value='Level 3', uname='atmLevel3', xsize=scale_factor*70, ysize=scale_factor*30)
+            button43c = widget_button(modbase3, value='Load', uname='atmLevel3Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel3height = 300
-            button43a = widget_text(modbase3, value=strtrim(string(atmlevel3height),2), uname='atmLevel3height',/editable,xsize=7,ysize=1,sensitive=0)
+            button43a = widget_text(modbase3, value=strtrim(string(atmlevel3height),2), uname='atmLevel3height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase3, value='km')
             atmlevel3alpha = 100
-            button43b = widget_text(modbase3, value=strtrim(string(atmlevel3alpha),2), uname='atmLevel3alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button43b = widget_text(modbase3, value=strtrim(string(atmlevel3alpha),2), uname='atmLevel3alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase3, value='%')    
           modbase4 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase4, value='Level 4', uname='atmLevel4', xsize=70, ysize=30)
-            button44c = widget_button(modbase4, value='Load', uname='atmLevel4Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase4, value='Level 4', uname='atmLevel4', xsize=scale_factor*70, ysize=scale_factor*30)
+            button44c = widget_button(modbase4, value='Load', uname='atmLevel4Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel4height = 400
-            button44a = widget_text(modbase4, value=strtrim(string(atmlevel4height),2), uname='atmLevel4height',/editable,xsize=7,ysize=1,sensitive=0)
+            button44a = widget_text(modbase4, value=strtrim(string(atmlevel4height),2), uname='atmLevel4height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase4, value='km')
             atmlevel4alpha = 100
-            button44b = widget_text(modbase4, value=strtrim(string(atmlevel4alpha),2), uname='atmLevel4alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button44b = widget_text(modbase4, value=strtrim(string(atmlevel4alpha),2), uname='atmLevel4alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase4, value='%') 
           modbase5 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase5, value='Level 5', uname='atmLevel5', xsize=70, ysize=30)
-            button45c = widget_button(modbase5, value='Load', uname='atmLevel5Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase5, value='Level 5', uname='atmLevel5', xsize=scale_factor*70, ysize=scale_factor*30)
+            button45c = widget_button(modbase5, value='Load', uname='atmLevel5Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel5height = 500
-            button45a = widget_text(modbase5, value=strtrim(string(atmlevel5height),2), uname='atmLevel5height',/editable,xsize=7,ysize=1,sensitive=0)
+            button45a = widget_text(modbase5, value=strtrim(string(atmlevel5height),2), uname='atmLevel5height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase5, value='km')
             atmlevel5alpha = 100
-            button45b = widget_text(modbase5, value=strtrim(string(atmlevel5alpha),2), uname='atmLevel5alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button45b = widget_text(modbase5, value=strtrim(string(atmlevel5alpha),2), uname='atmLevel5alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase5, value='%') 
           modbase6 = widget_base(subbaseR4, /row,/frame)
-            button4 = widget_button(modbase6, value='Level 6', uname='atmLevel6', xsize=70, ysize=30)
-            button46c = widget_button(modbase6, value='Load', uname='atmLevel6Load',xsize=50, ysize=30,sensitive=0)
+            button4 = widget_button(modbase6, value='Level 6', uname='atmLevel6', xsize=scale_factor*70, ysize=scale_factor*30)
+            button46c = widget_button(modbase6, value='Load', uname='atmLevel6Load',xsize=scale_factor*50, ysize=scale_factor*30,sensitive=0)
             atmLevel6height = 600
-            button46a = widget_text(modbase6, value=strtrim(string(atmlevel6height),2), uname='atmLevel6height',/editable,xsize=7,ysize=1,sensitive=0)
+            button46a = widget_text(modbase6, value=strtrim(string(atmlevel6height),2), uname='atmLevel6height',/editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase6, value='km')
             atmlevel6alpha = 100
-            button46b = widget_text(modbase6, value=strtrim(string(atmlevel6alpha),2), uname='atmLevel6alpha', /editable,xsize=7,ysize=1,sensitive=0)
+            button46b = widget_text(modbase6, value=strtrim(string(atmlevel6alpha),2), uname='atmLevel6alpha', /editable,xsize=scale_factor*7,ysize=scale_factor*1,sensitive=0)
             label4 = widget_label(modbase6, value='%') 
-          button4 = widget_button(subbaseR4, value='Return',uname='model_return', xsize=300,ysize=30)             
+          button4 = widget_button(subbaseR4, value='Return',uname='model_return', xsize=scale_factor*300,ysize=scale_factor*30)             
         
         
         ;OUTPUT OPTIONS
         subbaseR5 = widget_base(subbaseR, /column)
         
-          button5 = widget_button(subbaseR5, value='Save Configuration',uname='config_save',xsize=300, ysize=30)
-          button5 = widget_button(subbaseR5, value='Load Configuration',uname='config_load',xsize=300, ysize=30)
-          button5 = widget_button(subbaseR5, value='Export View',uname='save_view',xsize=300,ysize=30)
-          button5 = widget_button(subbaseR5, value='Return',uname='output_return', xsize=300,ysize=30)             
+          button5 = widget_button(subbaseR5, value='Save Configuration',uname='config_save',xsize=scale_factor*300, ysize=scale_factor*30)
+          button5 = widget_button(subbaseR5, value='Load Configuration',uname='config_load',xsize=scale_factor*300, ysize=scale_factor*30)
+          button5 = widget_button(subbaseR5, value='Export View',uname='save_view',xsize=scale_factor*300,ysize=scale_factor*30)
+          button5 = widget_button(subbaseR5, value='Return',uname='output_return', xsize=scale_factor*300,ysize=scale_factor*30)             
         
         ;HELP MENU
         subbaseR6 = widget_base(subbaseR, /column)
-          text = widget_text(subbaseR6, /scroll,xsize=45,ysize=55)
-          button6 = widget_button(subbaseR6, value='Return',uname='help_return',xsize=300,ysize=30)
+          text = widget_text(subbaseR6, /scroll,xsize=scale_factor*45,ysize=scale_factor*25)
+          button6 = widget_button(subbaseR6, value='Return',uname='help_return',xsize=scale_factor*300,ysize=scale_factor*30)
         
         ;insitu1 SCALAR DATA MENU
         subbaseR7 = widget_base(subbaseR, /column)
@@ -567,50 +574,62 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         
       
              
-            button7 = widget_button(subbaseR7, value='Plot',uname='overplots',xsize=300,ysize=30) 
+            button7 = widget_button(subbaseR7, value='Plot',uname='overplots',xsize=scale_factor*300,ysize=scale_factor*30) 
             subbaseR7c = widget_base(subbaseR7, /column, /frame)
-              button7 = widget_button(subbaseR7c, value='ColorTable',uname='colortable',xsize=300,ysize=30)
-              button7 = widget_button(subbaseR7c, value = 'Color Bar', uname='ColorBarPlot', xsize=300, ysize=30)
+              button7 = widget_button(subbaseR7c, value='ColorTable',uname='colortable',xsize=scale_factor*300,ysize=scale_factor*30)
+              button7 = widget_button(subbaseR7c, value = 'Color Bar', uname='ColorBarPlot', xsize=scale_factor*300, ysize=scale_factor*30)
               subbaseR7d = widget_base(subbaseR7c, /row)
                 label7 = widget_label(subbaseR7d, value='Min')
-                text7 = widget_text(subbaseR7d, value= string(colorbar_min), /editable,xsize=3,uname='colorbar_min')
+                text7 = widget_text(subbaseR7d, value= string(colorbar_min), /editable,xsize=scale_factor*3,uname='colorbar_min')
                 label7 = widget_label(subbaseR7d, value='Max')
-                text7 = widget_text(subbaseR7d, value=string(colorbar_max), /editable,xsize=3,uname='colorbar_max')
+                text7 = widget_text(subbaseR7d, value=string(colorbar_max), /editable,xsize=scale_factor*3,uname='colorbar_max')
                 button7 = widget_button(subbaseR7d, value='Reset', uname='colorbar_reset')
                 subbaseR7e = widget_base(subbaseR7d, /row,/exclusive)
                 button7a = widget_button(subbaseR7e, value='Linear', uname='colorbar_stretch', /no_release)
                 widget_control, button7a, /set_button
                 button7 = widget_button(subbaseR7e, value='Log', uname='colorbar_stretch', /no_release)
-          button7 = widget_button(subbaseR7, value='Return',uname='insitu_return',xsize=300,ysize=30)
+          button7 = widget_button(subbaseR7, value='Return',uname='insitu_return',xsize=scale_factor*300,ysize=scale_factor*30)
         
         ;insitu1 VECTOR DATA MENU
           subbaseR10 = widget_base(subbaseR, /column)
             
-                 button10 = widget_button(subbaseR10, value='Vector Plots', uname='vector_display',xsize=300,ysize=30)
+                 button10 = widget_button(subbaseR10, value='Vector Plots', uname='vector_display',xsize=scale_factor*300,ysize=scale_factor*30)
                  subbaseR10a = widget_base(subbaseR10, /column)
-                  subbaseR10b = widget_base(subbaseR10a, /column,/frame,/exclusive)
+                  subbaseR10b = widget_base(subbaseR10a, /column,/frame)
+                    vector_list = strarr(9)
+                    vector_list_index = 0
                    if instrument_array[4] eq 1 then begin
-                     button10 = widget_button(subbaseR10b, value='Magnetic Field', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     vector_list[vector_list_index] = 'Magnetic Field'
+                     vector_list_index = vector_list_index + 1
                    endif
                    if instrument_array[2] eq 1 then begin
-                     button10 = widget_button(subbaseR10b, value='SWIA H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     vector_list[vector_list_index] = 'SWIA H+ Flow Velocity'
+                     vector_list_index = vector_list_index + 1
                    endif
                    if instrument_array[1] eq 1 then begin
-                     button10 = widget_button(subbaseR10b, value='STATIC H+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='STATIC O+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='STATIC O2+ Flow Velocity', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='STATIC H+/He++ Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='STATIC Pickup Ion Characteristic Direction', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     vector_list[vector_list_index] = 'STATIC O2+ Flow Velocity'
+                     vector_list_index = vector_list_index + 1
+                     vector_list[vector_list_index] = 'STATIC H+ Characteristic Direction'
+                     vector_list_index = vector_list_index + 1
+                     vector_list[vector_list_index] = 'STATIC Dominant Ion Characteristic Direction'
+                     vector_list_index = vector_list_index + 1
                    endif
                    if instrument_array[5] eq 1 then begin
-                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 1', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 2', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 3', uname='vector_field', xsize=300,ysize=15, /no_release)
-                     button10 = widget_button(subbaseR10b, value='SEP Look Direction 4', uname='vector_field', xsize=300,ysize=15, /no_release)
+                     vector_list[vector_list_index] = 'SEP Look Direction 1 Front'
+                     vector_list_index = vector_list_index + 1
+                     vector_list[vector_list_index] = 'SEP Look Direction 1 Back'
+                     vector_list_index = vector_list_index + 1
+                     vector_list[vector_list_index] = 'SEP Look Direction 2 Front'
+                     vector_list_index = vector_list_index + 1
+                     vector_list[vector_list_index] = 'SEP Look Direction 2 Back'
+                     vector_list_index = vector_list_index + 1
                    endif
+                   vector_list = vector_list[0:vector_list_index-1]
+                   drop1=widget_droplist(subbaseR10b, value=vector_list, uname='vector_field',title='Vector Field',frame=5)
+                   
                    
                    label10 = widget_label(subbaseR10a, value='Vector Scale Factor, Percent')
-                   slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=300,ysize=33,uname='vec_scale', value=100)
+                   slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=scale_factor*300,ysize=scale_factor*33,uname='vec_scale', value=100)
                    vector_scale = 1.0
                    
                    subbaseR10c = widget_base(subbaseR10, /column,/frame)
@@ -666,7 +685,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10c, sensitive=0
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10d, sensitive=0
                        
-              button10 = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=300,ysize=30)
+              button10 = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=scale_factor*300,ysize=scale_factor*30)
 
 
         ;IUVS MENU
@@ -674,36 +693,36 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           if instrument_array[8] eq 1 then begin            ;PERIAPSE LIMB SCAN OPTIONS
             subbaseR8a = widget_base(subbaseR8, /column,/frame) 
               label8 = widget_label(subbaseR8a, value='Periapse Limb Scans', /align_center)
-              button8b = widget_button(subbaseR8a, value='Display All Profiles', uname='periapse_all', xsize=300, ysize=30)
+              button8b = widget_button(subbaseR8a, value='Display All Profiles', uname='periapse_all', xsize=scale_factor*300, ysize=scale_factor*30)
               subbaseR8b = widget_base(subbaseR8a, /column,sensitive=0)
                   peri_den_list = 'Density: '+strtrim(iuvs[0].periapse[0].density_id,2)
                   drop1=widget_droplist(subbaseR8b,value=peri_den_list,uname='peri_select',title='Density Profiles', frame=5)
                   peri_rad_list = 'Radiance: '+strtrim(iuvs[0].periapse[0].radiance_id,2)
                   drop1=widget_droplist(subbaseR8b,value=peri_rad_list,uname='peri_select',title='Radiance Profiles', frame=5)
-                  button8 = widget_button(subbaseR8b, value='Display Altitude Profile', uname='peri_profile', xsize=300, ysize=30)                  
-                  button8 = widget_button(subbaseR8b, value='Select Individual Scans', uname='periapse_some', xsize=300, ysize=30)
-                  slider8 = widget_slider(subbaseR8b, Title='Limb Scale Factor', uname='periapse_scaler', xsize=300,ysize=35,minimum=1,maximum=20)
+                  button8 = widget_button(subbaseR8b, value='Display Altitude Profile', uname='peri_profile', xsize=scale_factor*300, ysize=scale_factor*30)                  
+                  button8 = widget_button(subbaseR8b, value='Select Individual Scans', uname='periapse_some', xsize=scale_factor*300, ysize=scale_factor*30)
+                  slider8 = widget_slider(subbaseR8b, Title='Limb Scale Factor', uname='periapse_scaler', xsize=scale_factor*300,ysize=scale_factor*35,minimum=1,maximum=20)
           endif
           if instrument_array[9] eq 1 then begin            ;APOAPSE IMAGING OPTIONS
             subbaseR8c = widget_base(subbaseR8, /column, /frame)
        ;       label8 = widget_label(subbaseR8c, value='Apoapse Imaging', /align_center)
-              button8a = widget_button(subbaseR8c, value='Display Apoapse Images', uname='apoapse_image', xsize=300, ysize=30)
+              button8a = widget_button(subbaseR8c, value='Display Apoapse Images', uname='apoapse_image', xsize=scale_factor*300, ysize=scale_factor*30)
                subbaseR8d = widget_base(subbaseR8c, /row, sensitive=0)
                 subbaseR8e = widget_base(subbaseR8d, /column, /exclusive,/frame)
-                  button8 = widget_button(subbaseR8e, value='Ozone Depth', uname='apoapse_select', xsize=150, ysize=15, /no_release)
+                  button8 = widget_button(subbaseR8e, value='Ozone Depth', uname='apoapse_select', xsize=scale_factor*150, ysize=scale_factor*15, /no_release)
                   widget_control,button8,/set_button
-                  button8 = widget_button(subbaseR8e, value='Dust Depth', uname='apoapse_select', xsize=150, ysize=15, /no_release)
+                  button8 = widget_button(subbaseR8e, value='Dust Depth', uname='apoapse_select', xsize=scale_factor*150, ysize=scale_factor*15, /no_release)
                   apo_rad_list = 'Radiance Map: '+strtrim(iuvs[0].apoapse[0].radiance_id, 2)
                   for i=0,n_elements(apo_rad_list)-1 do begin
-                    button8 = widget_button(subbaseR8e, value=apo_rad_list[i], uname='apoapse_select', xsize=150, ysize=15)
+                    button8 = widget_button(subbaseR8e, value=apo_rad_list[i], uname='apoapse_select', xsize=scale_factor*150, ysize=scale_factor*15)
                   endfor
                 subbaseR8f = widget_base(subbaseR8d, /column, /frame)
                   label8 = widget_label(subbaseR8f, value='Blend Options',/align_center)
                   subbaseR8g = widget_base(subbaseR8f, /exclusive,/column)
-                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='None',xsize=150, ysize=15,/no_release)
+                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='None',xsize=scale_factor*150, ysize=scale_factor*15,/no_release)
                   widget_control,button8g,/set_button
                   apoapse_blend=0
-                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='Average', xsize=150, ysize=15, /no_release)
+                  button8g = widget_button(subbaseR8g, uname='apo_blend', value='Average', xsize=scale_factor*150, ysize=scale_factor*15, /no_release)
            endif
            ;CORONAL SCAN DISPLAY
            if (instrument_array[10] eq 1) or (instrument_array[11] eq 1) or (instrument_array[13] eq 1) or (instrument_array[14] eq 1) or $
@@ -713,13 +732,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                subbaseR8h1 = widget_base(subbaseR8h, /row)
                 subbaseR8ha = widget_base(subbaseR8h1, /column)
                 subbaseR8i = widget_base(subbaseR8ha, /column, /frame)
-                 if instrument_array[16] eq 1 then drop8a = widget_droplist(subbaseR8i, value=lo_disk_list, uname='corona_lo_disk', title='Lo Disk', ysize=28)
-                 if instrument_array[14] eq 1 then drop8b = widget_droplist(subbaseR8i, value=lo_limb_list, uname='corona_lo_limb', title='Lo Limb', ysize=28)
-                 if instrument_array[13] eq 1 then drop8c = widget_droplist(subbaseR8i, value=lo_high_list, uname='corona_lo_high', title='Lo High', ysize=28)
+                 if instrument_array[16] eq 1 then drop8a = widget_droplist(subbaseR8i, value=lo_disk_list, uname='corona_lo_disk', title='Lo Disk', ysize=scale_factor*28)
+                 if instrument_array[14] eq 1 then drop8b = widget_droplist(subbaseR8i, value=lo_limb_list, uname='corona_lo_limb', title='Lo Limb', ysize=scale_factor*28)
+                 if instrument_array[13] eq 1 then drop8c = widget_droplist(subbaseR8i, value=lo_high_list, uname='corona_lo_high', title='Lo High', ysize=scale_factor*28)
                 subbaseR8j = widget_base(subbaseR8ha, /column, /frame)
-                 if instrument_array[11] eq 1 then drop8d = widget_droplist(subbaseR8j, value=e_disk_list, uname='corona_e_disk', title='Ech. Disk', ysize=28)
-                 if instrument_array[15] eq 1 then drop8e = widget_droplist(subbaseR8j, value=e_limb_list, uname='corona_e_limb', title='Ech. Limb', ysize=28)
-                 if instrument_array[10] eq 1 then drop8f = widget_droplist(subbaseR8j, value=e_high_list, uname='corona_e_high', title='Ech. High', ysize=28)                 
+                 if instrument_array[11] eq 1 then drop8d = widget_droplist(subbaseR8j, value=e_disk_list, uname='corona_e_disk', title='Ech. Disk', ysize=scale_factor*28)
+                 if instrument_array[15] eq 1 then drop8e = widget_droplist(subbaseR8j, value=e_limb_list, uname='corona_e_limb', title='Ech. Limb', ysize=scale_factor*28)
+                 if instrument_array[10] eq 1 then drop8f = widget_droplist(subbaseR8j, value=e_high_list, uname='corona_e_high', title='Ech. High', ysize=scale_factor*28)                 
                subbaseR8h2 = widget_base(subbaseR8h1, /column)
                label8 = widget_label(subbaseR8h2, value='Options')
                 subbaseR8hb = widget_base(subbaseR8h2, /column, /exclusive)
@@ -727,9 +746,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 widget_control,button8h,/set_button
                 coronal_reset = 1
                 button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
+                widget_control,subbaseR8h, sensitive=0
            endif
           
-          button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=300,ysize=30)
+          button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=scale_factor*300,ysize=scale_factor*30)
           
           ;ANIMATION MENU
           subbaseR9 = widget_base(subbaseR, /column)
@@ -739,7 +759,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               button9a = widget_button(subbaseR9a, value='Start', uname='full_time_anim_begin')
               button9b = widget_button(subbaseR9a, value='Stop', uname='full_time_anim_end',sensitive=0)
             
-            button9 = widget_button(subbaseR9, value='Return', uname='anim_return', xsize=300, ysize=30)
+            button9 = widget_button(subbaseR9, value='Return', uname='anim_return', xsize=scale_factor*300, ysize=scale_factor*30)
             
             
     endif         ;END OF THE WIDGET CREATION LOOP (SKIPPED IF /DIRECT SET)      
@@ -1014,7 +1034,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       
    
     ;ADD THE MOUSE CONTROL
-      track = obj_new('Trackball', [xsize, ysize] / 2, (xsize < ysize) / 2)
+      track = obj_new('Trackball', [draw_xsize, draw_ysize] / 2, (draw_xsize < draw_ysize) / 2)
 
 
     ;ADD TEXT LABELS 

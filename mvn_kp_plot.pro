@@ -78,6 +78,16 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
   
+  if kp_start_index eq -1 or kp_end_index eq -1 then begin
+    print,'Sorry, the times you requested are not contained within the data structure.'
+    print,'Check your time range and try again.'
+    return
+  endif
+  if kp_start_index eq kp_end_index then begin
+    print,'Sorry, start and end times are the same. Nothing to plot!'
+    return
+  endif
+ 
   
   ;CREATE THE PLOT VECTORS
   
