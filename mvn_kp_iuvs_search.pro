@@ -65,7 +65,7 @@
 ;    had the common geometry value match the criteria. To see which observation mode matched the common 
 ;    search, a new structure tag is added at the top level of the iuvs_out data structure 'MATCHING_OBS' 
 ;    with a string containing which observation modes matched the common search criteria. If an observation 
-;    is sepcified (using the observation keyword), any common gemoetry value is still searched accross all 
+;    is sepcified (using the observation keyword), any common gemoetry value is still searched across all 
 ;    observation modes - not just the observation mode that was specified. If you want to search for a 
 ;    common geometry value, only in a specific set of observation modes, then use mvn_kp_read, with 
 ;    /iuvs_[mode] keywords to read in only the IUVS observation modes you want to search. Then use this 
@@ -251,7 +251,7 @@ pro MVN_KP_IUVS_TAG_LIST_COMMON, data
   common_tags = tag_names(data.(0))
   
 
-  print, 'Common geometry fields available for searching accross all observations as follows'
+  print, 'Common geometry fields available for searching across all observations as follows'
   print,'*********************************************'
   print,''
   print,'-----------------------------'
@@ -263,7 +263,7 @@ pro MVN_KP_IUVS_TAG_LIST_COMMON, data
   print,'-----------------------------'
   
   
-  print,'USE ANY OF THESE TAG NAMES, OR ASSOCIATED INDICES, TO SEARCH ACCROSS OBSERVATIONS.'
+  print,'USE ANY OF THESE TAG NAMES, OR ASSOCIATED INDICES, TO SEARCH across OBSERVATIONS.'
   print, ''
   
  
@@ -368,7 +368,7 @@ function MVN_KP_IUVS_SEARCH_COMMON, data, tag_index, min_value, max_value
   ;; 2 by 2 array to contain information about which observations matched the search criteria
   tagMatchesPerObs = make_array(n_elements(data), totalObsIncludingArrays, /integer)
 
-  ;; Search accross all observations
+  ;; Search across all observations
   meets_criteria = [-1] ;; hack for idl 7
   tagsMatchesIndex = 0
   for i=0, numObs-1 do begin
