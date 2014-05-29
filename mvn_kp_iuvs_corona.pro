@@ -458,6 +458,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
   ;set up the plot window
     a=get_screen_size()*0.8
     window,0,xsize=a[0],ysize=a[1]
+    device, decomposed=0
 
   if e_h_r eq 1 then begin        ;echelle high radiance
     plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.6,.1,.95],/ylog
@@ -599,6 +600,8 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
   if (keyword_set(nolegend) eq 0) then begin
    
     window,!window+1,xsize=a[0],ysize=a[1]
+    device,decomposed=0
+
      xyouts, 0.25, 0.97, 'High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
       if e_h_r eq 1 then begin
@@ -760,7 +763,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
           endfor 
       endif
       
-       if l_l_d eq 1 then begin
+       if l_d_d eq 1 then begin
          xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
          leg_i=0.91
            for j=0,lo_disk_total-1 do begin
@@ -769,7 +772,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
           endfor 
       endif
       
-      if l_l_s eq 1 then begin
+      if l_d_o eq 1 then begin
          xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
          leg_i=0.91
            for j=0,lo_disk_total-1 do begin
