@@ -33,10 +33,27 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
-  if keyword_set(list) then begin
-    MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    return
-  endif
+    if arg_present(list)  then begin  
+      list = strarr(250)
+      index2=0
+      for i=0,base_tag_count-1 do begin
+          if first_level_count[i] ne 0 then begin
+              for j=0,first_level_count[i]-1 do begin
+                if first_level_count[i] ne 0 then begin 
+                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    index2 = index2+1
+                endif 
+              endfor
+          endif
+        endfor
+      list = list[0:index2-1]
+      return
+    endif else begin
+      if keyword_set(list) then begin
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        return
+      endif
+    endelse
   
   
   total_fields = n_elements(bin_by)

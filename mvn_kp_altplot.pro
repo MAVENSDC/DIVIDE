@@ -35,7 +35,7 @@
 
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                     title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-                    directgraphic=directgraphic, log=log   
+                    directgraphic=directgraphic, log=log, xrange=xrange, yrange=yrange   
 
   ;CHECK THAT THE INPUT PARAMETERS ARE VALID
   ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
@@ -43,10 +43,27 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
-  if keyword_set(list) then begin
-    MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    goto,finish
-  endif
+    if arg_present(list)  then begin  
+      list = strarr(250)
+      index2=0
+      for i=0,base_tag_count-1 do begin
+          if first_level_count[i] ne 0 then begin
+              for j=0,first_level_count[i]-1 do begin
+                if first_level_count[i] ne 0 then begin 
+                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    index2 = index2+1
+                endif 
+              endfor
+          endif
+        endfor
+      list = list[0:index2-1]
+      return
+    endif else begin
+      if keyword_set(list) then begin
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        return
+      endif
+    endelse
   
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
@@ -68,6 +85,20 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   if keyword_set(directgraphic) eq 0 then begin
    if Float(!Version.Release) GE 8.0 THEN directgraphic = 0    ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
   endif
+  
+  ;CHECK THAT, IF INCLUDED, XRANGE AND YRANGE CONTAIN SUFFICIENT DATA
+  if keyword_set(yrange) then begin
+    if (n_elements(yrange)/n_elements(parameter)) ne 2 then begin
+      print,'When using the YRANGE keyword, ranges must be set for each plot'
+      return    
+    endif
+  endif
+  if keyword_set(xrange) then begin
+    if (n_elements(xrange)/n_elements(parameter)) ne 2 then begin
+      print,'When using the XRANGE keyword, ranges must be set for each plot'
+      return    
+    endif
+  endif  
   
   ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
   
@@ -116,10 +147,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;CREATE SINGLE ALTITUDE PLOT
   
   if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
-    w = window(dimensions = [800,800])
     if n_elements(parameter) eq 1 then begin
-     plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                   title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,/current)
+      w = window(window_title='Maven KP Data Altitude Plots')
+      plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                   title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,/current,xrange=xrange, yrange=yrange,$
+                   xstyle=1, ystyle=1)
     endif
   endif
   if directgraphic ne 0 then begin                                    ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
@@ -127,7 +159,8 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       device,decomposed=0
       !P.MULTI = [0, n_elements(parameter), 1]
       plot,x,y,ytitle='Spacecraft Altitude, km',xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                   title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,background=255, color=0
+                   title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,background=255, color=0,$
+                   xrange=xrange,yrange=yrange,xstyle=1,ystyle=1
     endif
   endif
   
@@ -174,16 +207,37 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     endif
   endif 
 
-  ;CREATE THE MULTPLE ALTITUDE PLOT
-  
 
-  
+          ;CREATE DUMMY YRANGE IF NOT DEFINED
+          temp_yrange = dblarr(2,n_elements(parameter))
+          if n_elements(yrange) ne 0 then begin
+            temp_yrange = yrange
+          endif else begin
+            for i=0,n_elements(parameter)-1 do begin
+              temp_yrange[0,i] = min(y[i,*])
+              temp_yrange[1,i] = max(y[i,*])
+            endfor
+          endelse
+          ;CREATE DUMMY XRANGE IF NOT DEFINED
+          temp_xrange = dblarr(2,n_elements(parameter))
+          if n_elements(xrange) ne 0 then begin
+            temp_xrange = xrange
+          endif else begin
+            for i=0,n_elements(parameter)-1 do begin
+              temp_xrange[0,i] = min(x[i,*])
+              temp_xrange[1,i] = max(x[i,*])
+            endfor
+          endelse
+          
+          
+  ;CREATE THE MULTPLE ALTITUDE PLOT  
   if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
     if n_elements(parameter) gt 1 then begin
-    w = window(dimensions = [800,800])
+      w = window(window_title='Maven KP Data Altitude Plots')
       for i = 0, n_elements(parameter) -1 do begin
        plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i], layout=[n_elements(parameter),1,i+1],/current,$
-                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log)
+                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
+                    xrange=temp_xrange[*,i])
       endfor
     endif
   endif
@@ -191,15 +245,17 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
           device,decomposed=0
     if n_elements(parameter) gt 1 then begin
       !P.MULTI = [0, n_elements(parameter), 1]
-      plot,x[0,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[0],$
-                    title=title[0],thick=thick,linestyle=linestyle,xlog=xaxis_log,background=255,color=0,charsize=2,font=-1
+      plot,x[0,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[0],xstyle=1,ystyle=1,$
+                    title=title[0],thick=thick,linestyle=linestyle,xlog=xaxis_log,background=255,color=0,charsize=2,font=-1,$
+                    yrange=temp_yrange[*,0],xrange=temp_xrange[*,0]
       for i=1,n_elements(parameter)-1 do begin
-       plot,x[i,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i],$
-                    title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,color=0,charsize=2,font=-1
+       plot,x[i,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i],xstyle=1,ystyle=1,$
+                    title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,color=0,charsize=2,font=-1,$
+                    yrange=temp_yrange[*,i],xrange=temp_xrange[*,i]
       endfor 
     endif
   endif
-  goto,finish       ;SKIP OVER THE OVERPLOT OPTIONS
+  return       ;SKIP OVER THE OVERPLOT OPTIONS
   
   
 overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
@@ -261,28 +317,53 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
          endelse  
        endfor   
   
+
+       ;CREATE DUMMY YRANGE IF NOT DEFINED
+          temp_yrange = dblarr(2,n_elements(true_index))
+          if n_elements(yrange) ne 0 then begin
+            temp_yrange = yrange
+          endif else begin
+            for i=0,n_elements(true_index)-1 do begin
+              temp_yrange[0,i] = min(y)
+              temp_yrange[1,i] = max(y)
+            endfor
+          endelse
+       ;CREATE DUMMY XRANGE IF NOT DEFINED
+          temp_xrange = dblarr(2,n_elements(true_index))
+          if n_elements(xrange) ne 0 then begin
+            temp_xrange = xrange
+          endif else begin
+            for i=0,n_elements(true_index)-1 do begin
+              temp_xrange[0,i] = min(x[i,*])
+              temp_xrange[1,i] = max(x[i,*])
+            endfor
+          endelse  
+  
+
+
   ;CREATE THE PLOTS
   
   if directgraphic eq 0 then begin
   ;   if n_elements(parameter) gt 1 then begin
       oplot_index = 0
-       w = window(window_title='Altitude Plots',dimensions=[800,800])
+       w = window(window_title='Maven KP Data Altitude Plots3333')
       for i = 0, n_elements(parameter) -1 do begin
         if plot_count[i] eq 1 then begin
           plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index], layout=[n_elements(parameter),1,i+1],/current,$
-                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log)
+                    title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],$
+                    yrange=temp_yrange[*,oplot_index])
           oplot_index= oplot_index+1
         endif else begin
-          xmin = min(x[oplot_index:(oplot_index+plot_count[i]-1)])
-          xmax = max(x[oplot_index:(oplot_index+plot_count[i]-1)])
           plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
-                    title=title[i],thick=thick,linestyle=0,symbol=symbol,xlog=xaxis_log,xrange=[xmin,xmax])
+                    title=title[i],thick=thick,linestyle=0,symbol=symbol,xlog=xaxis_log,xrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
+                    yrange=temp_yrange[*,oplot_index])
           l = legend(target=plot1,/auto_text_color,label=x_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
                     /normal,linestyle=0,font_size=8)
           oplot_index = oplot_index+1
+          hold_index = oplot_index-1
           for j=1,plot_count[i]-1 do begin      
             plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
-                    title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xrange=[xmin,xmax])
+                    title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xstyle=1,ystyle=1,xrange=temp_xrange[*,hold_index], yrange=temp_yrange[*,hold_index])
              l = legend(target=plot1,/auto_text_color,label=x_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
                     /normal,linestyle=j,font_size=8)
             oplot_index=oplot_index+1
@@ -300,14 +381,12 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
         if plot_count[i] eq 1 then begin
           plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index],$
                title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,background='FFFFFF'x,color=0,$
-               charsize=4,font=-1
+               font=-1,xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index]
           oplot_index = oplot_index+1
         endif else begin 
-          xmin = min(x[oplot_index:(oplot_index+plot_count[i]-1)])
-          xmax = max(x[oplot_index:(oplot_index+plot_count[i]-1)])
           plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude, km',$
                 title=title[oplot_index],thick=thick,linestyle=linestyle,xlog=xaxis_log,background='FFFFFF'x,$
-                xrange=[xmin,xmax],color=0,charsize=4.
+                color=0,xstyle=1,ystyle=1  ,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index]
           plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
           xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,x_axis_title[oplot_index],color=0,/normal
           oplot_index = oplot_index+1

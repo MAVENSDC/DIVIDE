@@ -23,6 +23,7 @@
 pro MVN_KP_STANDARDS, kp_data, $
                       time = time, $
                       range = range, $
+                      list = list, $
                       all = all, $
                       euv = euv, $
                       mag_mso = mag_mso, $
@@ -86,6 +87,29 @@ pro MVN_KP_STANDARDS, kp_data, $
   ;PULL OUT THE INCLUDED TAGS
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
 
+  ;IF LIST IS SET, PRINT THE CONTENTS OF THE STRUCTURE OR OUTPUT IT
+    if arg_present(list)  then begin  
+      list = strarr(250)
+      index2=0
+      for i=0,base_tag_count-1 do begin
+          if first_level_count[i] ne 0 then begin
+              for j=0,first_level_count[i]-1 do begin
+                if first_level_count[i] ne 0 then begin 
+                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    index2 = index2+1
+                endif 
+              endfor
+          endif
+        endfor
+      list = list[0:index2-1]
+      return
+    endif else begin
+      if keyword_set(list) then begin
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        return
+      endif
+    endelse
+
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
@@ -96,14 +120,13 @@ pro MVN_KP_STANDARDS, kp_data, $
 
     if keyword_set(plot_color) then begin
       colors = plot_color
-    endif else begin
-      colors=39
-    endelse
+      loadct,colors,/silent
+    endif 
    
     device,decompose=0
     !p.background='FFFFFF'x
     !p.color=0
-    loadct,colors,/silent
+
 
 
   if keyword_set(plot_title) then begin
@@ -165,7 +188,7 @@ pro MVN_KP_STANDARDS, kp_data, $
         if t2 ne -1 then mag_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.mso_z
       mag_mso_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].mag.mso_x^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_y^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_z^2))
       store_data,'MAG_MSO',data={x:kp_data[kp_start_index:kp_end_index].time, y:mag_mso_data, v:mag_mso_v}, dlim={labels:mag_mso_labels},verbose=0
-      options,'MAG_MSO','labflag',0
+      options,'MAG_MSO','labflag',-1
       
       tplot_2plot[plot_count] = 'MAG_MSO'
       lin_log[plot_count] = 0
