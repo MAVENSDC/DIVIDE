@@ -78,10 +78,27 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
     
 ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
-  if keyword_set(list) then begin
-    MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
-    return
-  endif
+    if arg_present(list)  then begin  
+      list = strarr(250)
+      index2=0
+      for i=0,base_tag_count-1 do begin
+          if first_level_count[i] ne 0 then begin
+              for j=0,first_level_count[i]-1 do begin
+                if first_level_count[i] ne 0 then begin 
+                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    index2 = index2+1
+                endif 
+              endfor
+          endif
+        endfor
+      list = list[0:index2-1]
+      return
+    endif else begin
+      if keyword_set(list) then begin
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        return
+      endif
+    endelse
 
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
@@ -242,7 +259,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
 ;LOAD THE REQUESTED COLOR TABLE
   color_default = 11
   if keyword_set(colors) eq 0 then begin
-    loadct,color_default, /silent
+   ; loadct,color_default, /silent
   endif else begin
     if size(colors, /type) eq 7 then begin
       if colors eq 'bw' then color_default = 0

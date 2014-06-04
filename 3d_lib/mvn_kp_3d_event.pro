@@ -140,7 +140,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
                   t = min(abs(((*pstate).insitu.time - newval)),t_index)
 
-    ;              data = *(*pstate).orbit_path.data
+     ;             data = *(*pstate).orbit_path.data
                   (*pstate).orbit_path -> getproperty, data=data
                   (*pstate).orbit_model->GetProperty,transform=curtrans
                   cur_x = data[0,(*pstate).time_index*2]

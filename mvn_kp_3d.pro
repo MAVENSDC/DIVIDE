@@ -30,7 +30,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
                view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid, $
-               scale_factor=scale_factor
+               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -1249,10 +1249,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
      
         maven_model = obj_new('IDLgrModel')
         maven_location = fltarr(4)
-        if keyword_set(cow) then begin
-          model_scale = 0.1
+        if keyword_set(spacecraft_scale) then begin
+          model_scale = spacecraft_scale
         endif else begin
-          model_scale = 0.05
+          if keyword_set(cow) then begin
+            model_scale = 0.1
+          endif else begin
+            model_scale = 0.05
+          endelse
         endelse
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,install_directory           ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
         ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
