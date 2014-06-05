@@ -94,8 +94,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
           endif
     endif
   endif
-
-
+print,disp_check
   if error eq 1 then begin
     print,'The data structure does not include the necessary data. Check your structure and try again.'
     return
@@ -402,7 +401,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
         lo_limb_radiance[lo_limb_total,*,*] = kp_data[i].corona_lo_limb.radiance
         lo_limb_radiance_err[lo_limb_total,*,*] = kp_data[i].corona_lo_limb.radiance_err
         lo_limb_rad_labels[lo_limb_total,*] = kp_data[i].corona_lo_limb.radiance_id
-        lo_limb_rad_alt[lo_limb_total] = kp_data[i].corona_lo_limb.alt
+        lo_limb_rad_alt[lo_limb_total,*] = kp_data[i].corona_lo_limb.alt
         lo_limb_density[lo_limb_total,*,*] = kp_data[i].corona_lo_limb.density
         lo_limb_density_err[lo_limb_total,*,*] = kp_data[i].corona_lo_limb.density_err
         lo_limb_den_labels[lo_limb_total,*] =kp_data[i].corona_lo_limb.density_id
@@ -451,338 +450,863 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
     endfor
   endif
 
+;**********************************
+;    START THE PLOTTING ROUTINES HERE
+;**********************************
+
+;DEFAULT PLOT EVERYTHING IN ONE WINDOW
+
+  if total(disp_check) eq 6 then begin
+                
+              ;set up the plot window
+                a=get_screen_size()*0.8
+                window,0,xsize=a[0]*0.75,ysize=a[1]
+                device, decomposed=0
+            
+              if e_h_r eq 1 then begin        ;echelle high radiance
+                plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.6,.165,.95],/ylog,ystyle=1
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                    oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor
+                if (keyword_set(nolabels) ne 1) then xyouts, .03,.93,'High: Radiance',/normal
+              endif 
+              if e_l_r eq 1 then begin        ;echelle limb radiance
+                plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.2,.165,.57],ystyle=1
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor   
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.03,.55,'Limb: Radiance',/normal 
+              endif
+              if e_d_r eq 1 then begin        ;echelle disk radiance
+                plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5, position=[.025,.05,.165,.17],ystyle=1
+                for i=0, e_disk_total-1 do begin
+                  oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
+                endfor
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.03, 0.15,'Disk: Radiance',/normal
+              endif
+              if e_h_h eq 1 then begin        ;echelle high half int dist
+                plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.190,.6,.33,.95],/ylog,ystyle=1
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                    oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor     
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.195, 0.93, 'High: 1/2 Int Dist', /normal
+              endif
+              if e_l_h eq 1 then begin        ;echelle limb half int dist
+                plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.190,.2,.33,.57],ystyle=1
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor    
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.195, 0.55,'Limb: 1/2 Int Dist',/normal
+              endif
+              if l_h_r eq 1 then begin        ;lores high radiance
+                plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.355,.6,.495,.95],/ylog,ystyle=1
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                    oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.36, 0.93,'High: Radiance', /normal    
+              endif
+              if l_l_r eq 1 then begin        ;lores limb radiance
+                plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.355,.2,.495,.57],ystyle=1
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                    oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor   
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.36, 0.55, 'Limb: Radiance', /normal  
+              endif
+              if l_d_r eq 1 then begin        ;lores disk radiance
+                plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.355,.05,.495,.17],ystyle=1
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor    
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.36, 0.15, 'Disk: Radiance', /normal
+              endif
+              if l_h_d eq 1 then begin        ;lores high density
+                plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.52,.6,.66,.95],/ylog,ystyle=1
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor    
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.525, 0.93, 'High: Density', /normal 
+              endif
+              if l_l_d eq 1 then begin        ;lores limb density
+                plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.52,.2,.66,.57],ystyle=1
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                    oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor 
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.525, 0.55, 'Limb: Density', /normal  
+              endif
+              if l_d_d eq 1 then begin        ;lores disk density
+                plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.52,.05,.66,.17],ystyle=1
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor       
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.525, 0.15, 'Disk: Dust', /normal
+              endif
+              if l_l_s eq 1 then begin        ;lores limb scale
+                plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.685,.2,.825,.57],ystyle=1
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                    oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor      
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.69, 0.55, 'Limb: Scale Height', /normal
+              endif
+              if l_d_a eq 1 then begin        ;lores disk aurora
+                plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.685,.05,.825,.17],ystyle=1
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor      
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.69, 0.15, 'Disk: Auroral', /normal
+              endif
+              if l_h_h eq 1 then begin        ;lores high half int
+                plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.85,.6,.99,.95],/ylog,ystyle=1
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor      
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.855, 0.93, 'High: 1/2 Int Dist', /normal 
+              endif
+              if l_d_o eq 1 then begin        ;lores disk ozone
+                plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.85,.05,.99,.17],ystyle=1
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor     
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.855, 0.15, 'Disk: Ozone', /normal
+              endif
+            
+            
+            ;ADD IN TITLES AND PLOT LABELS
+            
+              if (disp_check[0] eq 1) or (disp_check[1] eq 1) or (disp_check[2] eq 1) then begin
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.1775, 0.97, 'Echelle Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
+              endif
+              if (disp_check[3] eq 1) or (disp_check[4] eq 1) or (disp_check[5] eq 1) then begin
+                if (keyword_set(nolabels) ne 1) then xyouts, 0.6725,0.97, 'Lo-Res Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
+              endif
+              
+            ;ADD THE LEGEND ALONG THE RIGHTHAND SIDE
+              if (keyword_set(nolegend) eq 0) then begin
+               
+                window,!window+1,xsize=a[0],ysize=a[1]
+                device,decomposed=0
+            
+                 xyouts, 0.25, 0.97, 'High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+            
+                  if e_h_r eq 1 then begin
+                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                          xyouts,0.03,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,e_high_total-1 do begin
+                          xyouts,0.1,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+              
+                  if e_h_h eq 1 then begin
+                     xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                          xyouts,0.22,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,e_high_total-1 do begin
+                          xyouts,0.31,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  if l_h_r eq 1 then begin
+                     xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                          xyouts,0.42,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_high_total-1 do begin
+                          xyouts,0.51,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                   if l_h_d eq 1 then begin
+                     xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                          xyouts,0.62,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_high_total-1 do begin
+                          xyouts,0.71,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  if l_h_h eq 1 then begin
+                     xyouts,0.8, 0.93, 'Lo-Res: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
+                          xyouts,0.82,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_high_total-1 do begin
+                          xyouts,0.91,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  window,!window+1,xsize=a[0],ysize=a[1]    
+                  xyouts, 0.25, 0.97, 'Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+            
+                  if e_l_r eq 1 then begin
+                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                          xyouts,0.03,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,e_limb_total-1 do begin
+                          xyouts,0.1,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+              
+                  if e_l_h eq 1 then begin
+                     xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
+                          xyouts,0.22,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,e_limb_total-1 do begin
+                          xyouts,0.31,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  if l_l_r eq 1 then begin
+                     xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                          xyouts,0.42,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_limb_total-1 do begin
+                          xyouts,0.51,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                   if l_l_d eq 1 then begin
+                     xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                          xyouts,0.62,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_limb_total-1 do begin
+                          xyouts,0.71,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  if l_l_s eq 1 then begin
+                     xyouts,0.8, 0.93, 'Lo-Res: Scale Height', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                          xyouts,0.82,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_limb_total-1 do begin
+                          xyouts,0.91,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+             
+              window,!window+1,xsize=a[0],ysize=a[1]    
+                  xyouts, 0.25, 0.97, 'Disk Scan Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+            
+                  if e_d_r eq 1 then begin
+                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(e_disk_labels[0,*])-1 do begin
+                          xyouts,0.03,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,e_disk_total-1 do begin
+                          xyouts,0.1,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+              
+                  if l_d_r eq 1 then begin
+                     xyouts,0.20, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                     for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
+                          xyouts,0.22,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                       for j=0,lo_disk_total-1 do begin
+                          xyouts,0.31,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                    endfor
+                  endif
+                  
+                  if l_d_d eq 1 then begin
+                     xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                       for j=0,lo_disk_total-1 do begin
+                          xyouts,0.41,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                  endif
+                  
+                   if l_d_d eq 1 then begin
+                     xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                       for j=0,lo_disk_total-1 do begin
+                          xyouts,0.61,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                  endif
+                  
+                  if l_d_o eq 1 then begin
+                     xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
+                     leg_i=0.91
+                       for j=0,lo_disk_total-1 do begin
+                          xyouts,0.81,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                          leg_i=leg_i-0.015
+                      endfor 
+                  endif 
+                  
+                  
+              endif  
+              
+
+endif                       ;*****END THE ALL INCLUSIVE PLOT******
 
 
-;CREATE EACH PLOT
+if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
+  (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,2,3,0,1]
+    
+              if e_h_r eq 1 then begin        ;echelle high radiance
+                plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                    oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor
+              endif
+              
+              if e_l_r eq 1 then begin        ;echelle limb radiance
+                plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+                    title='Echelle Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor   
+              endif
+              
+              if e_d_r eq 1 then begin        ;echelle disk radiance
+                plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5 ,ystyle=1, title='Echelle Disk: Radiance',xtitle='Time', ytitle='Radiance'
+                for i=0, e_disk_total-1 do begin
+                  oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
+                endfor
+              endif
+              
+              if e_h_h eq 1 then begin        ;echelle high half int dist
+                plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                    oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor     
+              endif
+              
+              if e_l_h eq 1 then begin        ;echelle limb half int dist
+                plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+                    title='Echelle Limb: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor    
+              endif
+endif
 
-  ;set up the plot window
-    a=get_screen_size()*0.8
-    window,0,xsize=a[0],ysize=a[1]
-    device, decomposed=0
-
-  if e_h_r eq 1 then begin        ;echelle high radiance
-    plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.6,.1,.95],/ylog
-    for i=0, e_high_total -1 do begin
-      for j=0, n_elements(e_high_rad_labels[0,*])-1 do begin
-        oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
-      endfor
-    endfor
-    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_high_title[0],e_rad_high_title[1],'Radiance',/normal
-  endif 
-  if e_l_r eq 1 then begin        ;echelle limb radiance
-    plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.025,.2,.1,.57]
-    for i=0, e_limb_total -1 do begin
-      for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
-        oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
-      endfor
-    endfor   
-    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_limb_title[0],e_rad_limb_title[1],'Radiance',/normal 
-  endif
-  if e_d_r eq 1 then begin        ;echelle disk radiance
-    plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5, position=[.025,.05,.1,.17]
-    for i=0, e_disk_total-1 do begin
-      oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
-    endfor
-    if (keyword_set(nolabels) ne 1) then xyouts, e_rad_disk_title[0],e_rad_disk_title[1],'Radiance',/normal
-  endif
-  if e_h_h eq 1 then begin        ;echelle high half int dist
-    plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.125,.6,.2,.95],/ylog
-    for i=0, e_high_total -1 do begin
-      for j=0, n_elements(e_high_half_labels[0,*])-1 do begin
-        oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
-      endfor
-    endfor     
-    if (keyword_set(nolabels) ne 1) then xyouts, e_half_high_title[0], e_half_high_title[1], '1/2 Int Dist', /normal
-  endif
-  if e_l_h eq 1 then begin        ;echelle limb half int dist
-    plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.125,.2,.2,.57]
-    for i=0, e_limb_total -1 do begin
-      for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
-        oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
-      endfor
-    endfor    
-    if (keyword_set(nolabels) ne 1) then xyouts, e_half_limb_title[0],e_half_limb_title[1],'1/2 Int Dist',/normal
-  endif
-  if l_h_r eq 1 then begin        ;lores high radiance
-    plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.225,.6,.3,.95],/ylog
-    for i=0, lo_high_total -1 do begin
-      for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
-        oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
-      endfor
-    endfor
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_high_title[0], lo_rad_high_title[1], 'Radiance', /normal    
-  endif
-  if l_l_r eq 1 then begin        ;lores limb radiance
-    plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.225,.2,.3,.57]
-    for i=0, lo_limb_total -1 do begin
-      for j=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
-        oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
-      endfor
-    endfor   
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_limb_title[0], lo_rad_limb_title[1], 'Radiance', /normal  
-  endif
-  if l_d_r eq 1 then begin        ;lores disk radiance
-    plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.225,.05,.3,.17]
-    for i=0, lo_disk_total-1 do begin
-      oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
-    endfor    
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_rad_disk_title[0], lo_rad_disk_title[1], 'Radiance', /normal
-  endif
-  if l_h_d eq 1 then begin        ;lores high density
-    plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.325,.6,.4,.95],/ylog
-    for i=0, lo_high_total -1 do begin
-      for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
-        oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
-      endfor
-    endfor    
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_den_high_title[0], lo_den_high_title[1], 'Density', /normal 
-  endif
-  if l_l_d eq 1 then begin        ;lores limb density
-    plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.325,.2,.4,.57]
-    for i=0, lo_limb_total -1 do begin
-      for j=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
-        oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
-      endfor
-    endfor 
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_den_limb_title[0], lo_den_limb_title[1], 'Density', /normal    
-  endif
-  if l_d_d eq 1 then begin        ;lores disk density
-    plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.325,.05,.4,.17]
-    for i=0, lo_disk_total-1 do begin
-      oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
-    endfor       
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_dust_disk_title[0], lo_dust_disk_title[1], 'Dust', /normal
-  endif
-  if l_l_s eq 1 then begin        ;lores limb scale
-    plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,position=[.425,.2,.5,.57]
-    for i=0, lo_limb_total -1 do begin
-      for j=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
-        oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
-      endfor
-    endfor      
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_scale_limb_title[0], lo_scale_limb_title[1], 'Scale Height', /normal
-  endif
-  if l_d_a eq 1 then begin        ;lores disk aurora
-    plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.425,.05,.5,.17]
-    for i=0, lo_disk_total-1 do begin
-      oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
-    endfor      
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_aurora_disk_title[0], lo_aurora_disk_title[1], 'Auroral', /normal
-  endif
-  if l_h_h eq 1 then begin        ;lores high half int
-    plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,position=[.525,.6,.6,.95],/ylog
-    for i=0, lo_high_total -1 do begin
-      for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
-        oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
-      endfor
-    endfor      
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_half_high_title[0], lo_half_high_title[1], '1/2 Int Dist', /normal 
-  endif
-  if l_d_o eq 1 then begin        ;lores disk ozone
-    plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5, position=[.525,.05,.6,.17]
-    for i=0, lo_disk_total-1 do begin
-      oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
-    endfor     
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_ozone_disk_title[0], lo_ozone_disk_title[1], 'Ozone', /normal
-  endif
-
-
-;ADD IN TITLES AND PLOT LABELS
-
-  if (disp_check[0] eq 1) or (disp_check[1] eq 1) or (disp_check[2] eq 1) then begin
-    if (keyword_set(nolabels) ne 1) then xyouts, e_title_pos[0], e_title_pos[1], 'Echelle Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
-  endif
-  if (disp_check[3] eq 1) or (disp_check[4] eq 1) or (disp_check[5] eq 1) then begin
-    if (keyword_set(nolabels) ne 1) then xyouts, lo_title_pos[0], lo_title_pos[1], 'Lo-Res Data', alignment=0.5, charthick=2.5, charsize= 2.0, /normal
-  endif
+if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
+  (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,4,3,0,1]
   
-;ADD THE LEGEND ALONG THE RIGHTHAND SIDE
-  if (keyword_set(nolegend) eq 0) then begin
-   
-    window,!window+1,xsize=a[0],ysize=a[1]
-    device,decomposed=0
+              if l_h_r eq 1 then begin        ;lores high radiance
+                plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                    oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor 
+              endif 
+              
+              if l_l_r eq 1 then begin        ;lores limb radiance
+                plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                    oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor    
+              endif
+    
+              if l_d_r eq 1 then begin        ;lores disk radiance
+                plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Radiance',xtitle='Time', ytitle='Radiance'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor    
+              endif
+           
+              if l_h_d eq 1 then begin        ;lores high density
+                plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor    
+              endif
+              
+              if l_l_d eq 1 then begin        ;lores limb density
+                plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                    oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor 
+              endif
+              
+               if l_d_d eq 1 then begin        ;lores disk density
+                plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Dust Depth',xtitle='Time', ytitle='Dust Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor       
+              endif
+              ;*break here*
+              plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])],color=255
+              
+              if l_l_s eq 1 then begin        ;lores limb scale
+                plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Scale Height',xtitle='Scale Height', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                    oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor 
+                  
+              if l_d_a eq 1 then begin        ;lores disk aurora
+                plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Auroral Index',xtitle='Time', ytitle='Auroral Index'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor      
+              endif
+              
+              endif
+              
+              if l_h_h eq 1 then begin        ;lores high half int
+                plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo_Res High: 1/2 Int Dist',xtitle='1/2 Dist', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor      
+              endif
+              ;**Break here
+              plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])],color=255
+              if l_d_o eq 1 then begin        ;lores disk ozone
+                plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Ozone Depth',xtitle='Time', ytitle='Ozone Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor     
+              endif
+endif
 
-     xyouts, 0.25, 0.97, 'High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+;****** PLOT ALL THE CORONAL DISK PLOTS ******
+if (disp_check[0] eq 1) and (disp_check[3] eq 1) and $
+   (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,5,1,0,1]
+    
+              if e_d_r eq 1 then begin        ;echelle disk radiance
+                plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5 ,ystyle=1, title='Echelle Disk: Radiance',xtitle='Time', ytitle='Radiance'
+                for i=0, e_disk_total-1 do begin
+                  oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
+                endfor
+              endif
+              
+              if l_d_r eq 1 then begin        ;lores disk radiance
+                plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Radiance',xtitle='Time', ytitle='Radiance'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor    
+              endif
+              
+              if l_d_d eq 1 then begin        ;lores disk density
+                plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Dust Depth',xtitle='Time', ytitle='Dust Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor       
+              endif
+              
+              if l_d_a eq 1 then begin        ;lores disk aurora
+                plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Auroral Index',xtitle='Time', ytitle='Auroral Index'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor      
+              endif
+              
+              if l_d_o eq 1 then begin        ;lores disk ozone
+                plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Ozone Depth',xtitle='Time', ytitle='Ozone Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor     
+              endif
+endif
 
-      if e_h_r eq 1 then begin
-         xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
-              xyouts,0.03,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,e_high_total-1 do begin
-              xyouts,0.1,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-  
-      if e_h_h eq 1 then begin
-         xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
-              xyouts,0.22,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,e_high_total-1 do begin
-              xyouts,0.31,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      if l_h_r eq 1 then begin
-         xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
-              xyouts,0.42,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_high_total-1 do begin
-              xyouts,0.51,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-       if l_h_d eq 1 then begin
-         xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
-              xyouts,0.62,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_high_total-1 do begin
-              xyouts,0.71,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      if l_h_h eq 1 then begin
-         xyouts,0.8, 0.93, 'Lo-Res: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
-              xyouts,0.82,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_high_total-1 do begin
-              xyouts,0.91,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      window,!window+1,xsize=a[0],ysize=a[1]    
-      xyouts, 0.25, 0.97, 'Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+;****** PLOT ALL THE CORONAL LIMB PLOTS ******
+if (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,5,1,0,1]
+    
+              if e_l_r eq 1 then begin        ;echelle limb radiance
+                plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+                    title='Echelle Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor   
+              endif
+              
+              if e_l_h eq 1 then begin        ;echelle limb half int dist
+                plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+                    title='Echelle Limb: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor    
+              endif
+              
+              if l_l_r eq 1 then begin        ;lores limb radiance
+                plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                    oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor    
+              endif
+    
+              if l_l_d eq 1 then begin        ;lores limb density
+                plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                    oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor 
+              endif
+              
+              if l_l_s eq 1 then begin        ;lores limb scale
+                plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Scale Height',xtitle='Scale Height', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                    oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor      
+              endif
+endif
 
-      if e_l_r eq 1 then begin
-         xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
-              xyouts,0.03,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,e_limb_total-1 do begin
-              xyouts,0.1,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-  
-      if e_l_h eq 1 then begin
-         xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
-              xyouts,0.22,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,e_limb_total-1 do begin
-              xyouts,0.31,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      if l_l_r eq 1 then begin
-         xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
-              xyouts,0.42,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_limb_total-1 do begin
-              xyouts,0.51,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-       if l_l_d eq 1 then begin
-         xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
-              xyouts,0.62,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_limb_total-1 do begin
-              xyouts,0.71,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      if l_l_s eq 1 then begin
-         xyouts,0.8, 0.93, 'Lo-Res: Scale Height', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
-              xyouts,0.82,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_limb_total-1 do begin
-              xyouts,0.91,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
- 
-  window,!window+1,xsize=a[0],ysize=a[1]    
-      xyouts, 0.25, 0.97, 'Disk Scan Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
-      if e_d_r eq 1 then begin
-         xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(e_disk_labels[0,*])-1 do begin
-              xyouts,0.03,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,e_disk_total-1 do begin
-              xyouts,0.1,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-  
-      if l_d_r eq 1 then begin
-         xyouts,0.20, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-         for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
-              xyouts,0.22,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-           for j=0,lo_disk_total-1 do begin
-              xyouts,0.31,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-              leg_i=leg_i-0.015
-          endfor 
-        endfor
-      endif
-      
-      if l_d_d eq 1 then begin
-         xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-           for j=0,lo_disk_total-1 do begin
-              xyouts,0.41,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-              leg_i=leg_i-0.015
-          endfor 
-      endif
-      
-       if l_d_d eq 1 then begin
-         xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-           for j=0,lo_disk_total-1 do begin
-              xyouts,0.61,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-              leg_i=leg_i-0.015
-          endfor 
-      endif
-      
-      if l_d_o eq 1 then begin
-         xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
-         leg_i=0.91
-           for j=0,lo_disk_total-1 do begin
-              xyouts,0.81,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-              leg_i=leg_i-0.015
-          endfor 
-      endif 
-      
-      
-  endif
+;****** PLOT ALL THE CORONAL HIGH ALT PLOTS ******
+if (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,5,1,0,1]
+    
+              if e_h_r eq 1 then begin        ;echelle high radiance
+                plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                    oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor
+              endif
+              
+              if e_h_h eq 1 then begin        ;echelle high half int dist
+                plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                    oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor     
+              endif
+              
+              if l_h_r eq 1 then begin        ;lores high radiance
+                plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                    oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor 
+              endif
+    
+              if l_h_d eq 1 then begin        ;lores high density
+                plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor    
+              endif
+              
+              if l_h_h eq 1 then begin        ;lores high half int
+                plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo_Res High: 1/2 Int Dist',xtitle='1/2 Dist', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor      
+              endif
+endif
 
+;****** PLOT ALL THE CORONAL ECHELLE DISK PLOTS ******
+if (disp_check[0] eq 1) and $
+   (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,1,1,0,1]
+      if e_d_r eq 1 then begin        ;echelle disk radiance
+        plot,e_disk_radiance[0,*],e_disk_timestamp,/nodata,charsize=1.5 ,ystyle=1, title='Echelle Disk: Radiance',xtitle='Time', ytitle='Radiance'
+        for i=0, e_disk_total-1 do begin
+          oplot,e_disk_radiance[i,*],e_disk_timestamp,linestyle=(i mod 7),color=i*(255/e_disk_total)
+        endfor
+      endif
+      
+endif
+
+;****** PLOT ALL THE CORONAL ECHELLE LIMB PLOTS ******
+if (disp_check[1] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,2,1,0,1]
+              if e_l_r eq 1 then begin        ;echelle limb radiance
+                plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+                    title='Echelle Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_radiance[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor   
+              endif
+              
+              if e_l_h eq 1 then begin        ;echelle limb half int dist
+                plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1, yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+                    title='Echelle Limb: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_limb_total -1 do begin
+                  for j=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                    oplot,e_limb_half[i,j,*],e_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_limb_total)
+                  endfor
+                endfor    
+              endif
+endif
+
+;****** PLOT ALL THE CORONAL ECHELLE HIGH ALT PLOTS ******
+if (disp_check[2] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,2,1,0,1]
+     
+              if e_h_r eq 1 then begin        ;echelle high radiance
+                plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                    oplot,e_high_radiance[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor
+              endif
+              
+              if e_h_h eq 1 then begin        ;echelle high half int dist
+                plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+                    title='Echelle High: 1/2 Int Dist',xtitle='1/2 Distance', ytitle='Altitude, km'
+                for i=0, e_high_total -1 do begin
+                  for j=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                    oplot,e_high_half[i,j,*],e_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/e_high_total)
+                  endfor
+                endfor     
+              endif
+endif
+
+;****** PLOT ALL THE CORONAL LORES DISK PLOTS ******
+if (disp_check[3] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,4,1,0,1]
+    
+              if l_d_r eq 1 then begin        ;lores disk radiance
+                plot,lo_disk_radiance[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Radiance',xtitle='Time', ytitle='Radiance'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_radiance[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor    
+              endif
+              
+              if l_d_d eq 1 then begin        ;lores disk density
+                plot,lo_disk_dust[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Dust Depth',xtitle='Time', ytitle='Dust Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_dust[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor       
+              endif
+              
+              if l_d_a eq 1 then begin        ;lores disk aurora
+                plot,lo_disk_auroral[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Auroral Index',xtitle='Time', ytitle='Auroral Index'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_auroral[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor      
+              endif
+              
+              if l_d_o eq 1 then begin        ;lores disk ozone
+                plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5,ystyle=1,title='Lo_Res Disk: Ozone Depth',xtitle='Time', ytitle='Ozone Depth'
+                for i=0, lo_disk_total-1 do begin
+                  oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
+                endfor     
+              endif
+endif
+
+;****** PLOT ALL THE CORONAL LORES LIMB PLOTS ******
+if (disp_check[4] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[5] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,3,1,0,1]
+    
+              if l_l_r eq 1 then begin        ;lores limb radiance
+                plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                    oplot,lo_limb_radiance[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor    
+              endif
+    
+              if l_l_d eq 1 then begin        ;lores limb density
+                plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                    oplot,lo_limb_density[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor 
+              endif
+              
+              if l_l_s eq 1 then begin        ;lores limb scale
+                plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,charsize=1.5,ystyle=1,yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+                    title='Lo_Res Limb: Scale Height',xtitle='Scale Height', ytitle='Altitude, km'
+                for i=0, lo_limb_total -1 do begin
+                  for j=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                    oplot,lo_limb_scale[i,j,*],lo_limb_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_limb_total)
+                  endfor
+                endfor      
+              endif
+endif
+
+;****** PLOT ALL THE CORONAL LROES HIGH ALT PLOTS ******
+if (disp_check[5] eq 1) and $
+   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) then begin
+    device,decompose=0
+    device,retain=2
+    !p.background='FFFFFF'x
+    !p.color=0
+    !p.multi=[0,3,1,0,1]
+    
+              if l_h_r eq 1 then begin        ;lores high radiance
+                plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                    oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor 
+              endif
+    
+              if l_h_d eq 1 then begin        ;lores high density
+                plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo-Res High: Density',xtitle='Density', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor    
+              endif
+              
+              if l_h_h eq 1 then begin        ;lores high half int
+                plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+                    title='Lo_Res High: 1/2 Int Dist',xtitle='1/2 Dist', ytitle='Altitude, km'
+                for i=0, lo_high_total -1 do begin
+                  for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                    oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
+                  endfor
+                endfor      
+              endif
+    
+endif
 
 end

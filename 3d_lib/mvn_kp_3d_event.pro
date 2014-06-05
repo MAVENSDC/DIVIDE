@@ -88,32 +88,38 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
              endif       ;end of camera view check     
                 ; scale
                 if (event.type eq 7) then begin
-                  s = 1.1 ^ event.clicks
-                  (*pstate).model->scale, s, s, s
-                  (*pstate).atmModel1->scale,s,s,s
-                  (*pstate).atmModel2->scale,s,s,s
-                  (*pstate).atmModel3->scale,s,s,s
-                  (*pstate).atmModel4->scale,s,s,s
-                  (*pstate).atmModel5->scale,s,s,s
-                  (*pstate).atmModel6->scale,s,s,s
-                  (*pstate).gridlines->scale,s,s,s
-                  (*pstate).orbit_model->scale,s,s,s
-                  (*pstate).maven_model->scale,s,s,s
-                  (*pstate).sub_solar_model->scale,s,s,s
-                  (*pstate).sub_maven_model->scale,s,s,s
-                  (*pstate).sub_maven_model_mso->scale,s,s,s
-                  (*pstate).axesmodel->scale,s,s,s
-                  (*pstate).vector_model->scale,s,s,s
-                  (*pstate).sun_model -> scale,s,s,s
-                  (*pstate).axesmodel_msox->scale, s,s,s
-                  (*pstate).axesmodel_msoy->scale, s,s,s
-                  (*pstate).axesmodel_msoz->scale, s,s,s
-                  if (*pstate).instrument_array[8] eq 1 then begin
-                    (*pstate).periapse_limb_model->scale,s,s,s
-                  endif
-                  (*pstate).maven_location = (*pstate).maven_location*s
-                  (*pstate).z_position = (*pstate).z_position*s
-                  (*pstate).window->draw, (*pstate).view          
+                  s = 1.07 ^ event.clicks
+              
+                  if (((*pstate).z_position(3) ge 0.25) and ((*pstate).z_position(3) le 10.0)) $
+                    or (((*pstate).z_position(3) le 0.25) and (s ge 1.0)) $
+                    or (((*pstate).z_position(3) ge 10.0) and (s le 1.0)) then begin
+                    
+                    (*pstate).model->scale, s, s, s
+                    (*pstate).atmModel1->scale,s,s,s
+                    (*pstate).atmModel2->scale,s,s,s
+                    (*pstate).atmModel3->scale,s,s,s
+                    (*pstate).atmModel4->scale,s,s,s
+                    (*pstate).atmModel5->scale,s,s,s
+                    (*pstate).atmModel6->scale,s,s,s
+                    (*pstate).gridlines->scale,s,s,s
+                    (*pstate).orbit_model->scale,s,s,s
+                    (*pstate).maven_model->scale,s,s,s
+                    (*pstate).sub_solar_model->scale,s,s,s
+                    (*pstate).sub_maven_model->scale,s,s,s
+                    (*pstate).sub_maven_model_mso->scale,s,s,s
+                    (*pstate).axesmodel->scale,s,s,s
+                    (*pstate).vector_model->scale,s,s,s
+                    (*pstate).sun_model -> scale,s,s,s
+                    (*pstate).axesmodel_msox->scale, s,s,s
+                    (*pstate).axesmodel_msoy->scale, s,s,s
+                    (*pstate).axesmodel_msoz->scale, s,s,s
+                    if (*pstate).instrument_array[8] eq 1 then begin
+                      (*pstate).periapse_limb_model->scale,s,s,s
+                    endif
+                    (*pstate).maven_location = (*pstate).maven_location*s
+                    (*pstate).z_position = (*pstate).z_position*s
+                    (*pstate).window->draw, (*pstate).view       
+                  endif 
                 endif       
            
             end
@@ -847,6 +853,13 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       write_png, outfile,snapshot
                     end
         
+        'orbit_reset': begin
+                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
+                          temp_vert[0,*] = 255
+                          (*pstate).orbit_path->setProperty,vert_color=temp_vert
+                          (*pstate).window->draw,(*pstate).view
+                       end
+        
         'lpw_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
@@ -1116,6 +1129,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             'SWIA H+ Flow Velocity': begin
                                                       (*pstate).vector_path->getproperty,data=old_data
                                                       if (*pstate).coord_sys eq 0 then begin
+                                       
                                                         for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
                                                           old_data[0,(i*2)+1] = (insitu_spec[i].swia.hplus_flow_v_msox*insitu_spec[i].spacecraft.t11)+$
                                                                                 (insitu_spec[i].swia.hplus_flow_v_msoy*insitu_spec[i].spacecraft.t12)+$
@@ -1649,6 +1663,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'full_time_anim_begin': begin
                                   widget_control,(*pstate).button9a,sensitive=0
                                   widget_control,(*pstate).button9b,sensitive=1
+                                  
+                                  
                                 end
                                 
         'full_time_anim_end': begin

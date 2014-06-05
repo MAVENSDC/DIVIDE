@@ -329,92 +329,7 @@
 ;  BDEPTH- original image depth
 ;  NEWX, NEWY- desired X,Y image size
 ;  INTERP - if set, then use bilinear interpolation, otherwise nearest neighbor
-function plotimage_resamp, image, nx, ny, bdepth, newx, newy, interp=interp
 
-  ;; Sometimes the final dimension is lost.  Put it back
-  image = reform(image, nx, ny, bdepth, /overwrite)
-
-  ;; Correct interpolation
-  srx = float(nx)/newx * findgen(newx) - 0.5 + 0.5*(float(nx)/newx)
-  sry = float(ny)/newy * findgen(newy) - 0.5 + 0.5*(float(ny)/newy)
-  srz = indgen(bdepth)
-  if keyword_set(interp) then $
-    return, interpolate(image, srx, sry, srz, /grid)
-
-  ;; Simple nearest neighbor interpolation
-  return, interpolate(image, round(srx), round(sry), srz, /grid)
-end
-
-pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, $
-                   logscale=logscale, $
-                   quiet=quiet, status=status, pixtolerance=pixtolerance
-
-  if keyword_set(logscale) then begin
-     if min(xrange0) LE 0 OR min(imgxrange0) LE 0 then $
-        message, ('ERROR: if XLOG or YLOG is set, then the image boundary cannot '+$
-                  'cross or touch zero.  Did you forget to set IMGXRANGE or IMGYRANGE?')
-     xrange    = alog10(xrange0)
-     imgxrange = alog10(imgxrange0)
-  endif else begin
-     xrange    = xrange0
-     imgxrange = imgxrange0
-  endelse
-
-  if n_elements(pixtolerance) EQ 0 then pixtolerance = 1.e-2
-  status = 0
-  ;; Decide if image must be reversed
-  xreverse = 0
-  if double(xrange(1)-xrange(0))*(imgxrange(1)-imgxrange(0)) LT 0 then begin
-      xreverse = 1
-      imgxrange = [imgxrange(1), imgxrange(0)]
-  endif
-
-  srcxpix  = [ 0L, imgxsize-1 ]
-  ;; Size of one x pix
-  dx = double(imgxrange(1) - imgxrange(0)) / imgxsize
-
-  if min(xrange) GE max(imgxrange) OR max(xrange) LE min(imgxrange) then begin
-      message, 'WARNING: No image data in specified plot RANGE.', /info, $
-        noprint=keyword_set(quiet)
-      return
-  endif
-
-  ;; Case where xrange cuts off image at left
-  if (xrange(0) - imgxrange(0))/dx GT 0 then begin
-      offset = double(xrange(0)-imgxrange(0))/dx
-      if abs(offset-round(offset)) LT pixtolerance then $
-        offset = round(offset)
-      srcxpix(0) = floor(offset)
-      froffset = offset - floor(offset)
-      if abs(froffset) GT pixtolerance then begin
-          xrange = double(xrange)
-          xrange(0) = imgxrange(0) +dx*srcxpix(0)
-      endif
-  endif
-
-  ;; Case where xrange cuts off image at right
-  if (xrange(1) - imgxrange(1))/dx LT 0 then begin
-      offset = double(xrange(1)-imgxrange(0))/dx
-      if abs(offset-round(offset)) LT pixtolerance then $
-        offset = round(offset)
-      srcxpix(1) = ceil(offset) - 1
-      froffset = offset - ceil(offset)
-      if abs(froffset) GT pixtolerance then begin
-          xrange = double(xrange)
-          srcxpix(1) = srcxpix(1) < (imgxsize-1)
-          xrange(1) = imgxrange(0) + dx*(srcxpix(1)+1)
-      endif
-  endif
-
-  imgxpanel = [0., 1.]
-  if (xrange(0) - imgxrange(0))/dx LT 0 then $
-    imgxpanel(0) = (imgxrange(0) - xrange(0))/(xrange(1)-xrange(0))
-  if (xrange(1) - imgxrange(1))/dx GT 0 then $
-    imgxpanel(1) = (imgxrange(1) - xrange(0))/(xrange(1)-xrange(0))
-
-  status = 1
-  return
-end
 
 ;; Main program
 pro plotimage, img0, xrange=xrange0, yrange=yrange0, $
@@ -791,6 +706,94 @@ pro plotimage, img0, xrange=xrange0, yrange=yrange0, $
         position=position, _EXTRA=extra
   endif
 
+  return
+end
+
+
+function plotimage_resamp, image, nx, ny, bdepth, newx, newy, interp=interp
+
+  ;; Sometimes the final dimension is lost.  Put it back
+  image = reform(image, nx, ny, bdepth, /overwrite)
+
+  ;; Correct interpolation
+  srx = float(nx)/newx * findgen(newx) - 0.5 + 0.5*(float(nx)/newx)
+  sry = float(ny)/newy * findgen(newy) - 0.5 + 0.5*(float(ny)/newy)
+  srz = indgen(bdepth)
+  if keyword_set(interp) then $
+    return, interpolate(image, srx, sry, srz, /grid)
+
+  ;; Simple nearest neighbor interpolation
+  return, interpolate(image, round(srx), round(sry), srz, /grid)
+end
+
+pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, $
+                   logscale=logscale, $
+                   quiet=quiet, status=status, pixtolerance=pixtolerance
+
+  if keyword_set(logscale) then begin
+     if min(xrange0) LE 0 OR min(imgxrange0) LE 0 then $
+        message, ('ERROR: if XLOG or YLOG is set, then the image boundary cannot '+$
+                  'cross or touch zero.  Did you forget to set IMGXRANGE or IMGYRANGE?')
+     xrange    = alog10(xrange0)
+     imgxrange = alog10(imgxrange0)
+  endif else begin
+     xrange    = xrange0
+     imgxrange = imgxrange0
+  endelse
+
+  if n_elements(pixtolerance) EQ 0 then pixtolerance = 1.e-2
+  status = 0
+  ;; Decide if image must be reversed
+  xreverse = 0
+  if double(xrange(1)-xrange(0))*(imgxrange(1)-imgxrange(0)) LT 0 then begin
+      xreverse = 1
+      imgxrange = [imgxrange(1), imgxrange(0)]
+  endif
+
+  srcxpix  = [ 0L, imgxsize-1 ]
+  ;; Size of one x pix
+  dx = double(imgxrange(1) - imgxrange(0)) / imgxsize
+
+  if min(xrange) GE max(imgxrange) OR max(xrange) LE min(imgxrange) then begin
+      message, 'WARNING: No image data in specified plot RANGE.', /info, $
+        noprint=keyword_set(quiet)
+      return
+  endif
+
+  ;; Case where xrange cuts off image at left
+  if (xrange(0) - imgxrange(0))/dx GT 0 then begin
+      offset = double(xrange(0)-imgxrange(0))/dx
+      if abs(offset-round(offset)) LT pixtolerance then $
+        offset = round(offset)
+      srcxpix(0) = floor(offset)
+      froffset = offset - floor(offset)
+      if abs(froffset) GT pixtolerance then begin
+          xrange = double(xrange)
+          xrange(0) = imgxrange(0) +dx*srcxpix(0)
+      endif
+  endif
+
+  ;; Case where xrange cuts off image at right
+  if (xrange(1) - imgxrange(1))/dx LT 0 then begin
+      offset = double(xrange(1)-imgxrange(0))/dx
+      if abs(offset-round(offset)) LT pixtolerance then $
+        offset = round(offset)
+      srcxpix(1) = ceil(offset) - 1
+      froffset = offset - ceil(offset)
+      if abs(froffset) GT pixtolerance then begin
+          xrange = double(xrange)
+          srcxpix(1) = srcxpix(1) < (imgxsize-1)
+          xrange(1) = imgxrange(0) + dx*(srcxpix(1)+1)
+      endif
+  endif
+
+  imgxpanel = [0., 1.]
+  if (xrange(0) - imgxrange(0))/dx LT 0 then $
+    imgxpanel(0) = (imgxrange(0) - xrange(0))/(xrange(1)-xrange(0))
+  if (xrange(1) - imgxrange(1))/dx GT 0 then $
+    imgxpanel(1) = (imgxrange(1) - xrange(0))/(xrange(1)-xrange(0))
+
+  status = 1
   return
 end
 
