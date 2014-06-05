@@ -52,6 +52,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
    !p.multi=0             
+
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
      install_result = routine_info('mvn_kp_map2d',/source)

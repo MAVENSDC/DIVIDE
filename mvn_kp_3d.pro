@@ -375,7 +375,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Viewing Geometries', uname='views', xsize=scale_factor*300, ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=scale_factor*300,ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=scale_factor*300,ysize=scale_factor*30)
-        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=scale_factor*300, ysize=scale_factor*30, sensitive=0)
+        button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=scale_factor*300, ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=scale_factor*300,ysize=scale_factor*30)       
  
       ;TIME BAR ACROSS THE BOTTOM
@@ -571,6 +571,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               drop1=widget_droplist(subbaseR7a, value=ngims_list, uname='ngims_list', title='NGIMS', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
+            button7 = widget_button(subbaseR7a, value='Reset Orbit Colors', uname='orbit_reset', yoffset=vert_align)
         
       
              
@@ -754,10 +755,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           ;ANIMATION MENU
           subbaseR9 = widget_base(subbaseR, /column)
             label9 = widget_label(subbaseR9, value='Animation Options', /align_center)
-            subbaseR9a = widget_base(subbaseR9, /row)
-              label9 = widget_label(subbaseR9a, value='Full Time Animation', /align_center)
-              button9a = widget_button(subbaseR9a, value='Start', uname='full_time_anim_begin')
-              button9b = widget_button(subbaseR9a, value='Stop', uname='full_time_anim_end',sensitive=0)
+            
+              label9 = widget_label(subbaseR9, value='Full Time Animation', /align_center)
+              subbaseR9a = widget_base(subbaseR9, /row,/align_center)
+                label9 = widget_label(subbaseR9a, value='Step Size')
+                text9 = widget_text(subbaseR9a, value='10', uvalue='animation_step', /editable, xsize=10)
+              button9a = widget_button(subbaseR9, value='Forward', uname='full_time_anim_begin')
+              button9b = widget_button(subbaseR9, value='Backward', uname='full_time_anim_end',sensitive=0)
             
             button9 = widget_button(subbaseR9, value='Return', uname='anim_return', xsize=scale_factor*300, ysize=scale_factor*30)
             
@@ -925,7 +929,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       sun_model = obj_new('IDLgrModel')
       view->add, sun_model
       
-      sun_vector = obj_new('IDLgrPolyline',[0,solar_x_coord[time_index]],[0,solar_y_coord[time_index]],[0,solar_z_coord[time_index]],color=[255,255,0],thick=2)
+      sun_vector = obj_new('IDLgrPolyline',[0,solar_x_coord[time_index]],[0,solar_y_coord[time_index]],[0,solar_z_coord[time_index]],color=[255,255,0],thick=1)
       for i=0, n_elements(sun_vector) -1 do sun_model->add, sun_vector[i]
       sun_model->setproperty,hide=1
       if keyword_set(sunmodel) then sun_model->setproperty,hide=0
