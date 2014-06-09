@@ -40,7 +40,7 @@
 @mvn_kp_3d_optimize
 @mvn_kp_time_find
 @mvn_kp_plotimage
-
+@mvn_kp_oplotimage
 
 pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbit, list=list, basemap=basemap, $
                   colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $
@@ -247,7 +247,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
         endif
      endif
     endif else begin
-      mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
+      mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
                   MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata)
@@ -260,7 +260,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
 ;LOAD THE REQUESTED COLOR TABLE
   color_default = 11
   if keyword_set(colors) eq 0 then begin
-   ; loadct,color_default, /silent
+    loadct,color_default, /silent
   endif else begin
     if size(colors, /type) eq 7 then begin
       if colors eq 'bw' then color_default = 0
@@ -541,7 +541,7 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
                charthick=2, xthick=2, ythick=2,color='000000'xL,background='FFFFFF'xL
           if keyword_set(mso) eq 0 then begin
            if keyword_set(basemap) then begin
-            oplotimage,mapimage,imgxrange=[0,360],imgyrange=[-90,90]
+            mvn_kp_oplotimage,mapimage,imgxrange=[0,360],imgyrange=[-90,90]
            endif
           endif
           if keyword_set(nopath) eq 0 then begin

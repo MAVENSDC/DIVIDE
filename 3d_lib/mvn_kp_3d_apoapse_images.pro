@@ -15,7 +15,7 @@
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
-pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start
+pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start, stop, apo_time_blend
 
   if blend eq 1 then begin              ;RETURN AVERAGE IMAGE OVER ALL INPUT DATA
         sizes = size(input)
@@ -44,16 +44,67 @@ pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start
   
   if blend eq 0 then begin
     
-    new_start = time_double(start)
-    new_time = time_double(time)
-    
-    start_min = new_start - new_time
-    index = min(abs(start_min), new_min)
-
-        for i=0,2 do begin
-          image_out[i,*,*] = bytscl(input[*,*,new_min])
+  
+    if apo_time_blend eq 0 then begin
+      new_start = time_double(start, tformat="YYYY-MM-DDThh:mm:ss")
+      new_end = time_double(stop, tformat="YYYY-MM-DDThh:mm:ss")
+      new_time = time_double(time, tformat="YYYY-MM-DDThh:mm:ss")
+    endif else begin
+      new_start = time_double(start, tformat="YYYY-MM-DDThh:mm:ss")
+      new_end = time_double(stop, tformat="YYYY-MM-DDThh:mm:ss")
+      new_time = time_double(time, tformat="YYYY-MM-DDThh:mm:ss")
+      
+      temp_start = dblarr(n_elements(new_start))
+      temp_end = dblarr(n_elements(new_end))
+      
+      temp_start[0] = 0d
+      for i=1,n_elements(new_start)-1 do begin
+        temp_start[i] = new_start[i] - ((new_start[i] - new_end[i-1])/2)
+        temp_end[i-1] = new_end[i-1] + ((new_start[i]-new_end[i-1])/2)
+      endfor
+      temp_end[n_elements(new_end)-1] = 1e10
+      
+      new_start = temp_start
+      new_end = temp_end
+    endelse 
+ 
+ 
+    if new_time ge new_start[0] then begin    ;selected time falls after first iuvs image
+      if new_time le new_end[n_elements(new_end)-1] then begin        ;selected time falls before final iuvs image
+        image_index = -1
+        
+        start_gap = new_time - new_start
+        end_gap = new_time - new_end
+        
+        for i=0,n_elements(new_start)-1 do begin
+          if start_gap[i] ge 0.0 then begin
+            if end_gap[i] le 0.0 then begin
+              image_index = i 
+            endif
+          endif
         endfor
+      
+        if image_index ge 0 then begin
+         for i=0,2 do begin
+            image_out[i,*,*] = bytscl(input[*,*,image_index])
+          endfor
+        endif
+        
 
+        image_size=size(image_out,/dimensions)
+        image_out = shift(image_out, 0,image_size[1]/2,0)
+      
+      endif else begin                              ;selected time falls before last iuvs image
+        image_out[*,*,*] = 0
+      endelse 
+    endif else begin                          ;selected time falls before first iuvs image
+      image_out[*,*,*] = 0
+    endelse
+ 
+
+
+
+       
   endif 
 
 
