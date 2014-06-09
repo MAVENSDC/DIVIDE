@@ -1,3 +1,202 @@
+
+;+
+; NAME:
+;   SUBCELL
+;
+; AUTHOR:
+;   Craig B. Markwardt, NASA/GSFC Code 662, Greenbelt, MD 20770
+;   craigm@lheamail.gsfc.nasa.gov
+;
+; PURPOSE:
+;   Finds the position of a subwindow within a reference window.
+;
+; CALLING SEQUENCE:
+;   sub = subcell(panel, refposition)
+;
+; DESCRIPTION: 
+;
+;   SUBCELL finds the position of a subwindow within another window.
+;   This could be useful in cases where the position of one window is
+;   specified relative to another one.
+;
+;   When plotting, one often wants to describe the position of the
+;   plot box with respect to another box on the screen.  In that
+;   respect, the reference window can be thought of as a virtual
+;   display, and the SUBPOS as virtual a position on that display.
+;   The SUBCELL function transforms the relative coordinates of the
+;   virtual position back to normal screen coordinates.
+;
+; INPUTS:
+;
+;   SUBPOS - A four-element array giving the position of the
+;            subwindow, *relative* to a reference window given by
+;            POSITION.  Given as [XS1, YS1, XS2, YS2], which describes
+;            the lower left and upper right corners of the subwindow.
+;            Each value is a number between zero and one, zero being
+;            the lower/left and one being the upper/right corners of
+;            the reference window.
+;
+;   POSITION - A four-element array giving the position of the
+;              reference window on the screen.  Equivalent to the
+;              graphics keyword of the same name.
+; 
+; OPTIONAL INPUTS:
+;   NONE
+;
+; INPUT KEYWORD PARAMETERS:
+;
+;   MARGIN - If set, then a default value for SUBPOS is found using
+;            the DEFSUBCELL function.
+;
+; RETURNS:
+;   The position of the subwindow, in normal coordinates.
+;
+; PROCEDURE:
+;
+; EXAMPLE:
+;
+;
+; SEE ALSO:
+;
+;   DEFSUBCELL, SUBCELLARRAY
+;
+; EXTERNAL SUBROUTINES:
+;
+;   DEFSUBCELL
+;
+; MODIFICATION HISTORY:
+;   Written, CM, 1997
+;   Added copyright notice, 25 Mar 2001, CM
+;
+;  $Id: subcell.pro,v 1.2 2001/03/25 18:54:31 craigm Exp $
+;
+;-
+; Copyright (C) 1997,2001, Craig Markwardt
+; This software is provided as is without any warranty whatsoever.
+; Permission to use, copy, modify, and distribute modified or
+; unmodified copies is granted, provided this copyright and disclaimer
+; are included unchanged.
+;-
+
+function subcell, subpos, position, margin=margin
+
+  ;; Default value for subposition
+  if n_elements(subpos) EQ 0 then mysubpos = [-1.,-1,-1,-1] $
+  else mysubpos = subpos
+
+  ;; Default value for position - full screen
+  if n_elements(position) EQ 0 then position = [0.,0.,1.,1.]
+
+  ;; Get margins if necessary
+  if keyword_set(margin) EQ 1 OR n_elements(subpos) EQ 0 then $
+    mysubpos = defsubcell(mysubpos)
+
+  ;; Compute new window position
+  x0 = position(0)
+  y0 = position(1)
+  dx = position(2)-position(0)
+  dy = position(3)-position(1)
+
+  newsubpos = reform(mysubpos * 0, 4)
+  newsubpos([0,2]) = x0 + dx * mysubpos([0,2])
+  newsubpos([1,3]) = y0 + dy * mysubpos([1,3])
+
+  return, newsubpos
+end
+
+  
+
+
+
+
+function plotimage_resamp, image, nx, ny, bdepth, newx, newy, interp=interp
+
+  ;; Sometimes the final dimension is lost.  Put it back
+  image = reform(image, nx, ny, bdepth, /overwrite)
+
+  ;; Correct interpolation
+  srx = float(nx)/newx * findgen(newx) - 0.5 + 0.5*(float(nx)/newx)
+  sry = float(ny)/newy * findgen(newy) - 0.5 + 0.5*(float(ny)/newy)
+  srz = indgen(bdepth)
+  if keyword_set(interp) then $
+    return, interpolate(image, srx, sry, srz, /grid)
+
+  ;; Simple nearest neighbor interpolation
+  return, interpolate(image, round(srx), round(sry), srz, /grid)
+end
+
+pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, $
+                   logscale=logscale, $
+                   quiet=quiet, status=status, pixtolerance=pixtolerance
+
+  if keyword_set(logscale) then begin
+     if min(xrange0) LE 0 OR min(imgxrange0) LE 0 then $
+        message, ('ERROR: if XLOG or YLOG is set, then the image boundary cannot '+$
+                  'cross or touch zero.  Did you forget to set IMGXRANGE or IMGYRANGE?')
+     xrange    = alog10(xrange0)
+     imgxrange = alog10(imgxrange0)
+  endif else begin
+     xrange    = xrange0
+     imgxrange = imgxrange0
+  endelse
+
+  if n_elements(pixtolerance) EQ 0 then pixtolerance = 1.e-2
+  status = 0
+  ;; Decide if image must be reversed
+  xreverse = 0
+  if double(xrange(1)-xrange(0))*(imgxrange(1)-imgxrange(0)) LT 0 then begin
+      xreverse = 1
+      imgxrange = [imgxrange(1), imgxrange(0)]
+  endif
+
+  srcxpix  = [ 0L, imgxsize-1 ]
+  ;; Size of one x pix
+  dx = double(imgxrange(1) - imgxrange(0)) / imgxsize
+
+  if min(xrange) GE max(imgxrange) OR max(xrange) LE min(imgxrange) then begin
+      message, 'WARNING: No image data in specified plot RANGE.', /info, $
+        noprint=keyword_set(quiet)
+      return
+  endif
+
+  ;; Case where xrange cuts off image at left
+  if (xrange(0) - imgxrange(0))/dx GT 0 then begin
+      offset = double(xrange(0)-imgxrange(0))/dx
+      if abs(offset-round(offset)) LT pixtolerance then $
+        offset = round(offset)
+      srcxpix(0) = floor(offset)
+      froffset = offset - floor(offset)
+      if abs(froffset) GT pixtolerance then begin
+          xrange = double(xrange)
+          xrange(0) = imgxrange(0) +dx*srcxpix(0)
+      endif
+  endif
+
+  ;; Case where xrange cuts off image at right
+  if (xrange(1) - imgxrange(1))/dx LT 0 then begin
+      offset = double(xrange(1)-imgxrange(0))/dx
+      if abs(offset-round(offset)) LT pixtolerance then $
+        offset = round(offset)
+      srcxpix(1) = ceil(offset) - 1
+      froffset = offset - ceil(offset)
+      if abs(froffset) GT pixtolerance then begin
+          xrange = double(xrange)
+          srcxpix(1) = srcxpix(1) < (imgxsize-1)
+          xrange(1) = imgxrange(0) + dx*(srcxpix(1)+1)
+      endif
+  endif
+
+  imgxpanel = [0., 1.]
+  if (xrange(0) - imgxrange(0))/dx LT 0 then $
+    imgxpanel(0) = (imgxrange(0) - xrange(0))/(xrange(1)-xrange(0))
+  if (xrange(1) - imgxrange(1))/dx GT 0 then $
+    imgxpanel(1) = (imgxrange(1) - xrange(0))/(xrange(1)-xrange(0))
+
+  status = 1
+  return
+end
+
+
 ;+
 ; NAME:
 ;   PLOTIMAGE
@@ -332,7 +531,7 @@
 
 
 ;; Main program
-pro plotimage, img0, xrange=xrange0, yrange=yrange0, $
+pro mvn_kp_plotimage, img0, xrange=xrange0, yrange=yrange0, $
                imgxrange=imgxrange0, imgyrange=imgyrange0, $
                xlog=xlog, ylog=ylog, $
                position=position, panel=panel, subpanel=subpanel, $
@@ -616,8 +815,7 @@ pro plotimage, img0, xrange=xrange0, yrange=yrange0, $
 
       ;; Rescale the image if needed
       if rescaling then begin
-          img = plotimage_resamp(temporary(img), nx, ny, bdepth, $
-            dx, dy, interp=interp)
+          img = plotimage_resamp(temporary(img), nx, ny, bdepth, dx, dy, interp=interp)
           img = reform(img, dx, dy, bdepth, /overwrite)
       endif
 
@@ -705,332 +903,6 @@ pro plotimage, img0, xrange=xrange0, yrange=yrange0, $
         xstyle=xstyle OR 1, ystyle=ystyle OR 1, title=title, $
         position=position, _EXTRA=extra
   endif
-
-  return
-end
-
-
-function plotimage_resamp, image, nx, ny, bdepth, newx, newy, interp=interp
-
-  ;; Sometimes the final dimension is lost.  Put it back
-  image = reform(image, nx, ny, bdepth, /overwrite)
-
-  ;; Correct interpolation
-  srx = float(nx)/newx * findgen(newx) - 0.5 + 0.5*(float(nx)/newx)
-  sry = float(ny)/newy * findgen(newy) - 0.5 + 0.5*(float(ny)/newy)
-  srz = indgen(bdepth)
-  if keyword_set(interp) then $
-    return, interpolate(image, srx, sry, srz, /grid)
-
-  ;; Simple nearest neighbor interpolation
-  return, interpolate(image, round(srx), round(sry), srz, /grid)
-end
-
-pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, $
-                   logscale=logscale, $
-                   quiet=quiet, status=status, pixtolerance=pixtolerance
-
-  if keyword_set(logscale) then begin
-     if min(xrange0) LE 0 OR min(imgxrange0) LE 0 then $
-        message, ('ERROR: if XLOG or YLOG is set, then the image boundary cannot '+$
-                  'cross or touch zero.  Did you forget to set IMGXRANGE or IMGYRANGE?')
-     xrange    = alog10(xrange0)
-     imgxrange = alog10(imgxrange0)
-  endif else begin
-     xrange    = xrange0
-     imgxrange = imgxrange0
-  endelse
-
-  if n_elements(pixtolerance) EQ 0 then pixtolerance = 1.e-2
-  status = 0
-  ;; Decide if image must be reversed
-  xreverse = 0
-  if double(xrange(1)-xrange(0))*(imgxrange(1)-imgxrange(0)) LT 0 then begin
-      xreverse = 1
-      imgxrange = [imgxrange(1), imgxrange(0)]
-  endif
-
-  srcxpix  = [ 0L, imgxsize-1 ]
-  ;; Size of one x pix
-  dx = double(imgxrange(1) - imgxrange(0)) / imgxsize
-
-  if min(xrange) GE max(imgxrange) OR max(xrange) LE min(imgxrange) then begin
-      message, 'WARNING: No image data in specified plot RANGE.', /info, $
-        noprint=keyword_set(quiet)
-      return
-  endif
-
-  ;; Case where xrange cuts off image at left
-  if (xrange(0) - imgxrange(0))/dx GT 0 then begin
-      offset = double(xrange(0)-imgxrange(0))/dx
-      if abs(offset-round(offset)) LT pixtolerance then $
-        offset = round(offset)
-      srcxpix(0) = floor(offset)
-      froffset = offset - floor(offset)
-      if abs(froffset) GT pixtolerance then begin
-          xrange = double(xrange)
-          xrange(0) = imgxrange(0) +dx*srcxpix(0)
-      endif
-  endif
-
-  ;; Case where xrange cuts off image at right
-  if (xrange(1) - imgxrange(1))/dx LT 0 then begin
-      offset = double(xrange(1)-imgxrange(0))/dx
-      if abs(offset-round(offset)) LT pixtolerance then $
-        offset = round(offset)
-      srcxpix(1) = ceil(offset) - 1
-      froffset = offset - ceil(offset)
-      if abs(froffset) GT pixtolerance then begin
-          xrange = double(xrange)
-          srcxpix(1) = srcxpix(1) < (imgxsize-1)
-          xrange(1) = imgxrange(0) + dx*(srcxpix(1)+1)
-      endif
-  endif
-
-  imgxpanel = [0., 1.]
-  if (xrange(0) - imgxrange(0))/dx LT 0 then $
-    imgxpanel(0) = (imgxrange(0) - xrange(0))/(xrange(1)-xrange(0))
-  if (xrange(1) - imgxrange(1))/dx GT 0 then $
-    imgxpanel(1) = (imgxrange(1) - xrange(0))/(xrange(1)-xrange(0))
-
-  status = 1
-  return
-end
-
-
-;+
-; NAME:
-;   SUBCELL
-;
-; AUTHOR:
-;   Craig B. Markwardt, NASA/GSFC Code 662, Greenbelt, MD 20770
-;   craigm@lheamail.gsfc.nasa.gov
-;
-; PURPOSE:
-;   Finds the position of a subwindow within a reference window.
-;
-; CALLING SEQUENCE:
-;   sub = subcell(panel, refposition)
-;
-; DESCRIPTION: 
-;
-;   SUBCELL finds the position of a subwindow within another window.
-;   This could be useful in cases where the position of one window is
-;   specified relative to another one.
-;
-;   When plotting, one often wants to describe the position of the
-;   plot box with respect to another box on the screen.  In that
-;   respect, the reference window can be thought of as a virtual
-;   display, and the SUBPOS as virtual a position on that display.
-;   The SUBCELL function transforms the relative coordinates of the
-;   virtual position back to normal screen coordinates.
-;
-; INPUTS:
-;
-;   SUBPOS - A four-element array giving the position of the
-;            subwindow, *relative* to a reference window given by
-;            POSITION.  Given as [XS1, YS1, XS2, YS2], which describes
-;            the lower left and upper right corners of the subwindow.
-;            Each value is a number between zero and one, zero being
-;            the lower/left and one being the upper/right corners of
-;            the reference window.
-;
-;   POSITION - A four-element array giving the position of the
-;              reference window on the screen.  Equivalent to the
-;              graphics keyword of the same name.
-; 
-; OPTIONAL INPUTS:
-;   NONE
-;
-; INPUT KEYWORD PARAMETERS:
-;
-;   MARGIN - If set, then a default value for SUBPOS is found using
-;            the DEFSUBCELL function.
-;
-; RETURNS:
-;   The position of the subwindow, in normal coordinates.
-;
-; PROCEDURE:
-;
-; EXAMPLE:
-;
-;
-; SEE ALSO:
-;
-;   DEFSUBCELL, SUBCELLARRAY
-;
-; EXTERNAL SUBROUTINES:
-;
-;   DEFSUBCELL
-;
-; MODIFICATION HISTORY:
-;   Written, CM, 1997
-;   Added copyright notice, 25 Mar 2001, CM
-;
-;  $Id: subcell.pro,v 1.2 2001/03/25 18:54:31 craigm Exp $
-;
-;-
-; Copyright (C) 1997,2001, Craig Markwardt
-; This software is provided as is without any warranty whatsoever.
-; Permission to use, copy, modify, and distribute modified or
-; unmodified copies is granted, provided this copyright and disclaimer
-; are included unchanged.
-;-
-
-function subcell, subpos, position, margin=margin
-
-  ;; Default value for subposition
-  if n_elements(subpos) EQ 0 then mysubpos = [-1.,-1,-1,-1] $
-  else mysubpos = subpos
-
-  ;; Default value for position - full screen
-  if n_elements(position) EQ 0 then position = [0.,0.,1.,1.]
-
-  ;; Get margins if necessary
-  if keyword_set(margin) EQ 1 OR n_elements(subpos) EQ 0 then $
-    mysubpos = defsubcell(mysubpos)
-
-  ;; Compute new window position
-  x0 = position(0)
-  y0 = position(1)
-  dx = position(2)-position(0)
-  dy = position(3)-position(1)
-
-  newsubpos = reform(mysubpos * 0, 4)
-  newsubpos([0,2]) = x0 + dx * mysubpos([0,2])
-  newsubpos([1,3]) = y0 + dy * mysubpos([1,3])
-
-  return, newsubpos
-end
-
-  
-;+
-; NAME:
-;   OPLOTIMAGE
-;
-; AUTHOR:
-;   Craig B. Markwardt, NASA/GSFC Code 662, Greenbelt, MD 20770
-;   craigm@lheamail.gsfc.nasa.gov
-;
-; PURPOSE:
-;   Overlays an image on an existing plot.
-;
-; CALLING SEQUENCE:
-;   OPLOTIMAGE, img
-;
-; DESCRIPTION: 
-;
-;   OPLOTIMAGE overlays an image on an already-existing set of plot
-;   axes.  It should not matter what plot elements have already be
-;   displayed, but at least one command is needed to set up the plot
-;   axes.
-;
-;   Only the IMGXRANGE and IMGYRANGE keywords, specifying the extent
-;   of the image, can be given in a call to OPLOTIMAGE.
-;
-;   See PLOTIMAGE for more detailed information.
-;
-; INPUTS:
-;
-;   IMG - A byte array to be displayed.  An image declared as
-;         ARRAY(M,N) will be M pixels in the x-direction and N pixels
-;         in the y-direction.  The image is resampled via
-;         interpolation to fill the desired display region.
-; 
-; OPTIONAL INPUTS:
-;   NONE
-;
-; INPUT KEYWORD PARAMETERS:
-;
-;   IMGXRANGE, IMGYRANGE - Each is a two component vector that
-;                          describes the X and Y position of the first
-;                          and last pixels.
-;                          Default: the size of the image in pixels
-;
-; OUTPUTS:
-;   NONE
-;
-; PROCEDURE:
-;
-; EXAMPLE:
-;
-;   This example first constructs an image whose values are found by
-;       z(x,y) = cos(x) * sin(y)
-;   and x and y are in the range [-2,2] and [4,8], respectively.
-;   The image is then plotted in the range [-10, 10] in both x and
-;   y directions.
-;   
-;   x = findgen(20)/5. - 2.
-;   y = findgen(20)/5. + 4.
-;   zz = cos(x) # sin(y)
-;   imgxrange = [min(x), max(x)]
-;   imgyrange = [min(y), max(y)]
-;   xr=[-10.,10]
-;   yr=[-10.,10]
-;   plotimage, bytscl(zz), imgxrange=imgxrange, imgyrange=imgyrange
-;
-;   Now for the overlay.  A new image is created in the ranges between
-;   -10 and 0:
-;      z(x,y) = x y
-;
-;   x = findgen(20)/2 - 10.
-;   y = findgen(20)/2 - 10.
-;   imgxrange = [min(x), max(x)]
-;   imgyrange = [min(y), max(y)]
-;   zz = x # y
-;   oplotimage, bytscl(zz), imgxrange=imgxrange, imgyrange=imgyrange
-;
-; SEE ALSO:
-;
-;   PLOTIMAGE, BYTSCL
-;
-; EXTERNAL SUBROUTINES:
-;
-;   SUBCELL, DEFSUBCELL, TVIMAGE
-;
-; MODIFICATION HISTORY:
-;   Written, CM, 1997
-;   Removed BYTE requirement, added ON_ERROR, CM 19 Apr 2000
-;   Added copyright notice, CM 25 Mar 2001
-;
-;   $Id: oplotimage.pro,v 1.2 2001/03/25 18:10:44 craigm Exp $
-;
-;-
-; Copyright (C) 1997-2001, Craig Markwardt
-; This software is provided as is without any warranty whatsoever.
-; Permission to use, copy, modify, and distribute modified or
-; unmodified copies is granted, provided this copyright and disclaimer
-; are included unchanged.
-;-
-
-pro oplotimage, img, $
-                imgxrange=imgxrange, imgyrange=imgyrange, $
-                _EXTRA=extra
-
-  ;; Return to user upon encountering an error
-  on_error, 2
-
-  ;; Usage message
-  if n_params() EQ 0 then begin
-      message, 'OPLOTIMAGE, image, imgxrange=, imgyrange=,...', /info
-      return
-  endif
-
-  sysposition = fltarr(4)
-  sysposition([0,2]) = !x.window
-  sysposition([1,3]) = !y.window
-  sysxrange   = !x.range
-  if sysxrange(0) EQ 0. AND sysxrange(1) EQ 0. then sysxrange = !x.crange
-  sysyrange   = !y.range
-  if sysyrange(0) EQ 0. AND sysyrange(1) EQ 0. then sysyrange = !y.crange
-  if (sysxrange(0) EQ 0. AND sysxrange(1) EQ 0.) OR $
-    (sysyrange(0) EQ 0. AND sysyrange(1) EQ 0.) then begin
-      message, 'ERROR: you must first sent the X- and Y-RANGE'
-  endif
-
-  plotimage, img, xrange=sysxrange, yrange=sysyrange, imgxrange=imgxrange, $
-    imgyrange=imgyrange, /noerase, position=sysposition, $
-    /noaxes, _EXTRA=extra
 
   return
 end

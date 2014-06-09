@@ -151,7 +151,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
    
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
-     instrument_array = intarr(17)     ;flags to indicate if a given instrumnet data is present
+     instrument_array = intarr(18)     ;flags to indicate if a given instrumnet data is present
      
      tags=tag_names(insitu1)
      temp = where(tags eq 'LPW')
@@ -191,6 +191,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       temp = where(tags1 eq 'CORONA_LO_DISK')
       if temp ne -1 then instrument_array[16] = 1
      endif
+     temp = where(tags eq 'USER') 
+     if temp ne -1 then instrument_array[17] = 1
   
   
   ;PARSE COMMAND LINE OPTIONS FOR INITIAL CONDITIONS
@@ -571,6 +573,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               drop1=widget_droplist(subbaseR7a, value=ngims_list, uname='ngims_list', title='NGIMS', frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
+            if instrument_array[17] eq 1 then begin
+              user_list = tag_names(insitu1.user)
+              drop1=widget_droplist(subbaseR7a, value=user_list, uname='user_list', title='User', frame=5,  yoffset=vert_align)
+              vert_align = vert_align + 15
+            endif
             button7 = widget_button(subbaseR7a, value='Reset Orbit Colors', uname='orbit_reset', yoffset=vert_align)
         
       
@@ -724,6 +731,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                   widget_control,button8g,/set_button
                   apoapse_blend=0
                   button8g = widget_button(subbaseR8g, uname='apo_blend', value='Average', xsize=scale_factor*150, ysize=scale_factor*15, /no_release)
+                  label8 = widget_label(subbaseR8f, value='Time Blend', /align_center)
+                  subbaseR8gb = widget_base(subbaseR8f, /exclusive, /column)
+                  button8ga = widget_button(subbaseR8gb, uname='apo_time', value='Exact', xsize=scale_factor*150, ysize=scale_factor*15, /no_release)
+                  widget_control, button8ga, /set_button
+                  apo_time_blend = 0
+                  button8ga = widget_button(subbaseR8gb, uname='apo_time', value='Nearest', xsize=scale_factor*150, ysize=scale_factor*15, /no_release) 
            endif
            ;CORONAL SCAN DISPLAY
            if (instrument_array[10] eq 1) or (instrument_array[11] eq 1) or (instrument_array[13] eq 1) or (instrument_array[14] eq 1) or $
@@ -747,7 +760,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 widget_control,button8h,/set_button
                 coronal_reset = 1
                 button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
-                widget_control,subbaseR8h, sensitive=0
+               
            endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=scale_factor*300,ysize=scale_factor*30)
@@ -1464,6 +1477,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
 
         endif 
 
+  ;CREATE THE MODEL FOR THE CORONA DISPLAYS
+
+
 
     z_position = [0.0,0.0,1.0,1.0]
     
@@ -1632,7 +1648,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           endelse
           
           if instrument_array[9] eq 1 then begin              ;SET THE IUVS APOAPSE STRUCTURES
-            iuvs_apo_state = {subbaseR8d:subbaseR8d,apoapse_blend:apoapse_blend, apoapse_image_choice:apoapse_image_choice}
+            iuvs_apo_state = {subbaseR8d:subbaseR8d,apoapse_blend:apoapse_blend, apoapse_image_choice:apoapse_image_choice, apo_time_blend:apo_time_blend}
             iuvs2 = create_struct(iuvs1, iuvs_apo_state)          
           endif else begin
             iuvs2 = iuvs1

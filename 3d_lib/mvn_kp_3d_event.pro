@@ -276,15 +276,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       image = bytarr(3,90,45)
                       time = (*pstate).insitu[(*pstate).time_index].time_string
                       case (*pstate).apoapse_image_choice of 
-                                'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                                'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
+                                'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                 'Radiance Map: H': begin
                                                       sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
                                                       input_data = fltarr(sizes(2),sizes(3),sizes(4))
                                                       for i=0,sizes(4)-1 do begin
                                                         input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
                                                       endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                    end
                                 'Radiance Map: O_1304': begin
                                                             sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
@@ -292,7 +292,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                             for i=0,sizes(4)-1 do begin
                                                               input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
                                                             endfor
-                                                            MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                            MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                          end  
                                 'Radiance Map: CO': begin
                                                       sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
@@ -300,7 +300,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       for i=0,sizes(4)-1 do begin
                                                         input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
                                                       endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                    end
                                 'Radiance Map: NO': begin
                                                       sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
@@ -308,7 +308,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       for i=0,sizes(4)-1 do begin
                                                         input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
                                                       endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                    end
                               endcase                           
                       oImage = OBJ_NEW('IDLgrImage', image )
@@ -880,12 +880,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr       
+                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin           
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end           
@@ -911,11 +921,21 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                        end    
@@ -940,12 +960,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string((*pstate).colorbar_ticks),2)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr     
+                      ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin             
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end
@@ -970,12 +1000,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr      
+                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin            
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end 
@@ -1000,12 +1040,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
+                       ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end
@@ -1030,12 +1080,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr
+                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin                  
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
@@ -1059,12 +1119,62 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                          xc = mg_linear_function(xr, [-1.7,1.4])
-                          yc = mg_linear_function(yr, [-1.9,-1.5])
-                          if finite(yc[0]) and finite(yc[1])  then begin
-                            (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          endif
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
+                          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin              
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                      (*pstate).window->draw,(*pstate).view   
+                      end
+
+        'user_list': begin
+                      mag_index = widget_info(event.id, /droplist_select)
+                      widget_control, event.id, get_value=newval
+                      parameter = 'USER.'+strtrim(string(newval[mag_index]))                      
+                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                             first_level_tags, check, level0_index, level1_index, tag_array             
+                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
+                      (*pstate).colorbar_ticks = new_ticks
+                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
+                      (*pstate).level0_index = level0_index
+                      (*pstate).level1_index = level1_index
+                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
+                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+                      ;CHANGE THE COLOR BAR SETTINGS
+                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
+                      ;UPDATE THE PARAMETER PLOT 
+                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr        
+                          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
+                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                          if nan_error_check eq 1 then begin
+                            xc = mg_linear_function(xr, [-1.7,1.4])
+                            yc = mg_linear_function(yr, [-1.9,-1.5])
+                            if finite(yc[0]) and finite(yc[1])  then begin
+                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+                            endif
+                          endif else begin
+                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
+                          endelse
                           (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                       end
@@ -1702,7 +1812,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                               time = (*pstate).insitu[(*pstate).time_index].time_string
                                               
                                                 MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, $
-                                                                          (*pstate).iuvs.apoapse.time_start
+                                                                          (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                  
                                                         oImage = OBJ_NEW('IDLgrImage', image )
                                                         (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1716,7 +1826,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                               (*pstate).mars_base_map = 'apoapse'
                                               time = (*pstate).insitu[(*pstate).time_index].time_string
                                                  MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, $
-                                                                          (*pstate).iuvs.apoapse.time_start
+                                                                          (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                 
                                                         oImage = OBJ_NEW('IDLgrImage', image )
                                                         (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1734,7 +1844,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                     input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
                                                   endfor
                                                   MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
-                                                                              (*pstate).iuvs.apoapse.time_start
+                                                                              (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                     
                                                             oImage = OBJ_NEW('IDLgrImage', image )
                                                             (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1752,7 +1862,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                           input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
                                                         endfor
                                                         MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
-                                                                                    (*pstate).iuvs.apoapse.time_start
+                                                                                    (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                           
                                                                   oImage = OBJ_NEW('IDLgrImage', image )
                                                                   (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1770,7 +1880,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
                                                     endfor
                                                     MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
-                                                                                (*pstate).iuvs.apoapse.time_start
+                                                                                (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                       
                                                               oImage = OBJ_NEW('IDLgrImage', image )
                                                               (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1788,7 +1898,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
                                                     endfor
                                                     MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, $
-                                                                                (*pstate).iuvs.apoapse.time_start
+                                                                                (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                       
                                                               oImage = OBJ_NEW('IDLgrImage', image )
                                                               (*pstate).opolygons -> setproperty, texture_map=oimage
@@ -1806,15 +1916,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           image = bytarr(3,90,45)
                           time = (*pstate).insitu[(*pstate).time_index].time_string
                           case (*pstate).apoapse_image_choice of 
-                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).apo_time_blend
+                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).apo_time_blend
                             'Radiance Map: H': begin
                                                 sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
                                                 input_data = fltarr(sizes(2),sizes(3),sizes(4))
                                                 for i=0,sizes(4)-1 do begin
                                                   input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
                                                 endfor
-                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                end
                             'Radiance Map: O_1304': begin
                                                       sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
@@ -1822,7 +1932,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       for i=0,sizes(4)-1 do begin
                                                         input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
                                                       endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                      end
                             'Radiance Map: CO': begin
                                                   sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
@@ -1830,7 +1940,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                   for i=0,sizes(4)-1 do begin
                                                     input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
                                                   endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                  end
                             'Radiance Map: NO': begin
                                                   sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
@@ -1838,7 +1948,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                   for i=0,sizes(4)-1 do begin
                                                     input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
                                                   endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                  end
                           endcase
                           oImage = OBJ_NEW('IDLgrImage', image )
@@ -1851,15 +1961,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           image = bytarr(3,90,45)
                           time = (*pstate).insitu[(*pstate).time_index].time_string
                           case (*pstate).apoapse_image_choice of 
-                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
-                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                            'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
+                            'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                             'Radiance Map: H':begin
                                                 sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
                                                 input_data = fltarr(sizes(2),sizes(3),sizes(4))
                                                 for i=0,sizes(4)-1 do begin
                                                   input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
                                                 endfor
-                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                end
                             'Radiance Map: O_1304': begin
                                                       sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
@@ -1867,7 +1977,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                       for i=0,sizes(4)-1 do begin
                                                         input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
                                                       endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                      end
                             'Radiance Map: CO': begin
                                                   sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
@@ -1875,7 +1985,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                   for i=0,sizes(4)-1 do begin
                                                     input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
                                                   endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                  end
                             'Radiance Map: NO': begin
                                                   sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
@@ -1883,7 +1993,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                   for i=0,sizes(4)-1 do begin
                                                     input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
                                                   endfor
-                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start
+                                                  MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                  end
                           endcase
                           oImage = OBJ_NEW('IDLgrImage', image )
@@ -2151,6 +2261,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             if newval eq 'Keep Orbit' then (*pstate).coronal_reset = 0 
                             print,'reset ',(*pstate).coronal_reset
                            end
+         
+         'apo_time': begin
+                      widget_control,event.id, get_value=newval
+                      if newval eq 'Nearest' then (*pstate).apo_time_blend = 1
+                      if newval eq 'Exact' then (*pstate).apo_time_blend = 0
+                     end
          
   endcase     ;END OF BUTTON CONTROL
   
