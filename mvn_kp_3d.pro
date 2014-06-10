@@ -21,7 +21,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
                view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid, $
-               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale
+               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, speckle=speckle
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -1072,6 +1072,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       parameterModel->setproperty,hide=1
 
     ;CREATE THE ORBITAL PATH
+    if keyword_set(speckle) then begin
+      orbit_offset = 0.001
+    endif else begin
+      orbit_offset = 0.00001
+    endelse
       if coord_sys eq 0 then begin
         x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
         y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
@@ -1079,11 +1084,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
         for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
           x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
-          x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
-          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_y/10000.0)+0.00001
-          z_orbit[i*2] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
-          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_y/10000.0)+orbit_offset
+          z_orbit[i*2] = (insitu1[i].spacecraft.geo_z/10000.0)
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_z/10000.0)+orbit_offset
           path_connections[i*3] = 2
           path_connections[(i*3)+1] = (i*2L)
           path_connections[(i*3)+2] = (i*2L)+1L
@@ -1095,11 +1100,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         path_connections = lonarr(n_elements(insitu1.spacecraft.mso_x)*3)
         for i=0L,n_elements(insitu1.spacecraft.mso_x)-1 do begin
           x_orbit[i*2] = insitu1[i].spacecraft.mso_x/10000.0
-          x_orbit[(i*2)+1] = insitu1[i].spacecraft.mso_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.mso_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.mso_y/10000.0
-          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_y/10000.0)+0.00001
-          z_orbit[i*2] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
-          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_y/10000.0)+orbit_offset
+          z_orbit[i*2] = (insitu1[i].spacecraft.mso_z/10000.0)
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_z/10000.0)+orbit_offset
           path_connections[i*3] = 2
           path_connections[(i*3)+1] = (i*2L)
           path_connections[(i*3)+2] = (i*2L)+1L

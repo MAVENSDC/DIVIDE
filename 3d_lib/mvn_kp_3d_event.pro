@@ -370,7 +370,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).window->draw, (*pstate).view 
                         end
                 'MOLA_BW': begin
-                             read_jpeg,(*pstate).bm_install_directory+'MOLA_bw_2500x1250.jpg',image
+                             read_jpeg,(*pstate).bm_install_directory+'MOLA_BW_2500x1250.jpg',image
                              oImage = OBJ_NEW('IDLgrImage', image )
                              (*pstate).mars_base_map = 'mola_bw'
                              (*pstate).opolygons -> setproperty, texture_map=oimage
