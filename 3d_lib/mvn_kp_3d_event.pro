@@ -2086,14 +2086,19 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                            insitu_spec = (*pstate).insitu
 
                            if choice eq 'Planetocentric' then begin
+                            if (*pstate).speckle eq 1 then begin
+                              orbit_offset = 0.001
+                            endif else begin
+                              orbit_offset = 0.00001
+                            endelse
                             ;UPDATE THE ORBITAL PATH
                               for i=0L,n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
                                 data[0,i*2] = insitu_spec[i].spacecraft.geo_x/10000.0
-                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.geo_x/10000.0
+                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.geo_x/10000.0+orbit_offset
                                 data[1,i*2] = insitu_spec[i].spacecraft.geo_y/10000.0
-                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.geo_y/10000.0)+0.0001
-                                data[2,i*2] = (insitu_spec[i].spacecraft.geo_z/10000.0)+0.0001
-                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.geo_z/10000.0)+0.0001
+                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.geo_y/10000.0)+orbit_offset
+                                data[2,i*2] = (insitu_spec[i].spacecraft.geo_z/10000.0)
+                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.geo_z/10000.0)+orbit_offset
                               endfor
                             ;UPDATE MAVEN POSITION
                               new = fltarr(1,3)
@@ -2138,14 +2143,19 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 (*pstate).vector_path->setproperty,data=vec_data
                                endif
                            endif else begin
+                            if (*pstate).speckle eq 1 then begin
+                              orbit_offset = 0.001
+                            endif else begin
+                              orbit_offset = 0.00001
+                            endelse
                             ;UPDATE THE ORBITAL PATH 
                               for i=0L,n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
                                 data[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
-                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.mso_x/10000.0
+                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.mso_x/10000.0+orbit_offset
                                 data[1,i*2] = insitu_spec[i].spacecraft.mso_y/10000.0
-                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.mso_y/10000.0)+0.0001
-                                data[2,i*2] = (insitu_spec[i].spacecraft.mso_z/10000.0)+0.0001
-                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.mso_z/10000.0)+0.0001
+                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.mso_y/10000.0)+orbit_offset
+                                data[2,i*2] = (insitu_spec[i].spacecraft.mso_z/10000.0)
+                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.mso_z/10000.0)+orbit_offset
                               endfor
                             ;UPDATE MAVEN POSITION
                               new = fltarr(1,3)

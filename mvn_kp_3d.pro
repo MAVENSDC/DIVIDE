@@ -1074,8 +1074,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     ;CREATE THE ORBITAL PATH
     if keyword_set(speckle) then begin
       orbit_offset = 0.001
+      speckle = 1
     endif else begin
       orbit_offset = 0.00001
+      speckle = 0
     endelse
       if coord_sys eq 0 then begin
         x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
@@ -1741,7 +1743,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  plottext1: plottext1, plottext2: plottext2, $
                  plotted_parameter_name: plotted_parameter_name, $
                  current_plotted_value: current_plotted_value, $
-                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, $
+                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, speckle: speckle,$
                  solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
                  subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
                  submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $
