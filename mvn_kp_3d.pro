@@ -16,15 +16,6 @@
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
 
-@mvn_kp_3d_event.pro
-@mvn_kp_3d_cleanup.pro
-@mvn_kp_3d_atmshell.pro
-@MVN_KP_3D_PATH_COLOR.pro
-@MVN_KP_3D_PERI_COLOR.pro
-@MVN_KP_3D_CURRENT_PERIAPSE.pro
-@MVN_KP_TAG_PARSER.pro
-@MVN_KP_TAG_VERIFY.pro
-@mg_linear_function.pro
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
@@ -378,6 +369,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=scale_factor*300,ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=scale_factor*300,ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=scale_factor*300, ysize=scale_factor*30)
+            widget_control,button1,sensitive=0
         button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=scale_factor*300,ysize=scale_factor*30)       
  
       ;TIME BAR ACROSS THE BOTTOM
@@ -687,7 +679,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                         widget_control,button10,/set_button
                         vector_color_method = 0
                         button10 = widget_button(subbaseR10e, value='Proximity', uname='vector_color_method',/no_release)
-                   
+                      widget_control,subbaseR10d,sensitive=0
                    
                    if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10c, sensitive=0

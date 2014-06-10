@@ -19,7 +19,7 @@ pro MVN_KP_3D_CURRENT_PERIAPSE, periapse, initial_time, current_periapse, plot_v
 
 
 
-    current_time = time_double(periapse.time_start)
+    current_time = time_double(periapse.time_start, tformat="YYYY-MM-DDThh:mm:ss")
 
     time_delta = min(abs(current_time-initial_time),min_index)
     

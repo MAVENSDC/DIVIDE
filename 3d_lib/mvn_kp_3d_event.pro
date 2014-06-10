@@ -189,19 +189,22 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   data1[1,1] = (*pstate).solar_y_coord(t_index)
                   data1[2,1] = (*pstate).solar_z_coord(t_index)
                   (*pstate).sun_vector->setProperty,data=data1
-  
-
+                ;UPDATE THE MSO AXES, EVEN THOUGH THEY'RE HIDDEN
+                  lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
+                  lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+                 (*pstate).axesModel_msox->rotate, [0,0,1], lon2-lon1
+                 (*pstate).axesModel_msoy->rotate, [0,0,1], lon2-lon1
+      
                 endif else begin                              ;MSO COORDINATE DISPLAY
                   lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
                   lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
 
                   (*pstate).sub_maven_line_mso->setproperty,data=[(*pstate).submaven_x_coord_mso[t_index],(*pstate).submaven_y_coord_mso[t_index],(*pstate).submaven_z_coord_mso[t_index]]
                   (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
-                 
+                 (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
                 endelse
                 
-                
-                ;UPDATE THE SUN VECTOR POINTING  
+      
                 
                 ;UPDATE THE TERMINATOR LOCATION
                 

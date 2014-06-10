@@ -94,7 +94,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
           endif
     endif
   endif
-print,disp_check
+
   if error eq 1 then begin
     print,'The data structure does not include the necessary data. Check your structure and try again.'
     return
@@ -284,7 +284,7 @@ print,disp_check
       if kp_data[i].corona_e_disk.time_start ne '' then begin
         e_disk_radiance[e_disk_total,*] = kp_data[i].corona_e_disk.radiance[*]
         e_disk_radiance_err[e_disk_total,*] = kp_data[i].corona_e_disk.radiance_err[*]
-        e_disk_timestamp[e_disk_total] = time_double(kp_data[i].corona_e_disk.time_start)
+        e_disk_timestamp[e_disk_total] = time_double(kp_data[i].corona_e_disk.time_start, tformat="YYYY-MM-DDThh:mm:ss")
         e_disk_labels[e_disk_total,*] = kp_data[i].corona_e_disk.radiance_id[*]
         e_disk_total = e_disk_total+1
       endif
@@ -313,7 +313,7 @@ print,disp_check
         e_limb_half[e_limb_total,*] = kp_data[i].corona_e_limb.half_int_distance
         e_limb_half_err[e_limb_total,*] = kp_data[i].corona_e_limb.half_int_distance_err
         e_limb_half_labels[e_limb_total,*] = kp_data[i].corona_e_limb.half_int_distance_id
-        e_limb_timestamb =time_double(kp_data[i].corona_e_limb.time_start)
+        e_limb_timestamb =time_double(kp_data[i].corona_e_limb.time_start, tformat="YYYY-MM-DDThh:mm:ss")
         e_limb_total = e_limb_total + 1
       endif
     endfor
@@ -368,7 +368,7 @@ print,disp_check
         lo_disk_radiance[lo_disk_total,*] = kp_data[i].corona_lo_disk.radiance
         lo_disk_radiance_err[lo_disk_total,*] = kp_data[i].corona_lo_disk.radiance_err
         lo_disk_labels[lo_disk_total,*] = kp_data[i].corona_lo_disk.radiance_id
-        lo_disk_timestamp[lo_disk_total] = time_double(kp_data[i].corona_lo_disk.time_start)
+        lo_disk_timestamp[lo_disk_total] = time_double(kp_data[i].corona_lo_disk.time_start, tformat="YYYY-MM-DDThh:mm:ss")
         lo_disk_dust[lo_disk_total,*] = kp_data[i].corona_lo_disk.dust_depth
         lo_disk_dust_err[lo_disk_total,*] = kp_data[i].corona_lo_disk.dust_depth_err
         lo_disk_ozone[lo_disk_total,*] = kp_data[i].corona_lo_disk.ozone_depth
@@ -408,7 +408,7 @@ print,disp_check
         lo_limb_scale[lo_limb_total,*] = kp_data[i].corona_lo_limb.scale_height
         lo_limb_scale_err[lo_limb_total,*] = kp_data[i].corona_lo_limb.scale_height_err
         lo_limb_scale_labels[lo_limb_total,*] = kp_data[i].corona_lo_limb.scale_height_id
-        lo_limb_timestamp[lo_limb_total,*] = time_double(kp_data[i].corona_lo_limb.time_start)
+        lo_limb_timestamp[lo_limb_total,*] = time_double(kp_data[i].corona_lo_limb.time_start, tformat="YYYY-MM-DDThh:mm:ss")
         lo_limb_total = lo_limb_total + 1
       endif
     endfor  
@@ -444,7 +444,7 @@ print,disp_check
         lo_high_half[lo_high_total,*] = kp_data[i].corona_lo_high.half_int_distance
         lo_high_half_err[lo_high_total,*] = kp_data[i].corona_lo_high.half_int_distance_err
         lo_high_half_labels[lo_high_total,*] = kp_data[i].corona_lo_high.half_int_distance_id
-        lo_high_timestamp[lo_high_total,*] = time_double(kp_data[i].corona_lo_high.time_start)
+        lo_high_timestamp[lo_high_total,*] = time_double(kp_data[i].corona_lo_high.time_start, tformat="YYYY-MM-DDThh:mm:ss")
         lo_high_total = lo_high_total+1
       endif
     endfor
@@ -791,6 +791,8 @@ print,disp_check
 endif                       ;*****END THE ALL INCLUSIVE PLOT******
 
 
+;*****PLOT ECHELLE DATA ONLY******
+
 if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
   (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
     device,decompose=0
@@ -846,6 +848,9 @@ if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
                 endfor    
               endif
 endif
+
+
+;****PLOT LORES DATA ONLY****
 
 if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) then begin
@@ -1305,6 +1310,19 @@ if (disp_check[5] eq 1) and $
                     oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],linestyle=(i mod 7),color=i*(255/lo_high_total)
                   endfor
                 endfor      
+              endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                a=get_screen_size()
+                window,!window+1,xsize=a[0]*0.8,ysize=a[1]*0.8
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.25, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.5, 0.9, 'Density', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.75, 0.9, '1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
               endif
     
 endif
