@@ -16,7 +16,8 @@
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
 pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $
-                        range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend
+                        range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend, $
+                        save_window=save_window
 
 
 ;CHECK THAT THE INPUT DATA STRUCTURE CONTAINS THE NECESSARY DATA
@@ -113,13 +114,13 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
     endelse
     
 ;SET WINDOW NUMBERS
-    if keyword_set(window) then begin
-      plot_window = !window + 1
-      legend_window = plot_window + 1
-    endif else begin
-      plot_window = 1
-      legend_window = 2
-    endelse
+;    if keyword_set(window) then begin
+;      plot_window = !window + 1
+;      legend_window = plot_window + 1
+;    endif else begin
+;      plot_window = 1
+;      legend_window = 2
+;    endelse
     
 ;CHECK DATE RANGES
     if keyword_set(range) then begin
@@ -460,7 +461,11 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
                 
               ;set up the plot window
                 a=get_screen_size()*0.8
-                window,0,xsize=a[0]*0.75,ysize=a[1]
+                if keyword_set(save_window) then begin
+                  window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.8
+                endif else begin
+                  window,0,xsize=a[0]*0.5,ysize=a[1]*0.8
+                endelse
                 device, decomposed=0
             
               if e_h_r eq 1 then begin        ;echelle high radiance
@@ -600,193 +605,282 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
               endif
               
             ;ADD THE LEGEND ALONG THE RIGHTHAND SIDE
-              if (keyword_set(nolegend) eq 0) then begin
-               
-                window,!window+1,xsize=a[0],ysize=a[1]
+ 
+              if keyword_set(nolegend) eq 0 then begin
+                a=get_screen_size()
+                if keyword_set(save_window) then begin
+                  window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.9
+                endif else begin
+                  window,1,xsize=a[0]*0.5,ysize=a[1]*0.9
+                endelse
                 device,decomposed=0
-            
-                 xyouts, 0.25, 0.97, 'High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
-            
-                  if e_h_r eq 1 then begin
-                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
-                          xyouts,0.03,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,e_high_total-1 do begin
-                          xyouts,0.1,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-              
-                  if e_h_h eq 1 then begin
-                     xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
-                          xyouts,0.22,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,e_high_total-1 do begin
-                          xyouts,0.31,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  if l_h_r eq 1 then begin
-                     xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
-                          xyouts,0.42,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_high_total-1 do begin
-                          xyouts,0.51,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                   if l_h_d eq 1 then begin
-                     xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
-                          xyouts,0.62,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_high_total-1 do begin
-                          xyouts,0.71,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  if l_h_h eq 1 then begin
-                     xyouts,0.8, 0.93, 'Lo-Res: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
-                          xyouts,0.82,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_high_total-1 do begin
-                          xyouts,0.91,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  window,!window+1,xsize=a[0],ysize=a[1]    
-                  xyouts, 0.25, 0.97, 'Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
-            
-                  if e_l_r eq 1 then begin
-                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
-                          xyouts,0.03,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,e_limb_total-1 do begin
-                          xyouts,0.1,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-              
-                  if e_l_h eq 1 then begin
-                     xyouts,0.20, 0.93, 'Echelle: 1/2 Int', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
-                          xyouts,0.22,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,e_limb_total-1 do begin
-                          xyouts,0.31,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  if l_l_r eq 1 then begin
-                     xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
-                          xyouts,0.42,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_limb_total-1 do begin
-                          xyouts,0.51,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                   if l_l_d eq 1 then begin
-                     xyouts,0.6, 0.93, 'Lo-Res: Density', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
-                          xyouts,0.62,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_limb_total-1 do begin
-                          xyouts,0.71,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  if l_l_s eq 1 then begin
-                     xyouts,0.8, 0.93, 'Lo-Res: Scale Height', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
-                          xyouts,0.82,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_limb_total-1 do begin
-                          xyouts,0.91,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-             
-              window,!window+1,xsize=a[0],ysize=a[1]    
-                  xyouts, 0.25, 0.97, 'Disk Scan Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
-            
-                  if e_d_r eq 1 then begin
-                     xyouts,0.02, 0.93, 'Echelle: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(e_disk_labels[0,*])-1 do begin
-                          xyouts,0.03,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,e_disk_total-1 do begin
-                          xyouts,0.1,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-              
-                  if l_d_r eq 1 then begin
-                     xyouts,0.20, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                     for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
-                          xyouts,0.22,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
-                       for j=0,lo_disk_total-1 do begin
-                          xyouts,0.31,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                    endfor
-                  endif
-                  
-                  if l_d_d eq 1 then begin
-                     xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                       for j=0,lo_disk_total-1 do begin
-                          xyouts,0.41,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                  endif
-                  
-                   if l_d_d eq 1 then begin
-                     xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                       for j=0,lo_disk_total-1 do begin
-                          xyouts,0.61,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                  endif
-                  
-                  if l_d_o eq 1 then begin
-                     xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
-                     leg_i=0.91
-                       for j=0,lo_disk_total-1 do begin
-                          xyouts,0.81,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
-                          leg_i=leg_i-0.015
-                      endfor 
-                  endif 
-                  
-                  
-              endif  
-              
+                
+                ;CREATE THE LO-RES LEGEND
+                xyouts, 0.5, 0.97, 'Lo-Res  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+  
+                  xyouts, 0.15, 0.94, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.5, 0.94, 'High: Density', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.8, 0.94, 'High: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.15, 0.65, 'Limb: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.5, 0.65, 'Limb: Density', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.8, 0.65, 'Limb: Scale Height', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.10, 0.25, 'Disk: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.35, 0.25, 'Disk: Dust Depth', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.60, 0.25, 'Disk: Auroral Index', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.85, 0.25, 'Disk: Ozone Depth', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+               
+
+                      if l_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.10,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.25,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+
+                      if l_h_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.4,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.55,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.7,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.10,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.25,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+
+                      if l_l_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.4,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.55,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_l_s eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.7,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+
+                      if l_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.20
+                          xyouts,0.05,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
+                              xyouts,0.04,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.02,0.07],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.20
+                          xyouts,0.15,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_disk_total-1 do begin
+                              xyouts,0.10,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+                      
+                      if l_d_d eq 1 then begin
+                         ;xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.35,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.29,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                       if l_d_a eq 1 then begin
+                        ; xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.60,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.55,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_d_o eq 1 then begin
+                        ; xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif   
+                
+                ;SEPARATE WINDOW, CREATE THE ECHELLE LEGEND
+                 if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,2,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                 device,decomposed=0
+                
+                  xyouts, 0.5, 0.97, 'Echelle  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+
+                xyouts, 0.08, 0.9, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.28, 0.9, 'High: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.48, 0.9, 'Limb: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.68, 0.9, 'Limb: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.88, 0.9, 'Disk: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                
+                      if e_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.03,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.01,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.01,0.05],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.12,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.05,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.23,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                              xyouts,0.21,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.21,0.25],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.32,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.25,leg_i-0.02, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if e_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.43,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.41,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.41,0.45],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.52,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.45,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_l_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.63,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
+                              xyouts,0.61,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.61,0.65],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.72,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.65,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if e_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.83,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_disk_labels[0,*])-1 do begin
+                              xyouts,0.81,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.81,0.85],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.92,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_disk_total-1 do begin
+                              xyouts,0.85,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+     
+              endif
 
 endif                       ;*****END THE ALL INCLUSIVE PLOT******
 
@@ -795,6 +889,12 @@ endif                       ;*****END THE ALL INCLUSIVE PLOT******
 
 if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
   (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+       a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -847,6 +947,125 @@ if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
                   endfor
                 endfor    
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+
+                xyouts, 0.08, 0.9, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.28, 0.9, 'High: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.48, 0.9, 'Limb: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.68, 0.9, 'Limb: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                xyouts, 0.88, 0.9, 'Disk: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                
+                      if e_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.03,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.01,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.01,0.05],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.12,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.05,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.23,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                              xyouts,0.21,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.21,0.25],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.32,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.25,leg_i-0.02, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if e_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.43,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.41,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.41,0.45],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.52,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.45,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_l_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.63,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
+                              xyouts,0.61,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.61,0.65],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.72,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.65,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if e_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.83,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_disk_labels[0,*])-1 do begin
+                              xyouts,0.81,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.81,0.85],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.92,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_disk_total-1 do begin
+                              xyouts,0.85,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+                      
+                      if l_l_s eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.83,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                              xyouts,0.81,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.81,0.85],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.92,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.85,leg_i-0.02, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+              endif
 endif
 
 
@@ -854,6 +1073,12 @@ endif
 
 if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
   (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) then begin
+  a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.9
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.9
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -951,11 +1176,189 @@ if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
                   oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
                 endfor     
               endif
+              
+                if keyword_set(nolegend) eq 0 then begin
+                  if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.9
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.9
+                 endelse
+                  device,decomposed=0
+  
+                  xyouts, 0.5, 0.97, 'Lo-Res  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+  
+                  xyouts, 0.15, 0.94, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.5, 0.94, 'High: Density', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.8, 0.94, 'High: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.15, 0.65, 'Limb: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.5, 0.65, 'Limb: Density', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.8, 0.65, 'Limb: Scale Height', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.10, 0.25, 'Disk: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.35, 0.25, 'Disk: Dust Depth', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.60, 0.25, 'Disk: Auroral Index', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+                  xyouts, 0.85, 0.25, 'Disk: Ozone Depth', alignment=0.5, charthick=2.0, charsize=1.5, /normal
+               
+
+                      if l_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.10,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.25,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+
+                      if l_h_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.4,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.55,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.88
+                          xyouts,0.7,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.88
+                          xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.10,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.25,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+
+                      if l_l_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.4,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.55,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_l_s eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.59
+                          xyouts,0.7,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.59
+                          xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+
+                      if l_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.20
+                          xyouts,0.05,leg_i+0.03,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
+                              xyouts,0.04,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.02,0.07],[leg_i-0.01,leg_i-0.01], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.03
+                        endfor
+                          leg_i=0.20
+                          xyouts,0.15,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_disk_total-1 do begin
+                              xyouts,0.10,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif 
+                      
+                      if l_d_d eq 1 then begin
+                         ;xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.35,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.29,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                       if l_d_a eq 1 then begin
+                        ; xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.60,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.55,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif
+                      
+                      if l_d_o eq 1 then begin
+                        ; xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.2
+                         xyouts,0.85,leg_i+.03,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.03
+                          endfor 
+                      endif   
+                endif
 endif
 
 ;****** PLOT ALL THE CORONAL DISK PLOTS ******
 if (disp_check[0] eq 1) and (disp_check[3] eq 1) and $
    (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+   a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -996,11 +1399,99 @@ if (disp_check[0] eq 1) and (disp_check[3] eq 1) and $
                   oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
                 endfor     
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle/Lo-Res Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.10, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.30, 0.9, 'Lo: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.50, 0.9, 'Lo: Dust Depth', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.70, 0.9, 'Lo: Auroral Index', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.90, 0.9, 'Lo: Ozone Index', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                
+                      if e_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.05,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_disk_labels[0,*])-1 do begin
+                              xyouts,0.04,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.02,0.07],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.15,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_disk_total-1 do begin
+                              xyouts,0.10,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if l_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.25,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
+                              xyouts,0.24,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.22,0.27],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.35,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_disk_total-1 do begin
+                              xyouts,0.30,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+                      
+                      if l_d_d eq 1 then begin
+                         ;xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.5,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.44,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                       if l_d_a eq 1 then begin
+                        ; xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.70,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.64,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_d_o eq 1 then begin
+                        ; xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.9,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.84,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif   
+
+              endif
 endif
 
 ;****** PLOT ALL THE CORONAL LIMB PLOTS ******
 if (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[5] eq 0) then begin
+   a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1056,12 +1547,120 @@ if (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
                   endfor
                 endfor      
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle/Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+
+                xyouts, 0.08, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.28, 0.9, 'E: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.48, 0.9, 'Lo: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.68, 0.9, 'Lo: Density', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.88, 0.9, 'Lo: Scale Height', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                
+                      if e_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.03,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.01,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.01,0.05],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.12,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.05,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_l_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.23,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
+                              xyouts,0.21,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.21,0.25],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.32,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.25,leg_i-0.02, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.43,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.41,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.41,0.45],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.52,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.45,leg_i-0.02, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if l_l_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.63,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                              xyouts,0.61,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.61,0.65],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.72,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.65,leg_i-0.02, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_l_s eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.83,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                              xyouts,0.81,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.81,0.85],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.92,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.85,leg_i-0.02, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+              endif
 endif
 
 
 ;****** PLOT ALL THE CORONAL HIGH ALT PLOTS ******
 if (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) then begin
+   a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1117,11 +1716,120 @@ if (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
                   endfor
                 endfor      
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle/Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
+
+                xyouts, 0.08, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.28, 0.9, 'E: 1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.48, 0.9, 'Lo: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.68, 0.9, 'Lo: Density', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.88, 0.9, 'Lo: Scale Height', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                
+                      if e_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.03,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.01,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.01,0.05],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.12,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.05,leg_i-0.02, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.23,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                              xyouts,0.21,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.21,0.25],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.32,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.25,leg_i-0.02, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.43,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.41,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.41,0.45],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.52,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.45,leg_i-0.02, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if l_h_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.63,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                              xyouts,0.61,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.61,0.65],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.72,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.65,leg_i-0.02, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.83,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
+                              xyouts,0.81,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.81,0.85],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.92,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.85,leg_i-0.02, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+              endif 
+              
 endif
 
 ;****** PLOT ALL THE CORONAL ECHELLE DISK PLOTS ******
 if (disp_check[0] eq 1) and $
    (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+   a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1134,11 +1842,48 @@ if (disp_check[0] eq 1) and $
         endfor
       endif
       
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+                      if e_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.10,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(e_disk_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,e_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.25,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,e_disk_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(e_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+              endif 
+      
 endif
 
 ;****** PLOT ALL THE CORONAL ECHELLE LIMB PLOTS ******
 if (disp_check[1] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1163,11 +1908,65 @@ if (disp_check[1] eq 1) and $
                   endfor
                 endfor    
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.5, 0.9, '1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+                      if e_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.10,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(e_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,e_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.25,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_l_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.4,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(e_limb_half_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,e_limb_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.55,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,e_limb_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(e_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+              endif 
 endif
 
 ;****** PLOT ALL THE CORONAL ECHELLE HIGH ALT PLOTS ******
 if (disp_check[2] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1193,11 +1992,65 @@ if (disp_check[2] eq 1) and $
                   endfor
                 endfor     
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Echelle High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.5, 0.9, '1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+                      if e_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.10,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(e_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,e_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.25,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if e_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.4,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(e_high_half_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,e_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.55,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,e_high_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(e_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/e_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+              endif 
 endif
 
 ;****** PLOT ALL THE CORONAL LORES DISK PLOTS ******
 if (disp_check[3] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[4] eq 0) and (disp_check[5] eq 0) then begin
+    a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1231,11 +2084,84 @@ if (disp_check[3] eq 1) and $
                   oplot,lo_disk_ozone[i,*],lo_disk_timestamp,linestyle=(i mod 7),color=i*(255/lo_disk_total)
                 endfor     
               endif
+              
+              if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Lo-Res Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.10, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.35, 0.9, 'Dust Depth', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.60, 0.9, 'Auroral Index', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.85, 0.9, 'Ozone Index', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+
+                      if l_d_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.05,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for i=0, n_elements(lo_disk_labels[0,*])-1 do begin
+                              xyouts,0.04,leg_i,lo_disk_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.02,0.07],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.15,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                         for j=0,lo_disk_total-1 do begin
+                              xyouts,0.10,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+                      
+                      if l_d_d eq 1 then begin
+                         ;xyouts,0.4, 0.93, 'Lo-Res: Dust Depth', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.35,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.29,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                       if l_d_a eq 1 then begin
+                        ; xyouts,0.6, 0.93, 'Lo-Res: Auroral Index', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.60,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.55,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_d_o eq 1 then begin
+                        ; xyouts,0.8, 0.93, 'Lo-Res: Ozone', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                         xyouts,0.85,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=1.5,/normal
+                           for j=0,lo_disk_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_disk_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_disk_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif   
+
+
+              endif
+              
 endif
 
 ;****** PLOT ALL THE CORONAL LORES LIMB PLOTS ******
 if (disp_check[4] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[5] eq 0) then begin
+    a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1271,11 +2197,84 @@ if (disp_check[4] eq 1) and $
                   endfor
                 endfor      
               endif
+              
+             if keyword_set(nolegend) eq 0 then begin
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
+                device,decomposed=0
+
+                xyouts, 0.5, 0.97, 'Lo-Res Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
+
+                xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.5, 0.9, 'Density', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.8, 0.9, 'Scale Height', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+                      if l_l_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.10,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_limb_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.25,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if l_l_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.4,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_limb_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.55,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_l_s eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.7,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_limb_scale_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_limb_scale_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.85,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_limb_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_limb_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_limb_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+
+              endif              
 endif
 
 ;****** PLOT ALL THE CORONAL LROES HIGH ALT PLOTS ******
 if (disp_check[5] eq 1) and $
    (disp_check[0] eq 0) and (disp_check[1] eq 0) and (disp_check[2] eq 0) and (disp_check[3] eq 0) and (disp_check[4] eq 0) then begin
+    a=get_screen_size()
+       if keyword_set(save_window) then begin
+          window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endif else begin
+          window,0,xsize=a[0]*0.5,ysize=a[1]*0.5
+       endelse
     device,decompose=0
     device,retain=2
     !p.background='FFFFFF'x
@@ -1312,16 +2311,70 @@ if (disp_check[5] eq 1) and $
                 endfor      
               endif
               
-              if keyword_set(nolegend) eq 0 then begin
-                a=get_screen_size()
-                window,!window+1,xsize=a[0]*0.8,ysize=a[1]*0.8
+              if keyword_set(nolegend) eq 0 then begin              
+                if keyword_set(save_window) then begin
+                    window,!window+1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endif else begin
+                    window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
+                 endelse
                 device,decomposed=0
 
                 xyouts, 0.5, 0.97, 'Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
-                xyouts, 0.25, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
                 xyouts, 0.5, 0.9, 'Density', alignment=0.5, charthick=2.0, charsize=2.0, /normal
-                xyouts, 0.75, 0.9, '1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+                xyouts, 0.8, 0.9, '1/2 Int Dist', alignment=0.5, charthick=2.0, charsize=2.0, /normal
+
+                      if l_h_r eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.10,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
+                              xyouts,0.09,leg_i,lo_high_rad_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.07,0.12],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.25,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.19,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif 
+
+                      if l_h_d eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.4,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_den_labels[0,*])-1 do begin
+                              xyouts,0.39,leg_i,lo_high_den_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.37,0.42],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.55,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.49,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
+                      
+                      if l_h_h eq 1 then begin
+                       ;  xyouts,0.4, 0.93, 'Lo-Res: Radiance', alignment=0, charthick=1.5, charsize=1.5, /normal
+                         leg_i=0.8
+                          xyouts,0.7,leg_i+0.05,'Species', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for i=0, n_elements(lo_high_half_labels[0,*])-1 do begin
+                              xyouts,0.69,leg_i,lo_high_half_labels[0,i],alignment=0, charthick=1.5, charsize=1.5, /normal
+                              plots,[0.67,0.72],[leg_i-0.02,leg_i-0.02], linestyle=(i mod 7), thick=2, /normal
+                            leg_i=leg_i-0.07
+                        endfor
+                          leg_i=0.8
+                          xyouts,0.85,leg_i+.05,'Observation', alignment=0.5, charthick=1.5, charsize=2.0,/normal
+                         for j=0,lo_high_total-1 do begin
+                              xyouts,0.79,leg_i, time_string(lo_high_timestamp[j]), alignment=0, charthick=1, charsize=1, /normal,color=j*(255/lo_high_total)
+                              leg_i=leg_i-0.07
+                          endfor 
+                      endif
 
               endif
     

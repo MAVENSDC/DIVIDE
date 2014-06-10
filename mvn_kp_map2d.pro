@@ -375,7 +375,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
         plot_color = "White"
       endif
     endif else begin
-      mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
+      mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
                   MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)

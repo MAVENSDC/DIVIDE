@@ -809,7 +809,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                   mars_base_map = 'mola'
                 end
         'mola_bw': begin
-                    read_jpeg,bm_install_directory+'MOLA_bw_2500x1250.jpg',image
+                    read_jpeg,bm_install_directory+'MOLA_BW_2500x1250.jpg',image
                     mars_base_map = 'mola_bw'
                    end
         'mag': begin
