@@ -452,26 +452,26 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                   plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange,$
                             title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index])
                   l = legend(target=plot1,position=[0.2,0.95],$
-                            /relative,linestyle=0,font_size=8)
+                            /normal,linestyle=0,font_size=8)
                   oplot_index = oplot_index+1
                   for j=1,plot_count[i]-1 do begin      
                     plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange,$
                             title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,overplot=1,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index])
                      l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
-                            /relative,linestyle=j,font_size=8)
+                            /normal,linestyle=j,font_size=8)
                     oplot_index=oplot_index+1
                   endfor
                 endif else begin
                   plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],yrange=temp_yrange,/current,color='black',$
                             title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,name=y_axis_title[oplot_index])
                   l = legend(target=plot1,position=[0.2,0.95],$
-                            /relative,linestyle=0,font_size=8)
+                            /normal,linestyle=0,font_size=8)
                   oplot_index = oplot_index+1
                   for j=1,plot_count[i]-1 do begin      
                     plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],yrange=temp_yrange,/current,color='black',$
                             title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xmajor=5,overplot=1,xstyle=1,name=y_axis_title[oplot_index])
                      l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
-                            /relative,linestyle=j,font_size=8)
+                            /normal,linestyle=j,font_size=8)
                     oplot_index=oplot_index+1
                   endfor 
                 endelse   

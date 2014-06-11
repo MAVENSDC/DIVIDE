@@ -357,15 +357,16 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
         endif else begin
           plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
                     title=title[i],thick=thick,linestyle=0,symbol=symbol,xlog=xaxis_log,xrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
-                    yrange=temp_yrange[*,oplot_index])
-          l = legend(target=plot1,label=x_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
+                    yrange=temp_yrange[*,oplot_index],name=x_axis_title[oplot_index])
+          l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
                     /normal,linestyle=0,font_size=8)
           oplot_index = oplot_index+1
           hold_index = oplot_index-1
           for j=1,plot_count[i]-1 do begin      
             plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
-                    title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xstyle=1,ystyle=1,xrange=temp_xrange[*,hold_index], yrange=temp_yrange[*,hold_index])
-             l = legend(target=plot1,label=x_axis_title[oplot_index],position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
+                    title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xstyle=1,ystyle=1,xrange=temp_xrange[*,hold_index],$
+                    name=x_axis_title[oplot_index], yrange=temp_yrange[*,hold_index])
+             l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
                     /normal,linestyle=j,font_size=8)
             oplot_index=oplot_index+1
           endfor    
