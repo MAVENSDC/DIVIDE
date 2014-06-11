@@ -17,7 +17,7 @@
 ;-
 
 
-pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
+pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
                view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid, $
@@ -752,7 +752,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 widget_control,button8h,/set_button
                 coronal_reset = 1
                 button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
-               
+               widget_control,subbaseR8h,sensitive=0
            endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=scale_factor*300,ysize=scale_factor*30)
@@ -1265,13 +1265,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
      
         maven_model = obj_new('IDLgrModel')
         maven_location = fltarr(4)
+        if keyword_set(tron) then begin
+          model_style=1
+        endif else begin
+          model_style=2
+        endelse
         if keyword_set(spacecraft_scale) then begin
           model_scale = spacecraft_scale
         endif else begin
           if keyword_set(cow) then begin
             model_scale = 0.1
           endif else begin
-            model_scale = 0.05
+            model_scale = 0.03
           endelse
         endelse
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,install_directory           ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
@@ -1284,7 +1289,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
          maven_location[1] = y_orbit(time_index*2)
          maven_location[2] = z_orbit(time_index*2)
          maven_location[3] = 1.0                        ;default scale factor
-        maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, color=[255,102,0], shading=1,reject=1)
+        maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, color=[255,102,0], shading=1,reject=1,specular=[0,255,255],style=model_style)
         maven_model -> add, maven_poly
         view -> add, maven_model
 

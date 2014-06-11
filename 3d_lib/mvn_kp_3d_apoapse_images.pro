@@ -17,10 +17,9 @@
 ;-
 pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start, stop, apo_time_blend
 
-
   if blend eq 0 then begin
-    a = where(start eq '')
-    if a ne -1 then begin
+    a = where(start eq '',count)
+    if count gt 0 then begin
       temp_start = strarr(n_elements(start))
       temp_stop = strarr(n_elements(stop))
       temp_input = input
