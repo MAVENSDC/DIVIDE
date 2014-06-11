@@ -467,7 +467,7 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
     ;BUILD THE BASE PLOT
           p = plot(longitude, latitude, /overplot, margin=0, linestyle=6, color=plot_color, name='track')
           if keyword_set(nopath) eq 0 then begin
-            symbols = symbol(longitude,latitude, "thin_diamond", /data, sym_color=color_levels, sym_filled=1)
+            p_symbols = symbol(longitude,latitude, "thin_diamond", /data, sym_color=color_levels, sym_filled=1,name='track_colors')
           endif else begin
             p.symbol = "d"
             p.thick=2
@@ -600,80 +600,82 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
         
         ;DISPLAY THE RELEVANT COLORBARS
           if total_colorbars gt 0 then begin
-            MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
-            color_bar_index = 0
-            if keyword_set(nopath) eq 0 then begin
-
-                c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
-                    /border,range=[parameter_minimum,parameter_maximum])
-             
-              color_bar_index++
-            endif
-            if keyword_set(periapse_temp) then begin
-             if p_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[t_min,t_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_ozone) then begin
-             if o_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[o_min,o_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_dust) then begin
-             if d_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[d_min,d_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_aurora) then begin
-             if a_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[a_min,a_max],position=positions[color_bar_index,*])
-              color_bar_index++
+            if version_check eq 1 then begin
+              MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
+              color_bar_index = 0
+              if keyword_set(nopath) eq 0 then begin
+  
+                  c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
+                      /border,range=[parameter_minimum,parameter_maximum])
+               
+                color_bar_index++
+              endif
+              if keyword_set(periapse_temp) then begin
+               if p_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[t_min,t_max],position=positions[color_bar_index,*])
+                color_bar_index++
                endif
-            if keyword_set(corona_e_h_rad) then begin
-             if eh_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: H',rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[eh_min,eh_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
+              endif
+              if keyword_set(corona_lo_ozone) then begin
+               if o_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[o_min,o_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_dust) then begin
+               if d_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[d_min,d_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_aurora) then begin
+               if a_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[a_min,a_max],position=positions[color_bar_index,*])
+                color_bar_index++
+                 endif
+              if keyword_set(corona_e_h_rad) then begin
+               if eh_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Echelle Radiance: H',rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[eh_min,eh_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_e_d_rad) then begin
+               if ed_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Echelle Radiance: D',rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[ed_min,ed_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_e_o_rad) then begin
+               if eo_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[eo_min,eo_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_h_rad) then begin
+               if lh_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lh_min,lh_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_co_rad) then begin
+               if lco_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lco_min,lco_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_no_rad) then begin
+               if lno_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lno_min,lno_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif
+              if keyword_set(corona_lo_o_rad) then begin
+               if lo_data_exist eq 1 then begin
+                c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lo_min,lo_max],position=positions[color_bar_index,*])
+                color_bar_index++
+               endif
+              endif   
             endif
-            if keyword_set(corona_e_d_rad) then begin
-             if ed_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: D',rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[ed_min,ed_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_e_o_rad) then begin
-             if eo_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[eo_min,eo_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_h_rad) then begin
-             if lh_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lh_min,lh_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_co_rad) then begin
-             if lco_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lco_min,lco_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_no_rad) then begin
-             if lno_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lno_min,lno_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif
-            if keyword_set(corona_lo_o_rad) then begin
-             if lo_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, /border,range=[lo_min,lo_max],position=positions[color_bar_index,*])
-              color_bar_index++
-             endif
-            endif   
            endif
        
             
