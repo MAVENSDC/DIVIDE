@@ -16,21 +16,12 @@
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
 
-@mvn_kp_3d_event.pro
-@mvn_kp_3d_cleanup.pro
-@mvn_kp_3d_atmshell.pro
-@MVN_KP_3D_PATH_COLOR.pro
-@MVN_KP_3D_PERI_COLOR.pro
-@MVN_KP_3D_CURRENT_PERIAPSE.pro
-@MVN_KP_TAG_PARSER.pro
-@MVN_KP_TAG_VERIFY.pro
-@mg_linear_function.pro
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow, subsolar=subsolar, submaven=submaven, $
                field=field, color_table=color_table, bgcolor=bgcolor, plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,periapse_limb_scan=periapse_limb_scan, direct=direct, ambient=ambient,$
                view_size=view_size, camera_view=camera_view, mso=mso, sunmodel=sunmodel, optimize=optimize, initialview=initialview, drawid=drawid, $
-               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale
+               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, speckle=speckle
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -378,6 +369,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         button1 = widget_button(subbaseR1, value='Models', uname='models',xsize=scale_factor*300,ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Outputs', uname='output', xsize=scale_factor*300,ysize=scale_factor*30)
         button1 = widget_button(subbaseR1, value='Animation', uname='animation', xsize=scale_factor*300, ysize=scale_factor*30)
+            widget_control,button1,sensitive=0
         button1 = widget_button(subbaseR1, value='Help', uname='help',xsize=scale_factor*300,ysize=scale_factor*30)       
  
       ;TIME BAR ACROSS THE BOTTOM
@@ -687,7 +679,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                         widget_control,button10,/set_button
                         vector_color_method = 0
                         button10 = widget_button(subbaseR10e, value='Proximity', uname='vector_color_method',/no_release)
-                   
+                      widget_control,subbaseR10d,sensitive=0
                    
                    if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10c, sensitive=0
@@ -817,7 +809,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                   mars_base_map = 'mola'
                 end
         'mola_bw': begin
-                    read_jpeg,bm_install_directory+'MOLA_bw_2500x1250.jpg',image
+                    read_jpeg,bm_install_directory+'MOLA_BW_2500x1250.jpg',image
                     mars_base_map = 'mola_bw'
                    end
         'mag': begin
@@ -1080,6 +1072,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       parameterModel->setproperty,hide=1
 
     ;CREATE THE ORBITAL PATH
+    if keyword_set(speckle) then begin
+      orbit_offset = 0.001
+      speckle = 1
+    endif else begin
+      orbit_offset = 0.00001
+      speckle = 0
+    endelse
       if coord_sys eq 0 then begin
         x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
         y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
@@ -1087,11 +1086,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
         for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
           x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
-          x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
-          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_y/10000.0)+0.00001
-          z_orbit[i*2] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
-          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_z/10000.0)+0.00001
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_y/10000.0)+orbit_offset
+          z_orbit[i*2] = (insitu1[i].spacecraft.geo_z/10000.0)
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.geo_z/10000.0)+orbit_offset
           path_connections[i*3] = 2
           path_connections[(i*3)+1] = (i*2L)
           path_connections[(i*3)+2] = (i*2L)+1L
@@ -1103,11 +1102,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         path_connections = lonarr(n_elements(insitu1.spacecraft.mso_x)*3)
         for i=0L,n_elements(insitu1.spacecraft.mso_x)-1 do begin
           x_orbit[i*2] = insitu1[i].spacecraft.mso_x/10000.0
-          x_orbit[(i*2)+1] = insitu1[i].spacecraft.mso_x/10000.0
+          x_orbit[(i*2)+1] = insitu1[i].spacecraft.mso_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.mso_y/10000.0
-          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_y/10000.0)+0.00001
-          z_orbit[i*2] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
-          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_z/10000.0)+0.00001
+          y_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_y/10000.0)+orbit_offset
+          z_orbit[i*2] = (insitu1[i].spacecraft.mso_z/10000.0)
+          z_orbit[(i*2)+1] = (insitu1[i].spacecraft.mso_z/10000.0)+orbit_offset
           path_connections[i*3] = 2
           path_connections[(i*3)+1] = (i*2L)
           path_connections[(i*3)+2] = (i*2L)+1L
@@ -1744,7 +1743,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  plottext1: plottext1, plottext2: plottext2, $
                  plotted_parameter_name: plotted_parameter_name, $
                  current_plotted_value: current_plotted_value, $
-                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, $
+                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, speckle: speckle,$
                  solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
                  subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
                  submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $

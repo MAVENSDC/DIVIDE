@@ -48,7 +48,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
                   corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
                   corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $
                   corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $
-                  map_limit=map_limit, map_location=map_location
+                  map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $
+                  apoapse_rad_h=apoapse_rad_h, apoapse_rad_o=apoapse_rad_o, apoapse_rad_co=apoapse_rad_co, apoapse_rad_no=apoapse_rad_no
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
    !p.multi=0             
@@ -76,6 +77,12 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
  if keyword_set(direct) eq 0 then begin
    if Float(!Version.Release) GE 8.0 THEN directgraphic = 0    ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
   endif    
+  
+  if Float(!Version.Release) ge 8.2 then begin
+    version_check = 1
+  endif else begin
+    version_check = 0
+  endelse  
     
 ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
@@ -157,6 +164,17 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
     return
   endif
   
+  ;IF APOAPSE TIMES NOT SELECTED, CALCULATE MIDPOINTS
+  if keyword_set(apoapse_time) then begin
+    apoapse_time_index = time_double(apoapse_time, tformat='YYYY-MM-DDThh:mm:ss')
+    if (apoapse_time_index le begin_time) or (apoapse_time_index ge end_time) then begin
+      print,'Selected Apopapse image time falls outside the included data range.'
+      apoapse_time_index = (end_time - begin_time)/2l
+    endif
+  endif else begin
+    apoapse_time_index = (end_time - begin_time)/2l
+  endelse
+  
   ;CHECK THAT THE REQUESTED FIELD IS INCLUDED IN THE DATA
   
   if keyword_set(parameter) then begin
@@ -211,6 +229,142 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
        map_limit = [-90,0,90,360]
        map_location = [0,-90]      
      endif
+     if basemap eq 'dust' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'DUST_DEPTH')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+            mapimage = bytarr(3,90,45)
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, iuvs.apoapse.dust_depth, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, iuvs.apoapse.dust_depth, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse
+       endif
+     endif
+     if basemap eq 'ozone' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'OZONE_DEPTH')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+          mapimage = bytarr(3,90,45)
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, iuvs.apoapse.ozone_depth, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, iuvs.apoapse.ozone_depth, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse      
+      endif
+     endif
+     if basemap eq 'rad_h' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'RADIANCE')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+          mapimage = bytarr(3,90,45)
+          rad_data = reform(iuvs.apoapse.radiance[0,*,*])
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse      
+      endif
+     endif
+     if basemap eq 'rad_o' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'RADIANCE')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+          mapimage = bytarr(3,90,45)
+          rad_data = reform(iuvs.apoapse.radiance[1,*,*])
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse      
+      endif
+     endif
+     if basemap eq 'rad_co' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'RADIANCE')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+          mapimage = bytarr(3,90,45)
+          rad_data = reform(iuvs.apoapse.radiance[2,*,*])
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse      
+      endif
+     endif
+     if basemap eq 'rad_no' then begin
+      tag_check = tag_names(iuvs.apoapse)
+      t1 = where(tag_check eq 'RADIANCE')
+      if t1 ne -1 then begin
+        if keyword_set(iuvs) ne 1 then begin
+          print,'No IUVS data selected, skipping the basemap.'
+          mapimage = FILEPATH('empty.jpg',root_dir=install_directory) 
+          read_jpeg,mapimage,mapimage
+          map_limit = [-90,0,90,360]
+          map_location = [0,-90] 
+        endif else begin
+          mapimage = bytarr(3,90,45)
+          rad_data = reform(iuvs.apoapse.radiance[3,*,*])
+          if keyword_set(apoapse_blend) then begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 1, time, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endif else begin
+            MVN_KP_3D_APOAPSE_IMAGES, rad_data, mapimage, 0, apoapse_time_index, iuvs.apoapse.time_start, iuvs.apoapse.time_stop, 1
+          endelse
+            map_limit = [-90,-180,90,180]
+            map_location = [-180,-90]
+        endelse      
+      endif
+     endif
      if basemap eq 'user' then begin
         input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
         if input_file ne '' then read_jpeg,input_file,mapimage
@@ -227,10 +381,10 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
         plot_color = "White"
       endif
     endif else begin
-      mapimage = FILEPATH('MarsMap_2500x1250.jpg',root_dir=install_directory)  
+      mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata)
+                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
         plot_color = "Black"
       endif    
      endelse
@@ -250,7 +404,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata)
+                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
         plot_color = "Black"
       endif
     endelse
@@ -311,7 +465,7 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
   total_colorbars = 0
   if keyword_set(direct) eq 0 then begin
     ;BUILD THE BASE PLOT
-          p = plot(longitude, latitude, /overplot, margin=0, linestyle=6, color=plot_color)
+          p = plot(longitude, latitude, /overplot, margin=0, linestyle=6, color=plot_color, name='track')
           if keyword_set(nopath) eq 0 then begin
             symbols = symbol(longitude,latitude, "thin_diamond", /data, sym_color=color_levels, sym_filled=1)
           endif else begin
@@ -449,8 +603,10 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
             MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
             color_bar_index = 0
             if keyword_set(nopath) eq 0 then begin
-              c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
-                  /border,range=[parameter_minimum,parameter_maximum])
+
+                c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
+                    /border,range=[parameter_minimum,parameter_maximum])
+             
               color_bar_index++
             endif
             if keyword_set(periapse_temp) then begin

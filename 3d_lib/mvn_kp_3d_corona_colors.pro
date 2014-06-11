@@ -33,18 +33,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
     found = where(tags eq target_tag)
   for i=0,n_elements(data1) - 1 do begin
     if data1[i].time_start ne '' then begin
-      new_start = time_double(data1[i].time_start)
-      new_stop = time_double(data1[i].time_stop)
+      new_start = time_double(data1[i].time_start, tformat="YYYY-MM-DDThh:mm:ss")
+      new_stop = time_double(data1[i].time_stop, tformat="YYYY-MM-DDThh:mm:ss")
       temp = min(abs(time - new_start),start_index)
       temp = min(abs(time - new_stop),end_index)
       
     endif
   endfor 
-
-  
-
-
-    print,stage, index,reset
-
 
 END
