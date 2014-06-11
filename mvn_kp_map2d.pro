@@ -77,6 +77,12 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
  if keyword_set(direct) eq 0 then begin
    if Float(!Version.Release) GE 8.0 THEN directgraphic = 0    ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
   endif    
+  
+  if Float(!Version.Release) ge 8.2 then begin
+    version_check = 1
+  endif else begin
+    version_check = 0
+  endelse  
     
 ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
@@ -459,7 +465,7 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
   total_colorbars = 0
   if keyword_set(direct) eq 0 then begin
     ;BUILD THE BASE PLOT
-          p = plot(longitude, latitude, /overplot, margin=0, linestyle=6, color=plot_color)
+          p = plot(longitude, latitude, /overplot, margin=0, linestyle=6, color=plot_color, name='track')
           if keyword_set(nopath) eq 0 then begin
             symbols = symbol(longitude,latitude, "thin_diamond", /data, sym_color=color_levels, sym_filled=1)
           endif else begin
@@ -597,8 +603,10 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
             MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
             color_bar_index = 0
             if keyword_set(nopath) eq 0 then begin
-              c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
-                  /border,range=[parameter_minimum,parameter_maximum])
+
+                c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
+                    /border,range=[parameter_minimum,parameter_maximum])
+             
               color_bar_index++
             endif
             if keyword_set(periapse_temp) then begin
