@@ -17,6 +17,46 @@
 ;-
 pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start, stop, apo_time_blend
 
+
+  if blend eq 0 then begin
+    a = where(start eq '')
+    if a ne -1 then begin
+      temp_start = strarr(n_elements(start))
+      temp_stop = strarr(n_elements(stop))
+      temp_input = input
+      temp_input[*] = 0.0d
+      temp_index = 0
+      for i=0,n_elements(start)-1 do begin
+        if start[i] ne '' then begin
+          temp_start[temp_index] = start[i]
+          temp_stop[temp_index] = stop[i]
+          temp_input[*,*,temp_index] = input[*,*,i]
+          temp_index=temp_index+1
+        endif
+      endfor
+      start = temp_start[0:temp_index-1]
+      stop = temp_stop[0:temp_index-1]
+      input = temp_input[*,*,0:temp_index-1]
+    endif
+  endif else begin
+    a = where(start eq '')
+    if a ne -1 then begin
+      temp_start = strarr(n_elements(start))
+      temp_input = input
+      temp_input[*] = 0.0d
+      temp_index = 0
+      for i=0,n_elements(start)-1 do begin
+        if start[i] ne '' then begin
+          temp_start[temp_index] = start[i]
+          temp_input[*,*,temp_index] = input[*,*,i]
+          temp_index=temp_index+1
+        endif
+      endfor
+      start = temp_start[0:temp_index-1]
+      input = temp_input[*,*,0:temp_index-1]
+    endif    
+  endelse  
+
   if blend eq 1 then begin              ;RETURN AVERAGE IMAGE OVER ALL INPUT DATA
         sizes = size(input)
         counts = intarr(sizes(1),sizes(2))

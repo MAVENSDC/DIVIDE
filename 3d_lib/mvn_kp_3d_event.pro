@@ -519,12 +519,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel1Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
-                          read_png,input_file,image
-                          oImage1 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons1 -> setproperty, texture_map=oimage1
-                          (*pstate).opolygons1 -> setProperty, alpha_channel=((*pstate).atmLevel1alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                           if input_file ne '' then begin
+                            read_png,input_file,image
+                            oImage1 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons1 -> setproperty, texture_map=oimage1
+                            (*pstate).opolygons1 -> setProperty, alpha_channel=((*pstate).atmLevel1alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                           endif
                         end
                         
        'atmLevel1alpha': begin
@@ -562,12 +564,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel2Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
-                          read_png,input_file,image
-                          oImage2 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons2 -> setproperty, texture_map=oimage2
-                          (*pstate).opolygons2 -> setProperty, alpha_channel=((*pstate).atmLevel2alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                          if input_file ne '' then begin
+                            read_png,input_file,image
+                            oImage2 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons2 -> setproperty, texture_map=oimage2
+                            (*pstate).opolygons2 -> setProperty, alpha_channel=((*pstate).atmLevel2alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                          endif
                         end
                         
        'atmLevel2alpha': begin
@@ -604,12 +608,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel3Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                          if input_file ne '' then begin
                           read_png,input_file,image
-                          oImage3 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons3 -> setproperty, texture_map=oimage3
-                          (*pstate).opolygons3 -> setProperty, alpha_channel=((*pstate).atmLevel3alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                            oImage3 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons3 -> setproperty, texture_map=oimage3
+                            (*pstate).opolygons3 -> setProperty, alpha_channel=((*pstate).atmLevel3alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                          endif
                         end
                         
        'atmLevel3alpha': begin
@@ -646,12 +652,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel4Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
-                          read_png,input_file,image
-                          oImage4 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons4 -> setproperty, texture_map=oimage4
-                          (*pstate).opolygons4 -> setProperty, alpha_channel=((*pstate).atmLevel4alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                          if input_file ne '' then begin
+                            read_png,input_file,image
+                            oImage4 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons4 -> setproperty, texture_map=oimage4
+                            (*pstate).opolygons4 -> setProperty, alpha_channel=((*pstate).atmLevel4alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                          endif
                         end
                         
        'atmLevel4alpha': begin
@@ -688,12 +696,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel5Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
-                          read_png,input_file,image
-                          oImage5 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons5 -> setproperty, texture_map=oimage5
-                          (*pstate).opolygons5 -> setProperty, alpha_channel=((*pstate).atmLevel5alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                          if input_file ne '' then begin
+                            read_png,input_file,image
+                            oImage5 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons5 -> setproperty, texture_map=oimage5
+                            (*pstate).opolygons5 -> setProperty, alpha_channel=((*pstate).atmLevel5alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                          endif
                         end
                         
        'atmLevel5alpha': begin
@@ -730,12 +740,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     end
                     
        'atmLevel6Load': begin
-                          input_file = dialog_pickfile(path='/Users/klarsen/Desktop/',filter='*.png')
-                          read_png,input_file,image
-                          oImage6 = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).opolygons6 -> setproperty, texture_map=oimage6
-                          (*pstate).opolygons6 -> setProperty, alpha_channel=((*pstate).atmLevel6alpha)/100.0
-                          (*pstate).window->draw,(*pstate).view
+                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
+                          if input_file ne '' then begin
+                            read_png,input_file,image
+                            oImage6 = OBJ_NEW('IDLgrImage', image )
+                            (*pstate).opolygons6 -> setproperty, texture_map=oimage6
+                            (*pstate).opolygons6 -> setProperty, alpha_channel=((*pstate).atmLevel6alpha)/100.0
+                            (*pstate).window->draw,(*pstate).view
+                          endif
                         end
                         
        'atmLevel6alpha': begin
@@ -1797,7 +1809,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               (*pstate).mars_base_map = 'apoapse'
                               
                               ;reset the basemap to default MOLA
-                               read_jpeg,(*pstate).install_directory+'MDIM_2500x1250.jpg',image
+                               read_jpeg,(*pstate).bm_install_directory+'MDIM_2500x1250.jpg',image
                                oImage = OBJ_NEW('IDLgrImage', image )
                                (*pstate).opolygons -> setproperty, texture_map=oimage
                                (*pstate).window->draw, (*pstate).view 
@@ -1828,6 +1840,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                               (*pstate).apoapse_image_choice = 'Dust Depth'
                                               (*pstate).mars_base_map = 'apoapse'
                                               time = (*pstate).insitu[(*pstate).time_index].time_string
+                                              
                                                  MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, $
                                                                           (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
                                                 
