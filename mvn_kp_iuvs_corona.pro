@@ -613,7 +613,8 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
                 endif else begin
                   window,1,xsize=a[0]*0.5,ysize=a[1]*0.9
                 endelse
-                device,decomposed=0
+                device, decompose=0
+                plot,[0,0],[1,1], color=255, background=255, /nodata
                 
                 ;CREATE THE LO-RES LEGEND
                 xyouts, 0.5, 0.97, 'Lo-Res  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
@@ -785,8 +786,9 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=l
                  endif else begin
                     window,2,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
-                 device,decomposed=0
-                
+                 device, decompose=0
+                 plot,[0,0],[1,1], color=255, background=255, /nodata
+                 
                   xyouts, 0.5, 0.97, 'Echelle  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
 
                 xyouts, 0.08, 0.9, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
@@ -901,6 +903,7 @@ if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
     !p.color=0
     !p.multi=[0,2,3,0,1]
     
+    
               if e_h_r eq 1 then begin        ;echelle high radiance
                 plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
                     title='Echelle High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
@@ -955,7 +958,7 @@ if (disp_check[0] eq 1) and (disp_check[1] eq 1) and (disp_check[2] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
                 xyouts, 0.5, 0.97, 'Echelle  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
 
                 xyouts, 0.08, 0.9, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
@@ -1084,7 +1087,7 @@ if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
     !p.background='FFFFFF'x
     !p.color=0
     !p.multi=[0,4,3,0,1]
-  
+    
               if l_h_r eq 1 then begin        ;lores high radiance
                 plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,charsize=1.5,/ylog,ystyle=1,yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
                     title='Lo-Res High: Radiance',xtitle='Radiance', ytitle='Altitude, km'
@@ -1184,7 +1187,8 @@ if (disp_check[3] eq 1) and (disp_check[4] eq 1) and (disp_check[5] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.9
                  endelse
                   device,decomposed=0
-  
+                  plot,[0,0],[1,1], color=255, background=255, /nodata
+                  
                   xyouts, 0.5, 0.97, 'Lo-Res  Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
   
                   xyouts, 0.15, 0.94, 'High: Radiance', alignment=0.5, charthick=2.0, charsize=1.5, /normal
@@ -1407,7 +1411,8 @@ if (disp_check[0] eq 1) and (disp_check[3] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Echelle/Lo-Res Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
                 xyouts, 0.10, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -1555,7 +1560,8 @@ if (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Echelle/Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
 
                 xyouts, 0.08, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -1724,7 +1730,8 @@ if (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Echelle/Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=1.5, /normal
 
                 xyouts, 0.08, 0.9, 'E: Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -1849,7 +1856,8 @@ if (disp_check[0] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Echelle Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
                 xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -1916,7 +1924,8 @@ if (disp_check[1] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Echelle Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
                 xyouts, 0.15, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -2000,6 +2009,7 @@ if (disp_check[2] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
+                plot,[0,0],[1,1], color=255, background=255, /nodata
 
                 xyouts, 0.5, 0.97, 'Echelle High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
@@ -2092,7 +2102,8 @@ if (disp_check[3] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
-
+                plot,[0,0],[1,1], color=255, background=255, /nodata
+                
                 xyouts, 0.5, 0.97, 'Lo-Res Disk Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
                 xyouts, 0.10, 0.9, 'Radiance', alignment=0.5, charthick=2.0, charsize=2.0, /normal
@@ -2205,6 +2216,7 @@ if (disp_check[4] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
+                plot,[0,0],[1,1], color=255, background=255, /nodata
 
                 xyouts, 0.5, 0.97, 'Lo-Res Limb Profile Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 
@@ -2318,6 +2330,7 @@ if (disp_check[5] eq 1) and $
                     window,1,xsize=a[0]*0.5,ysize=a[1]*0.5
                  endelse
                 device,decomposed=0
+                plot,[0,0],[1,1], color=255, background=255, /nodata
 
                 xyouts, 0.5, 0.97, 'Lo-Res High Altitude Legend', alignment=0.5, charthick=2.5, charsize=2.0, /normal
 

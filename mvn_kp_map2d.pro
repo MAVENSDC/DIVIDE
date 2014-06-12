@@ -604,10 +604,19 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
               MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
               color_bar_index = 0
               if keyword_set(nopath) eq 0 then begin
-  
-                  c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
-                      /border,range=[parameter_minimum,parameter_maximum])
-               
+                ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+                            nan_error_check = 0
+                            for i=0,n_elements(kp_data1.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(kp_data1[i].(level0_index).(level1_index))
+                              if var1 eq 1 then nan_error_check=1 
+                            endfor
+                            if nan_error_check eq 1 then begin
+                              var1 = finite(kp_data1.(level0_index).(level1_index))
+                              if min(kp_data1[where(var1 ne 0)].(level0_index).(level1_index)) ne max(kp_data1[where(var1 ne 0)].(level0_index).(level1_index)) then begin
+                                c = COLORBAR(TITLE=strupcase(string(tag_array[0]+'.'+tag_array[1])),rgb_table=11,ORIENTATION=0, position=positions[color_bar_index,*],TEXTPOS=0,$
+                                    /border,range=[parameter_minimum,parameter_maximum])
+                              endif
+                            endif
                 color_bar_index++
               endif
               if keyword_set(periapse_temp) then begin

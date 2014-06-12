@@ -488,6 +488,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
 
 
     window,plot_window+1, xsize=legend_xsize,ysize=400,title='Limb Plot Legend'
+    device, decompose=0
+    plot,[0,0],[1,1], color=255, background=255, /nodata
   
     if den_plot eq 1 then xyouts, den_lab,0.9,'Density',charsize=2,charthick=2,/normal
     if rad_plot eq 1 then xyouts, rad_lab, 0.9,'Radiance',charsize=2,charthick=2,/normal
