@@ -878,12 +878,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'lpw_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
+                      
                       parameter = 'LPW.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -894,12 +896,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr       
                          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin           
@@ -911,19 +913,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end           
            
         'static_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'STATIC.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -934,12 +937,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin
@@ -951,19 +954,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                        end    
                        
         'swia_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'SWIA.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -974,12 +978,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string((*pstate).colorbar_ticks),2)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr     
                       ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin             
@@ -991,19 +995,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end
                      
         'swea_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'SWEA.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -1014,12 +1019,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr      
                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin            
@@ -1031,19 +1036,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                      end 
                      
         'mag_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'MAG.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -1054,12 +1060,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin
@@ -1071,19 +1077,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                     end
                     
         'sep_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'SEP.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -1094,12 +1101,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr
                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin                  
@@ -1117,12 +1124,13 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'ngims_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'NGIMS.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -1133,12 +1141,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
                           ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin              
@@ -1150,19 +1158,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                       end
 
         'user_list': begin
                       mag_index = widget_info(event.id, /droplist_select)
                       widget_control, event.id, get_value=newval
+                      insitu_spec = (*pstate).insitu
                       parameter = 'USER.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, (*pstate).insitu, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, (*pstate).insitu, parameter,base_tag_count, first_level_count, base_tags,  $
+                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
                              first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
+                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
                                             (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                       (*pstate).colorbar_ticks = new_ticks
                       plotted_parameter_name = tag_array[0]+':'+tag_array[1]
@@ -1173,12 +1182,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       ;CHANGE THE COLOR BAR SETTINGS
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=(*pstate).insitu.(level0_index).(level1_index)
+                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
                           (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr        
                           ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
-                            for i=0,n_elements((*pstate).insitu.(level0_index).(level1_index))-1 do begin
-                              var1 = finite((*pstate).insitu[i].(level0_index).(level1_index))
+                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
+                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
                               if var1 eq 1 then nan_error_check=1 
                             endfor
                           if nan_error_check eq 1 then begin
@@ -1190,14 +1199,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           endif else begin
                             print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
                           endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min((*pstate).insitu.(level0_index).(level1_index)))),2),strtrim(string(fix(max((*pstate).insitu.(level0_index).(level1_index)))),2)]
+                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
                       (*pstate).window->draw,(*pstate).view   
                       end
                    
         'colortable': begin
                         xloadct,/silent,/use_current,group=(*pstate).base ,/modal
                         (*pstate).orbit_path->getproperty,vert_color=temp_vert
-                        MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                        insitu_spec = (*pstate).insitu
+                        MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                               (*pstate).colorbar_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                         (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                         ;CHANGE THE COLOR BAR SETTINGS
@@ -1552,7 +1562,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           widget_control, event.id, get_value=newval
                           (*pstate).vector_color_source[1] = newval(index)
                           (*pstate).vector_path->getproperty,vert_color=vert_color
-                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                           (*pstate).vector_path->setproperty,vert_color=vert_color
                           (*pstate).window ->draw,(*pstate).view
                         end
@@ -1563,7 +1574,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             widget_control, event.id, get_value=newval
                             (*pstate).vector_color_source[1] = newval(index)
                             (*pstate).vector_path->getproperty,vert_color=vert_color
-                            MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                            insitu_spec = (*pstate).insitu
+                            MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                             (*pstate).vector_path->setproperty,vert_color=vert_color
                             (*pstate).window ->draw,(*pstate).view
                            end
@@ -1574,7 +1586,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           widget_control, event.id, get_value=newval
                           (*pstate).vector_color_source[1] = newval(index)
                           (*pstate).vector_path->getproperty,vert_color=vert_color
-                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                           (*pstate).vector_path->setproperty,vert_color=vert_color
                           (*pstate).window ->draw,(*pstate).view
                          end
@@ -1585,7 +1598,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           widget_control, event.id, get_value=newval
                           (*pstate).vector_color_source[1] = newval(index)
                           (*pstate).vector_path->getproperty,vert_color=vert_color
-                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                           (*pstate).vector_path->setproperty,vert_color=vert_color
                           (*pstate).window ->draw,(*pstate).view
                         end
@@ -1596,7 +1610,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           widget_control, event.id, get_value=newval
                           (*pstate).vector_color_source[1] = newval(index)
                           (*pstate).vector_path->getproperty,vert_color=vert_color
-                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                           (*pstate).vector_path->setproperty,vert_color=vert_color
                           (*pstate).window ->draw,(*pstate).view
                         end                               
@@ -1607,7 +1622,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           widget_control, event.id, get_value=newval
                           (*pstate).vector_color_source[1] = newval(index)
                           (*pstate).vector_path->getproperty,vert_color=vert_color
-                          MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                          insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                           (*pstate).vector_path->setproperty,vert_color=vert_color
                           (*pstate).window ->draw,(*pstate).view
                         end
@@ -1618,7 +1634,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             widget_control, event.id, get_value=newval
                             (*pstate).vector_color_source[1] = newval(index)
                             (*pstate).vector_path->getproperty,vert_color=vert_color
-                            MVN_KP_3D_VECTOR_COLOR, (*pstate).insitu.static.(index), vert_color, (*pstate).colorbar_stretch
+                            insitu_spec = (*pstate).insitu
+                            MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
                             (*pstate).vector_path->setproperty,vert_color=vert_color
                             (*pstate).window ->draw,(*pstate).view
                         end               
@@ -1636,8 +1653,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               if newval eq 'Linear' then temp_stretch = 0
                               if newval eq 'Log' then temp_stretch = 1
                               (*pstate).colorbar_stretch = temp_stretch
-                              temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                              MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                              insitu_spec = (*pstate).insitu
+                              temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2)
+                              MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                     temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, temp_stretch
                               (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                               ;CHANGE THE COLOR BAR SETTINGS
@@ -1651,8 +1669,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'colorbar_min': begin
                           widget_control,event.id,get_value=newval
                           (*pstate).colorbar_min = newval[0]
+                          insitu_spec = (*pstate).insitu
                           temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                 temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                           (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                           ;CHANGE THE COLOR BAR SETTINGS
@@ -1666,8 +1685,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'colorbar_max': begin
                           widget_control,event.id,get_value=newval
                           (*pstate).colorbar_max = newval[0]
+                          insitu_spec = (*pstate).insitu
                           temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                 temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
                           (*pstate).orbit_path->SetProperty,vert_color=temp_vert
                           ;CHANGE THE COLOR BAR SETTINGS
@@ -1682,7 +1702,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                             temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
                             colorbar_min = (*pstate).colorbar_min
                             colorbar_max = (*pstate).colorbar_max
-                          MVN_KP_3D_PATH_COLOR, (*pstate).insitu, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
+                            insitu_spec = (*pstate).insitu
+                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
                                                 temp_ticks, colorbar_min, colorbar_max, (*pstate).colorbar_stretch, /reset
                           (*pstate).colorbar_min = colorbar_min
                           (*pstate).colorbar_max = colorbar_max                       
