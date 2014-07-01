@@ -121,7 +121,9 @@ pro MVN_KP_STANDARDS, kp_data, $
     if keyword_set(plot_color) then begin
       colors = plot_color
       loadct,colors,/silent
-    endif 
+    endif else begin
+      loadct,39,/silent
+    endelse
    
     device,decompose=0
     !p.background='FFFFFF'x
