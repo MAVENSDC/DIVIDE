@@ -28,6 +28,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   ;variables to be added to command line at some points
   apoapse_image_choice = 'Ozone Depth'
   
+  
+  ;correction for IDL 'features' in 8.1
+
+   if Float(!Version.Release) LE 8.1 THEN BEGIN   ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
+    orbit_offset = 0.00001
+   endif else begin
+    orbit_offset = 0.001
+   endelse
+      
   ;OPTIMIZATION OPTION
   
     if keyword_set(optimize) then begin
@@ -221,7 +230,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   
     ;parse the input iuvs structure (if it exists) to see which coronal observations are present
     if instrument_array[7] eq 1 then begin
-      e_disk_list = 'None'
+      e_disk_list = 'Echelle Disk'
       if instrument_array[11] eq 1 then begin           ;Echelle Disk
         tag_list = tag_names(iuvs.corona_e_disk)
         check = where(tag_list eq 'RADIANCE')
@@ -230,7 +239,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           e_disk_list = [e_disk_list,'Radiance:'+iuvs[min(temp)].corona_e_disk.radiance_id]
         endif
       endif
-      e_limb_list = 'None'
+      e_limb_list = 'Echelle Limb'
       if instrument_array[15] eq 1 then begin           ;Echelle Limb
         tag_list = tag_names(iuvs.corona_e_limb)
         check = where(tag_list eq 'RADIANCE')
@@ -241,10 +250,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_e_limb.half_int_distance_id[0] ne '')
-          e_limb_list = [e_limb_list, '1/2 Dist:'+iuvs[min(temp)].corona_e_limb.half_int_distance_id]
+          e_limb_list = [e_limb_list, 'HALF_INT_DISTANCE:'+iuvs[min(temp)].corona_e_limb.half_int_distance_id]
         endif
       endif
-      e_high_list = 'None'
+      e_high_list = 'Echelle High'
       if instrument_array[10] eq 1 then begin           ;Echelle High
         tag_list = tag_names(iuvs.corona_e_high)
         check = where(tag_list eq 'RADIANCE')
@@ -255,10 +264,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_e_high.half_int_distance_id[0] ne '')
-          e_high_list = [e_high_list, '1/2 Dist:'+iuvs[min(temp)].corona_e_high.half_int_distance_id]
+          e_high_list = [e_high_list, 'HALF_INT_DISTANCE:'+iuvs[min(temp)].corona_e_high.half_int_distance_id]
         endif
       endif
-      lo_disk_list = 'None'
+      lo_disk_list = 'LoRes Disk'
       if instrument_array[16] eq 1 then begin           ;Low Res Disk
         tag_list = tag_names(iuvs.corona_lo_disk)
         check = where(tag_list eq 'RADIANCE')
@@ -273,7 +282,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'AURORAL_INDEX:')
         if check ne -1 then lo_disk_list = [lo_disk_list, 'Auroral Index']
       endif
-      lo_limb_list = 'None'
+      lo_limb_list = 'LoRes Limb'
       if instrument_array[14] eq 1 then begin           ;Low Res Limb
         tag_list = tag_names(iuvs.corona_lo_limb)
         check = where(tag_list eq 'RADIANCE')
@@ -284,7 +293,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'SCALE_HEIGHT')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_limb.scale_height_id[0] ne '')    
-          lo_limb_list = [lo_limb_list, 'Scale Height:'+iuvs[min(temp)].corona_lo_limb.scale_height_id]
+          lo_limb_list = [lo_limb_list, 'Scale_Height:'+iuvs[min(temp)].corona_lo_limb.scale_height_id]
         endif
         check = where(tag_list eq 'DENSITY')
         if check ne -1 then begin
@@ -294,7 +303,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'TEMPERATURE')
         if check ne -1 then lo_limb_list = [lo_limb_list, 'Temperature:']
       endif
-      lo_high_list = 'None
+      lo_high_list = 'LoRes High'
       if instrument_array[13] eq 1 then begin           ;Row Res High
         tag_list = tag_names(iuvs.corona_lo_high)
         check = where(tag_list eq 'RADIANCE')
@@ -310,7 +319,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_high.half_int_distance_id[0] ne '')    
-          lo_high_list = [lo_high_list, '1/2 Dist:'+iuvs[min(temp)].corona_lo_high.half_int_distance_id]
+          lo_high_list = [lo_high_list, 'HALF_INT_DISTANCE:'+iuvs[min(temp)].corona_lo_high.half_int_distance_id]
         endif          
       endif
     endif
@@ -609,9 +618,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    if instrument_array[1] eq 1 then begin
                      vector_list[vector_list_index] = 'STATIC O2+ Flow Velocity'
                      vector_list_index = vector_list_index + 1
-                     vector_list[vector_list_index] = 'STATIC H+ Characteristic Direction'
+                     vector_list[vector_list_index] = 'STATIC H+ Char Dir'
                      vector_list_index = vector_list_index + 1
-                     vector_list[vector_list_index] = 'STATIC Dominant Ion Characteristic Direction'
+                     vector_list[vector_list_index] = 'STATIC Dom Ion Char Dir'
                      vector_list_index = vector_list_index + 1
                    endif
                    if instrument_array[5] eq 1 then begin
@@ -630,7 +639,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    
                    label10 = widget_label(subbaseR10a, value='Vector Scale Factor, Percent')
                    slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=scale_factor*300,ysize=scale_factor*33,uname='vec_scale', value=100)
-                   vector_scale = 1.0
+                   vector_scale = 5.0
                    
                    subbaseR10c = widget_base(subbaseR10, /column,/frame)
                      label10 = widget_label(subbaseR10c, value='Vector Magnitude Colors')
@@ -738,21 +747,62 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                subbaseR8h1 = widget_base(subbaseR8h, /row)
                 subbaseR8ha = widget_base(subbaseR8h1, /column)
                 subbaseR8i = widget_base(subbaseR8ha, /column, /frame)
-                 if instrument_array[16] eq 1 then drop8a = widget_droplist(subbaseR8i, value=lo_disk_list, uname='corona_lo_disk', title='Lo Disk', ysize=scale_factor*28)
-                 if instrument_array[14] eq 1 then drop8b = widget_droplist(subbaseR8i, value=lo_limb_list, uname='corona_lo_limb', title='Lo Limb', ysize=scale_factor*28)
-                 if instrument_array[13] eq 1 then drop8c = widget_droplist(subbaseR8i, value=lo_high_list, uname='corona_lo_high', title='Lo High', ysize=scale_factor*28)
+                 subbaseR8i1 = widget_base(subbaseR8i, /row)
+                  if instrument_array[16] eq 1 then begin
+                    drop8a = widget_droplist(subbaseR8i1, value=lo_disk_list, uname='corona_lo_disk', ysize=scale_factor*28)
+                    button8a = widget_button(subbaseR8i1, value='LoadCT', uname='loadct_cld', ysize=scale_factor*28)
+                    label8a = widget_label(subbaseR8i1, value='Alpha')
+                    text8a = widget_text(subbaseR8i1, value='100', uname='alpha_cld', xsize=3, /editable)
+                    corona_lo_disk_alpha=100
+                  endif
+                 subbaseR8i2 = widget_base(subbaseR8i, /row)
+                  if instrument_array[14] eq 1 then begin
+                    drop8b = widget_droplist(subbaseR8i2, value=lo_limb_list, uname='corona_lo_limb', ysize=scale_factor*28)
+                    button8b = widget_button(subbaseR8i2, value='LoadCT', uname='loadct_cll', ysize=scale_factor*28)
+                    label8b = widget_label(subbaseR8i2, value='Alpha')
+                    text8b = widget_text(subbaseR8i2, value='100', uname='alpha_cll', xsize=3, /editable)
+                    corona_lo_limb_alpha = 100
+                  endif
+                 subbaseR8i3 = widget_base(subbaseR8i, /row)
+                  if instrument_array[13] eq 1 then begin
+                    drop8c = widget_droplist(subbaseR8i3, value=lo_high_list, uname='corona_lo_high', ysize=scale_factor*28)
+                    button8c = widget_button(subbaseR8i3, value='LoadCT', uname='loadct_clh', ysize=scale_factor*28)
+                    label8c = widget_label(subbaseR8i3, value='Alpha')
+                    text8c = widget_text(subbaseR8i3, value='100', uname='alpha_clh', xsize=3, /editable)
+                    corona_lo_high_alpha=100
+                  endif
                 subbaseR8j = widget_base(subbaseR8ha, /column, /frame)
-                 if instrument_array[11] eq 1 then drop8d = widget_droplist(subbaseR8j, value=e_disk_list, uname='corona_e_disk', title='Ech. Disk', ysize=scale_factor*28)
-                 if instrument_array[15] eq 1 then drop8e = widget_droplist(subbaseR8j, value=e_limb_list, uname='corona_e_limb', title='Ech. Limb', ysize=scale_factor*28)
-                 if instrument_array[10] eq 1 then drop8f = widget_droplist(subbaseR8j, value=e_high_list, uname='corona_e_high', title='Ech. High', ysize=scale_factor*28)                 
-               subbaseR8h2 = widget_base(subbaseR8h1, /column)
-               label8 = widget_label(subbaseR8h2, value='Options')
-                subbaseR8hb = widget_base(subbaseR8h2, /column, /exclusive)
-                button8h = widget_button(subbaseR8hb, value='Erase Orbit', uname='coronal_reset',/no_release)
-                widget_control,button8h,/set_button
-                coronal_reset = 1
-                button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
-               widget_control,subbaseR8h,sensitive=0
+                 subbaseR8j1 = widget_base(subbaseR8j, /row)
+                  if instrument_array[11] eq 1 then begin
+                    drop8d = widget_droplist(subbaseR8j1, value=e_disk_list, uname='corona_e_disk', ysize=scale_factor*28)
+                    button8d = widget_button(subbaseR8j1, value='LoadCT', uname='loadct_ced', ysize=scale_factor*28)
+                    label8d = widget_label(subbaseR8j1, value='Alpha')
+                    text8d = widget_text(subbaseR8j1, value='100', uname='alpha_ced', xsize=3, /editable)
+                    corona_e_disk_alpha = 100
+                  endif
+                 subbaseR8j2 = widget_base(subbaseR8j, /row)
+                  if instrument_array[15] eq 1 then begin
+                    drop8e = widget_droplist(subbaseR8j2, value=e_limb_list, uname='corona_e_limb', ysize=scale_factor*28)
+                    button8e = widget_button(subbaseR8j2, value='LoadCT', uname='loadct_cel', ysize=scale_factor*28)
+                    label8e = widget_label(subbaseR8j2, value='Alpha')
+                    text8e = widget_text(subbaseR8j2, value='100', uname='alpha_cel', xsize=3, /editable)
+                    corona_e_limb_alpha = 100
+                  endif
+                 subbaseR8j3 = widget_base(subbaseR8j, /row)
+                  if instrument_array[10] eq 1 then begin
+                    drop8f = widget_droplist(subbaseR8j3, value=e_high_list, uname='corona_e_high', ysize=scale_factor*28)  
+                    button8f = widget_button(subbaseR8j3, value='LoadCT', uname='loadct_ceh', ysize=scale_factor*28)
+                    label8f = widget_label(subbaseR8j3, value='Alpha')
+                    text8f = widget_text(subbaseR8j3, value='100', uname='alpha_ceh', xsize=3, /editable)
+                    corona_e_high_alpha = 100
+                  endif               
+            ;   subbaseR8h2 = widget_base(subbaseR8h1, /column)
+            ;   label8 = widget_label(subbaseR8h2, value='Options')
+            ;    subbaseR8hb = widget_base(subbaseR8h2, /column, /exclusive)
+            ;    button8h = widget_button(subbaseR8hb, value='Erase Orbit', uname='coronal_reset',/no_release)
+            ;    widget_control,button8h,/set_button
+            ;    coronal_reset = 1
+            ;    button8h = widget_button(subbaseR8hb, value='Keep Orbit', uname='coronal_reset', /no_release)
            endif
           
           button8 = widget_button(subbaseR8, value='Return',uname='iuvs_return',xsize=scale_factor*300,ysize=scale_factor*30)
@@ -1072,13 +1122,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       parameterModel->setproperty,hide=1
 
     ;CREATE THE ORBITAL PATH
-    if keyword_set(speckle) then begin
-      orbit_offset = 0.001
-      speckle = 1
-    endif else begin
-      orbit_offset = 0.00001
-      speckle = 0
-    endelse
+
       if coord_sys eq 0 then begin
         x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
         y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
@@ -1167,14 +1211,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     
         ;IF SET, FILL THE VECTOR MODEL AND DISPLAY
         if keyword_set(whiskers) ne 1 then begin
-          vector_scale = 1.0
+          vector_scale = 5.0
           vector_color = [255,0,0]
           vector_data = ''
           vector_level1 = 0
           vector_level2 = 0
         endif else begin
            if size(whiskers,/type) ne 8 then begin
-            vector_scale = 1.0
+            vector_scale = 5.0
             vector_color = [255,0,0]
             vector_data = ''
             vector_level1 = 0
@@ -1197,7 +1241,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         y_vector[i*2] = y_orbit[i*2]
         z_vector[i*2] = z_orbit[i*2]       
         x_vector[(i*2)+1] = x_orbit[i*2]
-        y_vector[(i*2)+1] = y_orbit[i*2]+0.00001
+        y_vector[(i*2)+1] = y_orbit[i*2]+orbit_offset
         z_vector[(i*2)+1] = z_orbit[i*2]
         vector_polylines[i*3] = 2l
         vector_polylines[(i*3)+1] = (i*2l)
@@ -1482,7 +1526,102 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         endif 
 
   ;CREATE THE MODEL FOR THE CORONA DISPLAYS
+    if keyword_set(iuvs) then begin
+      if instrument_array[15] eq 1 then begin
+       
+        ;CREATE THE MODEL FOR THE ECHELLE LIMB DATA
+        corona_e_limb_model = obj_new('IDLgrModel')
+        total_e_limb = n_elements(where(finite(iuvs.corona_e_limb.alt[0])))
+        total_e_limb_alt = n_elements(iuvs[0].corona_e_limb.alt)
+        
+        corona_e_limb_x = fltarr(4*total_e_limb*total_e_limb_alt)
+        corona_e_limb_y = fltarr(4*total_e_limb*total_e_limb_alt)
+        corona_e_limb_z = fltarr(4*total_e_limb*total_e_limb_alt)
+        corona_e_limb_connect = intarr(5*total_e_limb*total_e_limb_alt)
+        corona_e_limb_colors = intarr(3,4*total_e_limb*total_e_limb_alt)
+        
+        mvn_kp_3d_corona_init, iuvs.corona_e_limb, insitu.time, insitu.spacecraft.altitude, x_orbit, y_orbit, z_orbit, corona_e_limb_x, $
+                               corona_e_limb_y, corona_e_limb_z, corona_e_limb_connect, corona_e_limb_colors
 
+        corona_e_limb_poly = obj_new('IDLgrPolygon', corona_e_limb_x, corona_e_limb_y, corona_e_limb_z, polygons=corona_e_limb_connect, $
+                                      vert_colors=corona_e_limb_colors, shading=1)
+        corona_e_limb_model->add, corona_e_limb_poly
+    
+        view->add, corona_e_limb_model
+        corona_e_limb_model->setproperty,hide=1
+      endif
+      
+      if instrument_array[10] eq 1 then begin
+        ;CREATE THE MODEL FOR THE ECHELLE HIGH ALT DATA
+        corona_e_high_model = obj_new('IDLgrModel')
+        total_e_high = n_elements(where(finite(iuvs.corona_e_high.alt[0])))
+        total_e_high_alt = n_elements(iuvs[0].corona_e_high.alt)
+        
+        corona_e_high_x = fltarr(4*total_e_high*total_e_high_alt)
+        corona_e_high_y = fltarr(4*total_e_high*total_e_high_alt)
+        corona_e_high_z = fltarr(4*total_e_high*total_e_high_alt)
+        corona_e_high_connect = intarr(5*total_e_high*total_e_high_alt)
+        corona_e_high_colors = intarr(3,4*total_e_high*total_e_high_alt)
+        
+        mvn_kp_3d_corona_init, iuvs.corona_e_high, insitu.time, insitu.spacecraft.altitude, x_orbit, y_orbit, z_orbit, corona_e_high_x, $
+                               corona_e_high_y, corona_e_high_z, corona_e_high_connect, corona_e_high_colors                              
+    
+        corona_e_high_poly = obj_new('IDLgrPolygon', corona_e_high_x, corona_e_high_y, corona_e_high_z, polygons=corona_e_high_connect, $
+                                      vert_colors=corona_e_high_colors, shading=1)
+        corona_e_high_model->add, corona_e_high_poly
+    
+        view->add, corona_e_high_model         
+        corona_e_high_model-> setproperty,hide=1    
+      endif
+      
+      if instrument_array[14] eq 1 then begin
+        ;CREATE THE MODEL FOR THE LORES LIMB DATA
+        corona_lo_limb_model = obj_new('IDLgrModel')
+        total_lo_limb = n_elements(where(finite(iuvs.corona_lo_limb.alt[0])))
+        total_lo_limb_alt = n_elements(iuvs[0].corona_lo_limb.alt)
+        
+        corona_lo_limb_x = fltarr(4*total_lo_limb*total_lo_limb_alt)
+        corona_lo_limb_y = fltarr(4*total_lo_limb*total_lo_limb_alt)
+        corona_lo_limb_z = fltarr(4*total_lo_limb*total_lo_limb_alt)
+        corona_lo_limb_connect = intarr(5*total_lo_limb*total_lo_limb_alt)
+        corona_lo_limb_colors = intarr(3,4*total_lo_limb*total_lo_limb_alt)
+        
+        mvn_kp_3d_corona_init, iuvs.corona_lo_limb, insitu.time, insitu.spacecraft.altitude, x_orbit, y_orbit, z_orbit, corona_lo_limb_x, $
+                               corona_lo_limb_y, corona_lo_limb_z, corona_lo_limb_connect, corona_lo_limb_colors
+
+    
+        corona_lo_limb_poly = obj_new('IDLgrPolygon', corona_lo_limb_x, corona_lo_limb_y, corona_lo_limb_z, polygons=corona_lo_limb_connect, $
+                                      vert_colors=corona_lo_limb_colors, shading=1)
+        corona_lo_limb_model->add, corona_lo_limb_poly
+    
+        view->add, corona_lo_limb_model
+         corona_lo_limb_model->setproperty,hide=1
+      endif
+      if instrument_array[13] eq 1 then begin
+        ;CREATE THE MODEL FOR THE LORES HIGH ALT DATA
+        corona_lo_high_model = obj_new('IDLgrModel')
+        total_lo_high = n_elements(where(finite(iuvs.corona_lo_high.alt[0])))
+        total_lo_high_alt = n_elements(iuvs[0].corona_lo_high.alt)
+        
+        corona_lo_high_x = fltarr(4*total_lo_high*total_lo_high_alt)
+        corona_lo_high_y = fltarr(4*total_lo_high*total_lo_high_alt)
+        corona_lo_high_z = fltarr(4*total_lo_high*total_lo_high_alt)
+        corona_lo_high_connect = intarr(5*total_lo_high*total_lo_high_alt)
+        corona_lo_high_colors = intarr(3,4*total_lo_high*total_lo_high_alt)
+        
+        mvn_kp_3d_corona_init, iuvs.corona_lo_high, insitu.time, insitu.spacecraft.altitude, x_orbit, y_orbit, z_orbit, corona_lo_high_x, $
+                               corona_lo_high_y, corona_lo_high_z, corona_lo_high_connect, corona_lo_high_colors
+    
+        corona_lo_high_poly = obj_new('IDLgrPolygon', corona_lo_high_x, corona_lo_high_y, corona_lo_high_z, polygons=corona_lo_high_connect, $
+                                      vert_colors=corona_lo_high_colors, shading=1)
+        corona_lo_high_model->add, corona_lo_high_poly
+    
+        view->add, corona_lo_high_model  
+         corona_lo_high_model->setproperty,hide=1
+      endif
+      
+      
+    endif
 
 
     z_position = [0.0,0.0,1.0,1.0]
@@ -1660,39 +1799,39 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           
           if (instrument_array[10] eq 1) or (instrument_array[11] eq 1) or (instrument_array[13] eq 1) or (instrument_array[14] eq 1) or $
               (instrument_array[15] eq 1) or (instrument_array[16] eq 1) then begin
-              cstate1 = {subbaseR8h:subbaseR8h, coronal_reset:coronal_reset}
+              cstate1 = {subbaseR8h:subbaseR8h}
               if instrument_array[16] eq 1 then begin
-                 coronal1 = {drop8a:drop8a}
+                 coronal1 = {drop8a:drop8a, corona_lo_disk_alpha:corona_lo_disk_alpha}
                  cstate2 = create_struct(cstate1, coronal1) 
                endif else begin
                  cstate2 = cstate1
               endelse
               if instrument_array[14] eq 1 then begin 
-                 coronal2 = {drop8b:drop8b}
+                 coronal2 = {drop8b:drop8b, corona_lo_limb_model:corona_lo_limb_model, corona_lo_limb_poly:corona_lo_limb_poly, corona_lo_limb_alpha:corona_lo_limb_alpha}
                  cstate3 = create_struct(cstate2, coronal2) 
                endif else begin
                 cstate3 = cstate2
               endelse
               if instrument_array[13] eq 1 then begin 
-                 coronal3 = {drop8c:drop8c}
+                 coronal3 = {drop8c:drop8c, corona_lo_high_model:corona_lo_high_model, corona_lo_high_poly:corona_lo_high_poly, corona_lo_high_alpha:corona_lo_high_alpha}
                  cstate4 = create_struct(cstate3, coronal3) 
                endif else begin
                 cstate4 = cstate3
               endelse
               if instrument_array[11] eq 1 then begin 
-                 coronal4 = {drop8d:drop8d}
+                 coronal4 = {drop8d:drop8d, corona_e_disk_alpha:corona_e_disk_alpha}
                  cstate5 = create_struct(cstate4, coronal4) 
                endif else begin
                  cstate5 = cstate4
               endelse
               if instrument_array[15] eq 1 then begin 
-                coronal5 = {drop8e:drop8e}
+                coronal5 = {drop8e:drop8e, corona_e_limb_model:corona_e_limb_model, corona_e_limb_poly:corona_e_limb_poly, corona_e_limb_alpha:corona_e_limb_alpha}
                 cstate6 = create_struct(cstate5, coronal5) 
                endif else begin
                 cstate6 = cstate5
               endelse
               if instrument_array[10] eq 1 then begin 
-                coronal6 = {drop8f:drop8f}
+                coronal6 = {drop8f:drop8f, corona_e_high_model:corona_e_high_model, corona_e_high_poly:corona_e_high_poly, corona_e_high_alpha:corona_e_high_alpha}
                 cstate7 = create_struct(cstate6, coronal6) 
                endif else begin
                 cstate7 = cstate6
@@ -1729,7 +1868,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  track: track, coord_sys: coord_sys, $
                  textModel: textModel, $
                  timetext: timetext, timeline:timeline,  $
-                 orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, $
+                 orbit_model: orbit_model, orbit_path: orbit_path, path_color_table: path_color_table, orbit_offset:orbit_offset, $
                  vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, vector_color_method:vector_color_method, vector_color_source:vector_color_source, $
                  maven_model: maven_model, $
                  sun_model: sun_model, sun_vector: sun_vector, $
@@ -1748,7 +1887,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  plottext1: plottext1, plottext2: plottext2, $
                  plotted_parameter_name: plotted_parameter_name, $
                  current_plotted_value: current_plotted_value, $
-                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit, speckle: speckle,$
+                 x_orbit: x_orbit, y_orbit: y_orbit, z_orbit: z_orbit,$
                  solar_x_coord: solar_x_coord, solar_y_coord: solar_y_coord, solar_z_coord: solar_z_coord, $
                  subsolar_x_coord: subsolar_x_coord, subsolar_y_coord: subsolar_y_coord, subsolar_z_coord: subsolar_z_coord, $
                  submaven_x_coord: submaven_x_coord, submaven_y_coord: submaven_y_coord, submaven_z_coord: submaven_z_coord, $

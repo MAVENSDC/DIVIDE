@@ -80,6 +80,26 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     newPeriTrans = periTrans # rotTransform
                     (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
                   endif
+                  if (*pstate).instrument_array[10] eq 1 then begin
+                    (*pstate).corona_e_high_model->getProperty, transform=cEHtrans
+                    newCEHtrans = cEHtrans # rotTransform
+                    (*pstate).corona_e_high_model->setProperty, transform=newCEHtrans
+                  endif
+                  if (*pstate).instrument_array[13] eq 1 then begin
+                    (*pstate).corona_lo_high_model->getProperty, transform=cLHtrans
+                    newCLHtrans = cLHtrans # rotTransform
+                    (*pstate).corona_lo_high_model->setproperty, transform=newCLHtrans
+                  endif
+                  if (*pstate).instrument_array[14] eq 1 then begin
+                    (*pstate).corona_lo_limb_model->getProperty, transform=cLLtrans
+                    newCLLtrans = cLLtrans # rotTransform
+                    (*pstate).corona_lo_limb_model->setproperty, transform=newCLLtrans
+                  endif
+                  if (*pstate).instrument_array[15] eq 1 then begin
+                    (*pstate).corona_e_limb_model->getProperty, transform=cELtrans
+                    newCELtrans = cELtrans # rotTransform
+                    (*pstate).corona_e_limb_model->setproperty, transform=newCELtrans
+                  endif
                   (*pstate).maven_location = (*pstate).maven_location#rotTransform
                   (*pstate).z_position = (*pstate).z_position#rotTransform
                   
@@ -116,6 +136,18 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     if (*pstate).instrument_array[8] eq 1 then begin
                       (*pstate).periapse_limb_model->scale,s,s,s
                     endif
+                    if (*pstate).instrument_array[10] eq 1 then begin
+                      (*pstate).corona_e_high_model->scale,s,s,s
+                    endif
+                    if (*pstate).instrument_array[13] eq 1 then begin
+                      (*pstate).corona_lo_high_model->scale, s,s,s
+                    endif
+                    if (*pstate).instrument_array[14] eq 1 then begin
+                      (*pstate).corona_lo_limb_model->scale, s,s,s
+                    endif
+                    if (*pstate).instrument_array[15] eq 1 then begin
+                      (*pstate).corona_e_limb_model->scale, s,s,s
+                    endif
                     (*pstate).maven_location = (*pstate).maven_location*s
                     (*pstate).z_position = (*pstate).z_position*s
                     (*pstate).window->draw, (*pstate).view       
@@ -123,6 +155,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 endif       
            
             end
+ 
     'mars': begin
               widget_control, (*pstate).subbaseR1, map=0
               widget_control, (*pstate).subbaseR2, map=1
@@ -1366,7 +1399,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                           (*pstate).vector_path->setproperty,data=old_data
                                                           (*pstate).window->draw,(*pstate).view
                                                         end  
-                            'STATIC H+ Characteristic Direction': begin
+                            'STATIC H+ Char Dir': begin
                                                                           (*pstate).vector_path->getproperty,data=old_data
                                                                           if (*pstate).coord_sys eq 0 then begin
                                                                             for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
@@ -1392,7 +1425,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                                                           (*pstate).vector_path->setproperty,data=old_data
                                                                           (*pstate).window->draw,(*pstate).view
                                                                        end
-                            'STATIC Dominant Ion Characteristic Direction': begin
+                            'STATIC Dom Ion Char Dir': begin
                                                                             (*pstate).vector_path->getproperty,data=old_data
                                                                             if (*pstate).coord_sys eq 0 then begin
                                                                               for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
@@ -2120,19 +2153,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                            insitu_spec = (*pstate).insitu
 
                            if choice eq 'Planetocentric' then begin
-                            if (*pstate).speckle eq 1 then begin
-                              orbit_offset = 0.001
-                            endif else begin
-                              orbit_offset = 0.00001
-                            endelse
                             ;UPDATE THE ORBITAL PATH
                               for i=0L,n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
                                 data[0,i*2] = insitu_spec[i].spacecraft.geo_x/10000.0
-                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.geo_x/10000.0+orbit_offset
+                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.geo_x/10000.0+(*pstate).orbit_offset
                                 data[1,i*2] = insitu_spec[i].spacecraft.geo_y/10000.0
-                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.geo_y/10000.0)+orbit_offset
+                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.geo_y/10000.0)+(*pstate).orbit_offset
                                 data[2,i*2] = (insitu_spec[i].spacecraft.geo_z/10000.0)
-                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.geo_z/10000.0)+orbit_offset
+                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.geo_z/10000.0)+(*pstate).orbit_offset
                               endfor
                             ;UPDATE MAVEN POSITION
                               new = fltarr(1,3)
@@ -2176,20 +2204,16 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 endfor
                                 (*pstate).vector_path->setproperty,data=vec_data
                                endif
+                              
                            endif else begin
-                            if (*pstate).speckle eq 1 then begin
-                              orbit_offset = 0.001
-                            endif else begin
-                              orbit_offset = 0.00001
-                            endelse
                             ;UPDATE THE ORBITAL PATH 
                               for i=0L,n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
                                 data[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
-                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.mso_x/10000.0+orbit_offset
+                                data[0,(i*2)+1] = insitu_spec[i].spacecraft.mso_x/10000.0+(*pstate).orbit_offset
                                 data[1,i*2] = insitu_spec[i].spacecraft.mso_y/10000.0
-                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.mso_y/10000.0)+orbit_offset
+                                data[1,(i*2)+1] = (insitu_spec[i].spacecraft.mso_y/10000.0)+(*pstate).orbit_offset
                                 data[2,i*2] = (insitu_spec[i].spacecraft.mso_z/10000.0)
-                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.mso_z/10000.0)+orbit_offset
+                                data[2,(i*2)+1] = (insitu_spec[i].spacecraft.mso_z/10000.0)+(*pstate).orbit_offset
                               endfor
                             ;UPDATE MAVEN POSITION
                               new = fltarr(1,3)
@@ -2233,6 +2257,29 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 endfor
                                 (*pstate).vector_path->setproperty,data=vec_data
                                endif
+                               
+                               ;turn off the corona plotting because they can't be easily converted to MSO coordinates
+                               ; (*pstate).corona_lo_disk_model.getProperty, hide=result
+                               ;  if result eq 0 then (*pstate).corona_lo_disk_model.setproperty, hide=1
+                               
+                               if (*pstate).instrument_array[14] eq 1 then begin
+                                (*pstate).corona_lo_limb_model.getProperty, hide=result
+                                 if result eq 0 then (*pstate).corona_lo_limb_model.setproperty, hide=1
+                               endif
+                               if (*pstate).instrument_array[13] eq 1 then begin
+                                (*pstate).corona_lo_high_model.getProperty, hide=result
+                                 if result eq 0 then (*pstate).corona_lo_high_model.setproperty, hide=1 
+                               endif
+                             ;   (*pstate).corona_e_disk_model.getProperty, hide=result
+                             ;    if result eq 0 then (*pstate).corona_e_disk_model.setproperty, hide=1
+                               if (*pstate).instrument_array[15] eq 1 then begin
+                                (*pstate).corona_e_limb_model.getProperty, hide=result
+                                 if result eq 0 then (*pstate).corona_e_limb_model.setproperty, hide=1  
+                               endif
+                               if (*pstate).instrument_array[10] eq 1 then begin
+                                 (*pstate).corona_e_high_model.getProperty, hide=result
+                                 if result eq 0 then (*pstate).corona_e_high_model.setproperty, hide=1 
+                               endif 
                            endelse
         
                  
@@ -2247,67 +2294,91 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
                         
-                              MVN_KP_3D_CORONA_COLORS, 'lo_disk', newval[index],t, (*pstate).iuvs 
+                              if newval[index] ne 'LoRes Disk' then begin
+                                MVN_KP_3D_CORONA_COLORS, 'lo_disk', newval[index],t, (*pstate).iuvs 
                               
+                                (*pstate).corona_lo_disk_model->setproperty,hide=0
+                              endif else begin
+                                (*pstate).corona_lo_disk_model->setproperty,hide=1
+                              endelse
+                              (*pstate).window->draw,(*pstate).view
                             end
           'corona_lo_limb': begin
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
 
-                              (*pstate).orbit_path -> getproperty, vert_color=vert_color
-
-                              ;set reset flag if only need to erase other data
-
-                              MVN_KP_3D_CORONA_COLORS, 'lo_limb', newval, index, vert_color, (*pstate).iuvs.corona_lo_limb, (*pstate).coronal_reset, (*pstate).insitu.time, (*pstate).insitu.spacecraft.altitude
-                              
-                              
-;      temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2) 
-;      MVN_KP_3D_PATH_COLOR, (*pstate).insitu, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-;                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-;      (*pstate).colorbar_ticks = new_ticks
-;      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-;      (*pstate).level0_index = level0_index
-;      (*pstate).level1_index = level1_index
-;      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                              (*pstate).orbit_path->SetProperty,vert_color=vert_color
+                              if newval[index] ne 'LoRes Limb' then begin                          
+                                  (*pstate).corona_lo_limb_poly -> getproperty, vert_color=vert_color
+  
+                                  MVN_KP_3D_CORONA_COLORS, 'lo_limb', newval, index, vert_color, (*pstate).iuvs.corona_lo_limb    
+                                 
+                                  (*pstate).corona_lo_limb_poly->SetProperty,vert_color=vert_color
+                                  (*pstate).corona_lo_limb_model->setproperty,hide=0
+                              endif else begin
+                                (*pstate).corona_lo_limb_model -> setproperty,hide=1
+                              endelse
                               (*pstate).window->draw,(*pstate).view   
                             end
           'corona_lo_high': begin
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
                               
-                              (*pstate).orbit_path -> getproperty, vert_color=vert_color
-                              MVN_KP_3D_CORONA_COLORS, 'lo_high', newval, index, vert_color, (*pstate).iuvs.corona_lo_high, (*pstate).coronal_reset, (*pstate).insitu.time, (*pstate).insitu.spacecraft.altitude
-                              
-                              
-                              (*pstate).orbit_path->SetProperty,vert_color=vert_color
+                              if newval[index] ne 'LoRes High' then begin
+                                (*pstate).corona_lo_high_poly -> getproperty, vert_color=vert_color
+                                MVN_KP_3D_CORONA_COLORS, 'lo_high', newval, index, vert_color, (*pstate).iuvs.corona_lo_high
+                   
+                                (*pstate).corona_lo_high_poly->SetProperty,vert_color=vert_color
+                                (*pstate).corona_lo_high_model->SetProperty,hide=0
+                              endif else begin
+                                (*pstate).corona_lo_high_model->SetProperty,hide=1
+                              endelse
+                                
                               (*pstate).window->draw,(*pstate).view  
                             end
           'corona_e_disk': begin
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
                         
-                              print,index, newval[index]
+                              if newval[index] ne 'Echelle Disk' then begin
+                                MVN_KP_3D_CORONA_COLORS, 'e_disk', newval[index],t, (*pstate).iuvs 
+                              
+                                (*pstate).corona_e_disk_model->setproperty,hide=0
+                              endif else begin
+                                (*pstate).corona_e_disk_model->setproperty,hide=1
+                              endelse
+                              (*pstate).window->draw,(*pstate).view          
                            end
           'corona_e_limb': begin
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
                               
-                              print,index, newval[index]
+                              if newval[index] ne 'Echelle Limb' then begin
+                                (*pstate).corona_e_limb_poly -> getproperty, vert_color=vert_color
+                                MVN_KP_3D_CORONA_COLORS, 'e_limb', newval, index, vert_color, (*pstate).iuvs.corona_e_limb
+                                
+                                (*pstate).corona_e_limb_poly->SetProperty,vert_color=vert_color
+                                (*pstate).corona_e_limb_model->Setproperty,hide=0
+                              endif else begin
+                                (*pstate).corona_e_limb_model->setproperty, hide=1
+                              endelse
+                              (*pstate).window->draw,(*pstate).view
                            end
           'corona_e_high': begin
                               index = widget_info(event.id, /droplist_select)
                               widget_control, event.id, get_value=newval
                               
-                              print,index, newval[index]
+                              if newval[index] ne 'Echelle High' then begin
+                                (*pstate).corona_e_high_poly -> getproperty, vert_color=vert_color
+                                MVN_KP_3D_CORONA_COLORS, 'e_high', newval, index, vert_color, (*pstate).iuvs.corona_e_high
+
+                                (*pstate).corona_e_high_poly->SetProperty,vert_color=vert_color
+                                (*pstate).corona_e_high_model->SetProperty, hide=0
+                              endif else begin
+                                (*pstate).corona_e_high_model->SetProperty, hide=1
+                              endelse
+                              (*pstate).window->draw,(*pstate).view
                            end
                          
-          'coronal_reset': begin
-                            widget_control,event.id,get_value=newval
-                            if newval eq 'Erase Orbit' then (*pstate).coronal_reset = 1
-                            if newval eq 'Keep Orbit' then (*pstate).coronal_reset = 0 
-                            print,'reset ',(*pstate).coronal_reset
-                           end
          
          'apo_time': begin
                       widget_control,event.id, get_value=newval
@@ -2315,6 +2386,75 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       if newval eq 'Exact' then (*pstate).apo_time_blend = 0
                      end
          
+         'loadct_cld': begin
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end
+         
+         'loadct_cll': begin
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end
+         
+         'loadct_clh': begin
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end
+         
+         'loadct_ced': begin  
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end  
+                       
+         'loadct_cel': begin
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end
+                       
+         'loadct_ceh': begin  
+                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+                       end  
+         
+         'alpha_cld': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_lo_disk_alpha = newval
+                        (*pstate).corona_lo_disk_poly -> setProperty, alpha_channel=((*pstate).corona_lo_disk_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         'alpha_cll': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_lo_limb_alpha = newval
+                        (*pstate).corona_lo_limb_poly -> setProperty, alpha_channel=((*pstate).corona_lo_limb_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         'alpha_clh': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_lo_high_alpha = newval
+                        (*pstate).corona_lo_high_poly -> setProperty, alpha_channel=((*pstate).corona_lo_high_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         'alpha_ced': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_e_disk_alpha = newval
+                        (*pstate).corona_e_disk_poly -> setProperty, alpha_channel=((*pstate).corona_e_disk_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         'alpha_cel': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_e_limb_alpha = newval
+                        (*pstate).corona_e_limb_poly -> setProperty, alpha_channel=((*pstate).corona_e_limb_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         'alpha_ceh': begin
+                        widget_control, event.id, get_value=newval
+                        (*pstate).corona_e_high_alpha = newval
+                        (*pstate).corona_e_high_poly -> setProperty, alpha_channel=((*pstate).corona_e_high_alpha)/100.0
+                        (*pstate).window->draw, (*pstate).view
+                      end
+         
+         
+         
+                       
   endcase     ;END OF BUTTON CONTROL
   
 end

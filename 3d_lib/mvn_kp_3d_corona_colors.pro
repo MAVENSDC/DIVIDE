@@ -15,30 +15,62 @@
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
-pro MVN_KP_3D_CORONA_COLORS, stage, param, index, vert_color, data1, reset, time, alt
+pro MVN_KP_3D_CORONA_COLORS, stage, param, index, vert_color, data1
 
 common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
-
-  ;IF RESET IS SET, THEN APPLY COLORS TO THE ENTIRE ORBITAL PATH, SETING ZEROS TO GREY
-  
-  if reset eq 1 then vert_color[*,*] = 50
-  
-  ;IF RESET NOT SET, THEN APPLY COLORS ONLY TO THE APPLICABLE RANGE OF ORBIT PATH, LEAVING OTHERS ALONE
 
     target_tag = strjoin(strsplit(strupcase(strmid(param[index],0,strpos(param[index],':'))),/extract),'_')
     target_name = strmid(param[index],strpos(param[index],':')+1,strlen(param[index]))
 
 
     tags = tag_names(data1)
-    found = where(tags eq target_tag)
-  for i=0,n_elements(data1) - 1 do begin
-    if data1[i].time_start ne '' then begin
-      new_start = time_double(data1[i].time_start, tformat="YYYY-MM-DDThh:mm:ss")
-      new_stop = time_double(data1[i].time_stop, tformat="YYYY-MM-DDThh:mm:ss")
-      temp = min(abs(time - new_start),start_index)
-      temp = min(abs(time - new_stop),end_index)
+    level0_index = where(tags eq target_tag)
+ 
+ 
+    corona_index = 0
+    for i=0, n_elements(data1)-1 do begin
+      if finite(data1[i].alt[0]) then begin
+        level1_index = where(target_name eq data1[i].(level0_index-1))
       
-    endif
-  endfor 
+        data_hold = alog10(data1[i].(level0_index))
+        data_min = min(data_hold[level1_index,*])
+        data_max = max(data_hold[level1_index,*])
+        range = data_max - data_min
+     
+        if finite(range) then begin
+      
+          log_data = 254*(data_hold[level1_index,*]-data_min)/range
+        
+          for j=0, n_elements(data_hold[level1_index,*])-1 do begin
+            if finite(log_data[j]) then begin
+              t = log_data[j]
+              vert_color[0,corona_index:corona_index+3 ] = r_orig[t]
+              vert_color[1, corona_index:corona_index+3] = g_orig[t]
+              vert_color[2, corona_index:corona_index+3] = b_orig[t]
+            endif
+              corona_index = corona_index + 4
+          endfor
+         endif else begin
+          for j=0, n_elements(data_hold[level1_index,*])-1 do begin
+           
+             
+              vert_color[0,corona_index:corona_index+3 ] = 0
+              vert_color[1, corona_index:corona_index+3] = 0
+              vert_color[2, corona_index:corona_index+3] = 0
+         
+              corona_index = corona_index + 4
+          endfor
+            
+         endelse
+         
+        
+        
+        
+      endif
+    endfor
+ 
+ 
+ 
+ 
 
 END
