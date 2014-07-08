@@ -34,11 +34,11 @@ pro mvn_kp_test_install, test_number
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
-    results_txt = [results_txt, "[INSTALL TEST] - ERROR with: CDF Test 1"]
+    results_txt = [results_txt, "[INSTALL TEST] - ERROR with: ASCII Test 1"]
     results_txt = [results_txt, "                  ----- "+!ERROR_STATE.MSG]
   endif else begin
     ;; Success
-    results_txt = [results_txt, "[INSTALL TEST] - SUCCESS with: CDF Test 1"]
+    results_txt = [results_txt, "[INSTALL TEST] - SUCCESS with: ASCII Test 1"]
   endelse
   
   message, /reset
@@ -46,11 +46,11 @@ pro mvn_kp_test_install, test_number
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
-    results_txt = [results_txt,"[INSTALL TEST] - ERROR with: CDF Test 2"]
+    results_txt = [results_txt,"[INSTALL TEST] - ERROR with: ASCII Test 2"]
     results_txt = [results_txt,"                  ----- "+!ERROR_STATE.MSG]
   endif else begin
     ;; Success
-    results_txt = [results_txt, "[INSTALL TEST] - SUCCESS with: CDF Test 2"]
+    results_txt = [results_txt, "[INSTALL TEST] - SUCCESS with: ASCII Test 2"]
   endelse
   
   
@@ -65,11 +65,11 @@ pro mvn_kp_test_install, test_number
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
-    results = [results, "[INSTALL TEST] - ERROR with: ASCII Test 1"]
+    results = [results, "[INSTALL TEST] - ERROR with: CDF Test 1"]
     results = [results, "                  ----- "+!ERROR_STATE.MSG]
   endif else begin
     ;; Success
-    results = [results, "[INSTALL TEST] - SUCCESS with: ASCII Test 1"]
+    results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 1"]
   endelse
   
   message, /reset
@@ -77,11 +77,11 @@ pro mvn_kp_test_install, test_number
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
-    results = [results,"[INSTALL TEST] - ERROR with: ASCII Test 2"]
+    results = [results,"[INSTALL TEST] - ERROR with: CDF Test 2"]
     results = [results,"                  ----- "+!ERROR_STATE.MSG]
   endif else begin
     ;; Success
-    results = [results, "[INSTALL TEST] - SUCCESS with: ASCII Test 2"]
+    results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 2"]
   endelse
   
   print, "Completed tests."
