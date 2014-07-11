@@ -3,6 +3,17 @@
 pro mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
                         update_prefs=update_prefs, insitu_only=insitu_only
 
+
+  ;; Check ENV variable to see if we are in debug mode
+  debug = getenv('MVNTOOLKIT_DEBUG')
+  
+  ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
+  ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
+  if not keyword_set(debug) then begin
+    on_error, 1
+  endif
+
+
 ;; ------------------------------------------------------------------------------------ ;;
 ;; ----------------------- Read or create preferences file ---------------------------- ;;
 
