@@ -62,19 +62,6 @@
 ;-
 
 
-function mvn_kp_relative_comp, local, server  
-  server_out = server
-  for i=0, n_elements(local)-1 do begin
-    ind = where(server_out NE local[i], count)
-
-    ;; If no items are found, this means there are no new files on the server
-    ;; to download, so return with an empty string.
-    if(count eq 0) then return, ''
-    server_out = server_out(ind)
-  endfor
-  return, server_out
-end
-
 
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insitu, iuvs=iuvs, new_files=new_files, $
                            text_files=text_files, cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
@@ -235,7 +222,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     endif
         
     ; Get list of files on server (within a time span if entereted), that are not on local machine
-    filenames = mvn_kp_relative_comp(local_files, filenames)
+    filenames = mvn_kp_relative_complement(local_files, filenames)
     
   endif
   

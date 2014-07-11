@@ -41,16 +41,16 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   if keyword_set(data_retrieval) then begin
   
     ;; Rstricted live
-    ;    sdc_server_spec = create_struct($
-    ;      'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
-    ;      'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
-    ;      'host', 'lasp.colorado.edu', $
-    ;      'port', 80, $,
-    ;      'url_scheme', 'https', $
-    ;      'authentication', 1, $
-    ;      'check_max_files', 0, $
-    ;      'max_files', 500, $
-    ;      'expire_duration', 86400)
+;        sdc_server_spec = create_struct($
+;          'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
+;          'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
+;          'host', 'lasp.colorado.edu', $
+;          'port', 80, $,
+;          'url_scheme', 'https', $
+;          'authentication', 1, $
+;          'check_max_files', 0, $
+;          'max_files', 200, $
+;          'expire_duration', 86400)
     
     
     ;; Unrestricted dev
@@ -62,7 +62,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
       'url_scheme', 'http', $
       'authentication', 0, $
       'check_max_files', 1, $
-      'max_files', 500, $
+      'max_files', 200, $
       'expire_duration', 86400)
       
       

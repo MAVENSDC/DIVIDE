@@ -7,6 +7,7 @@
 function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
 
   ;FIXME clean up error handling. 
+  exit_worthy = 0
   
   catch, error_status
   if (error_status ne 0) then begin
@@ -20,10 +21,19 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
       200: printf, -1, "No files returned from server." ; FIXME - Can this error code mean somethign other than nothing returned?
       204: printf, -2, "WARNING in mvn_kp_execute_neturl_query: No results found."
       206: printf, -2, "WARNING in mvn_kp_execute_neturl_query: Only partial results were returned."
-      404: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Service not found."
+      404: begin
+        printf, -2, "ERROR in mvn_kp_execute_neturl_query: Service not found."
+        exit_worthy =1
+      end
+      35: begin
+        printf, -2, "ERROR in mvn_kp_execute_neturl_query: SSL error or corrupted netrul objet. TRY AGAIN."
+        printf, -2, ""
+        exit_worthy = 1
+      end
       401: begin
-        mvn_kp_logout_connection
-        printf, -2, "ERROR in mvn_kp_execute_neturl_query: Login failed. Try again."
+        printf, -2, "ERROR in mvn_kp_execute_neturl_query: Login failed. TRY AGAIN."
+        printf, -2, ""
+        exit_worthy = 1
       end
       500: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Service failed to handle the query: " + query
       23: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Not able to save result to: " + filename
@@ -33,6 +43,13 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
       end
     endcase
     catch, /cancel ; Cancel catch so other errors don't get caught here.
+    
+    ;; If exit worthy, throw error here to end execution
+    if exit_worthy then begin
+      mvn_kp_logout_connection
+      message, "Cannot proceed. Exiting.."
+    endif
+    
     return, code ;the http or other IDLnetURL error code (http://www.exelisvis.com/docs/IDLnetURL.html#objects_network_1009015_1417867)
   endif
   
