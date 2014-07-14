@@ -1,19 +1,42 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
+;
+; :Name: mvn_kp_bin
+; 
+; :Description: 
+;   This routine will rebin a Key Parameter from the input array in up to eight dimensions. 
 ;
 ; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
+;    kp_data: in, required, type=structure  
+;       The insitu MAVEN KP data structure
+;    to_bin: in, required, can be a single integer or string
+;       The Key Parameter which will be binned 
+;    bin_by: in, required, can be a single integer, string, or arrays or either.
+;       Up to eight key parameter indices or names by which to bin the requested key parameter
+;    mins: in, optional, type = dblarr
+;       Optional minimum values for each of the binning dimensions
+;    maxs: in, optional, type=dblarr
+;       Optional maximum values for each of the binning dimensions
+;    binsize: in, optional, type=dblarr
+;       Optional array defining the binsize to use for each of the binning dimensions
+;    output: out, required, type=dblarr
+;       The requested Key Parameter binned in the desired dimensions. By default, this is the the number of data points within each bin.
+;    std_out: out, optional, type=dblarr
+;       Output array containing the standard deviation of the binned key parameter in each bin. 
+;    avg_out: out, optional, type=dblarr
+;       Output array containing the average value of the binned key parameter in each bin
+;    density: in, optional, type=dblarr
+;       An output array containing the 'density' of the binned parameter    
 ;
 ; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;    std: in, optional, type=boolean
+;       With this keyword, the routine will calculate the standard deviation within each bin and return in in std_out 
+;    list: in, optional, type=boolean or dblarr
+;       Used to print out the contents of the input data structure.
+;           If set as a keyword, /list, this is printed to the screen.
+;           If set as a variable, list=list, a string array is returned containing the structure index and tag names.
+;           
+; :Version:   0.9     July 8, 2014
+;    
 ;-
 pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
                 std = std, density=density

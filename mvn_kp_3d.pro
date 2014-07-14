@@ -1,9 +1,27 @@
 ;+
-; Interactive 3D visualization of MAVEN spacecraft trajectory and insitu/iuvs KP parameters.
+; :Name: mvn_kp_3d
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description: Interactive 3D visualization of MAVEN spacecraft trajectory and insitu/iuvs KP parameters.
 ;
 ; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
+;    insitu: in, required, type=structure
+;       This is the full or maniuplated MAVEN KP insitu data structure. At a minimum, it must contain the SPACECRAFT
+;       substructure.
+;    iuvs: in, optional, type=structure
+;    
+;    time: in, optional, can be a scalar or a two or three item array of type:
+;         long(s)        orbit number
+;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;       If only one time provided, that defines the initial display point of the viz.
+;       Two times provided are assumed to be start and stop times for the viz.
+;       Three times provided are start/display/stop times.
+;    
+;    basemap: in, optional, type=string
+;    
+;    
+;       
 ;
 ; :Keywords:
 ;    start : out, optional, type=lonarr(ndims)
@@ -638,8 +656,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    
                    
                    label10 = widget_label(subbaseR10a, value='Vector Scale Factor, Percent')
-                   slider10 = widget_slider(subbaseR10a, frame=2, maximum=500, minimum=1, xsize=scale_factor*300,ysize=scale_factor*33,uname='vec_scale', value=100)
-                   vector_scale = 5.0
+                   slider10 = widget_slider(subbaseR10a, frame=2, maximum=100, minimum=1, xsize=scale_factor*300,ysize=scale_factor*33,uname='vec_scale', value=10)
+                   vector_scale = 1.0
                    
                    subbaseR10c = widget_base(subbaseR10, /column,/frame)
                      label10 = widget_label(subbaseR10c, value='Vector Magnitude Colors')
@@ -1211,14 +1229,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
     
         ;IF SET, FILL THE VECTOR MODEL AND DISPLAY
         if keyword_set(whiskers) ne 1 then begin
-          vector_scale = 5.0
+          vector_scale = 1.0
           vector_color = [255,0,0]
           vector_data = ''
           vector_level1 = 0
           vector_level2 = 0
         endif else begin
            if size(whiskers,/type) ne 8 then begin
-            vector_scale = 5.0
+            vector_scale = 1.0
             vector_color = [255,0,0]
             vector_data = ''
             vector_level1 = 0

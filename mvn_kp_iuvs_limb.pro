@@ -1,5 +1,12 @@
 ;+
-; This routine plots the IUVS PERIAPSE limb-scan KP data. All three limb-scans are included in each plot, with a choice of orbits and species.
+;
+; :Name: mvn_kp_iuvs_limb
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   This routine plots the IUVS PERIAPSE limb-scan KP data. All three limb-scans from each orbit are included in each plot, 
+;   with keywords allowing a choice of orbits and species. By default, all limb scan data, both radiance and density profiles, are displayed. 
 ;
 ; :Params:
 ;    kp_data : in, required, type=structure
@@ -30,6 +37,8 @@
 ;       an option to override the default colortable with any other IDL colortable
 ;    window: in, optional, type=byte
 ;       if invoked, will create a new window instead of reusing the previous. 
+;       
+; :Version:   1.0   July 8, 2014
 ;-
 pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=profiles, den_species=den_species, rad_species=rad_species, legend=legend,$
                       linear=linear, species_expand=species_expand, profile_expand=profile_expand,$

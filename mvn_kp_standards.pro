@@ -1,20 +1,89 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
-;
+; 
+; :Name: mvn_kp_standards
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   This routine plots a set of 'standardized' MAVEN KP data plots as defined by Dave Brain, using the tplot routines to create and manipulate variables.
+;   
 ; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
-;
+;   kp_data: in, required, type=structure
+;      The MAVEN insitu KP data structure
+;   time: in, optional, can be a scalar or a two item array of type:
+;         long(s)        orbit number
+;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;       A start or start & stop time (or orbit #) range for reading kp data. 
+;   plot_title: in, optional, type=string
+;     Optional overall title for the displayed plots.
+;   plot_color: in, optional, type=integer 
+;     Set to one of the predefined IDL color tables. Default value is #39
+;   
 ; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;   range: in, optional, type=boolean
+;     Keyword to list the range of time/orbit included in the data structure.
+;   list: in, optional, type=boolean
+;     List out all the parameters included in the data structure.
+;   all: in, optional, type=boolean
+;     Display all the standardized plots.
+;   euv: in, optional, type=boolean
+;     Plot the EUV standardized plot.
+;   mag_mso: in, optional, type=boolean
+;     Plot the MAG standardized plot in MSO coordinates.
+;   mag_geo: in, optional, type=boolean
+;     Plot the MAG standardized plot in GEO coordinates.
+;   mag_cone: in, optional, type=boolean
+;     Plot the MAG CONE standardized plot.
+;   mag_dir: in, optional, type=boolean
+;     Plot the MAG DIR standardized plot.
+;   ngims_neutral: in, optional, type=boolean
+;     Plot the NGIMS NEUTRAL standardized plot.
+;   ngims_ions: in, optional, type=boolean
+;     Plot the NGIMS IONS standardized plot.
+;   eph_angle: in, optional, type=boolean
+;     Plot the EPH ANGLE standardized plot.
+;   eph_geo: in, optional, type=boolean
+;     Plot the EPH GEO standardized plot.
+;   eph_mso: in, optional, type=boolean
+;     Plot the EPH MSO standardized plot.
+;   swea: in, optional, type=boolean
+;     Plot the SWEA standardized plot.
+;   sep_ion: in, optional, type=boolean
+;     Plot the SEP ION standardized plot.
+;   sep_electron: in, optional, type=boolean
+;     Plot the SEP ELECTRON standardized plot.
+;   wave: in, optional, type=boolean
+;     Plot the WAVE standardized plot.
+;   plasma_den: in, optional, type=boolean
+;     Plot the PLASMA DENSITY standardized plot.
+;   plasma_temp: in, optional, type=boolean
+;     Plot the PLASMA TEMPERATURE standardized plot.
+;   swia_h_vel: in, optional, type=boolean
+;     Plot the SWIA H VELOCITY standardized plot.
+;   static_h_vel: in, optional, type=boolean
+;     Plot the STATIC H VELOCITY standardized plot.
+;   static_o2_vel: in, optional, type=boolean
+;     Plot the STATIC O2 VELOCITY standardized plot.
+;   static_flux: in, optional, type=boolean
+;     Plot the STATIC FLUX standardized plot.
+;   static_energy: in, optional, type=boolean
+;     Plot the STATIC ENERGY standardized plot.
+;   sun_bar: in, optional, type=boolean
+;     Plot the SUN BAR standardized plot.
+;   solar_wind: in, optional, type=boolean
+;     Plot the SOLAR WIND standardized plot.
+;   ionosphere: in, optional, type=boolean
+;     Plot the IONOSPHERE standardized plot.
+;   sc_pot: in, optional, type=boolean
+;     Plot the SPACECRAFT POTENTIAL standardized plot.
+;   altitude: in, optional, type=boolean
+;     Include the spacecraft altitude as an additional x-axis on all plots. 
+;   
+;   
+; :Version:   1.0   July 8, 2014
 ;-
+
+
 
 
 @mvn_kp_range

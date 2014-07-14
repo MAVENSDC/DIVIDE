@@ -1,19 +1,31 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
+;
+; :Name: mvn_kp_resample
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   This routine enables the user to resample an MAVEN insitu KP data structure to an arbitrary time cadence.
+;   Used in conjunction with mvn_kp_add_data, this enables the user to modify and extend the KP data (with 
+;   additional Level-2 data, for example), yet still use the plotting and visualization components of the Toolkit.
 ;
 ; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
+;    kp_data: in, required, type=structure
+;      This is the original insitu KP data structure from the rest of the toolkit that is to be resampled.
+;    time: in, required, type=intarr, strarr
+;      An array of times to which the input data structure is to be resampled. This routine does not extrapolate,
+;      so the time array must be completely within the time range of the input data structure.
+;    data_out: out, required, type=structure
+;      The KP data structure resampled to the given time cadence.
 ;
 ; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;    sc_only: in, optional, type=boolean
+;     By default, this routine will resample all the KP data within the input structure. Using
+;     this keyword, the user can force the routine to only resample the SPACECRAFT substructure.
+;     Mostly this would be useful for using the visualization routines with arbitrary non-KP data.
+;       
+;
+; :Version:   1.0     July 8, 2014
 ;-
 pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only
 

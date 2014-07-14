@@ -1,23 +1,64 @@
 ;+
-; A WRAPPER ROUTINE TO INTERFACE WITH THE BERKELEY TPLOT CODE
+;
+; :Name: mvn_kp_tplot
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   A simple wrapper routine that creates tplot variables from the MAVEN insitu KP data structure.
 ;
 ; :Params:
 ;    kp_data: in, required, type=structure
-;       the INSITU KP data structure from which to plot data
-;    field: in, required, type=strarr,intarr
-;       the INSITU kp data fields to plot, maybe an integer or string array for multiple choices
-;
+;       the INSITU KP data structure from which to create tplot variables. 
+;    parameter: in, required, type=strarr,intarr
+;       the INSITU kp data fields to make into tplot variables, maybe an integer or string array for multiple choices.
+;    time: in, required, can be a scalar or a two item array of type:
+;         long(s)        orbit number
+;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;       A start or start & stop time (or orbit #) range for extracting kp data.
+;    prefix: in, optional, type=string
+;       By default, the tplot variables created are called 'MVN_KP_*DATA NAME*', where *DATA NAME* is the Key Parameter name. 
+;       Setting prefix to a string will replace MVN_KP with a user defined string.
+;    message: in, optional, type=string
+;       This string will be included in the tplot dlimits source field. May be set to a user defined string to describe the source of the data.
+;    
 ; :Keywords:
 ;    list: in, optional, type=boolean
-;       if selected, will list the KP data fields included in kp_data
+;       if selected, will list the KP data fields included in kp_data.
+;       if /list, then the list will be printed to the screen.
+;       if list=list, then list will be a string array containing the structure indices and tag names. 
 ;    range: in, optional, type=boolean
-;       if selected, will list the beginning and end times of kp_data
-;    altitude: in, optional, type=boolean
-;       if selected, will inclue altitude on the xaxis along with time
-;    ytitles: in, optional, type=strarr
-;       if included, this array allows the user to define the yaxis titles as they like
-;    title: in, optional, type=string
-;       if included, this provides an overall title to the plot window
+;       if selected, will list the beginning and end times of kp_data.
+;    createall: in, optional, type=boolean
+;       This keyword will create tplot variables from all the KP data fields within the structure.
+;    quiet: in, optional, type=boolean
+;       This keyword suppresses all screen output during the creation of tplot variables.
+;    euv: in, optional, type=boolean
+;       This keyword will create tplot variables from all the EUV data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    lpw: in, optional, type=boolean
+;       This keyword will create tplot variables from all the LPW data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    static: in, optional, type=boolean
+;       This keyword will create tplot variables from all the STATIC data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    swea: in, optional, type=boolean
+;       This keyword will create tplot variables from all the SWEA data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    swia: in, optional, type=boolean
+;       This keyword will create tplot variables from all the SWIA data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    mag: in, optional, type=boolean
+;       This keyword will create tplot variables from all the MAG data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    sep: in, optional, type=boolean
+;       This keyword will create tplot variables from all the SEP data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    ngims: in, optional, type=boolean
+;       This keyword will create tplot variables from all the NGIMS data fields.
+;        It may be used in conjunction with any other instrument keywords.
+;    
+; :Version:   1.0   July 8, 2014
 ;-
 
 
@@ -27,7 +68,7 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list, ytitles=ytitles,range=range,$
+pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range,$
                   createall=createall, prefix=prefix, message=message, quiet=quiet, $
                   euv=euv, lpw=lpw, static=static, swea=swea, swia=swia, mag=mag, sep=sep, ngims=ngims
 

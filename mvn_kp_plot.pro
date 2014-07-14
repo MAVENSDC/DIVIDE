@@ -1,31 +1,49 @@
 ;+
-; THIS ROUTINE PLOTS ONE OR MORE ALITUDE PROFILES FROM THE INSITU KP DATA STRUCTURE
+;
+; :Name: mvn_kp_plot
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   This is a very basic routine to plot time series data from a MAVEN in-situ Key Parameter data structure.
 ;
 ; :Params:
 ;    kp_data: in, required, type=structure
-;       the INSITU KP data structure from which to plot data
+;       the INSITU KP data structure from which to plot data.
 ;    parameter: in, required, type=strarr,intarr
-;       the INSITU kp data fields to plot, maybe an integer or string array for multiple choices
-;
-; :Keywords:
-;    time: in, optional, type=
-;       if selected, plots only the given times from the data set
-;    list: in, optional, type=boolean
-;       if selected, will list the KP data fields included in kp_data
-;    range: in, optional, type=boolean
-;       if selected, will list the beginning and end times of kp_data
+;       the INSITU kp data fields to plot, may be an integer or string array for multiple choices.
+;       use ['name1, name2', 'name3, name4] to create two plots with two data parameters on each.
+;    error: in, optional, type=strarr, intarr
+;       If included, these are the KP data fields that are the error measurements on each parameter to be plotted.
+;    time: in, required, can be a scalar or a two item array of type:
+;         long(s)        orbit number
+;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;       A start or start & stop time (or orbit #) range for reading kp data. 
+;    yrange: in optional, type=dblarr
+;       An optional array, or set of arrays, to define the range of the y-axis to display.
 ;    title:in, optional, type=string
-;       a optional title string for the plot
+;       a optional title string for the plot.
 ;    thick: in, optional, type=integer
-;       the thickness of the altitude profile lines
+;       the thickness of the altitude profile lines.
 ;    symbol: in, optional, type=integer
-;       the idl symbol to be used in plotting
+;       the idl symbol to be used in plotting.
 ;    linestyle: in, optional, type=integer
-;       the idl linestyle to be used in plotting
+;       the idl linestyle to be used in plotting.
+;       
+; :Keywords:
+;    list: in, optional, type=boolean or variable
+;       if selected, will list the KP data fields included in kp_data.
+;       If /list, the output will be printed to the screen.
+;       If list=list then the structure indices and tag names will be a string array. 
+;    range: in, optional, type=boolean
+;       if selected, will list the beginning and end times of kp_data.
 ;    directgraphic: in, optional, type=boolean
-;       if selected, will override teh default Graphics plot procedure and use direct graphics instead
+;       if selected, will override the default Graphics plot procedure and use direct graphics instead.
 ;    log: in, optional, type=boolean
-;       if selected, will plot the altitude profiles in log/linear format
+;       if selected, will plot the y-axis in log format.
+;       
+;       
+; :Version:   1.0    July 8, 2014
 ;-
 @mvn_kp_tag_parser
 @mvn_kp_tag_list

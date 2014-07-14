@@ -1,16 +1,31 @@
 ;+
-; A simple routine for adding a SINGLE user defined data field to the INSITU KP data structure
-;    This may get generalized in the future to allow multiple additions
+; :Name: mvn_kp_add_data
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description: 
+;    A simple routine for adding up to 9 user defined data arrays to the insitu KP data structure
+;    RESTRICTIONS: The new data arrays must be of the same length and time cadence as the input structure.
+;       If this is not the case, use mvn_kp_resample first to build a new data structure that matches the data field.
+;       
+;       All new data fields will be added to a USER substructure. This name is required for later use by the 3d vis. routine.
+;       
 ;
 ; :Params:
 ;    kp_data : in, required, type="structure"
 ;       the original insitu KP data structure
 ;    data_name : in, required, type="string"
-;       the name of the new data to be added onto the USER substructure
-;    data_in : in, required, type="dblarr"
-;       the data array that you are adding onto the structure
+;       the name of the new data to be added onto the USER substructure, either a single string or 
+;       an array of strings equal in length to the number of new data fields.
 ;    output : out, required, type="structure"
 ;       the name of the newly created data structure
+;    data1: in, required, type=dblarr
+;       the first new data array to be added to the kp data structure
+;    data2-data9: in, optional, type=dblarr
+;       optional additional data arrays to be added to the new strucutre.
+;       
+;       
+; :Version: 1.0     July 8, 2014
 ;-
 
 

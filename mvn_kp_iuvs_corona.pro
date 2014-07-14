@@ -1,19 +1,45 @@
 ;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
-;
+; 
+; :Name: mvn_kp_iuvs_corona
+; 
+; :Author: Kristopher Larsen
+; 
+; :Description:
+;   This routine plots all the coronal scan data held within the IUVS KP structure in a variety of ways.
+;   By default, calling this routine with just the data structure defined will plot ALL the coronal data.
+;   
 ; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
-;
+;   kp_data: in, required, type=structure
+;     This is the MAVEN IUVS KP data structure. It should contain at least some Coronal Scan observations to plot.
+;   colortable, in, optional, type=integer
+;     This variable is the integer index of a pre-defined IDL color table. By default, the routine will use #39.
+; 
 ; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;   echelle: in, optional, type=boolean
+;     Used to plot the Echelle coronal data. Can be used in conjunction with /lores, but that is equivalent to using neither.
+;   lores: in, optional, type=boolean
+;     Used to plot the LoRes coronal data. Can be used in conjunction with /echelle, but that is equivalent to using niether.
+;   disk: in, optional, type=boolean
+;     Used to plot all the Disk Coronal data within the structure.
+;     This keyword may be used in conjunction with /limb and /high, as well as /echelle and /lores, to show the desired subset of IUVS data.
+;   limb: in, optional, type=boolean
+;     Used to plot all the Limb Coronal Scan data within the input structure.
+;     This keyword may be used in conjunction with /disk and /high, as well as /echelle and /lores, to show the desired subset of IUVS data.
+;   high: in, optional, type=boolean
+;     Used to plot all the High Altitude Coronal Scan data within the input structure
+;     This keyword may be used in conjunction with /disk and /limb, as well as /echelle and /lores, to show the desired subset of IUVS data.
+;   range: in, optional, type=boolean
+;     Used to print the beginning and end times/orbits contained within the input data structure. 
+;     Using this keyword will result in no plot. 
+;   nolabels: in, optional, type=boolean
+;     Used to suppress the labels on each plot.
+;   nolegend: in, optional, type=boolean
+;     Used to suppress the additional legend windows created by the routine. 
+;   save_window: in, optional, type=boolean
+;     If this keyword is used, the currently displayed idl direct graphic plot windows are retained.
+;     Useful for making multiple plots to compare different coronal scans. 
+;   
+; :Version:   1.0   July 8, 2014
 ;-
 pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $
                         range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend, $

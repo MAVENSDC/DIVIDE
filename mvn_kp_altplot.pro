@@ -1,17 +1,33 @@
 ;+
-; THIS ROUTINE PLOTS ONE OR MORE ALITUDE PROFILES FROM THE INSITU KP DATA STRUCTURE
+;
+; :Name: mvn_kp_altplot
+; 
+; :Author: Kristopher Larsen
+;   
+; :Description:
+;   This simple routine plots one or more altitude profiles from the insitu KP data structure.
+;   Any data fields may be plotted together, on individual or single plots, using both direct and function graphics. 
 ;
 ; :Params:
 ;    kp_data: in, required, type=structure
 ;       the INSITU KP data structure from which to plot data
 ;    parameter: in, required, type=strarr,intarr
 ;       the INSITU kp data fields to plot, maybe an integer or string array for multiple choices
+;    time: in, optional, can be a scalar or a two item array of type:
+;         long(s)        orbit number
+;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;       A start or start & stop time (or orbit #) range for reading kp data. 
+;    xrange: in, optional, type=fltarr
+;       Minimum and maximum range for the x-axis. If multiple plots are included, the number of xrange arrays must match.
+;    yrange: in, optional, type=fltarr
+;       Minimum and maximum range for the y-axis. If multiple plots are included, the number of yrange arrays must match.
 ;
+; 
 ; :Keywords:
-;    time: in, optional, type=
-;       if selected, plots only the given times from the data set
 ;    list: in, optional, type=boolean
-;       if selected, will list the KP data fields included in kp_data
+;       Used to print out the contents of the input data structure.
+;           If set as a keyword, /list, this is printed to the screen.
+;           If set as a variable, list=list, a string array is returned containing the structure index and tag names.
 ;    range: in, optional, type=boolean
 ;       if selected, will list the beginning and end times of kp_data
 ;    title:in, optional, type=string
@@ -24,8 +40,14 @@
 ;       the idl linestyle to be used in plotting
 ;    directgraphic: in, optional, type=boolean
 ;       if selected, will override teh default Graphics plot procedure and use direct graphics instead
-;    log: in, optional, type=boolean
-;       if selected, will plot the altitude profiles in log/linear format
+;    xlog: in, optional, type=boolean
+;       if selected, will force the x-axis to logarithmic scale
+;    ylog: in, optional, type=boolean
+;       if selected, will force the y-axis to logarithmic scale
+;    davin: in, optional, type=boolean
+;       As requested by Davin Larson, this keyword will flip the X and Y axis of each plot.
+;       
+; :Version:   1.0     July 8, 2014
 ;-
 @mvn_kp_tag_parser
 @mvn_kp_tag_list

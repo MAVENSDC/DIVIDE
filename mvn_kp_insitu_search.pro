@@ -1,7 +1,7 @@
 ;+
 ; :Name: mvn_kp_insitu_search
 ;
-; :Author: Kris Larsen & John Martin
+; :Author: Kristopher Larsen & John Martin
 ;
 ;
 ; :Description:
