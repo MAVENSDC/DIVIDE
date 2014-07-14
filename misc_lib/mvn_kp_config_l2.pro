@@ -71,6 +71,8 @@ pro mvn_kp_config_l2, l2_data_dir=l2_data_dir, update_prefs=update_prefs, create
       l2_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the top level l2 data directory')
       if l2_data_dir eq '' then message, "Canceled directory choice. Must choose path to top level l2 data directory. Exiting..."
       
+      update_prefs=1
+      
     endelse
   
   endif else begin
