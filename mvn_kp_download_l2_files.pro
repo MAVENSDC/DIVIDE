@@ -79,6 +79,12 @@
 ;   --ngi/
 ;      |
 ;      --l2/
+;   --euv/
+;      |
+;      --l2/
+;   --acc/
+;      |
+;      --l2/
 ;  
 ;
 ;
@@ -136,8 +142,10 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     'swi', base_l2_dir+path_sep()+'swi'+path_sep()+'l2'+path_sep(), $
     'swe', base_l2_dir+path_sep()+'swe'+path_sep()+'l2'+path_sep(), $
     'lpw', base_l2_dir+path_sep()+'lpw'+path_sep()+'l2'+path_sep(), $
+    'euv', base_l2_dir+path_sep()+'euv'+path_sep()+'l2'+path_sep(), $
     'mag', base_l2_dir+path_sep()+'mag'+path_sep()+'l2'+path_sep(), $
     'iuv', base_l2_dir+path_sep()+'iuv'+path_sep()+'l2'+path_sep(), $
+    'acc', base_l2_dir+path_sep()+'acc'+path_sep()+'l2'+path_sep(), $
     'ngi', base_l2_dir+path_sep()+'ngi'+path_sep()+'l2'+path_sep())
 
 

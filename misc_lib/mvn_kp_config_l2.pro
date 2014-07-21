@@ -112,8 +112,10 @@ pro mvn_kp_config_l2, l2_data_dir=l2_data_dir, update_prefs=update_prefs, create
       'swi'+path_sep()+'l2', $
       'swe'+path_sep()+'l2', $
       'lpw'+path_sep()+'l2', $
+      'euv'+path_sep()+'l2', $
       'mag'+path_sep()+'l2', $
       'iuv'+path_sep()+'l2', $
+      'acc'+path_sep()+'l2', $
       'ngi'+path_sep()+'l2']
       
       
