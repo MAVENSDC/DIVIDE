@@ -38,14 +38,17 @@ if not keyword_set(update_prefs) then begin
       tokens = strsplit(line,' ',/extract)
       if tokens[0] ne ';' then begin
       case tokens[0] of
-        'insitu_data_dir:':  insitu_data_dir = tokens[1]
-        'iuvs_data_dir:'  :  iuvs_data_dir   = tokens[1]
+        'insitu_data_dir:':  insitu_data_dir = tokens[1:(n_elements(tokens)-1)]
+        'iuvs_data_dir:'  :  iuvs_data_dir   = tokens[1:(n_elements(tokens)-1)]
         else                        :  print, 'Unknown preference: ', tokens[0], ' ', tokens[1]
       endcase
       
     endif
   endwhile
   free_lun,lun
+  
+  insitu_data_dir = strjoin(insitu_data_dir, ' ', /SINGLE)
+  iuvs_data_dir   = strjoin(iuvs_data_dir, ' ', /SINGLE)
   
   ;IF NO INSITU DIRECOTRY FOUND IN PREFS FILE, PROMPT USER TO RE-RUN WITH UPDATE-PREFS OPTION (FIXME)
   if insitu_data_dir eq '' then begin

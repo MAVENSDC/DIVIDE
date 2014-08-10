@@ -40,14 +40,16 @@ pro mvn_kp_config_l2, l2_data_dir=l2_data_dir, update_prefs=update_prefs, create
         tokens = strsplit(line,' ',/extract)
         if tokens[0] ne ';' then begin
         case tokens[0] of
-          'l2_top_data_dir:':  l2_data_dir = tokens[1]
+          'l2_top_data_dir:':  l2_data_dir = tokens[1:(n_elements(tokens)-1)]
           else                        :  print, 'Unknown preference: ', tokens[0], ' ', tokens[1]
         endcase
         
       endif
     endwhile
-    free_lun,lun
     
+    l2_data_dir = strjoin(l2_data_dir, ' ', /SINGLE)
+    
+    free_lun,lun
     
     ;IF NO TOP LEVEL l2 DIRECOTRY FOUND IN PREFS FILE, PROMPT USER TO RE-RUN WITH UPDATE-PREFS OPTION (FIXME)
     if l2_data_dir eq '' then begin
