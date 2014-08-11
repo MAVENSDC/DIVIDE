@@ -303,6 +303,6 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   endelse
   
   insitu_record = 0
-  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0l,-1L,'',record_temp8)
+  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0.0D,-1L,'',record_temp8)
 
 end
