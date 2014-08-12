@@ -114,7 +114,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
                   corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
                   corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $
                   corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $
-                  map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time
+                  map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $
+                  minimum=minimum, maximum=maximum
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
    !p.multi=0             
@@ -255,7 +256,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
   
   ;DOWNSCALE THE INPUT DATA SO IT CAN ALL BE PLOTTED CORRECTLY
   
-  if keyword_set(optimize) eq 0 then begin
+  if keyword_set(optimize) eq 1 then begin
     optimizer = round(n_elements(kp_data)/5000.) 
     MVN_KP_3D_OPTIMIZE, kp_data, kp_data1, optimizer
   endif else begin
@@ -509,8 +510,16 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
 ;DEFINE THE SYMBOL COLOR LEVELS
   color_levels = intarr(3,n_elements(latitude))
   tvlct, r, g, b, /get
-  parameter_minimum = min(kp_data1.(level0_index).(level1_index))
-  parameter_maximum = max(kp_data1.(level0_index).(level1_index))
+  if keyword_set(minimum) then begin
+    parameter_minimum = minimum
+  endif else begin
+    parameter_minimum = min(kp_data1.(level0_index).(level1_index))
+  endelse
+  if keyword_set(maximum) then begin
+    parameter_maximum = maximum
+  endif else begin  
+    parameter_maximum = max(kp_data1.(level0_index).(level1_index))
+  endelse 
   if keyword_set(log) eq 0 then begin         ;LINEAR COLOR STRETCH
     color_levels[0,*] =  R(fix(((kp_data1.(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255))
     color_levels[1,*] =  G(fix(((kp_data1.(level0_index).(level1_index)-parameter_minimum)/(parameter_maximum-parameter_minimum))*255))

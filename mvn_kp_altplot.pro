@@ -58,7 +58,7 @@
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                     title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
                     directgraphic=directgraphic, xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange,$
-                    davin=davin   
+                    davin=davin, y_labels=y_labels, _extra = e
 
   ;CHECK THAT THE INPUT PARAMETERS ARE VALID
   ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
@@ -178,11 +178,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
         plot1 = plot(y,x,xtitle='Spacecraft Altitude, km',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
              title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, /current,xrange=yrange, yrange=xrange,$
-             xstyle=1, ystyle=1)
+             xstyle=1, ystyle=1, _extra = e)
       endif else begin
         plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
                      title=title,thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, /current,xrange=xrange, yrange=yrange,$
-                     xstyle=1, ystyle=1)
+                     xstyle=1, ystyle=1, _extra = e)
       endelse
     endif
   endif
@@ -194,11 +194,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
         plot,y,x,xtitle='Spacecraft Altitude, km', ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
                      title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background=255, color=0,$
-                     xrange=yrange,yrange=xrange,xstyle=1,ystyle=1
+                     xrange=yrange,yrange=xrange,xstyle=1,ystyle=1, _extra = e
       endif else begin
         plot,x,y,ytitle='Spacecraft Altitude, km', xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
                      title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background=255, color=0,$
-                     xrange=xrange,yrange=yrange,xstyle=1,ystyle=1
+                     xrange=xrange,yrange=yrange,xstyle=1,ystyle=1, _extra = e
       endelse
     endif
   endif
@@ -277,11 +277,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
         if keyword_set(davin) then begin
          plot1 = plot(y,x[i,*], xtitle='Spacecraft Altitude, km', ytitle=x_axis_title[i], layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
-                      yrange=temp_xrange[*,i]) 
+                      yrange=temp_xrange[*,i], _extra = e) 
         endif else begin
          plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i], layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
-                      xrange=temp_xrange[*,i])
+                      xrange=temp_xrange[*,i], _extra = e)
         endelse
       endfor
     endif
@@ -294,20 +294,20 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
          plot,y,x[0,*],xtitle='Spacecraft Altitude, km', ytitle=x_axis_title[0],xstyle=1,ystyle=1,$
                       title=title[0],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background=255,color=0,charsize=2,font=-1,$
-                      xrange=temp_yrange[*,0],yrange=temp_xrange[*,0]
+                      xrange=temp_yrange[*,0],yrange=temp_xrange[*,0], _extra = e
         for i=1,n_elements(parameter)-1 do begin
          plot,y,x[i,*],xtitle='Spacecraft Altitude, km', ytitle=x_axis_title[i],xstyle=1,ystyle=1,$
                       title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, color=0,charsize=2,font=-1,$
-                      xrange=temp_yrange[*,i],yrange=temp_xrange[*,i]
+                      xrange=temp_yrange[*,i],yrange=temp_xrange[*,i], _extra = e
         endfor 
       endif else begin
         plot,x[0,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[0],xstyle=1,ystyle=1,$
                       title=title[0],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background=255,color=0,charsize=2,font=-1,$
-                      yrange=temp_yrange[*,0],xrange=temp_xrange[*,0]
+                      yrange=temp_yrange[*,0],xrange=temp_xrange[*,0], _extra = e
         for i=1,n_elements(parameter)-1 do begin
          plot,x[i,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[i],xstyle=1,ystyle=1,$
                       title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, color=0,charsize=2,font=-1,$
-                      yrange=temp_yrange[*,i],xrange=temp_xrange[*,i]
+                      yrange=temp_yrange[*,i],xrange=temp_xrange[*,i], _extra = e
         endfor 
       endelse
     endif
@@ -409,12 +409,12 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot1 = plot(y,x[oplot_index,*], xtitle='Spacecraft Altitude, km', ytitle=x_axis_title[oplot_index], layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,yrange=temp_xrange[*,oplot_index],$
-                      xrange=temp_yrange[*,oplot_index])
+                      xrange=temp_yrange[*,oplot_index], _extra = e)
             oplot_index= oplot_index+1
           endif else begin
             plot1 = plot(y,x[oplot_index,*], xtitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=0,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, yrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
-                      xrange=temp_yrange[*,oplot_index],name=x_axis_title[oplot_index])
+                      xrange=temp_yrange[*,oplot_index],name=x_axis_title[oplot_index], _extra = e)
             l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
                       /normal,linestyle=0,font_size=8)
             oplot_index = oplot_index+1
@@ -422,7 +422,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
             for j=1,plot_count[i]-1 do begin      
               plot1 = plot(y,x[oplot_index,*], xtitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,yrange=temp_xrange[*,hold_index],$
-                      name=x_axis_title[oplot_index], xrange=temp_yrange[*,hold_index])
+                      name=x_axis_title[oplot_index], xrange=temp_yrange[*,hold_index], _extra = e)
                l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
                       /normal,linestyle=j,font_size=8)
               oplot_index=oplot_index+1
@@ -432,12 +432,12 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index], layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],$
-                      yrange=temp_yrange[*,oplot_index])
+                      yrange=temp_yrange[*,oplot_index], _extra = e)
             oplot_index= oplot_index+1
           endif else begin
             plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=0,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
-                      yrange=temp_yrange[*,oplot_index],name=x_axis_title[oplot_index])
+                      yrange=temp_yrange[*,oplot_index],name=x_axis_title[oplot_index], _extra = e)
             l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85],$
                       /normal,linestyle=0,font_size=8)
             oplot_index = oplot_index+1
@@ -445,7 +445,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
             for j=1,plot_count[i]-1 do begin      
               plot1 = plot(x[oplot_index,*], y, ytitle='Spacecraft Altitude, km', layout=[n_elements(parameter),1,i+1],/current,$
                       title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, xstyle=1,ystyle=1,xrange=temp_xrange[*,hold_index],$
-                      name=x_axis_title[oplot_index], yrange=temp_yrange[*,hold_index])
+                      name=x_axis_title[oplot_index], yrange=temp_yrange[*,hold_index], _extra = e)
                l = legend(target=plot1,position=[(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.85+(j*0.05)],$
                       /normal,linestyle=j,font_size=8)
               oplot_index=oplot_index+1
@@ -465,12 +465,12 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot,y,x[oplot_index,*],xtitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index],$
                  title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background='FFFFFF'x,color=0,$
-                 font=-1,xstyle=1,ystyle=1,yrange=temp_xrange[*,oplot_index],xrange=temp_yrange[*,oplot_index]
+                 font=-1,xstyle=1,ystyle=1,yrange=temp_xrange[*,oplot_index],xrange=temp_yrange[*,oplot_index], _extra = e
             oplot_index = oplot_index+1
           endif else begin 
             plot,y,x[oplot_index,*],xtitle='Spacecraft Altitude, km',$
                   title=title[oplot_index],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background='FFFFFF'x,$
-                  color=0,xstyle=1,ystyle=1  ,yrange=temp_xrange[*,oplot_index],xrange=temp_yrange[*,oplot_index]
+                  color=0,xstyle=1,ystyle=1  ,yrange=temp_xrange[*,oplot_index],xrange=temp_yrange[*,oplot_index], _extra = e
             plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
             xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,x_axis_title[oplot_index],color=0,/normal
             oplot_index = oplot_index+1
@@ -487,12 +487,12 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude, km', xtitle=x_axis_title[oplot_index],$
                  title=title[i],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background='FFFFFF'x,color=0,$
-                 font=-1,xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index]
+                 font=-1,xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index], _extra = e
             oplot_index = oplot_index+1
           endif else begin 
             plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude, km',$
                   title=title[oplot_index],thick=thick,linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, background='FFFFFF'x,$
-                  color=0,xstyle=1,ystyle=1  ,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index]
+                  color=0,xstyle=1,ystyle=1  ,xrange=temp_xrange[*,oplot_index],yrange=temp_yrange[*,oplot_index], _extra = e
             plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
             xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,x_axis_title[oplot_index],color=0,/normal
             oplot_index = oplot_index+1

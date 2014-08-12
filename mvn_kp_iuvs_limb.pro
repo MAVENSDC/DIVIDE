@@ -42,7 +42,7 @@
 ;-
 pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=profiles, den_species=den_species, rad_species=rad_species, legend=legend,$
                       linear=linear, species_expand=species_expand, profile_expand=profile_expand,$
-                      range=range,colortable=colortable,window=window
+                      range=range,colortable=colortable,window=window, winX=winX, winY=winY
 
    ;set the default colors
     device,decompose=0
@@ -70,6 +70,15 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
       plot_window = 1
       legend_window = 2
     endelse
+    
+   ;SET DEFAULT WINDOW SIZES
+    if keyword_set(winX) ne 1 then begin
+      winX=1000
+    endif
+    if keyword_set(winY) ne 1 then begin
+      winY=800
+    endif
+
     
   ;CHECK THE DATA RANGE
     if keyword_set(range) then begin
@@ -268,10 +277,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
 
      ;CREATE THE PLOT WINDOW, SAVING THE OLD ONE IF REQUESTED
       if keyword_set(window) then begin
-        window, plot_window, xsize=1000, ysize=800
+        window, plot_window, xsize=winX, ysize=winY
       endif else begin
         if !window eq -1 then begin
-          window,plot_window,xsize=1000, ysize=800
+          window,plot_window,xsize=winX, ysize=winY
         endif else begin
           wset,plot_window
         endelse
@@ -325,8 +334,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
               if kp_data[i].periapse[j].time_start ne '' then begin
                 if profile_inclusion[check_index] eq 1 then begin
                   plot,radiance_data[i,j,0,*],altitude,thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin
-                  xyouts,.48,0.98-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin, title=profile_labels[check_index]
+                ;  xyouts,.48,0.98-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
                   label_index = label_index + 1
                   for k=0,n_elements(rad_species)-1 do begin
                     oplot,radiance_data[i,j,k,*],altitude,thick=2,linestyle=rad_linestyle[k]
@@ -348,10 +357,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
                 if kp_data[j].periapse[k].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
                      plot,radiance_data[j,k,i,*],altitude,thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',ymargin=y_label_margin,title=radiance_labels[i]  
+                       ytitle='Altitude, km',ymargin=y_label_margin,title=radiance_labels[i] + ':  '+profile_labels[check_index]
                      label_index = label_index+1
                   endif
-                  xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+               ;   xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
                   check_index = check_index+1                
                 endif
               endfor
@@ -418,13 +427,13 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
               if kp_data[i].periapse[j].time_start ne '' then begin
                 if profile_inclusion[check_index] eq 1 then begin
                   plot,density_data[i,j,0,*],altitude,thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin
+                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin, title=profile_labels[check_index]
                   label_index = label_index + 1
                   for k=0,n_elements(den_species)-1 do begin
                     oplot,density_data[i,j,k,*],altitude,thick=2,linestyle=den_linestyle[k]
                   endfor
                 endif
-                xyouts,.48,0.9-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+             ;   xyouts,.48,0.9-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
                 check_index = check_index + 1
               endif
             endfor
@@ -442,10 +451,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
                 if kp_data[j].periapse[k].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
                      plot,density_data[j,k,i,*],altitude,thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',ymargin=y_label_margin,title=density_labels[i]  
+                       ytitle='Altitude, km',ymargin=y_label_margin,title= density_labels[i] +':  '+profile_labels[check_index]
                      label_index = label_index+1
                   endif
-                     xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+                    ; xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
 
                   check_index = check_index+1                
                 endif

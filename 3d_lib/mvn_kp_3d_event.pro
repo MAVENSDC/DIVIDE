@@ -37,9 +37,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).sub_maven_model_mso->getProperty,transform=smTransMSO
                   (*pstate).vector_model->getProperty,transform=vertTrans
                   (*pstate).sun_model->getproperty,transform=SunTrans
-                  (*pstate).axesmodel_msox->getproperty,transform=xaxesTrans
-                  (*pstate).axesmodel_msoy->getproperty,transform=yaxesTrans
-                  (*pstate).axesmodel_msoz->getproperty,transform=zaxesTrans
+                  (*pstate).axesmodel_mso->getproperty,transform=xaxesTrans
                   newTransform = curTransform # rotTransform
                   newatmtrans1 = atmtrans1 # rotTransform
                   newatmtrans2 = atmtrans2 # rotTransform
@@ -54,8 +52,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   newVertTrans = vertTrans # rotTransform
                   newSunTrans = sunTrans # rotTransform
                   newXaxes = xAxesTrans # rotTransform
-                  newYaxes = yAxesTrans # rotTransform
-                  newZaxes = zAxesTrans # rotTransform
                   (*pstate).model->setProperty, transform=newTransform
                   (*pstate).atmModel1->setProperty, transform=newatmtrans1
                   (*pstate).atmModel2->setProperty, transform=newatmtrans2
@@ -72,9 +68,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   (*pstate).vector_model->setProperty,transform=newVertTrans
                   (*pstate).axesmodel -> setProperty, transform=newtransform
                   (*pstate).sun_model ->setProperty, transform=newSunTrans
-                  (*pstate).axesmodel_msox->setProperty, transform=newXaxes
-                  (*pstate).axesmodel_msoy->setProperty, transform=newYaxes
-                  (*pstate).axesmodel_msoz->setProperty, transform=newZaxes
+                  (*pstate).axesmodel_mso->setProperty, transform=newXaxes
                   if (*pstate).instrument_array[8] eq 1 then begin
                     (*pstate).periapse_limb_model->getProperty,transform=periTrans
                     newPeriTrans = periTrans # rotTransform
@@ -84,6 +78,11 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     (*pstate).corona_e_high_model->getProperty, transform=cEHtrans
                     newCEHtrans = cEHtrans # rotTransform
                     (*pstate).corona_e_high_model->setProperty, transform=newCEHtrans
+                  endif
+                  if (*pstate).instrument_array[11] eq 1 then begin
+                    (*pstate).corona_e_disk_model->getproperty, transform=cEDtrans
+                    newcEDtrans = cEDtrans # rotTransform
+                    (*pstate).corona_e_disk_model->setproperty, transform=newcEDtrans
                   endif
                   if (*pstate).instrument_array[13] eq 1 then begin
                     (*pstate).corona_lo_high_model->getProperty, transform=cLHtrans
@@ -99,6 +98,11 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     (*pstate).corona_e_limb_model->getProperty, transform=cELtrans
                     newCELtrans = cELtrans # rotTransform
                     (*pstate).corona_e_limb_model->setproperty, transform=newCELtrans
+                  endif
+                  if (*pstate).instrument_array[16] eq 1 then begin
+                    (*pstate).corona_lo_disk_model->getProperty, transform=cLDTrans
+                    newcLDTrans = cLDTrans # rotTransform
+                    (*pstate).corona_lo_disk_model->setProperty, transform=newcLDTrans
                   endif
                   (*pstate).maven_location = (*pstate).maven_location#rotTransform
                   (*pstate).z_position = (*pstate).z_position#rotTransform
@@ -130,14 +134,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     (*pstate).axesmodel->scale,s,s,s
                     (*pstate).vector_model->scale,s,s,s
                     (*pstate).sun_model -> scale,s,s,s
-                    (*pstate).axesmodel_msox->scale, s,s,s
-                    (*pstate).axesmodel_msoy->scale, s,s,s
-                    (*pstate).axesmodel_msoz->scale, s,s,s
+                    (*pstate).axesmodel_mso->scale, s,s,s
                     if (*pstate).instrument_array[8] eq 1 then begin
                       (*pstate).periapse_limb_model->scale,s,s,s
                     endif
                     if (*pstate).instrument_array[10] eq 1 then begin
                       (*pstate).corona_e_high_model->scale,s,s,s
+                    endif
+                    if (*pstate).instrument_array[11] eq 1 then begin
+                      (*pstate).corona_e_disk_model->scale, s,s,s
                     endif
                     if (*pstate).instrument_array[13] eq 1 then begin
                       (*pstate).corona_lo_high_model->scale, s,s,s
@@ -147,6 +152,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                     endif
                     if (*pstate).instrument_array[15] eq 1 then begin
                       (*pstate).corona_e_limb_model->scale, s,s,s
+                    endif
+                    if (*pstate).instrument_array[16] eq 1 then begin
+                      (*pstate).corona_lo_disk_model->scale, s,s,s
                     endif
                     (*pstate).maven_location = (*pstate).maven_location*s
                     (*pstate).z_position = (*pstate).z_position*s
@@ -225,8 +233,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                 ;UPDATE THE MSO AXES, EVEN THOUGH THEY'RE HIDDEN
                   lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
                   lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
-                 (*pstate).axesModel_msox->rotate, [0,0,1], lon2-lon1
-                 (*pstate).axesModel_msoy->rotate, [0,0,1], lon2-lon1
+                  (*pstate).axesModel_mso->rotate, [0,0,1], lon2-lon1
       
                 endif else begin                              ;MSO COORDINATE DISPLAY
                   lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
@@ -234,7 +241,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
                   (*pstate).sub_maven_line_mso->setproperty,data=[(*pstate).submaven_x_coord_mso[t_index],(*pstate).submaven_y_coord_mso[t_index],(*pstate).submaven_z_coord_mso[t_index]]
                   (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
-                 (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
+                  (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
                 endelse
                 
       
@@ -246,6 +253,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                   
                 ;UPDATE THE PARAMETER PLOT COLORS
                  (*pstate).parameter_plot->getproperty,vert_colors=colors
+                 
                  for i=0,n_elements(colors[0,*])-1 do begin
                   if i lt t_index then begin
                     colors[*,i] = (*pstate).parameter_plot_before_color
@@ -479,16 +487,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                         if result eq 0 then (*pstate).axesmodel -> setProperty,hide=1
                       endif
                       if (*pstate).coord_sys eq 1 then begin
-                        (*pstate).axesmodel_msox.getProperty, HIDE=result
+                        (*pstate).axesmodel_mso.getProperty, HIDE=result
                         if result eq 1 then begin
-                          (*pstate).axesmodel_msox->setproperty,hide=0
-                          (*pstate).axesmodel_msoy->setproperty,hide=0
-                          (*pstate).axesmodel_msoz->setproperty,hide=0
+                          (*pstate).axesmodel_mso->setproperty,hide=0
                         endif
                         if result eq 0 then begin
-                          (*pstate).axesmodel_msox->setproperty,hide=1
-                          (*pstate).axesmodel_msoy->setproperty,hide=1
-                          (*pstate).axesmodel_msoz->setproperty,hide=1
+                          (*pstate).axesmodel_mso->setproperty,hide=1
                         endif
                       endif
                       (*pstate).window -> draw, (*pstate).view
@@ -873,32 +877,36 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
        
        'config_save': begin
                           file = dialog_pickfile(/write, title="Pick a file to save your viz configuration",filter='*.sav')
-                          
-                          (*pstate).model->getproperty,transform=model_trans
-    
-                          config_struct = {config, model_trans:model_trans}
-                          
-                          save,config_struct,filename=file
-
-                  
+                          if file ne '' then begin
+                            (*pstate).model->getproperty,transform=model_trans
+      
+                            config_struct = {config, model_trans:model_trans}
+                            
+                            save,config_struct,filename=file
+                          endif
+                    
                       end
                     
        'config_load': begin
                           file = dialog_pickfile(/read, title="Restore a vizualization configuration", filter='*.sav')
+                          if file ne '' then begin
+                            restore,file
                           
-                          restore,file
+                            (*pstate).model->setproperty,transform = config_struct.model_trans
+                            (*pstate).window->draw,(*pstate).view
                           
-                          (*pstate).model->setproperty,transform = config_struct.model_trans
-                          (*pstate).window->draw,(*pstate).view
+                          endif
                       end
                       
        'save_view': begin
-                      outfile = dialog_pickfile(default_extension='png',/write)                                     
-                      buffer = Obj_New('IDLgrBuffer', DIMENSIONS=[800,800])
-                      buffer -> Draw, (*pstate).view
-                      buffer -> GetProperty, Image_Data=snapshot
-                      Obj_Destroy, buffer
-                      write_png, outfile,snapshot
+                      outfile = dialog_pickfile(default_extension='png',/write)  
+                      if outfile ne '' then begin                                   
+                        buffer = Obj_New('IDLgrBuffer', DIMENSIONS=[800,800])
+                        buffer -> Draw, (*pstate).view
+                        buffer -> GetProperty, Image_Data=snapshot
+                        Obj_Destroy, buffer
+                        write_png, outfile,snapshot
+                      endif
                     end
         
         'orbit_reset': begin
@@ -1175,7 +1183,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
                       ;UPDATE THE PARAMETER PLOT 
                           (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
+                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr 
+                                                
                           ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
                             nan_error_check = 0
                             for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
@@ -1185,6 +1194,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           if nan_error_check eq 1 then begin              
                             xc = mg_linear_function(xr, [-1.7,1.4])
                             yc = mg_linear_function(yr, [-1.9,-1.5])
+                            
                             if finite(yc[0]) and finite(yc[1])  then begin
                               (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
                             endif
@@ -2295,8 +2305,19 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               widget_control, event.id, get_value=newval
                         
                               if newval[index] ne 'LoRes Disk' then begin
-                                MVN_KP_3D_CORONA_COLORS, 'lo_disk', newval[index],t, (*pstate).iuvs 
-                              
+                                min_val = min((*pstate).iuvs.corona_lo_disk.radiance[index-1])
+                                max_val = max((*pstate).iuvs.corona_lo_disk.radiance[index-1])
+                                
+                                disk_index = 0
+                                for i=0, n_elements((*pstate).iuvs.corona_lo_disk.lat) - 1 do begin
+                                 if finite((*pstate).iuvs[i].corona_lo_disk.lat) then begin
+                                  (*pstate).corona_lo_disk_poly[disk_index]->getproperty,color=d_color
+                                  MVN_KP_3D_CORONA_DISK_COLORS,  (*pstate).iuvs[i].corona_lo_disk.radiance[index-1], min_val, max_val, d_color
+                                  (*pstate).corona_lo_disk_poly[disk_index]->setproperty, color=d_color
+                                  disk_index = disk_index+1
+                                 endif
+                                endfor
+                                                              
                                 (*pstate).corona_lo_disk_model->setproperty,hide=0
                               endif else begin
                                 (*pstate).corona_lo_disk_model->setproperty,hide=1
@@ -2340,7 +2361,18 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               widget_control, event.id, get_value=newval
                         
                               if newval[index] ne 'Echelle Disk' then begin
-                                MVN_KP_3D_CORONA_COLORS, 'e_disk', newval[index],t, (*pstate).iuvs 
+                                min_val = min((*pstate).iuvs.corona_e_disk.radiance[index-1])
+                                max_val = max((*pstate).iuvs.corona_e_disk.radiance[index-1])
+                                
+                                disk_index = 0
+                                for i=0, n_elements((*pstate).iuvs.corona_e_disk.lat) - 1 do begin
+                                 if finite((*pstate).iuvs[i].corona_e_disk.lat) then begin
+                                  (*pstate).corona_e_disk_poly[disk_index]->getproperty,color=d_color
+                                  MVN_KP_3D_CORONA_DISK_COLORS,  (*pstate).iuvs[i].corona_e_disk.radiance[index-1], min_val, max_val, d_color
+                                  (*pstate).corona_e_disk_poly[disk_index]->setproperty, color=d_color
+                                  disk_index = disk_index+1
+                                 endif
+                                endfor
                               
                                 (*pstate).corona_e_disk_model->setproperty,hide=0
                               endif else begin
@@ -2413,28 +2445,34 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
          'alpha_cld': begin
                         widget_control, event.id, get_value=newval
                         (*pstate).corona_lo_disk_alpha = newval
-                        (*pstate).corona_lo_disk_poly -> setProperty, alpha_channel=((*pstate).corona_lo_disk_alpha)/100.0
+                        for i= 0,n_elements((*pstate).corona_lo_disk_poly)-1 do begin
+                          (*pstate).corona_lo_disk_poly[i] -> setProperty, alpha_channel=((*pstate).corona_lo_disk_alpha)/100.0
+                        endfor
                         (*pstate).window->draw, (*pstate).view
                       end
          
          'alpha_cll': begin
                         widget_control, event.id, get_value=newval
                         (*pstate).corona_lo_limb_alpha = newval
-                        (*pstate).corona_lo_limb_poly -> setProperty, alpha_channel=((*pstate).corona_lo_limb_alpha)/100.0
+                        for i=0, n_elements((*pstate).corona_lo_limb_poly)-1 do begin
+                          (*pstate).corona_lo_limb_poly[i] -> setProperty, alpha_channel=((*pstate).corona_lo_limb_alpha)/100.0
+                        endfor
                         (*pstate).window->draw, (*pstate).view
                       end
          
          'alpha_clh': begin
                         widget_control, event.id, get_value=newval
                         (*pstate).corona_lo_high_alpha = newval
-                        (*pstate).corona_lo_high_poly -> setProperty, alpha_channel=((*pstate).corona_lo_high_alpha)/100.0
+                          (*pstate).corona_lo_high_poly -> setProperty, alpha_channel=newval/100.0
                         (*pstate).window->draw, (*pstate).view
                       end
          
          'alpha_ced': begin
                         widget_control, event.id, get_value=newval
                         (*pstate).corona_e_disk_alpha = newval
-                        (*pstate).corona_e_disk_poly -> setProperty, alpha_channel=((*pstate).corona_e_disk_alpha)/100.0
+                        for i=0, n_elements((*pstate).corona_e_disk_poly)-1 do begin
+                          (*pstate).corona_e_disk_poly[i] -> setProperty, alpha_channel=((*pstate).corona_e_disk_alpha)/100.0
+                        endfor
                         (*pstate).window->draw, (*pstate).view
                       end
          

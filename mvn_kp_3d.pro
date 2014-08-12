@@ -1081,6 +1081,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       if keyword_set(axes) and (keyword_set(mso) ne 1) then axesmodel->setproperty,hide=0
 
     ;ADD THE MSO COORDINATE AXES
+      axesModel_mso = obj_new('IDLgrModel')
       axesModel_msox = obj_new('IDLgrModel')
       axesModel_msoy = obj_new('IDLgrModel')
       axesModel_msoz = obj_new('IDLgrModel')
@@ -1096,16 +1097,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       for i=0,n_elements(xaxis_mso)-1 do axesmodel_msox->add,xaxis_mso[i]
       for i=0,n_elements(yaxis_mso)-1 do axesmodel_msoy->add,yaxis_mso[i]
       for i=0,n_elements(zaxis_mso)-1 do axesmodel_msoz->add,zaxis_mso[i]
-      view->add,axesModel_msox
-      view->add,axesModel_msoy
-      view->add,axesModel_msoz
-      axesModel_msox->setproperty,hide=1
-      axesModel_msoy->setproperty,hide=1
-      axesModel_msoz->setproperty,hide=1
+      axesModel_mso->add,axesModel_msox
+      axesModel_mso->add,axesModel_msoy
+      axesModel_mso->add,axesModel_msoz
+      view->add, axesModel_mso
+      axesModel_mso->setproperty,hide=1
       if keyword_set(axes) and keyword_set(mso) then begin
-        axesModel_msox->setproperty,hide=0
-        axesModel_msoy->setproperty,hide=0
-        axesModel_msoz->setproperty,hide=0
+        axesModel_mso->setproperty,hide=0
       endif
       
       
@@ -1638,6 +1636,86 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
          corona_lo_high_model->setproperty,hide=1
       endif
       
+      if instrument_array[16] eq 1 then begin
+        ;create the model for the lores disk data
+        corona_lo_disk_model = obj_new('IDLgrModel')
+        total_lo_disk = n_elements(where(finite(iuvs.corona_lo_disk.lat)))
+        
+        npoints = 11
+        temp_rad = 0.01
+        arr = replicate(temp_rad, npoints, npoints)
+             
+        corona_lo_disk_poly = objarr(total_lo_disk)
+        disk_index = 0
+        for i=0, n_elements(iuvs.corona_lo_disk)-1 do begin
+          ;push each marker to the proper place on the globe
+          if finite(iuvs[i].corona_lo_disk.lat) then begin
+              
+              mesh_obj, 4, vertices, polygons, arr
+              disk_x_offset = rplanet * cos(iuvs[i].corona_lo_disk.lat*(!pi/180.)) * cos(iuvs[i].corona_lo_disk.lon*(!pi/180.))
+              disk_y_offset = rplanet * cos(iuvs[i].corona_lo_disk.lat*(!pi/180.)) * sin(iuvs[i].corona_lo_disk.lon*(!pi/180.))
+              disk_z_offset = rplanet * sin(iuvs[i].corona_lo_disk.lat*(!pi/180.))
+            
+              vertices[0,*] = vertices[0,*] + disk_x_offset
+              vertices[1,*] = vertices[1,*] + disk_y_offset
+              vertices[2,*] = vertices[2,*] + disk_z_offset
+              
+            ;build the spheres
+            corona_lo_disk_poly[disk_index] = obj_new('idlgrpolygon', data=vertices, polygons=polygons, color=[0,50*i,0])
+            disk_index = disk_index+1
+          endif
+        endfor
+      
+        for i=0, total_lo_disk-1 do begin
+          corona_lo_disk_model->add,corona_lo_disk_poly[i]
+        endfor
+        
+        
+        
+        view->add, corona_lo_disk_model
+        corona_lo_disk_model->setproperty, hide=1
+        
+      endif 
+      if instrument_array[11] eq 1 then begin
+        ;create the model for the echelle disk data
+        corona_e_disk_model = obj_new('IDLgrModel')
+        total_e_disk = n_elements(where(finite(iuvs.corona_e_disk.lat)))
+        
+        npoints = 11
+        temp_rad = 0.01
+        arr = replicate(temp_rad, npoints, npoints)
+             
+        corona_e_disk_poly = objarr(total_e_disk)
+        disk_index = 0
+        for i=0, n_elements(iuvs.corona_e_disk)-1 do begin
+          ;push each marker to the proper place on the globe
+          if finite(iuvs[i].corona_e_disk.lat) then begin
+              
+              mesh_obj, 4, vertices, polygons, arr
+              disk_x_offset = rplanet * cos(iuvs[i].corona_e_disk.lat*(!pi/180.)) * cos(iuvs[i].corona_e_disk.lon*(!pi/180.))
+              disk_y_offset = rplanet * cos(iuvs[i].corona_e_disk.lat*(!pi/180.)) * sin(iuvs[i].corona_e_disk.lon*(!pi/180.))
+              disk_z_offset = rplanet * sin(iuvs[i].corona_e_disk.lat*(!pi/180.))
+            
+              vertices[0,*] = vertices[0,*] + disk_x_offset
+              vertices[1,*] = vertices[1,*] + disk_y_offset
+              vertices[2,*] = vertices[2,*] + disk_z_offset
+              
+            ;build the spheres
+            corona_e_disk_poly[disk_index] = obj_new('idlgrpolygon', data=vertices, polygons=polygons, color=[0,0,50*i])
+            disk_index = disk_index+1
+          endif
+        endfor
+      
+        for i=0, total_e_disk-1 do begin
+          corona_e_disk_model->add,corona_e_disk_poly[i]
+        endfor
+        
+        
+        
+        view->add, corona_e_disk_model
+        corona_e_disk_model->setproperty, hide=1
+      endif       
+      
       
     endif
 
@@ -1705,9 +1783,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         vector_model->translate, xtrans,ytrans,0
         axesmodel->translate, xtrans,ytrans,0
         sun_model->translate, xtrans,ytrans,0
-        axesmodel_msox->translate, xtrans,ytrans,0
-        axesmodel_msoy->translate, xtrans,ytrans,0
-        axesmodel_msoz->translate, xtrans,ytrans,0
+        axesmodel_mso->translate, xtrans,ytrans,0
         if instrument_array[8] eq 1 then begin
           periapse_limb_model->translate, xtrans,ytrans,0
         endif
@@ -1730,9 +1806,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           vector_model->rotate,[1,0,0],-rot_angle
           axesmodel ->rotate,[1,0,0],-rot_angle
           sun_model ->rotate,[1,0,0],-rot_angle
-          axesmodel_msox->rotate,[1,0,0],-rot_angle
-          axesmodel_msoy->rotate,[1,0,0],-rot_angle
-          axesmodel_msoz->rotate,[1,0,0],-rot_angle
+          axesmodel_mso->rotate,[1,0,0],-rot_angle
           if instrument_array[8] eq 1 then begin
             periapse_limb_model ->rotate,[1,0,0],-rot_angle
           endif
@@ -1754,9 +1828,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           vector_model->rotate,[0,1,0],lon_angle
           axesmodel ->rotate,[0,1,0],lon_angle
           sun_model ->rotate,[0,1,0],lon_angle
-          axesmodel_msox->rotate,[0,1,0],lon_angle
-          axesmodel_msoy->rotate,[0,1,0],lon_angle
-          axesmodel_msoz->rotate,[0,1,0],lon_angle
+          axesmodel_mso->rotate,[0,1,0],lon_angle
           if instrument_array[8] eq 1 then begin
             periapse_limb_model ->rotate,[0,1,0],lon_angle
           endif
@@ -1779,9 +1851,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         axesmodel->scale,s,s,s
         vector_model->scale,s,s,s
         sun_model -> scale,s,s,s
-        axesmodel_msox->scale, s,s,s
-        axesmodel_msoy->scale, s,s,s
-        axesmodel_msoz->scale, s,s,s
+        axesmodel_mso->scale, s,s,s
         if instrument_array[8] eq 1 then begin
           periapse_limb_model->scale,s,s,s
         endif
@@ -1819,7 +1889,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
               (instrument_array[15] eq 1) or (instrument_array[16] eq 1) then begin
               cstate1 = {subbaseR8h:subbaseR8h}
               if instrument_array[16] eq 1 then begin
-                 coronal1 = {drop8a:drop8a, corona_lo_disk_alpha:corona_lo_disk_alpha}
+                 coronal1 = {drop8a:drop8a, corona_lo_disk_alpha:corona_lo_disk_alpha, corona_lo_disk_model:corona_lo_disk_model, corona_lo_disk_poly:corona_lo_disk_poly}
                  cstate2 = create_struct(cstate1, coronal1) 
                endif else begin
                  cstate2 = cstate1
@@ -1837,7 +1907,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                 cstate4 = cstate3
               endelse
               if instrument_array[11] eq 1 then begin 
-                 coronal4 = {drop8d:drop8d, corona_e_disk_alpha:corona_e_disk_alpha}
+                 coronal4 = {drop8d:drop8d, corona_e_disk_alpha:corona_e_disk_alpha, corona_e_disk_model:corona_e_disk_model, corona_e_disk_poly:corona_e_disk_poly}
                  cstate5 = create_struct(cstate4, coronal4) 
                endif else begin
                  cstate5 = cstate4
@@ -1890,7 +1960,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  vector_model:vector_model, vector_path: vector_path, vector_scale: vector_scale, vector_color_method:vector_color_method, vector_color_source:vector_color_source, $
                  maven_model: maven_model, $
                  sun_model: sun_model, sun_vector: sun_vector, $
-                 axesModel_msox:axesModel_msox, axesModel_msoy:axesModel_msoy, axesModel_msoz:axesModel_msoz, $
+                 axesModel_mso:axesModel_mso, axesModel_msox:axesModel_msox, axesModel_msoy:axesModel_msoy, axesModel_msoz:axesModel_msoz, $
                  sub_solar_line: sub_solar_line, $
                  sub_solar_model: sub_solar_model, $
                  sub_maven_line: sub_maven_line, sub_maven_model: sub_maven_model, $

@@ -53,7 +53,7 @@
 
 pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=range, $
                     title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-                    directgraphic=directgraphic, log=log, yrange=yrange
+                    directgraphic=directgraphic, log=log, yrange=yrange, y_labels=y_labels, _extra = e
 
   ;CHECK THAT THE INPUT PARAMETERS ARE VALID
   ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
@@ -164,6 +164,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                     print,'Creating requested plot WITHOUT error bars'
                    endelse            
               endif else err_check = 1
+
+              ;SET THE YLABELS
+              if keyword_set(y_labels) ne 1 then begin
+                y_labels = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+              endif
               
              endif else begin
                print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
@@ -180,11 +185,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
           ;define realistic x axis time labels
           x_labels = [time_string(x[0]),time_string(x[(n_elements(x)-1)*.25]), time_string(x[(n_elements(x)-1)/2]),time_string(x[(n_elements(x)-1)*.75]), time_string(x[n_elements(x)-1])]
            if err_check eq 0 then begin
-             err_plot = errorplot(x,y,y_error,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),color='black',$
-                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=yrange)
+             err_plot = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,color='black',margin=0.1,$
+                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=yrange,_extra=e)
            endif else begin
-                 plot1 = plot(x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),color='black',$
-                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=yrange)
+                 plot1 = plot(x,y,xtitle='Time',ytitle=y_labels,color='black',margin=0.1,$
+                         title=title,thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=yrange,_extra=e)
     
            endelse 
           endif
@@ -196,10 +201,10 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
             device,decomposed=0
             loadct,0,/silent
             !P.MULTI = [0, n_elements(parameter), 1]
-              plot,x,y,xtitle='Time',ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-                         title=title,thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255, color=0, yrange=yrange
+              plot,x,y,xtitle='Time',ytitle=y_labels,$
+                         title=title,thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255, color=0, yrange=yrange, _extra=e
             if err_check eq 0 then begin
-              errplot,x, y_error[0,*], y_error[1,*],color=0
+              errplot,x, y_error[0,*], y_error[1,*],color=0,_extra=e
             endif
           endif
         endif
@@ -220,7 +225,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                             first_level_tags, check, level0_index, level1_index, tag_array
              if check eq 0 then begin
                y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-               y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+               if keyword_set(y_labels) then begin
+                y_axis_title[i] = y_labels[i]
+               endif else begin
+                y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+               endelse
                if keyword_set(error) then begin
                    mvn_kp_tag_verify, kp_data, error[i], base_tag_count, first_level_count, base_tags, $
                                    first_level_tags, err_check[i], err_level0, err_level1, temp_tag
@@ -257,7 +266,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                  
                  y[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
                  x = kp_data[kp_start_index:kp_end_index].time  
-                 y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
+                 if keyword_set(y_labels) then begin
+                  y_axis_title[i] = y_labels[i]
+                 endif else begin
+                  y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
+                 endelse
                  if keyword_set(error) then begin
                    mvn_kp_tag_verify, kp_data, error[i], base_tag_count, first_level_count, base_tags, $
                                    first_level_tags, err_check[i], err_level0, err_level1, temp_tag
@@ -274,6 +287,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
           endif
         endif 
       
+        
       
         ;CREATE DUMMY YRANGE IF NOT DEFINED
           temp_yrange = dblarr(2,n_elements(parameter))
@@ -285,24 +299,23 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
               temp_yrange[1,i] = max(y[i,*])
             endfor
           endelse
-        ;CREATE THE MULTPLE  PLOT
 
         
-            
+        ;CREATE THE MULTPLE  PLOT    
         if directgraphic eq 0 then begin                                    ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
           x_labels = [time_string(x[0]),time_string(x[(n_elements(x)-1)*.25]), time_string(x[(n_elements(x)-1)/2]),time_string(x[(n_elements(x)-1)*.75]), time_string(x[n_elements(x)-1])]
           if n_elements(parameter) gt 1 then begin
 
             
             plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], layout=[1,n_elements(parameter),1],nodata=1,color='black',$
-                         title=title[0],ylog=yaxis_log,xmajor=5,axis_style=0,xtickname=x_labels,xstyle=1,yrange=yrange)
+                         title=title[0],ylog=yaxis_log,xmajor=5,axis_style=0,xtickname=x_labels,xstyle=1,yrange=yrange,margin=0.1,_extra=e)
             for i = 0, n_elements(parameter) -1 do begin
               if err_check[i] ne 0 then begin
                plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange[*,i],color='black',$
-                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1)
+                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,margin=0.1,_extra=e)
               endif else begin
                  plot1 = errorplot(x, y[i,*],reform(y_error[*,i,*]), xtitle='Time', ytitle=y_axis_title[i], layout=[1,n_elements(parameter),i+1],/current,color='black',$
-                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange[*,i])
+                            title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange[*,i],margin=0.1,_extra=e)
               endelse 
             endfor
           endif
@@ -314,15 +327,15 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
           if n_elements(parameter) gt 1 then begin
             
             plot,x,y[0,*],xtitle='Time', ytitle=y_axis_title[0],yrange=temp_yrange[*,0],$
-                          title=title[0],thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255,color=0,charsize=2,font=-1
+                          title=title[0],thick=thick,linestyle=linestyle,ylog=yaxis_log,background=255,color=0,charsize=2,font=-1,_extra=e
             if err_check[0] eq 0 then begin
-              errplot,x, y_error[0,0,*], y_error[1,0,*],color=0
+              errplot,x, y_error[0,0,*], y_error[1,0,*],color=0,_extra=e
             endif              
             for i=1,n_elements(parameter)-1 do begin
              plot,x,y[i,*],xtitle='Time', ytitle=y_axis_title[i],yrange=temp_yrange[*,i],$
-                          title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,color=0,charsize=2,font=-1
+                          title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,color=0,charsize=2,font=-1,_extra=e
              if err_check[i] eq 0 then begin
-              errplot,x, y_error[0,i,*], y_error[1,i,*],color=0
+              errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
             endif
             endfor 
           endif
@@ -438,6 +451,20 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                     
                endelse  
              endfor   
+
+        if keyword_set(y_labels) then begin
+          y_titles = strarr(n_elements(parameter))
+          title_index = 0
+          for i=0,n_elements(parameter)-1 do begin
+
+              y_titles[i] = y_labels[i]
+
+          endfor
+          title_index = title_index + 1
+        endif else begin
+          y_titles=y_axis_title
+        endelse
+
         
         ;CREATE THE PLOTS
         
@@ -453,11 +480,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                   temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
                 endelse
                 if err_check[i] eq 0 then begin
-                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', ytitle=y_axis_title[oplot_index], layout=[1,n_elements(parameter),i+1],/current,$
-                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange,color='black')
+                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', ytitle=y_titles[i], layout=[1,n_elements(parameter),i+1],/current,$
+                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange,color='black',margin=0.1,_extra=e)
                 endif else begin
-                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', ytitle=y_axis_title[oplot_index], layout=[1,n_elements(parameter),i+1],/current,$
-                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange,color='black')
+                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', ytitle=y_titles[i], layout=[1,n_elements(parameter),i+1],/current,$
+                          title=title[i],thick=thick,linestyle=linestyle,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,yrange=temp_yrange,color='black',margin=0.1,_extra=e)
                 endelse          
                 oplot_index= oplot_index+1
               endif else begin
@@ -467,27 +494,27 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                   temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
                 endelse
                 if keyword_set(error) then begin
-                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange,$
-                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index])
+                  plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),xtitle='Time',ytitle=y_titles[i], layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange,$
+                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index],margin=0.1,_extra=e)
                   l = legend(target=plot1,position=[0.2,0.95],$
                             /normal,linestyle=0,font_size=8)
                   oplot_index = oplot_index+1
                   for j=1,plot_count[i]-1 do begin      
                     plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), xtitle='Time', layout=[1,n_elements(parameter),i+1],/current,yrange=temp_yrange,$
-                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,overplot=1,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index])
+                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,overplot=1,xmajor=5,xtickname=x_labels,xstyle=1,color='black',name=y_axis_title[oplot_index],margin=0.1,_extra=e)
                      l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
                             /normal,linestyle=j,font_size=8)
                     oplot_index=oplot_index+1
                   endfor
                 endif else begin
-                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],yrange=temp_yrange,/current,color='black',$
-                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,name=y_axis_title[oplot_index])
+                  plot1 = plot(x, y[oplot_index,*], xtitle='Time', ytitle=y_titles[i], layout=[1,n_elements(parameter),i+1],yrange=temp_yrange,/current,color='black',$
+                            title=title[i],thick=thick,linestyle=0,symbol=symbol,ylog=yaxis_log,xmajor=5,xtickname=x_labels,xstyle=1,name=y_axis_title[oplot_index],margin=0.1,_extra=e)
                   l = legend(target=plot1,position=[0.2,0.95],$
                             /normal,linestyle=0,font_size=8)
                   oplot_index = oplot_index+1
                   for j=1,plot_count[i]-1 do begin      
                     plot1 = plot(x, y[oplot_index,*], xtitle='Time', layout=[1,n_elements(parameter),i+1],yrange=temp_yrange,/current,color='black',$
-                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xmajor=5,overplot=1,xstyle=1,name=y_axis_title[oplot_index])
+                            title=title[i],thick=thick,linestyle=j,symbol=symbol,xlog=xaxis_log,xmajor=5,overplot=1,xstyle=1,name=y_axis_title[oplot_index],margin=0.1,_extra=e)
                      l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
                             /normal,linestyle=j,font_size=8)
                     oplot_index=oplot_index+1
@@ -508,11 +535,11 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                 endif else begin
                   temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
                 endelse
-                plot,x,y[oplot_index,*],xtitle='Time', ytitle=y_axis_title[oplot_index],yrange=temp_yrange,$
+                plot,x,y[oplot_index,*],xtitle='Time', ytitle=y_titles[i],yrange=temp_yrange,$
                      title=title[i],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,color=0,$
-                     charsize=2,font=-1
+                     charsize=2,font=-1,_extra=e
                 if err_check[i] eq 0 then begin
-                  errplot,x, y_error[0,i,*], y_error[1,i,*],color=0
+                  errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
                 endif
                 oplot_index = oplot_index+1
               endif else begin 
@@ -521,17 +548,17 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, range=ra
                 endif else begin
                   temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
                 endelse
-                plot,x,y[oplot_index,*],xtitle='Time',$
+                plot,x,y[oplot_index,*],xtitle='Time',ytitle=y_titles[i],$
                       title=title[oplot_index],thick=thick,linestyle=linestyle,ylog=yaxis_log,background='FFFFFF'x,$
-                      yrange=temp_yrange,color=0,charsize=2.
+                      yrange=temp_yrange,color=0,charsize=2.,_extra=e
                 if err_check[i] eq 0 then begin
-                  errplot,x, y_error[0,i,*], y_error[1,i,*],color=0
+                  errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
                 endif
                 plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81,.81],linestyle=0,color=0,/normal
                 xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8,y_axis_title[oplot_index],color=0,/normal
                 oplot_index = oplot_index+1
                 for j=1,plot_count[i]-1 do begin      
-                  oplot,x,y[oplot_index,*],linestyle=j,thick=thick,color=0
+                  oplot,x,y[oplot_index,*],linestyle=j,thick=thick,color=0,_extra=e
                   plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),(i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],[.81+(j*0.03),.81+(j*0.03)],linestyle=j,color=0,/normal
                   xyouts,(i*(1./n_elements(parameter)))+(.5/(n_elements(parameter))),.8+(j*.03),y_axis_title[oplot_index],color=0,/normal
                   oplot_index=oplot_index+1
