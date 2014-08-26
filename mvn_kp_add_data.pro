@@ -30,7 +30,40 @@
 
 
 pro mvn_kp_add_data, kp_data, data_name, output, data1=data1, data2=data2, data3=data3, data4=data4, data5=data5, $
-                     data6=data6, data7=data7, data8=data8, data9=data9
+                     data6=data6, data7=data7, data8=data8, data9=data9, help=help
+
+  if keyword_set(help) then begin
+    print,'MVN_KP_ADD_DATA'
+    print,'   A simple routine for adding up to 9 user defined data arrays to the insitu KP data structure'
+    print,'     RESTRICTIONS: The new data arrays must be of the same length and time cadence as the input structure.'
+    print,'       If this is not the case, use mvn_kp_resample first to build a new data structure that matches the data field.     '
+    print,'       All new data fields will be added to a USER substructure. This name is required for later use by the 3d vis. routine.'
+    print,''
+    print,'mvn_kp_add_data, kp_data, data_name, output, data1=data1, data2=data2, data3=data3, data4=data4, data5=data5, $'
+    print,'                 data6=data6, data7=data7, data8=data8, data9=data9, help=help'
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: In-situ Key Parameter Data Structure'
+    print,'  data_name : the name of the new data to be added onto the USER substructure, either a single string or 
+    print,'              an array of strings equal in length to the number of new data fields.
+    print,'  output : the name of the newly created data structure
+    print,'  data1: the first new data array to be added to the kp data structure
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  data2: Optional additional data array to be added to the structure.'
+    print,'  data3: Optional additional data array to be added to the structure.'
+    print,'  data4: Optional additional data array to be added to the structure.'
+    print,'  data5: Optional additional data array to be added to the structure.'
+    print,'  data6: Optional additional data array to be added to the structure.'
+    print,'  data7: Optional additional data array to be added to the structure.'
+    print,'  data8: Optional additional data array to be added to the structure.'
+    print,'  data9: Optional additional data array to be added to the structure.'
+    print,'  help: Invoke this list.'
+    return
+  endif
+
 
     MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
     

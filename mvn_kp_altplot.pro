@@ -58,7 +58,47 @@
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                     title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
                     directgraphic=directgraphic, xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange,$
-                    davin=davin, y_labels=y_labels, _extra = e
+                    davin=davin, y_labels=y_labels, _extra = e, help=help
+
+
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_ALTPLOT'
+    print,'  This simple routine plots one or more altitude profiles from the insitu KP data structure.
+    print,'  Any data fields may be plotted together, on individual or single plots, using both direct and function graphics.
+    print,''
+    print,'mvn_kp_altplot, kp_data, parameter, time=time, list=list, range=range, $'
+    print,'              title=title,thick=thick,linestyle=linestyle,symbol=symbol,$'
+    print,'              directgraphic=directgraphic, xlog=xlog, ylog=ylog, xrange=xrange, yrange=yrange,$'
+    print,'              davin=davin, y_labels=y_labels, _extra = e, help=help'
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: In-situ Key Parameter Data Structure'
+    print,'  parameter: Key Parameter value to be plotted. Either name or index. Single or multiple. See User Guide for more details.'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  time: Range of times to plot.'
+    print,'  list: Display list of parameters in the data structure.'
+    print,'  range: Display the beginning and end times of the data structure.'
+    print,'  title: Optional overall plot title.'
+    print,'  thick: Set the thickness of the plotted line.'
+    print,'  linestyle: Use the IDL linestyles for plotting.'
+    print,'  symbol: Use IDL symbols for plotting.'
+    print,'  directgraphic: Override the default Function Graphics and use direct graphics.'
+    print,'  xlog: Plot on a logarthmic axis (X).'
+    print,'  ylog: Plot on a logarthmix axis (Y).'
+    print,'  xrange: Set the displayed x-axis range.'
+    print,'  yrange: Set the displayed y-axis range.'
+    print,'  davin: Swap the X and Y axes so that altitude is shown as the dependent variable.'
+    print,'  x_labels: Change the displayed X-axis labels.'
+    print,'  y_labels: Change the displayed Y-axis labels.'
+    print,'  _extra: Use any of the other IDL graphics options. '
+    print,'  help: Invoke this list.'
+    return
+  endif
+
 
   ;CHECK THAT THE INPUT PARAMETERS ARE VALID
   ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER

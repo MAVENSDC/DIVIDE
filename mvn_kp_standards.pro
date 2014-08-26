@@ -121,7 +121,66 @@ pro MVN_KP_STANDARDS, kp_data, $
                       sc_pot = sc_pot, $
                       altitude = altitude, $
                       plot_title = plot_title,$
-                      plot_color = plot_color
+                      plot_color = plot_color,$
+                      help = help
+
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_STANDARDS'
+    print,'This routine plots a set of standardized MAVEN KP data plots as defined by Dave Brain, using the tplot routines to create and manipulate variables.'
+    print,''
+    print,'mvn_kp_standards, kp_data, altitude=altitude, plot_color=plot_color, $'
+    print,'                  time=time, list=list, range=range, all=all, euv=euv, mag_mso=mag_mso, mag_geo=mag_geo, $
+    print,'                  mag_cone=mag_cone, mag_dir=mag_dir, ngims_neutral=ngims_neutral, ngims_ions=ngims_ions, $
+    print,'                  eph_angle=eph_angle, eph_geo=eph_geo, eph_mso=eph_mso, swea=swea, sep_ion=sep_ion, $'
+    print,'                  sep_electron=sep_electron, wave=wave, plasma_den=plasma_den, plasma_temp=plasma_temp, $
+    print,'                  swia_h_vel=swia_h_vel, static_h_vel=static_h_vel, static_o2_vel=static_o2_vel, static_flux=static_flux,$
+    print,'                  static_energy=static_energy, sun_bar=sun_bar, solar_wind=solar_wind, ionosphere=ionosphere, $
+    print,'                  sc_pot=sc_pot, help=help
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: In-situ Key Parameter Data Structure'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  altitude: Add an additional x-axis label of spacecraft altitude.'
+    print,'  plot_color: Change the default IDL color table to something new.'
+    print,'  time: The time range to be plotted.'
+    print,'  list: Display the list of all Key Parameters included in the data structure.'
+    print,'  range: Display the start and end time contained in the data structure.'
+    print,'  all: Display all the standardized plots.'
+    print,'  euv: Plot the EUV standardized plot.'
+    print,'  mag_mso:  Plot the MAG standardized plot in MSO coordinates.'
+    print,'  mag_geo:   Plot the MAG standardized plot in GEO coordinates.'
+    print,'  mag_cone:  Plot the MAG CONE standardized plot.'
+    print,'  mag_dir:   Plot the MAG DIR standardized plot.'
+    print,'  ngims_neutral: Plot the NGIMS NEUTRAL standardized plot.'
+    print,'  ngims_ions: Plot the NGIMS IONS standardized plot.'
+    print,'  eph_angle: Plot the EPH ANGLE standardized plot.'
+    print,'  eph_geo: Plot the EPH GEO standardized plot.'
+    print,'  eph_mso: Plot the EPH MSO standardized plot.'
+    print,'  swea: Plot the SWEA standardized plot.'
+    print,'  sep_ion: Plot the SEP ION standardized plot.'
+    print,'  sep_electron:  Plot the SEP ELECTRON standardized plot.'
+    print,'  wave: Plot the WAVE standardized plot.'
+    print,'  plasma_den: Plot the PLASMA DENSITY standardized plot.'
+    print,'  plasma_temp: Plot the PLASMA TEMPERATURE standardized plot.'
+    print,'  swia_h_vel: Plot the SWIA H VELOCITY standardized plot.'
+    print,'  static_h_vel: Plot the STATIC H VELOCITY standardized plot.'
+    print,'  static_o2_vel: Plot the STATIC O2 VELOCITY standardized plot.'
+    print,'  static_flux: Plot the STATIC FLUX standardized plot.'
+    print,'  static_energy: Plot the STATIC ENERGY standardized plot. '
+    print,'  sun_bar: Plot the SUN BAR standardized plot.'
+    print,'  solar_wind: Plot the SOLAR WIND standardized plot.'
+    print,'  ionosphere: Plot the IONOSPHERE standardized plot.'
+    print,'  sc_pot: Plot the SPACECRAFT POTENTIAL standardized plot.'
+    print,'  help: Invoke this list.'
+    return
+  endif
+
+
+
 
   ;IF /ALL IS CALLED, SET EVERY KEYWORD TO ACTIVE SO ALL PLOTS ARE CREATED
 

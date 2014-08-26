@@ -37,12 +37,53 @@
 ;       an option to override the default colortable with any other IDL colortable
 ;    window: in, optional, type=byte
 ;       if invoked, will create a new window instead of reusing the previous. 
+;    winX: in, optional, type=integer
+;       sets the X size of the window, in pixels.
+;    winY: in, optional, type=integer
+;       sets the Y size of the window, in pixels.
 ;       
 ; :Version:   1.0   July 8, 2014
 ;-
 pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=profiles, den_species=den_species, rad_species=rad_species, legend=legend,$
                       linear=linear, species_expand=species_expand, profile_expand=profile_expand,$
-                      range=range,colortable=colortable,window=window, winX=winX, winY=winY
+                      range=range,colortable=colortable,window=window, winX=winX, winY=winY, help=help
+
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_IUVS_LIMB'
+    print,'  This routine plots the IUVS PERIAPSE limb-scan KP data. All three limb-scans from each orbit are included in each plot, '
+    print,'  with keywords allowing a choice of orbits and species. By default, all limb scan data, both radiance and density profiles, are displayed. 
+    print,''
+    print,'mvn_kp_iuvs_limb, kp_data, density=density, radiance=radiance, profiles=profiles, den_species=den_species, rad_species=rad_species, legend=legend,$'
+    print,'                  linear=linear, species_expand=species_expand, profile_expand=profile_expand,$'
+    print,'                  range=range,colortable=colortable,window=window, winX=winX, winY=winY, help=help'
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: IUVS Key Parameter Data Structure'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  density : if selected, the density KP data will be plotted
+    print,'  radiance : if selected, the radiance KP data will be plotted
+    print,'  profiles : an array listing the orbits to be plotted 
+    print,'  den_species : an array listing the density measurements of particular species to be plotted 
+    print,'  rad_species : an array listing the radiance measurements of particular species to be plotted 
+    print,'  legends : either VERTICAL or HORIZONTAL, defining the orientation of the legend.
+    print,'  linear : optional keyword to make plots on a linear scale, instead of the logarithmic default
+    print,'  species_expand: if this keyword is selected, then all the species for a given orbit will be plotted on a single graph
+    print,'  profile_expand: if this keyword is selected, then all the orbits will be combined into a single plot for comparison purposes
+    print,'  range: if selected, this will return the temporal range of the data set without plotting anything
+    print,'  colortable: an option to override the default colortable with any other IDL colortable
+    print,'  window: if invoked, will create a new window instead of reusing the previous. 
+    print,'  winX:  sets the X size of the window, in pixels.
+    print,'  winY:  sets the Y size of the window, in pixels.
+    print,'  help: Invokes this list.'
+    return
+  endif
+
+
+
 
    ;set the default colors
     device,decompose=0

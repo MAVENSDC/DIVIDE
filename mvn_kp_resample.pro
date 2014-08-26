@@ -23,11 +23,37 @@
 ;     By default, this routine will resample all the KP data within the input structure. Using
 ;     this keyword, the user can force the routine to only resample the SPACECRAFT substructure.
 ;     Mostly this would be useful for using the visualization routines with arbitrary non-KP data.
+;    help: in, optional, type=boolean
+;     Display the help contents on the screen.
 ;       
 ;
 ; :Version:   1.0     July 8, 2014
 ;-
-pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only
+pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
+
+
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_RESAMPLE'
+    print,'   This routine enables the user to resample an MAVEN insitu KP data structure to an arbitrary time cadence.'
+    print,'   Used in conjunction with mvn_kp_add_data, this enables the user to modify and extend the KP data (with'
+    print,'   additional Level-2 data, for example), yet still use the plotting and visualization components of the Toolkit.
+    print,''
+    print,'mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: In-situ Key Parameter Data Structure.'
+    print,'  time: an input array of time stamps to which the data structure will be resampled.'
+    print,'  data_out: output array resampled to the new time stamps.'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  sc_only: Resample and return only the spacecraft ephemeris substructure.'
+    print,'  help: Invoke this list.'
+    return
+  endif
+
 
   ;check that inputs make sense
     

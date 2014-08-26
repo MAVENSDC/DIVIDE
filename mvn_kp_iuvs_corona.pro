@@ -43,7 +43,43 @@
 ;-
 pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $
                         range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend, $
-                        save_window=save_window
+                        save_window=save_window, help=help
+
+
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_IUVS_CORONA'
+    print,'  This routine plots all the coronal scan data held within the IUVS KP structure in a variety of ways.'
+    print,'  By default, calling this routine with just the data structure defined will plot ALL the coronal data.' 
+    print,''
+    print,'mvn_kp_iuvs_corona, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, high=high, $'
+    print,'                    range=range, colortable=colortable, nolabels=nolabels, nolegend=nolegend, $'
+    print,'                    save_window=save_window, help=help'
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: IUVS Key Parameter Data Structure'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'     echelle:  Used to plot the Echelle coronal data. Can be used in conjunction with /lores, but that is equivalent to using neither.'
+    print,'     lores: Used to plot the LoRes coronal data. Can be used in conjunction with /echelle, but that is equivalent to using niether.'
+    print,'     disk: Used to plot all the Disk Coronal data within the structure.'
+    print,'           This keyword may be used in conjunction with /limb and /high, as well as /echelle and /lores, to show the desired subset of IUVS data.'
+    print,'     limb: Used to plot all the Limb Coronal Scan data within the input structure.'
+    print,'           This keyword may be used in conjunction with /disk and /high, as well as /echelle and /lores, to show the desired subset of IUVS data.'
+    print,'     high: Used to plot all the High Altitude Coronal Scan data within the input structure'
+    print,'           This keyword may be used in conjunction with /disk and /limb, as well as /echelle and /lores, to show the desired subset of IUVS data.'
+    print,'     range: Used to print the beginning and end times/orbits contained within the input data structure. '
+    print,'            Using this keyword will result in no plot. '
+    print,'     colortable: This variable is the integer index of a pre-defined IDL color table. By default, the routine will use #39.'
+    print,'     nolabels: Used to suppress the labels on each plot.'
+    print,'     nolegend: Used to suppress the additional legend windows created by the routine. '
+    print,'     save_window: If this keyword is used, the currently displayed idl direct graphic plot windows are retained.'
+    print,'                  Useful for making multiple plots to compare different coronal scans.'
+    print,'     help: Invokes this list.'
+    return
+  endif
 
 
 ;CHECK THAT THE INPUT DATA STRUCTURE CONTAINS THE NECESSARY DATA

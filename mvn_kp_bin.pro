@@ -39,7 +39,41 @@
 ;    
 ;-
 pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
-                std = std, density=density
+                std = std, density=density, help=help
+
+  if keyword_set(help) then begin
+    print,'MVN_KP_BIN'
+    print,'  This routine will rebin a Key Parameter from the input array in up to eight dimensions. 
+    print,''
+    print,'mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
+    print,'            std = std, density=density, help=help
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'**************'
+    print,'  kp_data: In-situ Key Parameter Data Structure'
+    print,'  to_bin: The Key Parameter which will be binned '
+    print,'  bin_by: Up to eight key parameter indices or names by which to bin the requested key parameter'
+    print,'  output: The requested Key Parameter binned in the desired dimensions. By default, this is the the number of data points within each bin.'
+    print,'  std_out:
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'    mins: Optional minimum values for each of the binning dimensions'
+    print,'    maxs:  Optional maximum values for each of the binning dimensions'
+    print,'    binsize: Optional array defining the binsize to use for each of the binning dimensions'
+    print,'    output: The requested Key Parameter binned in the desired dimensions. By default, this is the the number of data points within each bin.'
+    print,'    std_out: Output array containing the standard deviation of the binned key parameter in each bin. '
+    print,'    avg_out: Output array containing the average value of the binned key parameter in each bin'
+    print,'    density:  An output array containing the density of the binned parameter   '
+    print,'    std: With this keyword, the routine will calculate the standard deviation within each bin and return in in std_out '
+    print,'    list: Used to print out the contents of the input data structure.'
+    print,'    help: Invoke this list.'
+    return
+  endif
+
+
+
+
 
   ;CHECK THAT ALL INPUT FIELDS MATCH IN SIZE (fields ,BINS,)
   
