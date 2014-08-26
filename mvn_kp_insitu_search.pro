@@ -38,6 +38,9 @@
 ;       On error, - "Stop immediately at the statement that caused the error and print
 ;       the current program stack." If not specified, error message will be printed and
 ;       IDL with return to main program level and stop.
+;       
+;    help: in, optional, type=boolean
+;       Prints the keyword descriptions to the screen.
 ;
 ;-
 
@@ -48,7 +51,43 @@
 
 
 pro MVN_KP_INSITU_SEARCH,  insitu_in, insitu_out, tag=tag, min=min_value, max=max_value, list=list, $
-                           range=range, debug=debug
+                           range=range, debug=debug, help=help
+                           
+                           
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_INSITU_SEARCH'
+    print,'  Searches input in situ KP data structure based on min and/or max search parameters.'
+    print,''
+    print,'mvn_kp_insitu_search, insitu_in, insitu_out, tag=tag, min=min_value, max=max_value, list=list, $'
+    print,'                      range=range, debug=debug, help=help'
+    print,''
+    print,'REQUIRED FIELDS'
+    print,'***************'
+    print,'  insitu_in: in situ KP data structure (data structure output from mvn_kp_read)'
+    print,'  insitu_out: output KP data structure containing datat that met all search criteria'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  list: List out possible tags names to search (& index identifiers associated with tags). No search performed.'
+    print,'        tag: Required if /list keyword not supplied. The name, or names, of the INSITU data parameter'
+    print,'        (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
+    print,'  min: the minimum value of the parameter to be searched on (or array of values).'
+    print,'       One or more minimum values. If multiple tags input & multiple min values input, each min'
+    print,'       value will correspond with each tag (by array position). If multiple tags & one min value,'
+    print,'       the min value is used for all tags. Cannot enter more min values than tags.'
+    print,'  max: the maximum value of the parameter to be searced on (or array of values)'
+    print,'       One or more maximum values. If multiple tags input & multiple max values input, each max'
+    print,'       value will correspond with each tag (by array position). If multiple tags & one max value,'
+    print,'       the max value is used for all tags. Cannot enter more max values than tags.'
+    print,'  range: Print out TIME_STRING for first and last element of input data structure. Also prints corresponding orbit numbers.'
+    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print'
+    print,'         the current program stack." If not specified, error message will be printed and'
+    print,'         IDL with return to main program level and stop.'
+    print,'  help: Invoke this list.'
+    return
+  endif
+
   
   ; IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin

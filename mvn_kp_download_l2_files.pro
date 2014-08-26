@@ -96,8 +96,42 @@
 pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_files=list_files, $
                               start_date=start_date, end_date=end_date, new_files=new_files, $
                               update_prefs=update_prefs, only_update_prefs=only_update_prefs, $
-                              debug=debug, create_dirs=create_dirs
+                              debug=debug, create_dirs=create_dirs, help=help
+                              
 
+  ;provide help for those who don't have IDLDOC installed
+  if keyword_set(help) then begin
+    print,'MVN_KP_DOWNLOAD_L2_FILES'
+    print,'  Download level 2 data files from the Maven SDC web service for any instrument.'
+    print,''
+    print,'mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_files=list_files, $'
+    print,'                          start_date=start_date, end_date=end_date, new_files=new_files, $'
+    print,'                          update_prefs=update_prefs, only_update_prefs=only_update_prefs, $'
+    print,'                          debug=debug, create_dirs=create_dirs, help=help'
+    print,''
+    print,'OPTIONAL FIELDS'
+    print,'***************'
+    print,'  instrument: Scalar or array of instruments (three letter representations) of l2 data to download/list'
+    print,'  filenames: Scalar or array of filename strings to download. If used, /new_files keyword is ignored.'
+    print,'  list_files: Print to standard output a list of files instead of actually downloading'
+    print,'  new_files: Only download files you do not already have saved locally'
+    print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
+    print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
+    print,'  update_prefs: Before searching or downloading data, allow user to update kp_preferences.txt - which '
+    print,'                contains paths to the in situ data and IUVS data. After selecting new paths to data folders, '
+    print,'                search or download of data files will continue.'
+    print,'  only_update_prefs: Allow user to update kp_preferences.txt - which contains paths to the in situ data and'
+    print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not downloading any data.'
+    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
+    print,'         the current program stack." If not specified, error message will be printed and '
+    print,'         IDL with return to main program level and stop.'
+    print,'  create_dirs:If set, all instrument directories will be created under the user chosen "top level"'
+    print,'              directory. If the instrument directories already exist, this wont overwrite them. '
+    print,'              It is likely one would only need to run the procedure with this keyword once, setting'
+    print,'              up the required directory substructure for l2 data.'
+    print,'  help: Invoke this list.'
+    return
+  endif
   
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
