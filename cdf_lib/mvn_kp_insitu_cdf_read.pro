@@ -12,7 +12,8 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
   endif
 
   
-  lpw_start              = 2   ;  lpw_end                = 22
+  lpw_start              = 2   ;  lpw_end                = 16
+  euv_start              = 17  ;  euv_end                = 22
   swea_start             = 23  ;  swea_end               = 40
   swia_start             = 41  ;  swia_end               = 52
   static_start           = 53  ;  static_end             = 99
@@ -26,7 +27,8 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
   spacecraft_part2_start = 197 ;  spacecraft_part2_end   = 211
   
   
-  lpw_total              = 21
+  lpw_total              = 15
+  euv_total              = 6
   static_total           = 47
   swia_total             = 12
   swea_total             = 18
@@ -65,12 +67,21 @@ pro mvn_kp_insitu_cdf_read, insitu, infiles, instruments=instruments
     kp_data.orbit       = *cdfi_insitu.vars[orbit_number_index].dataptr
     kp_data.io_bound    = *cdfi_insitu.vars[io_bound_index].dataptr
     
-    
+
     ;; Read in LPW data
     if instruments.lpw eq 1 then begin
       j = lpw_start    
       for i=0, lpw_total-1 do begin
         kp_data.lpw.(i) = *cdfi_insitu.vars[j].dataptr
+        j++
+      endfor
+    endif
+    
+    ;; Read in EUV data
+    if instruments.euv eq 1 then begin
+      j = euv_start
+      for i=0, euv_total-1 do begin
+        kp_data.euv.(i) = *cdfi_insitu.vars[j].dataptr
         j++
       endfor
     endif

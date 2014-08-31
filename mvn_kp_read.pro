@@ -56,6 +56,8 @@
 
 ;    lpw: in, optional, type=boolean
 ;       return all of the LPW data
+;    euv: in, optional, type=boolean
+;       return all of the EUV data
 ;    static: in, optional, type=boolean
 ;       return all of the STATIC data
 ;    swia: in, optional, type=boolean
@@ -120,7 +122,7 @@
 pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $
                  debug=debug, duration=duration, text_files=text_files, save_files=save_files, $
                  insitu_only=insitu_only, insitu_all=insitu_all, inbound=inbound, outbound=outbound, $
-                 lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    
+                 lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    
                  iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
                  iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
                  iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
@@ -176,6 +178,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     print,'               procedures to work, there is no iuvs_only option. 
 
     print,'  lpw: return all of the LPW data
+    print,'  euv: return all of the EUV data
     print,'  static: return all of the STATIC data
     print,'  swia: return all of the SWIA data
     print,'  swea: return all of the SWEA data
@@ -257,14 +260,14 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     
 
   ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
-  if keyword_set(lpw) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
+  if keyword_set(lpw) or keyword_set(euv) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
     keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
     keyword_set(iuvs_coronaEchelleDisk) or keyword_set(iuvs_coronaEchelleLimb) or keyword_set(iuvs_coronaEchelleHigh) or keyword_set(iuvs_coronaLoresHigh) or $
     keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu_all) then begin
 
 
   ;; Setup instrument struct which is used for creating data structure & controlling which instruments to read
-    instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
+    instruments = CREATE_STRUCT('lpw',      0, 'euv',      0, 'static',   0, 'swia',     0, $
                                 'swea',     0, 'mag',      0, 'sep',      0, $
                                 'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
                                 'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
@@ -272,6 +275,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
    
     if keyword_set(lpw)    then begin
       instruments.lpw    = 1 & print,'Returning All LPW Instrument KP Data.'  
+    endif
+    if keyword_set(euv)    then begin
+      instruments.euv    = 1 & print,'Returning All EUV Instrument KP Data.'
     endif
     if keyword_set(static) then begin
       instruments.static = 1 & print,'Returning All STATIC Instrument KP Data.'
@@ -328,6 +334,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     
     if keyword_set(insitu_all) then begin
       instruments.lpw    = 1
+      instruments.euv    = 1
       instruments.static = 1
       instruments.swia   = 1
       instruments.swea   = 1
@@ -353,7 +360,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif else begin
     
     ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE FOR ALL INSTRUMENT DATA
-    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
+    instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, 'swia',     1, $
                                 'swea',     1, 'mag',      1, 'sep',      1, $
                                 'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
                                 'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $

@@ -25,7 +25,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;; Default to filling all instruments if not specified
   if not keyword_set(instruments) then begin
-    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
+    instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, 'swia',     1, $
                                 'swea',     1, 'mag',      1, 'sep',      1, $
                                 'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
                                 'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $

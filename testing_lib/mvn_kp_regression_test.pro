@@ -24,7 +24,7 @@ if n_params() eq 0 then begin
  ; save_files="TRUE"
   CDF="TRUE"
   INSITU_SEARCH="TRUE"
- ; ASCII="TRUE"
+  ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
  ; COMPAREIUVS="TRUE"
  
@@ -84,6 +84,8 @@ if keyword_set(CDF) then begin
   
   ;; Test specifying certain instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/ngims,/sep,/iuvs_periapse"]
+  cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/lpw,/euv,/iuvs_apoapse"]
+  
   
   ;; Test inbound flag & instruments
   cmd_list = [cmd_list, "mvn_kp_read,'2015-04-12/09:30:00',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound"]
@@ -283,6 +285,7 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, 1024 , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_all"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /static, /euv, /iuvs_periapse"]
   cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, iuvs, /text_files, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk"]
   cmd_list = [cmd_list, "mvn_kp_read, [1021, 1022] , insitu, iuvs, /text_files"]
   

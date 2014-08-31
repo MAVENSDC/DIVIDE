@@ -85,7 +85,7 @@ pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
     
   ;determine if all data fields to be filled, or only some
   
-      instruments = CREATE_STRUCT('lpw',      0, 'static',   0, 'swia',     0, $
+      instruments = CREATE_STRUCT('lpw',      0, 'euv',    0, 'static',   0, 'swia',     0, $
                                 'swea',     0, 'mag',      0, 'sep',      0, $
                                 'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
                                 'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
@@ -100,6 +100,8 @@ pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
       
       a = where(old_tags eq 'LPW')
         if a ne -1 then instruments.lpw = 1
+      a = where(old_tags eq 'EUV')
+        if a ne -1 then instruments.euv = 1 
       a = where(old_tags eq 'STATIC')
         if a ne -1 then instruments.static = 1
       a = where(old_tags eq 'SWIA')
@@ -132,6 +134,12 @@ pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
         tag_loop = tag_names(kp_temp.lpw)
         for i=0, n_elements(tag_loop) - 1 do begin
           insitu_temp.lpw.(i) = spline(old_time, kp_temp.lpw.(i), time, /double)
+        endfor
+      endif
+      if instruments.euv eq 1 then begin
+        tag_loop = tag_names(kp_temp.euv)
+        for i=0, n_elements(tag_loop) - 1 do begin
+          insitu_temp.euv.(i) = spline(old_time, kp_temp.euv.(i), time, /double)
         endfor
       endif
       if instruments.static eq 1 then begin

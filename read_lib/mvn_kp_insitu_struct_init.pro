@@ -25,7 +25,7 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
   
   ;; Default to filling all instruments if not specified
   if not keyword_set(instruments) then begin
-    instruments = CREATE_STRUCT('lpw',      1, 'static',   1, 'swia',     1, $
+    instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, 'swia',     1, $
                                 'swea',     1, 'mag',      1, 'sep',      1, $
                                 'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
                                 'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
@@ -97,20 +97,30 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           ewave_mid                     :!VALUES.D_NAN, $
           ewave_mid_qual                :!VALUES.D_NAN, $
           ewave_high                    :!VALUES.D_NAN, $
-          ewave_high_qual               :!VALUES.D_NAN, $
-          euv_irradiance_low            :!VALUES.D_NAN, $
-          euv_irradiance_low_qual       :!VALUES.D_NAN, $
-          euv_irradiance_mid            :!VALUES.D_NAN, $
-          euv_irradiance_mid_qual       :!VALUES.D_NAN, $
-          euv_irradiance_lyman          :!VALUES.D_NAN, $
-          euv_irradiance_lyman_qual     :!VALUES.D_NAN}
+          ewave_high_qual               :!VALUES.D_NAN}
           
     record_temp2 = create_struct(['lpw'],s3,record_temp1)
   endif else begin
     record_temp2 = create_struct(record_temp1)
   endelse
+  
+  if instruments.euv then begin     ; INCLUDE EUV data structure
+    s4 = {euv,                                      $
+          irradiance_low            :!VALUES.D_NAN, $
+          irradiance_low_qual       :!VALUES.D_NAN, $
+          irradiance_mid            :!VALUES.D_NAN, $
+          irradiance_mid_qual       :!VALUES.D_NAN, $
+          irradiance_lyman          :!VALUES.D_NAN, $
+          irradiance_lyman_qual     :!VALUES.D_NAN}
+      
+    record_temp3 = create_struct(['euv'],s4,record_temp2)
+  
+  endif else begin
+    record_temp3 = create_struct(record_temp2)
+  endelse
+  
   if instruments.static then begin  ;INCLUDE STATIC DATA STRUCTURE
-    s4 = {static,                                                     $
+    s5 = {static,                                                     $
           static_qual_flag                            :!VALUES.D_NAN, $
           co2plus_density                             :!VALUES.D_NAN, $
           co2plus_density_qual                        :!VALUES.D_NAN, $
@@ -159,12 +169,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           dominant_pickup_ion_char_angular_width      :!VALUES.D_NAN, $
           dominant_pickup_ion_char_angular_width_qual :!VALUES.D_NAN}    
           
-    record_temp3 = create_struct(['static'],s4,record_temp2)
+    record_temp4 = create_struct(['static'],s5,record_temp3)
   endif else begin
-    record_temp3 = create_struct(record_temp2)
+    record_temp4 = create_struct(record_temp3)
   endelse
   if instruments.swia then begin   ;INCLUDE SWIA DATA STRUCTURE
-    s5 = {swia,                                           $
+    s6 = {swia,                                           $
           hplus_density                   :!VALUES.D_NAN, $
           hplus_density_qual              :!VALUES.D_NAN, $
           hplus_flow_v_msox               :!VALUES.D_NAN, $
@@ -178,12 +188,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           solarwind_dynamic_pressure      :!VALUES.D_NAN, $
           solarwind_dynamic_pressure_qual :!VALUES.D_NAN}
           
-    record_temp4 = create_struct(['swia'],s5,record_temp3)
+    record_temp5 = create_struct(['swia'],s6,record_temp4)
   endif else begin
-    record_temp4 = create_struct(record_temp3)
+    record_temp5 = create_struct(record_temp4)
   endelse
   if instruments.swea eq 1 then begin   ;INCLUDE SWEA DATA STRUCTURE
-    s6 = {swea,                                                $
+    s7 = {swea,                                                $
           solarwind_e_density                  :!VALUES.D_NAN, $
           solarwind_e_density_qual             :!VALUES.D_NAN, $
           solarwind_e_temperature              :!VALUES.D_NAN, $
@@ -203,12 +213,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           electron_spectrum_shape              :!VALUES.D_NAN, $
           electron_spectrum_shape_qual         :!VALUES.D_NAN}
           
-    record_temp5 = create_struct(['swea'], s6, record_temp4)
+    record_temp6 = create_struct(['swea'], s7, record_temp5)
   endif else begin
-    record_temp5 = create_struct(record_temp4)
+    record_temp6 = create_struct(record_temp5)
   endelse
   if instruments.mag eq 1 then begin   ;INCLUDE MAG DATA STRUCTURE
-    s7 = {mag,                       $
+    s8 = {mag,                       $
           mso_x      :!VALUES.D_NAN, $
           mso_x_qual :!VALUES.D_NAN, $
           mso_y      :!VALUES.D_NAN, $
@@ -224,12 +234,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           rms        :!VALUES.D_NAN, $
           rms_qual   :!VALUES.D_NAN}
           
-    record_temp6 = create_struct(['mag'], s7, record_temp5)
+    record_temp7 = create_struct(['mag'], s8, record_temp6)
   endif else begin
-    record_temp6 = create_struct(record_temp5)
+    record_temp7 = create_struct(record_temp6)
   endelse
   if instruments.sep eq 1 then begin   ;INCLUDE SEP DATA STRUCTURE
-    s8 = {sep,                                        $
+    s9 = {sep,                                        $
           ion_energy_flux_1_front           :!VALUES.D_NAN, $
           ion_energy_flux_1_front_qual      :!VALUES.D_NAN, $
           ion_energy_flux_1_back            :!VALUES.D_NAN, $
@@ -259,12 +269,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           look_direction_2_back_msoy        :!VALUES.D_NAN, $ 
           look_direction_2_back_msoz        :!VALUES.D_NAN}
           
-    record_temp7 = create_struct(['sep'], s8, record_temp6)
+    record_temp8 = create_struct(['sep'], s9, record_temp7)
   endif else begin
-    record_temp7 = create_struct(record_temp6)
+    record_temp8 = create_struct(record_temp7)
   endelse
   if instruments.ngims eq 1 then begin   ;INCLUDE NGIMS DATA STRUCTURE
-    s9 = {ngims,                                $ 
+    s10 ={ngims,                                $ 
           he_density            :!VALUES.D_NAN, $ 
           he_density_qual       :!VALUES.D_NAN, $ 
           o_density             :!VALUES.D_NAN, $ 
@@ -297,12 +307,12 @@ pro MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
           nplus_density_qual    :!VALUES.D_NAN}
           
           
-    record_temp8 = create_struct( ['ngims'], s9, record_temp7)
+    record_temp9 = create_struct( ['ngims'], s10, record_temp8)
   endif else begin
-    record_temp8 = create_struct(record_temp7)
+    record_temp9 = create_struct(record_temp8)
   endelse
   
   insitu_record = 0
-  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0.0D,-1L,'',record_temp8)
+  insitu_record = create_struct(['time_string','time','orbit','io_bound'],'',0.0D,-1L,'',record_temp9)
 
 end
