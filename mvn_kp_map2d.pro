@@ -45,6 +45,8 @@
 ;    map_location: in, optional, type=fltarr
 ;       An array that defines the location of the user selected basemap.
 ;         [lower left corner latitude, lower left corner longitude]
+;    map_projection: in, optional, type=string
+;       The name of one of IDL's given map projections
 ;    apopase_time:  in, optional, either a string or long integer 
 ;       The time of the aopapse image to display. If not defined, the middle image is selected (unless apoapse_blend is included)
 ;       
@@ -122,7 +124,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
                   corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
                   corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $
                   corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $
-                  map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $
+                  map_limit=map_limit, map_location=map_location, map_projection=map_projection, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $
                   minimum=minimum, maximum=maximum, help=help
            
    common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
@@ -332,26 +334,30 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
      if basemap eq 'mdim' then begin
        mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
        read_jpeg,mapimage,mapimage
-       map_limit = [-90,-180,90,180]
-       map_location = [-180,-90]
+       map_limit = [-90,0,90,360]
+       map_location = [0,-90]
+       map_projection  = 'equrectangular'
      endif
      if basemap eq 'mola' then begin
        mapimage = FILEPATH('MOLA_color_2500x1250.jpg',root_dir=install_directory)  
        read_jpeg,mapimage,mapimage
-       map_limit = [-90,-180,90,180]
+       map_limit = [-90,-0,90,360]
        map_location = [-180,-90]
+       map_projection  = 'equrectangular'
      endif 
      if basemap eq 'mola_bw' then begin
        mapimage = FILEPATH('MOLA_BW_2500x1250.jpg',root_dir=install_directory) 
        read_jpeg,mapimage,mapimage 
-       map_limit = [-90,-180,90,180]
+       map_limit = [-90,0,90,360]
        map_location = [-180,-90]
+       map_projection  = 'equrectangular'
      endif 
      if basemap eq 'mag' then begin
        mapimage = FILEPATH('Mars_Crustal_Magnetism_MGS.jpg',root_dir=install_directory)
        read_jpeg,mapimage,mapimage
        map_limit = [-90,0,90,360]
        map_location = [0,-90]      
+       map_projection  = 'equrectangular'
      endif
      if basemap eq 'dust' then begin
       tag_check = tag_names(iuvs.apoapse)
@@ -498,17 +504,21 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
         if keyword_set(map_location) eq 0 then begin
           map_location = [-180,-90]
         endif
+        if keyword_set(map_projection) eq 0 then begin
+          map_projection  = 'equrectangular'
+        endif
      endif
       if keyword_set(direct) eq 0 then begin
-        i = image(mapimage, axis_style=2,LIMIT=map_limit, GRID_UNITS=2, IMAGE_LOCATION=map_location, IMAGE_DIMENSIONS=[360,180],$
-                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",transparency=alpha)
+        i = image(mapimage, position=[.15,.1,.85,.9],image_dimensions=[360,180])
+        mp = map(map_projection, limit = map_limit, /box_axes, position=[.15,.1,.85,.9],/current)
+        mp.limit = map_limit
         plot_color = "White"
       endif
     endif else begin
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
+                  map_projection  = 'equrectangular',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
         plot_color = "Black"
       endif    
      endelse
@@ -527,8 +537,9 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
     endif else begin
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
-        i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                  MAP_PROJECTION='Cylindrical Equal Area',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
+        i = image(mapimage, position=[.15,.1,.85,.9],image_dimensions=[360,180],window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
+        mp = map('equirectangular', limit = map_limit, /box_axes, position=[.15,.1,.85,.9],/current)
+        mp.limit = [-90,-180,90,180]
         plot_color = "Black"
       endif
     endelse
@@ -837,7 +848,7 @@ if keyword_set(i_colortable) eq 0 then i_colortable = 11
         endelse
         
           plot,longitude,latitude,psym=3,xstyle=1,ystyle=1,yrange=[-90,90],ytitle=ytitle, xtitle=xtitle,/nodata,charsize=1.5,$
-               charthick=2, xthick=2, ythick=2,color='000000'xL,background='FFFFFF'xL
+               charthick=2, xthick=2, ythick=2,color='000000'xL,background='FFFFFF'xL,xrange=[0,360]
           if keyword_set(mso) eq 0 then begin
            if keyword_set(basemap) then begin
             mvn_kp_oplotimage,mapimage,imgxrange=[0,360],imgyrange=[-90,90]
