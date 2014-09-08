@@ -10,7 +10,7 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
   insitu_month_index = filename_spec.month_index
   insitu_day_index   = filename_spec.day_index
   
-
+  
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR    - FIXME Make below more consistent
   ;; Default is CDF format
   if keyword_set(save_files) then begin 
@@ -21,7 +21,9 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
     insitu_pattern += '.cdf' 
   endelse
   
-  local_insitu = file_search(insitu_dir+path_sep()+insitu_pattern, count=count)
+  ;; - recursive search to look through year/month subdirs
+  local_insitu = file_search(insitu_dir+path_sep(),insitu_pattern, count=count)
+
   if (count gt 0) then begin
     local_insitu_base  = file_basename(local_insitu)
     ;local_times_insitu = strmid(local_insitu_base, 20, 8, /reverse_offset) ;;FIXME - cleaner way to get this part of the string
@@ -76,8 +78,8 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
     iuvs_pattern += '.cdf' 
   endelse
  
- 
-  local_iuvs = file_search(iuvs_dir+path_sep()+iuvs_pattern, count=count)
+  ;; - recursive search to look through year/month subdirs
+  local_iuvs = file_search(iuvs_dir+path_sep(), iuvs_pattern, count=count)
   if (count gt 0) then begin
     local_iuvs_base = file_basename(local_iuvs)
     
@@ -171,7 +173,7 @@ function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
     
     ;; If final is not a string, there has been a problem
     if (size(final, /type) ne 7) then begin
-      message, "Problem with filenames in " ;#FIXME
+      message, "Problem with filenames in mvn_kp_latest_version_file"
     endif
     
     latest_files[j] = final

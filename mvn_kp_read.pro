@@ -391,7 +391,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   
   ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT
   if keyword_set(duration) eq 0 then begin
-    if size(time,/type) eq 7 then duration = 86400
+    if size(time,/type) eq 7 then duration = 86399
     if size(time,/type) eq 2 then duration = 1
   endif
 
@@ -493,10 +493,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;; ----------------------- Main read loop: In situ data    ---------------------------- ;;
   
   
-  ; FIXME: These variables aren't being used?
-  ;VARIABLES TO HOLD THE COUNT OF VARIOUS OBSERVATION TYPES (IE. HIGH VS. LOW ALTITUDE)
-  ; high_count = 0
-  ; low_count = 0
+
   if target_kp_filenames[0] ne 'None' then begin
     totalEntries=0L
     start_index=0L
@@ -505,7 +502,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       ;UPDATE THE READ STATUS BAR
       MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
-      fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
+      ;; Construct path to file
+      date_path = mvn_kp_date_subdir(target_kp_filenames[file])
+      fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
+      
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
@@ -543,7 +543,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       
         MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
-        fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
+        ;; Construct path to file
+        date_path = mvn_kp_date_subdir(iuvs_filenames[file])
+        fileAndPath = kp_iuvs_data_directory+date_path+iuvs_filenames[file]
+        
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
           instruments=instruments, save_files=save_files, text_files=text_files
           

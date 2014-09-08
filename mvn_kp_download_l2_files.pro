@@ -249,7 +249,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       ;  if n_elements(descriptor)
       ;  if n_elements(plan)
       ;  if n_elements(orbit)
-      ; if n_elements(mode)           gt 0 then query_args = [query_args, "mode=" +strjoin(mode, ",")]
+      ;   if n_elements(mode)           gt 0 then query_args = [query_args, "mode=" +strjoin(mode, ",")]
       ;  if n_elements(data_type)
       
       
@@ -283,9 +283,9 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
         ;; Get filename convetion information from config
         pattern = 'mvn_'+instrument[inst_i]+'*'
     
-        ; Get list of all files currently downloaded
-        local_files = file_basename(file_search(current_l2_dir+path_sep()+pattern))
-  
+        ; Get list of all files currently downloaded - recursive search to look through year/month subdirs
+        local_files = file_basename(file_search(current_l2_dir+path_sep(), pattern))
+
         ; Get list of files on server (within a time span if entereted), that are not on local machine
         filenames = mvn_kp_relative_complement(local_files, filenames)
     
@@ -324,6 +324,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     endif
     
     ; Prompt user to ensure they want to download nfiles amount of files
+    download_bool = 'yes'
     while(1) do begin
       response = ''
       print, "For instrument: "+instrument[inst_i]+" - Your request will download a total of: " +strtrim(string(nfiles),2) +" files."
@@ -332,50 +333,64 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       read, response, PROMPT='(y/n) >'
       if (strlowcase(strmid(response,0,1)) eq 'y') then break
       if (strlowcase(strmid(response,0,1)) eq 'n') then begin
-        print, "Canceled download. Returning..."
-        return
+        print, "Canceled download for: "+string(instrument[inst_i])+"."
+        download_bool = 'no'
+        break
       endif else print, "Invalid input. Please answer with yes or no."
     endwhile
     
-    ;; If connection not set, filenames was specified - need to get connection
-    if not keyword_set(connection) then begin
-      ; Get the IDLnetURL singleton. May prompt for password.
-      connection = mvn_kp_get_connection()
+    if download_bool eq 'yes' then begin
+      
+      ;; If connection not set, filenames was specified - need to get connection
+      if not keyword_set(connection) then begin
+        ; Get the IDLnetURL singleton. May prompt for password.
+        connection = mvn_kp_get_connection()
+      endif
+      
+      print, "Starting download..."
+      ; Download files one at a time.
+      nerrs = 0 ;count number of errors
+      for i = 0, nfiles-1 do begin
+        
+        file = file_basename(filenames[i]) ;just the file name, no path
+  
+        ;; Check for correct YYYY/MM directory to place into & create if necessary
+        date_path = mvn_kp_date_subdir(file)
+        full_path = current_l2_dir + path_sep() + date_path
+        mvn_kp_create_dir_if_needed, full_path, /verbose
+        
+        ;; directory to download to
+        local_file = full_path + file
+        file_query = "file=" + file
+        
+        
+        result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
+        
+        ; Updated the download progress bar
+        MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message=instrument[inst_i]+' Download Progress'
+        ;count failures so we can report a 'partial' status
+        ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
+        if size(result, /type) eq 3 then nerrs = nerrs + 1
+      endfor
+      
+  
+      
+      ; Print amount of successful downloads and where they went
+      print, strtrim(string(nfiles-nerrs),2)+" total files successfully downloaded to: "+current_l2_dir
+      print, ""
+      
+      ; Print error message if any of the downloads failed.
+      if nerrs gt 0 then begin
+        msg = "WARN: " + strtrim(nerrs,2) + " out of " + strtrim(nfiles,2) + " file downloads failed."
+        printf, -2, msg
+        continue
+      endif
+    
     endif
-    
-    print, "Starting download..."
-    ; Download files one at a time.
-    nerrs = 0 ;count number of errors
-    for i = 0, nfiles-1 do begin
 
-      ;; Set filename and directory to download to
-      file = file_basename(filenames[i]) ;just the file name, no path
-      local_file = current_l2_dir + file
-      file_query = "file=" + file
-      
-      result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
-      
-      ; Updated the download progress bar
-      MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message=instrument[inst_i]+' Download Progress'
-      ;count failures so we can report a 'partial' status
-      ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
-      if size(result, /type) eq 3 then nerrs = nerrs + 1
-    endfor
-    
     ;; Clear out filenames for next pass through loop
     filenames = ''
-    
-    ; Print amount of successful downloads and where they went
-    print, strtrim(string(nfiles-nerrs),2)+" total files successfully downloaded to: "+current_l2_dir
-    print, ""
-    
-    ; Print error message if any of the downloads failed.
-    if nerrs gt 0 then begin
-      msg = "WARN: " + strtrim(nerrs,2) + " out of " + strtrim(nfiles,2) + " file downloads failed."
-      printf, -2, msg
-      continue
-    endif
-    
+
   endfor
 
   

@@ -250,14 +250,14 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     if keyword_set(text_files) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
     if keyword_set(text_files) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
     
-    ; Get list of all files currently downloaded
+    ; Get list of all files currently downloaded - recursive search to look through year/month subdirs
     if keyword_set(insitu) then begin 
-      local_files = file_basename(file_search(local_dir+path_sep()+insitu_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep(),insitu_pattern))
     endif
     if keyword_set(iuvs) then begin
-      local_files = file_basename(file_search(local_dir+path_sep()+iuvs_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep(),iuvs_pattern))
     endif
-        
+
     ; Get list of files on server (within a time span if entereted), that are not on local machine
     filenames = mvn_kp_relative_complement(local_files, filenames)
     
@@ -309,9 +309,14 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
 
-    ;TODO: flat or hierarchy? assume flat for now
     file = file_basename(filenames[i]) ;just the file name, no path
-    local_file = local_dir + path_sep() + file ;all in one directory (i.e. flat)
+    
+    ;; Check for correct YYYY/MM directory to place into & create if necessary
+    date_path = mvn_kp_date_subdir(file)
+    full_path = local_dir + path_sep() + date_path
+    mvn_kp_create_dir_if_needed, full_path, /verbose
+    
+    local_file = full_path + path_sep() + file
     file_query = "file=" + file
     result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
     
