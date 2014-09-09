@@ -104,20 +104,6 @@
 ;
 ;-
 
-@mvn_kp_file_search
-@mvn_kp_time_bounds
-@mvn_kp_loop_progress
-@mvn_kp_config_file
-@mvn_kp_config
-@mvn_kp_insitu_struct_init
-@mvn_kp_iuvs_struct_init
-@mvn_kp_insitu_assign
-@mvn_kp_iuvs_binary_assign
-@mvn_kp_read_insitu_file
-@mvn_kp_read_iuvs_file
-@mvn_kp_iuvs_cdf_read
-@mvn_kp_insitu_cdf_read
-
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $
                  debug=debug, duration=duration, text_files=text_files, save_files=save_files, $
@@ -398,6 +384,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;IF ORBIT(s) SUPPLIED 
   ;;============================
   if size(time, /type) eq 2 then begin
+    
+    ;;
+    ;; TEMP FIXME ONCE ORBIT FILES CREATED
+    ;;
+    ;;
+    message, "Orbit times currently not functional. This will we updated shortly after MOI when we have orbit -> time mappings"
+    
   
     ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
     if n_elements(time) eq 1 then begin
