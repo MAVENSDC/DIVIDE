@@ -15,12 +15,12 @@
 ;
 ; :Keywords:
 ;    list: in, optional, type=boolean
-;       List out possible tags names to search (& index identifiers associated with tags). No
+;       List out possible parameters names to search (& index identifiers associated with parameters). No
 ;       search performed. If no observation keyword supplied, will only list “common” variables 
 ;       (geometry values which exist in all observation modes). If observation keyword supplied, 
-;       will also list tags for that observation mode. 
+;       will also list parameters for that observation mode. 
 ;    
-;    tag: in, optional, type=intarr/strarr
+;    parameter: in, optional, type=intarr/strarr
 ;       Required if /list keyword not supplied. The name, or names, of the IUVS data parameter
 ;       (or integer index) to search on. Use /list keyword to see possible names or index integers
 ;       to search on.
@@ -29,24 +29,24 @@
 ;       Specify a specific observation to either list or search within.
 ;    
 ;    species: in, optional, type=string
-;       Specify a species to search. Only applicable if searching a tag which has multiple species 
+;       Specify a species to search. Only applicable if searching a parameter which has multiple species 
 ;       (CO2, CO, H, O, C, N, N2 for periapse scale_height)
 ;    
 ;    min: in, optional, type=fltarr
 ;       the minimum value of the parameter to be searched on (or array of values).
-;       One or more minimum values. If multiple tags input & multiple min values input, each min
-;       value will correspond with each tag (by array position). If multiple tags & one min value,
-;       the min value is used for all tags. Cannot enter more min values than tags.
+;       One or more minimum values. If multiple parameters input & multiple min values input, each min
+;       value will correspond with each parameter (by array position). If multiple parameters & one min value,
+;       the min value is used for all parameters. Cannot enter more min values than parameters.
 ;    
 ;    max: in, optional, type=fltarr
 ;       the maximum value of the parameter to be searced on (or array of values)
-;       One or more maximum values. If multiple tags input & multiple max values input, each max
-;       value will correspond with each tag (by array position). If multiple tags & one max value,
-;       the max value is used for all tags. Cannot enter more max values than tags.
+;       One or more maximum values. If multiple parameters input & multiple max values input, each max
+;       value will correspond with each parameter (by array position). If multiple parameters & one max value,
+;       the max value is used for all parameters. Cannot enter more max values than parameters.
 ;    
 ;    altitude: in, optional, type=fltarr(2)
 ;       Narrow down altitude bins to search within. Provide min/max as two item array. Only 
-;       applicable if searching for a tag that is binned by altitude (e.g. Periapse radiance values)
+;       applicable if searching for a parameter that is binned by altitude (e.g. Periapse radiance values)
 ;    
 ;    range: in, optional, type=boolean
 ;       Print out orbit number for first and last element of input data structure.
@@ -66,7 +66,7 @@
 ;    the search criteria, that orbit will be considered a match. All observation modes are kept and 
 ;    stored in the iuvs_out data structure for that matching orbit, even if only one observation mode 
 ;    had the common geometry value match the criteria. To see which observation mode matched the common 
-;    search, a new structure tag is added at the top level of the iuvs_out data structure 'MATCHING_OBS' 
+;    search, a new structure parameter is added at the top level of the iuvs_out data structure 'MATCHING_OBS' 
 ;    with a string containing which observation modes matched the common search criteria. If an observation 
 ;    is sepcified (using the observation keyword), any common gemoetry value is still searched across all 
 ;    observation modes - not just the observation mode that was specified. If you want to search for a 
@@ -731,7 +731,7 @@ function MVN_KP_IUVS_SEARCH_MEASUREMENTS, observation, observation_name, measure
 end
 
 
-pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observation=observation, $
+pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, parameter=parameter, species=species, observation=observation, $
                           min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude, help=help
                           
 
@@ -740,7 +740,7 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observatio
     print,'MVN_KP_IUVS_SEARCH'
     print,'  Searches input iuvs KP data structure based on min and/or max search parameters.'
     print,''
-    print,'mvn_kp_iuvs_search, iuvs_in, iuvs_out, tag=tag, species=species, observation=observation, $'
+    print,'mvn_kp_iuvs_search, iuvs_in, iuvs_out, parameter=parameter, species=species, observation=observation, $'
     print,'                    min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude, help=help
     print,''
     print,'REQUIRED FIELDS'
@@ -750,28 +750,28 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observatio
     print,''
     print,'OPTIONAL FIELDS'
     print,'***************'
-    print,'  tag: Required if /list keyword not supplied. The name, or names, of the IUVS data parameter'
+    print,'  parameter: Required if /list keyword not supplied. The name, or names, of the IUVS data parameter'
     print,'       (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
-    print,'  species:Specify a species to search. Only applicable if searching a tag which has multiple species '
+    print,'  species:Specify a species to search. Only applicable if searching a parameter which has multiple species '
     print,'          (CO2, CO, H, O, C, N, N2 for periapse scale_height)'
     print,'  observation: Specify a specific observation to either list or search within.
-    print,'  list: List out possible tags names to search (& index identifiers associated with tags). No search performed.'
-    print,'        tag: Required if /list keyword not supplied. The name, or names, of the INSITU data parameter'
+    print,'  list: List out possible parameters names to search (& index identifiers associated with parameters). No search performed.'
+    print,'        parameter: Required if /list keyword not supplied. The name, or names, of the INSITU data parameter'
     print,'        (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
     print,'  min: the minimum value of the parameter to be searched on (or array of values).'
-    print,'       One or more minimum values. If multiple tags input & multiple min values input, each min'
-    print,'       value will correspond with each tag (by array position). If multiple tags & one min value,'
-    print,'       the min value is used for all tags. Cannot enter more min values than tags.'
+    print,'       One or more minimum values. If multiple parameters input & multiple min values input, each min'
+    print,'       value will correspond with each parameter (by array position). If multiple parameters & one min value,'
+    print,'       the min value is used for all parameters. Cannot enter more min values than parameters.'
     print,'  max: the maximum value of the parameter to be searced on (or array of values)'
-    print,'       One or more maximum values. If multiple tags input & multiple max values input, each max'
-    print,'       value will correspond with each tag (by array position). If multiple tags & one max value,'
-    print,'       the max value is used for all tags. Cannot enter more max values than tags.'
+    print,'       One or more maximum values. If multiple parameters input & multiple max values input, each max'
+    print,'       value will correspond with each parameter (by array position). If multiple parameters & one max value,'
+    print,'       the max value is used for all parameters. Cannot enter more max values than parameters.'
     print,'  range: Print out TIME_STRING for first and last element of input data structure. Also prints corresponding orbit numbers.'
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print'
     print,'         the current program stack." If not specified, error message will be printed and'
     print,'         IDL with return to main program level and stop.'
     print,'  altitude: Narrow down altitude bins to search within. Provide min/max as two item array. Only '
-    print,'            applicable if searching for a tag that is binned by altitude (e.g. Periapse radiance values)'
+    print,'            applicable if searching for a parameter that is binned by altitude (e.g. Periapse radiance values)'
     print,'  help: Invoke this list.'
     return
   endif                          
@@ -888,7 +888,7 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observatio
       MVN_KP_IUVS_TAG_LIST_MODE, kp_data_obs, kp_data_str
     endif 
     
-    if keyword_set(tag) or keyword_set(species) or keyword_set(min) or $
+    if keyword_set(parameter) or keyword_set(species) or keyword_set(min) or $
        keyword_set(max) or keyword_set(min) or keyword_set(max) then begin
         print, "NOTE: /LIST keyword entered. No searching done when /LIST keyword present, only a listing of variables to search on"
     end
@@ -906,62 +906,62 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observatio
     return
   endif
  
-  ;; Only proceed if tag specified
-  if not keyword_set(tag) then begin
-    message, "Must input TAG paramater to search"
+  ;; Only proceed if parameter specified
+  if not keyword_set(parameter) then begin
+    message, "Must input parameter to search"
   endif
   
 
   ;IF THE MINIMUM VALUE KEYWORD IS NOT SET, THEN ASSUME IT TO BE -INFINITY
   if keyword_set(min_value) eq 0 then begin             
-    if size(tag,/dimensions) eq 0 then begin
+    if size(parameter,/dimensions) eq 0 then begin
       min_value = -!values.f_infinity
     endif else begin
-      min_value = fltarr(n_elements(tag))
+      min_value = fltarr(n_elements(parameter))
       min_value[*] = -!values.f_infinity
     endelse
   endif
 
   ;IF THE MAXIMUM VALUE KEYWORD IS NOT SET, THEN ASSUME IT TO BE INFINITY
   if keyword_set(max_value) eq 0 then begin            
-    if size(tag,/dimensions) eq 0 then begin
+    if size(parameter,/dimensions) eq 0 then begin
       max_value = !values.f_infinity
     endif else begin
-      max_value = fltarr(n_elements(tag))
+      max_value = fltarr(n_elements(parameter))
       max_value[*] = !values.f_infinity
     endelse
   endif
   
-  ;; If multiple tags input, check that correct number of min/max values present. If multiple tags
-  ;; and only one min and/or max, use that min/max for all tags. If the number doesn't match
+  ;; If multiple parameters input, check that correct number of min/max values present. If multiple parameters
+  ;; and only one min and/or max, use that min/max for all parameters. If the number doesn't match
   ;; error out - don't know how to interpret that.
-  if (n_elements(tag) ne n_elements(min_value)) then begin
+  if (n_elements(parameter) ne n_elements(min_value)) then begin
     if(n_elements(min_value) eq 1) then begin
-      min_value = make_array(n_elements(tag), value=min_value)
+      min_value = make_array(n_elements(parameter), value=min_value)
     endif else begin
-      message, "If input multiple tags, number of minimum values input must be either 1 or equal to number of tags"
+      message, "If input multiple parameters, number of minimum values input must be either 1 or equal to number of parameters"
     endelse
   endif
   
-  if (n_elements(tag) ne n_elements(max_value)) then begin
+  if (n_elements(parameter) ne n_elements(max_value)) then begin
     if(n_elements(max_value) eq 1) then begin
-      max_value = make_array(n_elements(tag), value=max_value)
+      max_value = make_array(n_elements(parameter), value=max_value)
     endif else begin
-      message, "If input multiple tags, number of maximum values input must be either 1 or equal to number of tags"
+      message, "If input multiple parameters, number of maximum values input must be either 1 or equal to number of parameters"
     endelse
   endif
 
 
-  ;; Loop through all input tags and search for each
+  ;; Loop through all input parameters and search for each
   meets_criteria = [-1]
   kp_data_temp = iuvs_in
   
-  for i=0, n_elements(tag)-1 do begin
+  for i=0, n_elements(parameter)-1 do begin
 
-    ;; Find out if common tag and level1 index if applicable
-    mvn_kp_iuvs_tag_parser, iuvs_in, tag[i], common_tag, level1_index, observation = kp_data_obs, species=species, index_species=index_species
+    ;; Find out if common parameter and level1 index if applicable
+    mvn_kp_iuvs_tag_parser, iuvs_in, parameter[i], common_tag, level1_index, observation = kp_data_obs, species=species, index_species=index_species
     
-    ;; If common value/tag
+    ;; If common value/parameter
     if common_tag then begin
       meets_criteria = MVN_KP_IUVS_SEARCH_COMMON(kp_data_temp, level1_index, min_value[i], max_value[i])
     
@@ -974,7 +974,7 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, tag=tag, species=species, observatio
     ;; Observation specific search
     endif else begin
       
-      if not keyword_set(observation) then message, "If searching observation specific tag, must specify which observation"
+      if not keyword_set(observation) then message, "If searching observation specific parameter, must specify which observation"
       meets_criteria = MVN_KP_IUVS_SEARCH_MEASUREMENTS(kp_data_temp.(kp_data_obs_index[0]), observation_name, level1_index, index_species, min=min_value[i], max=max_value[i], altitude=altitude)
       
       

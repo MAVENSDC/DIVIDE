@@ -8,13 +8,11 @@
 ;       Run tests on MVN_KP_INSITU_SEARCH
 ;-
 
- @mvn_kp_read
- @mvn_kp_insitu_search
  
 
 PRO MVN_KP_REGRESSION_TEST, CDF=CDF, save_files=save_files, INSITU_SEARCH=INSITU_SEARCH, ASCII=ASCII, $
                      COMPAREINSITU=COMPAREINSITU, COMPAREIUVS=COMPAREIUVS, CREATE_TEST_SAVE=CREATE_TEST_SAVE, $
-                     COMPARE_TEST_SAVE=COMPARE_TEST_SAVE
+                     COMPARE_TEST_SAVE=COMPARE_TEST_SAVE, IUVS_SEARCH=IUVS_SEARCH
 
 ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
  
@@ -22,9 +20,10 @@ ON_ERROR, 1   ; PRINT STACK AND RETURN TO MAIN
 ; Default if no arguments passed
 if n_params() eq 0 then begin
  ; save_files="TRUE"
-  CDF="TRUE"
-  INSITU_SEARCH="TRUE"
-  ASCII="TRUE"
+ ;CDF="TRUE"
+ ; INSITU_SEARCH="TRUE"
+  IUVS_SEARCH="TRUE"
+ ; ASCII="TRUE"
  ; COMPAREINSITU="TRUE"
  ; COMPAREIUVS="TRUE"
  
@@ -424,46 +423,81 @@ if keyword_set(INSITU_SEARCH) then begin
   cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,/list"]
   
   ;; Test searching based on tag number with min
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=185,min=1000"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=18,max=5"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=140,min=2, max=10"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=50,max=3"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=185,min=1000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=18,max=5"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=140,min=2, max=10"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=50,max=3"]
 
 
   ;; Test searching based on a tage number with with min & max 
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=185,min=1000, max=5000"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=205,min=-.1, max=.5"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=185,min=1000, max=5000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=205,min=-.1, max=.5"]
   
   ;; Test searching with tag string and max
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='SPACECRAFT.ALTITUDE', max=5000"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.CO2PLUS_DENSITY', max=1"]      ;;;;
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='LPW.ELECTRON_DENSITY', max=1"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='LPW.ELECTRON_DENSITY', max=2"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='NGIMS.HE_DENSITY', min=1"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='STATIC.HPLUS_CHAR_DIR_MSOX', min=1, max=5"]      ;;;
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='APP.ATTITUDE_GEO_X', max=1000"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag='spacecraft.t21', min=-1, max=1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='SPACECRAFT.ALTITUDE', max=5000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='STATIC.CO2PLUS_DENSITY', max=1"]      ;;;;
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='LPW.ELECTRON_DENSITY', max=1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='LPW.ELECTRON_DENSITY', max=2"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='NGIMS.HE_DENSITY', min=1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='STATIC.HPLUS_CHAR_DIR_MSOX', min=1, max=5"]      ;;;
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='APP.ATTITUDE_GEO_X', max=1000"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter='spacecraft.t21', min=-1, max=1"]
   
   
   ;; Test searching for multiple tags
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[1, 73] ,min=[-1,5], max=[4000,5000]"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=['NGIMS.NPLUS_DENSITY', 'SPACECRAFT.SZA', 'SEP.ION_ENERGY_FLUX_2_FRONT'] ,min=[-1,5,-1], max=[4000,5000, 1000]"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[185, 186,190], min=[-1,-1,-4], max=10"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[10, 12,40, 50], min=-1"]
-  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,tag=[9, 21,191], min=[-1,-1,-4], max=[10,20,30]"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=[1, 73] ,min=[-1,5], max=[4000,5000]"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=['NGIMS.NPLUS_DENSITY', 'SPACECRAFT.SZA', 'SEP.ION_ENERGY_FLUX_2_FRONT'] ,min=[-1,5,-1], max=[4000,5000, 1000]"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=[185, 186,190], min=[-1,-1,-4], max=10"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=[10, 12,40, 50], min=-1"]
+  cmd_list = [cmd_list, "mvn_kp_insitu_search,insitu,insitu1,parameter=[9, 21,191], min=[-1,-1,-4], max=[10,20,30]"]
   
   ;; Commands that should fail
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[185, 186,190], min=[-1,-1], max=10"]
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[10, 12,40, 50], max=[5,6,7,8,9]"]
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=[9, 21,191], min=[-1,-1,-4], max=[10,20]"]
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag='SPACECRAFT.MADEUP', max=1"]
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=400, max=1"]
-  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,tag=-1, max=1"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter=[185, 186,190], min=[-1,-1], max=10"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter=[10, 12,40, 50], max=[5,6,7,8,9]"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter=[9, 21,191], min=[-1,-1,-4], max=[10,20]"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter='SPACECRAFT.MADEUP', max=1"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter=400, max=1"]
+  cmd_list_prob = [cmd_list_prob, "mvn_kp_insitu_search,insitu,insitu1,parameter=-1, max=1"]
 
 
   
 endif
 
+;; ------------------------------------------------------------------------------------ ;;
+;; ----------------------------- Test MVN_KP_IUVS_SEARCH ---------------------------- ;;
+
+if keyword_set(IUVS_SEARCH) then begin
+
+  ;; read in two days worth of data and all instruments to do below testing
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-19/00:00:00', '2015-04-24/00:00:00'] , insitu, iuvs"]  ;; FIXME - using save files for now
+  
+  
+  ;; Test search of insitu with /list option
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, /list"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, observation='periapse', /list"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, observation='CoronaEchelleHigh', /list"]
+  
+  
+  
+  ;; Test searching
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, iuvs_out, parameter = 'SPACECRAFT_ALTITUDE', min =5590"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, observation='CoronaLoresLimb', /list"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, iuvs_out, observation='CoronaLoresLimb', parameter='DENSITY', species='CO2', min=1490000000"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, iuvs_out, observation='CoronaLoresLimb', parameter=[27, 19], species='CO2', min=[1490000000,-!values.f_infinity], max = [!values.d_infinity, 120]"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-19/00:00:00', '2015-04-24/00:00:00'] , insitu, iuvs, /iuvs_coronaLoresLimb"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, iuvs_out, observation='CoronaLoresLimb', parameter=[27, 19], species='CO2', min=[1490000000,-!values.f_infinity], max = [!values.d_infinity, 120]"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, observation='CoronaLoresLimb', /list"]
+  cmd_list = [cmd_list, "mvn_kp_iuvs_search, iuvs, iuvs_out, observation='CoronaLoresLimb', parameter='DENSITY', species='CO2', min=515000000, altitude=[120,220]"]
+  cmd_list = [cmd_list, ""]
+ 
+  
+  ;; Commands that should fail
+  ;cmd_list_prob = [cmd_list_prob, ""]
+
+  
+  
+  
+endif
 
 ;; Remove 'hack' first entry from all arrays - IDL 7 cannot
 ;; have empty arrays init.
