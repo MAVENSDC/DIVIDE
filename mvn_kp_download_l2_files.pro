@@ -291,7 +291,9 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     
       endif
       
-
+      ;; Sort the filenames
+      filenames = filenames[sort(filenames)]
+      
       ;; If LIST_FILES option, then just print out the file list (and save to list_files)
       ; Don't actually download
       if keyword_set(list_files) then begin

@@ -263,6 +263,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     
   endif
   
+  ;; Sort the filenames
+  filenames = filenames[sort(filenames)]
   
   ;; If LIST_FILES option, then just print out the file list (and save to list_files) 
   ; Don't actually download
@@ -289,10 +291,26 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     return
   endif
   
+  ;; Estimate total size of files to download
+  if keyword_set(insitu) then begin
+    if keyword_set(text_files) then begin
+      estimate_size = nfiles * 38   ;; Roughly 38 MB per ASCII ile
+    endif else begin
+      estimate_size = nfiles * 19   ;; Roughing 19 MB per CDF File
+    endelse
+  endif else begin
+    if keyword_set(text_files) then begin
+      estimate_size = nfiles * 1.0  ;; Roughly 1 MB per ASCII file
+    endif else begin
+      estimate_size = nfiles * .684 ;; Roughly 684 kB per CDF File
+    endelse
+  endelse
+    
+    
   ; Prompt user to ensure they want to download nfiles amount of files
   while(1) do begin 
     response = ''
-    print, "Your request will download a total of: " +string(nfiles) +" files."
+    print, "Your request will download a total of: " +strtrim(string(nfiles),2) +" files with an approx total size of: "+strtrim(string(estimate_size),2)+" MBs."
     if (nfiles gt max_files) then print, "NOTE - This is a large number of files and may take a long time to download"
     print, "Would you like to proceed with this download:"
     read, response, PROMPT='(y/n) >'
