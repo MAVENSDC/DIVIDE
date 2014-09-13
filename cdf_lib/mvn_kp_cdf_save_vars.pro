@@ -1,5 +1,8 @@
 ;+
-; FUNCTION: dummy = cdf_save_vars(cdf_structure,new_cdf_name)
+; This function was modified from "cdf_save_vars" as provided by the SSL at Berkeley.
+; 
+; 
+; FUNCTION: dummy = mvn_kp_cdf_save_vars(cdf_structure,new_cdf_name)
 ; PURPOSE:  To dump data and metadata from an IDL structure into a CDF file.
 ;   The structure format is the structure produced by cdf_load_vars.pro
 ; INPUTS:   cdf_structure : IDL structure defined by cdf_load_vars.pro
@@ -8,6 +11,7 @@
 ; EXAMPLE:  dummy = cdf_save_vars(cdfi,'newcdf.cdf')
 ;
 ; Written by: Matt Davis
+; Modified by: John Martin
 ;
 ;Note: To use this routine you must have the CDF_EPOCH/CDF_EPOCH16 bug patch on your IDL6.3
 ;and if you are using Solaris you need to be in 32-bit mode NOT 64-bit (ie, idl -32)
