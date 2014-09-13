@@ -194,9 +194,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif
 
 
-
-  
-  overall_start_time = systime(1)
   
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -227,7 +224,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
   ;; Read from and/or update preferences file 
   if keyword_set(only_update_prefs) then begin
-    MVN_KP_CONFIG_FILE, /update_prefs, insitu_only=insitu_only
+    out = mvn_kp_config_file(/update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
     if keyword_set(time) or keyword_set(insitu) or keyword_set(iuvs) then begin
@@ -240,8 +237,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif else begin
 
     ;; Read or create preferences file 
-    MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, $
-      update_prefs=update_prefs, insitu_only=insitu_only
+    mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
+    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
+    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()  
   endelse
     
 
@@ -486,7 +484,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;; ----------------------- Main read loop: In situ data    ---------------------------- ;;
   
   
-
+  overall_start_time = systime(1)
+  
   if target_kp_filenames[0] ne 'None' then begin
     totalEntries=0L
     start_index=0L

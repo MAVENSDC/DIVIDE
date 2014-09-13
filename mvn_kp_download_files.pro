@@ -60,6 +60,9 @@
 ;    help: in, optional, type=boolean
 ;       Prints keyword descriptions to screen.
 ;
+;
+;   Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR
+;
 ;   Credit to Doug Lindholm for initial version of this procedure. 
 ;-
 
@@ -99,6 +102,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
+    print, ''
+    print, ''
+    print, 'Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR'
+    print, ''
     print,'  help: Invoke this list.'
     return
   endif
@@ -133,7 +140,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   
   
   if keyword_set(only_update_prefs) then begin
-    MVN_KP_CONFIG_FILE, /update_prefs
+    out = mvn_kp_config_file(/update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
     if keyword_set(filenames) or keyword_set(cdf_files) or keyword_set(text_files) then begin
@@ -203,9 +210,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   ; If local_dir not specified, check config file for insitu & iuvs dir.            
   if (n_elements(local_dir) eq 0) and ( (not keyword_set(list_files)) or keyword_set(new_files) or keyword_set(update_prefs)) then begin
     ; Check config file for directories to data
-    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
-                        update_prefs=update_prefs
-                        
+    mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
+    
+    insitu_data_dir = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
+    iuvs_data_dir   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()                    
 
     if keyword_set(insitu) then begin 
       local_dir = insitu_data_dir
@@ -234,7 +242,6 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
       return
     endif
   endif
-  
   
   
   ; If user supplied NEW_FILES option, determine which files they have locally
@@ -332,17 +339,28 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     ;; Check for correct YYYY/MM directory to place into & create if necessary
     date_path = mvn_kp_date_subdir(file)
     full_path = local_dir + path_sep() + date_path
-    mvn_kp_create_dir_if_needed, full_path, /verbose
+    mvn_kp_create_dir_if_needed, full_path, /verbose, /open_permissions
     
     local_file = full_path + path_sep() + file
     file_query = "file=" + file
+    
     result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
     
     ; Updated the download progress bar
     MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
+
     ;count failures so we can report a 'partial' status
     ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
-    if size(result, /type) eq 3 then nerrs = nerrs + 1
+    if size(result, /type) eq 3 then begin
+      nerrs = nerrs + 1
+      ;; Check if file exists, and if so delete it - it is corrupt or doesn't contain
+      ;; the correct data
+      file_delete, local_file, /ALLOW_NONEXISTENT
+    endif else begin
+      ;; Change permisions of file to all open
+      file_chmod, local_file, /A_EXECUTE, /A_READ, /A_WRITE
+    endelse
+    
   endfor
 
   ; Print error message if any of the downloads failed.

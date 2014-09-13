@@ -28,13 +28,27 @@ pro mvn_kp_create_dir_if_needed, full_path, open_permissions=open_permissions, v
   
   ;; If direcotory(s) dooesn't exist, try to create and set permissions
   if result eq '' then begin
-    file_mkdir, full_path
-    if keyword_set(verbose) then print, "Creating directory: "+string(full_path)
     
-    ;; If /open_permissions, then set directory permissions to 777
-    if keyword_set(open_permissions) then begin
-      file_chmod, full_path, /A_EXECUTE, /A_READ, /A_WRITE
-    endif
+    if not keyword_set(open_permissions) then begin
+      file_mkdir, full_path
+
+    endif else begin    
+      ;; If /open_permissions, then loop through and create each directory needed
+      ;; and set the permissions to 777
+      subdirs = strsplit(full_path,path_sep(),/extract,count=n)
+      partial_path = ''
+      for i=0,n-1 do begin
+        ;; Build up path as we go
+        partial_path = partial_path+path_sep()+subdirs[i]      
+
+        if not file_test(/direc, partial_path) then begin
+          file_mkdir, partial_path
+          file_chmod, partial_path, /A_EXECUTE, /A_READ, /A_WRITE
+          endif
+      endfor     
+    endelse
+    
+    if keyword_set(verbose) then print, "Creating directory: "+string(full_path)
   endif
   
 end
