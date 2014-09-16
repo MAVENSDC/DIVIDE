@@ -168,7 +168,7 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
   if keyword_set(message) then begin
     message = {source: message}
   endif else begin
-    message = {source: 'Created from KP Data'}
+    message = {source: 'Created from MAVEN KP Data'}
   endelse
 
 ;SET DEFAULTS COLORS TO BLACK ON WHITE
@@ -193,6 +193,15 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
           endfor
         endif
       
+      ;PULL ALL TEH EUV DATA FIELDS 
+        if keyword_set(euv) then begin
+          x1 = where(base_tags eq 'EUV')
+          for i=1,first_level_count[x1[0]] do begin
+            temp_parameters[temp_index] = total(first_level_count[0:x1-1])+i
+            temp_index=temp_index+1
+          endfor
+        endif
+   
       ;PULL ALL THE STATIC DATA FIELDS
         if keyword_set(static) then begin
           x1 = where(base_tags eq 'STATIC')

@@ -69,7 +69,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, profiles=prof
     print,'  profiles : an array listing the orbits to be plotted 
     print,'  den_species : an array listing the density measurements of particular species to be plotted 
     print,'  rad_species : an array listing the radiance measurements of particular species to be plotted 
-    print,'  legends : either VERTICAL or HORIZONTAL, defining the orientation of the legend.
+    print,'  legend : either VERTICAL or HORIZONTAL, defining the orientation of the legend.
     print,'  linear : optional keyword to make plots on a linear scale, instead of the logarithmic default
     print,'  species_expand: if this keyword is selected, then all the species for a given orbit will be plotted on a single graph
     print,'  profile_expand: if this keyword is selected, then all the orbits will be combined into a single plot for comparison purposes

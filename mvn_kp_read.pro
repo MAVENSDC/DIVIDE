@@ -190,7 +190,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     print,'  insitu_all: return all in situ data. This keyword is necessary if an IUVS observation mode keyword
     print,'              is specified and you want to still read in all in situ data. If no in situ instrument 
     print,'              or IUVS observation keyword specified, default behavior is to read in all in situ data. 
-;       
     print,'  iuvs_periapse: return all of the IUVS PERIAPSE limb scan data 
     print,'  iuvs_apoapse: return all of the IUVS APOAPSE data 
     print,'  iuvs_coronaEchellehigh: return all of the IUVS Corona Echelle high altitude data 

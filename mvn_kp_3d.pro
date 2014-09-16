@@ -188,7 +188,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
    
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
-     instrument_array = intarr(18)     ;flags to indicate if a given instrumnet data is present
+     instrument_array = intarr(19)     ;flags to indicate if a given instrumnet data is present
      
      tags=tag_names(insitu1)
      temp = where(tags eq 'LPW')
@@ -205,6 +205,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
      if temp ne -1 then instrument_array[5] = 1
      temp = where(tags eq 'NGIMS')
      if temp ne -1 then instrument_array[6] = 1
+     temp = where(tags eq 'EUV') 
+     if temp ne -1 then instrument_array[18] = 1
 
      if keyword_set(iuvs) then begin
       instrument_array[7] = 1
@@ -450,7 +452,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
           widget_control,button1, /set_button                  
           button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                  
           button1 = widget_button(basemapbase, value='MOLA_BW',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                  
-          button1 = widget_button(basemapbase, value='MAG',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)
+          button1 = widget_button(basemapbase, value='CRUSTAL MAG',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)
           button1 = widget_button(basemapbase, value='BLANK',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release) 
           button1 = widget_button(basemapbase, value='User Defined',uname='basemap1',xsize=scale_factor*300,ysize=scale_factor*30, /no_release)                                          
 ;      ;LABEL OPTIONS
@@ -578,7 +580,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
             vert_align = 15
             if instrument_array[0] eq 1 then begin
               lpw_list = tag_names(insitu1.lpw)
-              drop1=widget_droplist(subbaseR7a, value=lpw_list, uname='lpw_list',title='LPW',frame=5, yoffset=vert_alignf)
+              drop1=widget_droplist(subbaseR7a, value=lpw_list, uname='lpw_list',title='LPW',frame=5, yoffset=vert_align)
+              vert_align = vert_align + 15
+            endif
+            if instrument_array[18] eq 1 then begin
+              euv_list = tag_names(insitu1.euv)
+              drop1=widget_droplist(subbaseR7a, value=euv_list, uname='euv_list',title='EUV',frame=5, yoffset=vert_align)
               vert_align = vert_align + 15
             endif
             if instrument_array[1] eq 1 then begin
@@ -639,7 +646,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
         ;insitu1 VECTOR DATA MENU
           subbaseR10 = widget_base(subbaseR, /column)
             
-                 button10 = widget_button(subbaseR10, value='Vector Plots', uname='vector_display',xsize=scale_factor*300,ysize=scale_factor*30)
+                 button10 = widget_button(subbaseR10, value='Display Vector Data', uname='vector_display',xsize=scale_factor*300,ysize=scale_factor*30)
                  subbaseR10a = widget_base(subbaseR10, /column)
                   subbaseR10b = widget_base(subbaseR10a, /column,/frame)
                     vector_list = strarr(9)
@@ -683,7 +690,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                       vert_align = 15
                       if instrument_array[0] eq 1 then begin
                         lpw_list = tag_names(insitu1.lpw)
-                        drop1=widget_droplist(subbaseR10c, value=lpw_list, uname='lpw_list_vec',title='LPW',frame=5, yoffset=vert_alignf)
+                        drop1=widget_droplist(subbaseR10c, value=lpw_list, uname='lpw_list_vec',title='LPW',frame=5, yoffset=vert_align)
+                        vert_align = vert_align + 15
+                      endif
+                      if instrument_array[18] eq 1 then begin
+                        euv_list = tag_names(insitu1.euv)
+                        drop1=widget_droplist(subbaseR10c, value=euv_list, uname='euv_list_vec', title='EUV', frame=5, yoffset=vert_align)
                         vert_align = vert_align + 15
                       endif
                       if instrument_array[1] eq 1 then begin
@@ -721,17 +733,17 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                    subbaseR10d = widget_base(subbaseR10, /column,/frame)
                      label10 = widget_label(subbaseR10d, value='Vector Magnitude Color Method',/align_center)
                       subbaseR10e = widget_base(subbaseR10d, /row,/exclusive)
-                        button10 = widget_button(subbaseR10e, value='All', uname='vector_color_method',/no_release)
-                        widget_control,button10,/set_button
+                        button10a = widget_button(subbaseR10e, value='All', uname='vector_color_method',/no_release)
+                        widget_control,button10a,/set_button
                         vector_color_method = 0
-                        button10 = widget_button(subbaseR10e, value='Proximity', uname='vector_color_method',/no_release)
+                        button10b = widget_button(subbaseR10e, value='Proximity', uname='vector_color_method',/no_release)
                       widget_control,subbaseR10d,sensitive=0
                    
                    if keyword_set(whiskers) ne 1 then widget_control,subbaseR10a, sensitive=0
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10c, sensitive=0
                    if keyword_set(whiskers) ne 1 then widget_control, subbaseR10d, sensitive=0
                        
-              button10 = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=scale_factor*300,ysize=scale_factor*30)
+              button1c = widget_button(subbaseR10, value='Return',uname='insitu_vector_return',xsize=scale_factor*300,ysize=scale_factor*30)
 
 
         ;IUVS MENU
@@ -900,7 +912,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                     mars_base_map = 'mola_bw'
                    end
         'mag': begin
-                read_jpeg,bm_install_directory+'Mars_Crustal_Magnetism_MGS.jpg',image
+                read_jpeg,bm_install_directory+'MAG_Connerny_2005.jpg',image
                 mars_base_map = 'mag'
                end
         else: begin
@@ -1317,7 +1329,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
       plottedNameModel->add,plotText1 
       plottedNameModel->add,plotText2
       view->add,plottedNameModel
-      plottedNameModel->setproperty,hide=1
+      plottedNameModel->setproperty,hide=0
       if keyword_set(plotname) then plottedNameModel->setproperty,hide=0
       
     ;CREATE A COLORBAR FOR THE ALONG TRACK PLOTS
@@ -1954,7 +1966,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
                  button41a: button41a, button41b: button41b, button41c: button41c, button42a: button42a, button42b: button42b, $
                  button42c: button42c, button43a: button43a, button43b: button43b, button43c: button43c, button44a: button44a, $
                  button44b: button44b, button44c: button44c, button45a: button45a, button45b: button45b, button45c: button45c, $
-                 button46a: button46a, button46b: button46b, button46c: button46c, button9a:button9a, button9b:button9b, $
+                 button46a: button46a, button46b: button46b, button46c: button46c, button9a:button9a, button9b:button9b, button10:button10,  $
                  window: window, $
                  draw: draw, $
                  backgroundcolor: backgroundcolor, $

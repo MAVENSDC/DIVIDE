@@ -285,14 +285,14 @@ pro MVN_KP_STANDARDS, kp_data, $
     euv_v= findgen(3)*(255./3.)
     euv_labels = ['Low','Mid','Lyman-Alpha']
     
-    t1 = where(base_tags eq 'LPW')
+    t1 = where(base_tags eq 'EUV')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EUV_IRRADIANCE_LOW')
-        if t2 ne -1 then euv_data[*,0] = kp_data[kp_start_index:kp_end_index].lpw.euv_irradiance_low
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EUV_IRRADIANCE_MID')
-        if t2 ne -1 then euv_data[*,1] = kp_data[kp_start_index:kp_end_index].lpw.euv_irradiance_mid
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EUV_IRRADIANCE_LYMAN')
-        if t2 ne -1 then euv_data[*,2] = kp_data[kp_start_index:kp_end_index].lpw.euv_irradiance_lyman
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_LOW')
+        if t2 ne -1 then euv_data[*,0] = kp_data[kp_start_index:kp_end_index].euv.irradiance_low
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_MID')
+        if t2 ne -1 then euv_data[*,1] = kp_data[kp_start_index:kp_end_index].euv.irradiance_mid
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_LYMAN')
+        if t2 ne -1 then euv_data[*,2] = kp_data[kp_start_index:kp_end_index].euv.irradiance_lyman
       store_data,'EUV',data={x:kp_data[kp_start_index:kp_end_index].time, y:euv_data, v:euv_v}, dlim={labels:euv_labels},verbose=0
       options,'EUV','labflag',-1
       

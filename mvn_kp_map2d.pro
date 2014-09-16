@@ -153,6 +153,9 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
     print,'OPTIONAL FIELDS'
     print,'***************'
     print,'  Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
+    print,'  iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.'
+    print,'  time:
+    print,'  orbit
     print,'  list: if selected, will list the KP data fields included in kp_data.
     print,'  range: if selected, will list the beginning and end times of kp_data.
     print,'  nopath:  This will suppress the display of the spacecraft orbital track projection.
@@ -336,28 +339,28 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
        read_jpeg,mapimage,mapimage
        map_limit = [-90,0,90,360]
        map_location = [0,-90]
-       map_projection  = 'equrectangular'
+       map_projection  = 'Equirectangular'
      endif
      if basemap eq 'mola' then begin
        mapimage = FILEPATH('MOLA_color_2500x1250.jpg',root_dir=install_directory)  
        read_jpeg,mapimage,mapimage
        map_limit = [-90,-0,90,360]
        map_location = [-180,-90]
-       map_projection  = 'equrectangular'
+       map_projection  = 'Equirectangular'
      endif 
      if basemap eq 'mola_bw' then begin
        mapimage = FILEPATH('MOLA_BW_2500x1250.jpg',root_dir=install_directory) 
        read_jpeg,mapimage,mapimage 
        map_limit = [-90,0,90,360]
        map_location = [-180,-90]
-       map_projection  = 'equrectangular'
+       map_projection  = 'Equirectangular'
      endif 
      if basemap eq 'mag' then begin
-       mapimage = FILEPATH('Mars_Crustal_Magnetism_MGS.jpg',root_dir=install_directory)
+       mapimage = FILEPATH('MAG_Connerny_2005.jpg',root_dir=install_directory)
        read_jpeg,mapimage,mapimage
        map_limit = [-90,0,90,360]
        map_location = [0,-90]      
-       map_projection  = 'equrectangular'
+       map_projection  = 'Equirectangular'
      endif
      if basemap eq 'dust' then begin
       tag_check = tag_names(iuvs.apoapse)
@@ -505,7 +508,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
           map_location = [-180,-90]
         endif
         if keyword_set(map_projection) eq 0 then begin
-          map_projection  = 'equrectangular'
+          map_projection  = 'Equirectangular'
         endif
      endif
       if keyword_set(direct) eq 0 then begin
@@ -518,7 +521,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, axis_style=2,LIMIT=[-90,-180,90,180], GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], IMAGE_DIMENSIONS=[360,180],$
-                  map_projection  = 'equrectangular',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
+                  map_projection  = 'Equirectangular',margin=0,window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
         plot_color = "Black"
       endif    
      endelse
@@ -538,7 +541,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)  
       if keyword_set(direct) eq 0 then begin
         i = image(mapimage, position=[.15,.1,.85,.9],image_dimensions=[360,180],window_title="MAVEN Orbital Path",/nodata,transparency=alpha)
-        mp = map('equirectangular', limit = map_limit, /box_axes, position=[.15,.1,.85,.9],/current)
+        mp = map('Equirectangular', limit = map_limit, /box_axes, position=[.15,.1,.85,.9],/current)
         mp.limit = [-90,-180,90,180]
         plot_color = "Black"
       endif
