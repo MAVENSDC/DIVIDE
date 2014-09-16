@@ -104,20 +104,6 @@
 ;
 ;-
 
-@mvn_kp_file_search
-@mvn_kp_time_bounds
-@mvn_kp_loop_progress
-@mvn_kp_config_file
-@mvn_kp_config
-@mvn_kp_insitu_struct_init
-@mvn_kp_iuvs_struct_init
-@mvn_kp_insitu_assign
-@mvn_kp_iuvs_binary_assign
-@mvn_kp_read_insitu_file
-@mvn_kp_read_iuvs_file
-@mvn_kp_iuvs_cdf_read
-@mvn_kp_insitu_cdf_read
-
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $
                  debug=debug, duration=duration, text_files=text_files, save_files=save_files, $
@@ -207,9 +193,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif
 
 
-
-  
-  overall_start_time = systime(1)
   
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -240,7 +223,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
   ;; Read from and/or update preferences file 
   if keyword_set(only_update_prefs) then begin
-    MVN_KP_CONFIG_FILE, /update_prefs, insitu_only=insitu_only
+    out = mvn_kp_config_file(/update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
     if keyword_set(time) or keyword_set(insitu) or keyword_set(iuvs) then begin
@@ -253,8 +236,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif else begin
 
     ;; Read or create preferences file 
-    MVN_KP_CONFIG_FILE, insitu_data_dir=kp_insitu_data_directory, iuvs_data_dir=kp_iuvs_data_directory, $
-      update_prefs=update_prefs, insitu_only=insitu_only
+    mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
+    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
+    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()  
   endelse
     
 
@@ -390,13 +374,20 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   
   ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT
   if keyword_set(duration) eq 0 then begin
-    if size(time,/type) eq 7 then duration = 86400
+    if size(time,/type) eq 7 then duration = 86399
     if size(time,/type) eq 2 then duration = 1
   endif
 
   ;IF ORBIT(s) SUPPLIED 
   ;;============================
   if size(time, /type) eq 2 then begin
+    
+    ;;
+    ;; TEMP FIXME ONCE ORBIT FILES CREATED
+    ;;
+    ;;
+    message, "Orbit times currently not functional. This will we updated shortly after MOI when we have orbit -> time mappings"
+    
   
     ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
     if n_elements(time) eq 1 then begin
@@ -492,10 +483,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;; ----------------------- Main read loop: In situ data    ---------------------------- ;;
   
   
-  ; FIXME: These variables aren't being used?
-  ;VARIABLES TO HOLD THE COUNT OF VARIOUS OBSERVATION TYPES (IE. HIGH VS. LOW ALTITUDE)
-  ; high_count = 0
-  ; low_count = 0
+  overall_start_time = systime(1)
+  
   if target_kp_filenames[0] ne 'None' then begin
     totalEntries=0L
     start_index=0L
@@ -504,7 +493,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       ;UPDATE THE READ STATUS BAR
       MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
       
-      fileAndPath = kp_insitu_data_directory+target_kp_filenames[file]
+      ;; Construct path to file
+      date_path = mvn_kp_date_subdir(target_kp_filenames[file])
+      fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
+      
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
@@ -542,7 +534,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       
         MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
         
-        fileAndPath = kp_iuvs_data_directory+iuvs_filenames[file]
+        ;; Construct path to file
+        date_path = mvn_kp_date_subdir(iuvs_filenames[file])
+        fileAndPath = kp_iuvs_data_directory+date_path+iuvs_filenames[file]
+        
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
           instruments=instruments, save_files=save_files, text_files=text_files
           

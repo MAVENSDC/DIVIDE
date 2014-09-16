@@ -9,7 +9,7 @@
 ;
 ;
 ; :Keywords:
-;    instrument: in, required, type=string or strarr
+;    instruments: in, required, type=string or strarr
 ;       Scalar or array of instruments (three letter representations) of l2 data to download/list
 ;       
 ;    filenames: in, optional, type=string or strarr
@@ -28,20 +28,14 @@
 ;    end_date: in, optional, type=string
 ;       End of time range to search/download files. Format='YYYY-MM-DD'
 ;       
-;    create_dirs: in, optional, type=boolean
-;       If set, all instrument directories will be created under the user chosen "top level"
-;       directory. If the instrument directories already exist, this wont overwrite them. 
-;       It is likely one would only need to run the procedure with this keyword once, setting
-;       up the required directory substructure for l2 data. 
-;
 ;    update_prefs: in, optional, type=boolean
-;       Before searching or downloading data, allow user to update l2_preferences.txt - which
-;       contains paths to the in situ data and IUVS data. After selecting new paths to data folders,
+;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which
+;       contains paths to the root maven data directory. After selecting new paths to data folders,
 ;       search or download of data files will continue.
 ;
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update l2_preferences.txt - which contains paths to the in situ data and
-;       IUVS data. After selecting new paths to data folders, procedure will return - not
+;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root maven data
+;       directory. After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;
 ;    debug: in, optional, type=boolean
@@ -50,10 +44,12 @@
 ;       IDL with return to main program level and stop.
 ;
 ;
+;  Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR
 ; 
-;   Required directory structure under <top_level> l2 data structure (user chooses top level directory):
+; 
+;   Directory structure that will be created under <root_data_dir>/ (user chooses top root_data_dir):
 ;   
-;   <top_level>
+;   <root_data_dir>/maven/data/sci/
 ;   |
 ;   --sta/
 ;      |
@@ -85,7 +81,12 @@
 ;   --acc/
 ;      |
 ;      --l2/
-;  
+;   --insitu/
+;      |
+;      --kp/
+;   --iuvs/
+;      |
+;      --kp/
 ;
 ;
 ;   Credit to Doug Lindholm for initial version of this procedure.
@@ -93,10 +94,10 @@
 
 
 
-pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_files=list_files, $
+pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list_files=list_files, $
                               start_date=start_date, end_date=end_date, new_files=new_files, $
                               update_prefs=update_prefs, only_update_prefs=only_update_prefs, $
-                              debug=debug, create_dirs=create_dirs, help=help
+                              debug=debug, help=help
                               
 
   ;provide help for those who don't have IDLDOC installed
@@ -104,32 +105,33 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     print,'MVN_KP_DOWNLOAD_L2_FILES'
     print,'  Download level 2 data files from the Maven SDC web service for any instrument.'
     print,''
-    print,'mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_files=list_files, $'
+    print,'mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list_files=list_files, $'
     print,'                          start_date=start_date, end_date=end_date, new_files=new_files, $'
     print,'                          update_prefs=update_prefs, only_update_prefs=only_update_prefs, $'
-    print,'                          debug=debug, create_dirs=create_dirs, help=help'
+    print,'                          debug=debug, help=help'
     print,''
     print,'OPTIONAL FIELDS'
     print,'***************'
-    print,'  instrument: Scalar or array of instruments (three letter representations) of l2 data to download/list'
+    print,'  instruments: Scalar or array of instruments (three letter representations) of l2 data to download/list'
     print,'  filenames: Scalar or array of filename strings to download. If used, /new_files keyword is ignored.'
     print,'  list_files: Print to standard output a list of files instead of actually downloading'
     print,'  new_files: Only download files you do not already have saved locally'
     print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
     print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
-    print,'  update_prefs: Before searching or downloading data, allow user to update kp_preferences.txt - which '
-    print,'                contains paths to the in situ data and IUVS data. After selecting new paths to data folders, '
+    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
+    print,'                contains paths to the root data directory. After selecting new paths to data folders, '
     print,'                search or download of data files will continue.'
-    print,'  only_update_prefs: Allow user to update kp_preferences.txt - which contains paths to the in situ data and'
-    print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not downloading any data.'
+    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
+    print,'                     After selecting new paths to data folders, procedure will return - not downloading any data.'
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
-    print,'  create_dirs:If set, all instrument directories will be created under the user chosen "top level"'
-    print,'              directory. If the instrument directories already exist, this wont overwrite them. '
-    print,'              It is likely one would only need to run the procedure with this keyword once, setting'
-    print,'              up the required directory substructure for l2 data.'
+
     print,'  help: Invoke this list.'
+    print, ''
+    print, ''
+    print, 'Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR'
+    print, ''
     return
   endif
   
@@ -164,7 +166,11 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
   ;; Directory Structure
   ;;
   if keyword_set(only_update_prefs) then update_prefs=1
-  mvn_kp_config_l2, l2_data_dir=base_l2_dir, update_prefs=update_prefs, create_dirs=create_dirs  
+  
+  ;; Read or create preferences file
+  mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /l2)
+  base_l2_dir = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'  
+  
   if keyword_set(only_update_prefs) then begin
     print, "/only_update_prefs keyword given. Not doing any download. Returning.."
     return
@@ -182,11 +188,10 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     'acc', base_l2_dir+path_sep()+'acc'+path_sep()+'l2'+path_sep(), $
     'ngi', base_l2_dir+path_sep()+'ngi'+path_sep()+'l2'+path_sep())
 
-
-
-  if n_elements(instrument) le 0 then begin
-    print, 'Must supply instrument keyword with one or more instruments.'
-    print, "Example: ... instrument=['sta', 'ngi']"
+  
+  if n_elements(instruments) le 0 then begin
+    print, 'Must supply instruments keyword with one or more instrument.'
+    print, "Example: ... instruments=['sta', 'ngi']"
     return
   endif
   
@@ -199,7 +204,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
   if n_elements(filenames) gt 0 then begin
     
     ;; Ensure only one instrument supplied
-    if n_elements(instrument) ne 1 then begin
+    if n_elements(instruments) ne 1 then begin
       message, "If specifying filename(s), must specify one and only one instrument"
     endif
     
@@ -217,13 +222,13 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------------------ Main logic ------------------------------------------ ;;
   
-  ;; Loop over each instrument - Handle seperately to ease logic for new files
-  for inst_i=0, n_elements(instrument)-1 do begin
+  ;; Loop over each instruments - Handle seperately to ease logic for new files
+  for inst_i=0, n_elements(instruments)-1 do begin
 
     ;; Get directory of where l2 files are stored on machine
-    inst_tag_i = where(tag_names(l2_dirs) eq strupcase(instrument[inst_i]), counter)
+    inst_tag_i = where(tag_names(l2_dirs) eq strupcase(instruments[inst_i]), counter)
     if counter le 0 then begin
-      print, "Unknown instrument: "+string(instrument[inst_i])
+      print, "Unknown instrument: "+string(instruments[inst_i])
       print, ""
       continue
     endif
@@ -239,7 +244,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       ; Note that a single value will be treated as an array of one by IDL.
       query_args = ["hack"] ;IDL doesn't allow empty arrays before version 8.
       
-      query_args = [query_args, "instrument="+instrument[inst_i]]
+      query_args = [query_args, "instrument="+instruments[inst_i]]
       if n_elements(filename)       gt 0 then query_args = [query_args, "file=" + strjoin(filename, ",")]
       
       if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
@@ -249,7 +254,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       ;  if n_elements(descriptor)
       ;  if n_elements(plan)
       ;  if n_elements(orbit)
-      ; if n_elements(mode)           gt 0 then query_args = [query_args, "mode=" +strjoin(mode, ",")]
+      ;   if n_elements(mode)           gt 0 then query_args = [query_args, "mode=" +strjoin(mode, ",")]
       ;  if n_elements(data_type)
       
       
@@ -269,7 +274,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       filenames = mvn_kp_get_filenames(query=query)
       ; Warn if no files. Error code or empty.
       if (size(filenames, /type) eq 3 || n_elements(filenames) eq 0) then begin
-        print, "For instrument: "+instrument[inst_i]+" - No l2 files found on server for input query"
+        print, "For instrument: "+instruments[inst_i]+" - No l2 files found on server for input query"
         print, ""
         ;; Clear out filenames for next pass through loop
         filenames = ''
@@ -281,21 +286,23 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
       if keyword_set (new_files) then begin
     
         ;; Get filename convetion information from config
-        pattern = 'mvn_'+instrument[inst_i]+'*'
+        pattern = 'mvn_'+instruments[inst_i]+'*'
     
-        ; Get list of all files currently downloaded
-        local_files = file_basename(file_search(current_l2_dir+path_sep()+pattern))
-  
+        ; Get list of all files currently downloaded - recursive search to look through year/month subdirs
+        local_files = file_basename(file_search(current_l2_dir+path_sep(), pattern))
+
         ; Get list of files on server (within a time span if entereted), that are not on local machine
         filenames = mvn_kp_relative_complement(local_files, filenames)
     
       endif
       
-
+      ;; Sort the filenames
+      filenames = filenames[sort(filenames)]
+      
       ;; If LIST_FILES option, then just print out the file list (and save to list_files)
       ; Don't actually download
       if keyword_set(list_files) then begin
-        print, 'For instrument: '+instrument[inst_i]+" - l2 files that would be downloaded: "
+        print, 'For instrument: '+instruments[inst_i]+" - l2 files that would be downloaded: "
         print, "-------------------------------------------------------"
         for file_i=0l, n_elements(filenames)-1 do begin
           print, filenames[file_i]
@@ -316,7 +323,7 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     ;; Hanlde the stupid case where IDL has an emptry string and n_elements will return 1.
     ;; Continue to next inst from here if no files to download
     if (nfiles eq 1) and (strlen(filenames[0]) eq 0) then begin
-      print, "For instrument: "+instrument[inst_i]+" - No new files to download"
+      print, "For instrument: "+instruments[inst_i]+" - No new files to download"
       print, ""
       ;; Clear out filenames for next pass through loop
       filenames = ''
@@ -324,58 +331,85 @@ pro mvn_kp_download_l2_files, instrument=instrument, filenames=filenames, list_f
     endif
     
     ; Prompt user to ensure they want to download nfiles amount of files
+    download_bool = 'yes'
     while(1) do begin
       response = ''
-      print, "For instrument: "+instrument[inst_i]+" - Your request will download a total of: " +strtrim(string(nfiles),2) +" files."
+      print, "For instrument: "+instruments[inst_i]+" - Your request will download a total of: " +strtrim(string(nfiles),2) +" files."
       if (nfiles gt max_files) then print, "NOTE - This is a large number of files and may take a long time to download"
       print, "Would you like to proceed with this download:"
       read, response, PROMPT='(y/n) >'
       if (strlowcase(strmid(response,0,1)) eq 'y') then break
       if (strlowcase(strmid(response,0,1)) eq 'n') then begin
-        print, "Canceled download. Returning..."
-        return
+        print, "Canceled download for: "+string(instruments[inst_i])+"."
+        download_bool = 'no'
+        break
       endif else print, "Invalid input. Please answer with yes or no."
     endwhile
     
-    ;; If connection not set, filenames was specified - need to get connection
-    if not keyword_set(connection) then begin
-      ; Get the IDLnetURL singleton. May prompt for password.
-      connection = mvn_kp_get_connection()
-    endif
-    
-    print, "Starting download..."
-    ; Download files one at a time.
-    nerrs = 0 ;count number of errors
-    for i = 0, nfiles-1 do begin
+    if download_bool eq 'yes' then begin
+      
+      ;; If connection not set, filenames was specified - need to get connection
+      if not keyword_set(connection) then begin
+        ; Get the IDLnetURL singleton. May prompt for password.
+        connection = mvn_kp_get_connection()
+      endif
+      
+      print, "Starting download..."
+      ; Download files one at a time.
+      nerrs = 0 ;count number of errors
+      for i = 0, nfiles-1 do begin
+        
+        file = file_basename(filenames[i]) ;just the file name, no path
+  
+        ;; Check for correct YYYY/MM directory to place into & create if necessary
+        date_path = mvn_kp_date_subdir(file)
+        full_path = current_l2_dir + path_sep() + date_path
+        mvn_kp_create_dir_if_needed, full_path, /verbose, /open_permissions
+        
+        ;; directory to download to
+        local_file = full_path + file
+        file_query = "file=" + file
+        
+        result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
+        
+        ; Updated the download progress bar
+        MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message=instruments[inst_i]+' Download Progress'
 
-      ;; Set filename and directory to download to
-      file = file_basename(filenames[i]) ;just the file name, no path
-      local_file = current_l2_dir + file
-      file_query = "file=" + file
+        ;count failures so we can report a 'partial' status
+        ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
+        if size(result, /type) eq 3 then begin
+          nerrs = nerrs + 1
+          ;; Check if file exists, and if so delete it - it is corrupt or doesn't contain
+          ;; the correct data
+          file_delete, local_file, /ALLOW_NONEXISTENT
+          
+        endif else begin
+          ;; Change permisions of file to all open
+          file_chmod, local_file, /A_EXECUTE, /A_READ, /A_WRITE
+        endelse
+        
+      endfor
       
-      result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
+   
+      ; Print amount of successful downloads and where they went
+      print, strtrim(string(nfiles-nerrs),2)+" total files successfully downloaded to: "+current_l2_dir
+      print, ""
       
-      ; Updated the download progress bar
-      MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message=instrument[inst_i]+' Download Progress'
-      ;count failures so we can report a 'partial' status
-      ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
-      if size(result, /type) eq 3 then nerrs = nerrs + 1
-    endfor
+      ; Print error message if any of the downloads failed.
+      if nerrs gt 0 then begin
+        msg = "WARN: " + strtrim(nerrs,2) + " out of " + strtrim(nfiles,2) + " file downloads failed."
+        printf, -2, msg
+        
+        ;; Clear out filenames for next pass through loop
+        filenames = ''
+        continue
+      endif
     
+    endif
+
     ;; Clear out filenames for next pass through loop
     filenames = ''
-    
-    ; Print amount of successful downloads and where they went
-    print, strtrim(string(nfiles-nerrs),2)+" total files successfully downloaded to: "+current_l2_dir
-    print, ""
-    
-    ; Print error message if any of the downloads failed.
-    if nerrs gt 0 then begin
-      msg = "WARN: " + strtrim(nerrs,2) + " out of " + strtrim(nfiles,2) + " file downloads failed."
-      printf, -2, msg
-      continue
-    endif
-    
+
   endfor
 
   

@@ -60,6 +60,9 @@
 ;    help: in, optional, type=boolean
 ;       Prints keyword descriptions to screen.
 ;
+;
+;   Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR
+;
 ;   Credit to Doug Lindholm for initial version of this procedure. 
 ;-
 
@@ -99,6 +102,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
+    print, ''
+    print, ''
+    print, 'Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR'
+    print, ''
     print,'  help: Invoke this list.'
     return
   endif
@@ -133,7 +140,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   
   
   if keyword_set(only_update_prefs) then begin
-    MVN_KP_CONFIG_FILE, /update_prefs
+    out = mvn_kp_config_file(/update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
     if keyword_set(filenames) or keyword_set(cdf_files) or keyword_set(text_files) then begin
@@ -203,9 +210,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   ; If local_dir not specified, check config file for insitu & iuvs dir.            
   if (n_elements(local_dir) eq 0) and ( (not keyword_set(list_files)) or keyword_set(new_files) or keyword_set(update_prefs)) then begin
     ; Check config file for directories to data
-    mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
-                        update_prefs=update_prefs
-                        
+    mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
+    
+    insitu_data_dir = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
+    iuvs_data_dir   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()                    
 
     if keyword_set(insitu) then begin 
       local_dir = insitu_data_dir
@@ -236,7 +244,6 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   endif
   
   
-  
   ; If user supplied NEW_FILES option, determine which files they have locally
   if keyword_set (new_files) then begin
     
@@ -250,19 +257,21 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     if keyword_set(text_files) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
     if keyword_set(text_files) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
     
-    ; Get list of all files currently downloaded
+    ; Get list of all files currently downloaded - recursive search to look through year/month subdirs
     if keyword_set(insitu) then begin 
-      local_files = file_basename(file_search(local_dir+path_sep()+insitu_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep(),insitu_pattern))
     endif
     if keyword_set(iuvs) then begin
-      local_files = file_basename(file_search(local_dir+path_sep()+iuvs_pattern))
+      local_files = file_basename(file_search(local_dir+path_sep(),iuvs_pattern))
     endif
-        
+
     ; Get list of files on server (within a time span if entereted), that are not on local machine
     filenames = mvn_kp_relative_complement(local_files, filenames)
     
   endif
   
+  ;; Sort the filenames
+  filenames = filenames[sort(filenames)]
   
   ;; If LIST_FILES option, then just print out the file list (and save to list_files) 
   ; Don't actually download
@@ -289,10 +298,26 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     return
   endif
   
+  ;; Estimate total size of files to download
+  if keyword_set(insitu) then begin
+    if keyword_set(text_files) then begin
+      estimate_size = nfiles * 38   ;; Roughly 38 MB per ASCII ile
+    endif else begin
+      estimate_size = nfiles * 19   ;; Roughing 19 MB per CDF File
+    endelse
+  endif else begin
+    if keyword_set(text_files) then begin
+      estimate_size = nfiles * 1.0  ;; Roughly 1 MB per ASCII file
+    endif else begin
+      estimate_size = nfiles * .684 ;; Roughly 684 kB per CDF File
+    endelse
+  endelse
+    
+    
   ; Prompt user to ensure they want to download nfiles amount of files
   while(1) do begin 
     response = ''
-    print, "Your request will download a total of: " +string(nfiles) +" files."
+    print, "Your request will download a total of: " +strtrim(string(nfiles),2) +" files with an approx total size of: "+strtrim(string(estimate_size),2)+" MBs."
     if (nfiles gt max_files) then print, "NOTE - This is a large number of files and may take a long time to download"
     print, "Would you like to proceed with this download:"
     read, response, PROMPT='(y/n) >'
@@ -309,17 +334,33 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
 
-    ;TODO: flat or hierarchy? assume flat for now
     file = file_basename(filenames[i]) ;just the file name, no path
-    local_file = local_dir + path_sep() + file ;all in one directory (i.e. flat)
+    
+    ;; Check for correct YYYY/MM directory to place into & create if necessary
+    date_path = mvn_kp_date_subdir(file)
+    full_path = local_dir + path_sep() + date_path
+    mvn_kp_create_dir_if_needed, full_path, /verbose, /open_permissions
+    
+    local_file = full_path + path_sep() + file
     file_query = "file=" + file
+    
     result = mvn_kp_execute_neturl_query(connection, url_path, file_query, filename=local_file)
     
     ; Updated the download progress bar
     MVN_KP_LOOP_PROGRESS,i,0,nfiles-1,message='KP Download Progress'
+
     ;count failures so we can report a 'partial' status
     ;Presumably, mvn_kp_execute_neturl_query will print specific error messages.
-    if size(result, /type) eq 3 then nerrs = nerrs + 1
+    if size(result, /type) eq 3 then begin
+      nerrs = nerrs + 1
+      ;; Check if file exists, and if so delete it - it is corrupt or doesn't contain
+      ;; the correct data
+      file_delete, local_file, /ALLOW_NONEXISTENT
+    endif else begin
+      ;; Change permisions of file to all open
+      file_chmod, local_file, /A_EXECUTE, /A_READ, /A_WRITE
+    endelse
+    
   endfor
 
   ; Print error message if any of the downloads failed.

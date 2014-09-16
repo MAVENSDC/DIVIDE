@@ -1,8 +1,6 @@
 
 
-pro mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data_dir, $
-                        update_prefs=update_prefs, insitu_only=insitu_only
-
+function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -12,103 +10,154 @@ pro mvn_kp_config_file, insitu_data_dir=insitu_data_dir, iuvs_data_dir=iuvs_data
   if not keyword_set(debug) then begin
     on_error, 1
   endif
-
-
-;; ------------------------------------------------------------------------------------ ;;
-;; ----------------------- Read or create preferences file ---------------------------- ;;
-
-
-;FIXME TAKE ANOTHER LOOK OVER LOGIC HERE, MAKE SURE SOLID ENOUGH
-install_result = routine_info('mvn_kp_config_file',/source)
-install_directory = strsplit(install_result.path,'mvn_kp_config_file.pro',/extract,/regex)
-install_directory = install_directory+path_sep()+'..'+path_sep()
-insitu_data_dir = ''
-iuvs_data_dir = ''
-if not keyword_set(update_prefs) then begin
-
-  ;CHECK IF THE PREFERENCES FILE EXISTS & READ IF IT DOES
-  preference_exists = file_search(install_directory+path_sep()+'kp_preferences.txt',count=kp_pref_exists)
-  if kp_pref_exists ne 0 then begin
   
-    ;LOOP THROUGH KP PREFS FILE LOOKING FOR PARTICULAR PREFERENCES
-    openr,lun,install_directory+'kp_preferences.txt',/get_lun
-    while not eof(lun) do begin
-      line=''
-      readf,lun,line
-      tokens = strsplit(line,' ',/extract)
-      if tokens[0] ne ';' then begin
-      case tokens[0] of
-        'insitu_data_dir:':  insitu_data_dir = tokens[1:(n_elements(tokens)-1)]
-        'iuvs_data_dir:'  :  iuvs_data_dir   = tokens[1:(n_elements(tokens)-1)]
-        else                        :  print, 'Unknown preference: ', tokens[0], ' ', tokens[1]
-      endcase
+  ;; ------------------------------------------------------------------------------------ ;;
+  ;; ----------------------- Read or create preferences file ---------------------------- ;;
+
+  ;; FIRST  -Check for ROOT_DATA_DIR environment varaible
+  ;; If present, parse to find first existing directory and return. Otherwise continue on to
+  ;; look for and/or create a mvn_toolkit_prefs.txt file.
+  ;; This env variable is what the SSL uses for their software.
+  root_data_dir_env = getenv('ROOT_DATA_DIR')
+  if keyword_set(root_data_dir_env) then begin
+  
+    ;; Below code snippet taking from SSL's root_data_dir.pro
+    rootdirs = strsplit(root_data_dir_env,path_sep(/search_path),/extract ,count=n )
+    for i=0,n-1 do begin
+      rootdir = rootdirs[i]
+      if file_test(/direc,rootdir) then break
+    endfor
+    
+    if not file_test(/direc,rootdir) then message, 'ROOT_DATA_DIR env varaible contained no usable paths'
+    
+    rootdir = rootdir + path_sep()
+    print, 'ROOT_DATA_DIR enviroment variable set. Using: '+string(rootdir)+' as maven root data directory'
+    mvn_root_data_dir=rootdir
+
+  endif else begin
+    
+    ;; Find where preferences file should be
+    install_result = routine_info('mvn_kp_config_file',/source, /function)
+    install_directory = strsplit(install_result.path,'mvn_kp_config_file.pro',/extract,/regex)
+    install_directory = install_directory+path_sep()+'..'+path_sep()
+    mvn_root_data_dir = ''
+    
+    
+    
+    ;; If not specified to update preferences file, then check for and read mvn_toolkit_prefs.txt
+    if not keyword_set(update_prefs) then begin
+    
+      ;CHECK IF THE PREFERENCES FILE EXISTS & READ IF IT DOES
+      preference_exists = file_search(install_directory+path_sep()+'mvn_toolkit_prefs.txt',count=pref_exists)
+      if pref_exists ne 0 then begin
       
+        ;LOOP THROUGH L2 PREFS FILE LOOKING FOR PARTICULAR PREFERENCES
+        openr,lun,install_directory+'mvn_toolkit_prefs.txt',/get_lun
+        while not eof(lun) do begin
+          line=''
+          readf,lun,line
+          tokens = strsplit(line,' ',/extract)
+          if tokens[0] ne ';' then begin
+          case tokens[0] of
+            'mvn_root_data_dir:':  mvn_root_data_dir = tokens[1:(n_elements(tokens)-1)]
+            else                        :  print, 'Unknown preference: ', tokens[0], ' ', tokens[1]
+          endcase
+          
+          endif
+        endwhile
+      
+        mvn_root_data_dir = strjoin(mvn_root_data_dir, ' ', /SINGLE)
+      
+        free_lun,lun
+      
+        ;IF NO TOP LEVEL DIRECOTRY FOUND IN PREFS FILE, PROMPT USER TO RE-RUN WITH UPDATE-PREFS OPTION (FIXME)
+        if mvn_root_data_dir eq '' then begin
+          print,      'Error: mvn_root_data_dir:/path/to/data/ not found in mvn_toolkit_prefs.txt file.'
+          error_msg = 'Re run with /UPDATE_PREFS or manually fix mvn_toolkit_prefs.txt file.'
+          message, error_msg
+        endif
+        
+        ;; no  preferences file found
+      endif else begin
+        ;PROMPT USER FOR PATH
+        print, ""
+        print, "No mvn_toolkit_prefs.txt file found. Now prompting for path to maven root data directory"
+        print, "This root data directory will be populated with subdirectories to match the SDC directory structure:"
+        print, "<maven_root_data_dir>/maven/data/sci/<inst>/<level>/<YYYY>/<MM>/"
+        
+        mvn_root_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the maven root data directory')
+        if mvn_root_data_dir eq '' then message, "Canceled directory choice. Must choose path to maven root data directory. Exiting..."
+        
+        update_prefs=1
+        
+      endelse
+        
+    endif else begin
+    
+      ;PROMPT USER FOR PATH
+      print, ""
+      print, "/update_prefs keyword given. Now prompting for directory to maven root data directory"
+        print, "This root data directory will be populated with subdirectories to match the SDC directory structure:"
+      print, "<maven_root_data_dir>/maven/data/sci/<inst>/<level>/<YYYY>/<MM>/"
+      
+      mvn_root_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the maven root data directory')
+      if mvn_root_data_dir eq '' then message, "Canceled directory choice. Must choose path to maven root data directory. Exiting..."
+      
+    endelse
+    
+    
+    
+    ;WRITE/UPDATE PREFERENCES FILE IF NECESSARY
+    if keyword_set(update_prefs) then begin
+      ;CREATE mvn_toolkit_prefs.txt FOR FUTURE USE
+      openw,lun,install_directory+'mvn_toolkit_prefs.txt',/get_lun
+      printf,lun,'; IDL Toolkit Data Preferences File'
+      printf,lun,'mvn_root_data_dir: '+mvn_root_data_dir
+      free_lun,lun
+      print, "Updated/created mvn_toolkit_prefs.txt file."
     endif
-  endwhile
-  free_lun,lun
+  endelse
   
-  insitu_data_dir = strjoin(insitu_data_dir, ' ', /SINGLE)
-  iuvs_data_dir   = strjoin(iuvs_data_dir, ' ', /SINGLE)
+
   
-  ;IF NO INSITU DIRECOTRY FOUND IN PREFS FILE, PROMPT USER TO RE-RUN WITH UPDATE-PREFS OPTION (FIXME)
-  if insitu_data_dir eq '' then begin
-    print,      'Error: No insitu_data_dir: /path/ found in kp_preferences.txt file.'
-    error_msg = 'Re run mvn_kp_read with /UPDATE_PREFS or manually fix kp_preferences.txt file.'
-    message, error_msg
-  endif
-
-
-  ;IF NO IUVS DIRECTORY AND NOT IN INSITU ONLY MODE, PROMPT USER FOR IUVS DIRECTORY
-  if iuvs_data_dir eq '' and not keyword_set(insitu_only) then begin
-    print, "kp_preferences.txt file only contains insitu path. Requesting path to IUVS data..."
+  ;; Create kp directory structure under top level data directory
+  if keyword_set(kp) then begin
+    pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
     
-    iuvs_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
-    if iuvs_data_dir eq '' then message, "Canceled directory choice. Must choose path to IUVS data. Exiting..."
+    dirs_to_create = [$
+      pre+'insitu'+path_sep()+'kp', $
+      pre+'iuvs'+path_sep()+'kp']
+      
+      
+    for dir_i=0, n_elements(dirs_to_create)-1 do begin
+      mvn_kp_create_dir_if_needed, mvn_root_data_dir+path_sep()+dirs_to_create[dir_i], /verbose, /open_permissions
+    endfor
     
-    update_prefs=1
+  endif 
+  
+  ;; Create l2 directory structure under top level data directory
+  if keyword_set(l2) then begin
+    pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
+    
+    dirs_to_create = [pre+'sta'+path_sep()+'l2', $
+      pre+'sep'+path_sep()+'l2', $
+      pre+'swi'+path_sep()+'l2', $
+      pre+'swe'+path_sep()+'l2', $
+      pre+'lpw'+path_sep()+'l2', $
+      pre+'euv'+path_sep()+'l2', $
+      pre+'mag'+path_sep()+'l2', $
+      pre+'iuv'+path_sep()+'l2', $
+      pre+'acc'+path_sep()+'l2', $
+      pre+'ngi'+path_sep()+'l2', $
+      pre+'insitu'+path_sep()+'kp', $
+      pre+'iuvs'+path_sep()+'kp']
+      
+     
+    for dir_i=0, n_elements(dirs_to_create)-1 do begin
+      mvn_kp_create_dir_if_needed, mvn_root_data_dir+path_sep()+dirs_to_create[dir_i], /verbose, /open_permissions
+    endfor
+    
   endif
   
-endif else begin
-
-  
-  ;NO PREFS FILE EXISTS, PROMPT USER FOR PATHS
-  insitu_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
-  if insitu_data_dir eq '' then message, "Canceled directory choice. Must choose path to in situ data. Exiting..."
-  
-  if not keyword_set(insitu_only) then begin
-    iuvs_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
-    if iuvs_data_dir eq '' then message, "Canceled directory choice. Must choose path to IUVS data. Exiting..."
-
-  endif
-  update_prefs=1
-endelse
-
-endif else begin
-  ;WETHER OR NOT kp_preferences.txt FILE EXISTS, USE DIALOG BOXES TO REQUEST NEW LOCATIONS AND THEN WRITE (OR OVERWRITE) kp_preferences.txt
-  ;FIXME - THIS LOGIC CAN BE CLEANED UP
-
-  insitu_data_dir = dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing insitu KP data files')
-  if insitu_data_dir eq '' then message, "Canceled directory choice. Not updating Preferences file. Exiting..."
-  
-  if not keyword_set(insitu_only) then begin
-    iuvs_data_dir =   dialog_pickfile(path=install_directory,/directory,title='Choose the directory containing IUVS KP data files')
-    if iuvs_data_dir eq '' then message, "Canceled directory choice. Not updating Preferences file. Exiting..."
-  endif
-
-  update_prefs=1
-  
-endelse
-
-
-;WRITE/UPDATE PREFERENCES FILE IF NECESSARY
-if keyword_set(update_prefs) then begin
-  ;CREATE KP_PREFERENCES.TXT FOR FUTURE USE
-  openw,lun,install_directory+'kp_preferences.txt',/get_lun
-  printf,lun,'; IDL Toolkit KP Reader Preferences File'
-  printf,lun,'insitu_data_dir: '+insitu_data_dir
-  if iuvs_data_dir ne '' then printf,lun,'iuvs_data_dir: '+iuvs_data_dir
-  free_lun,lun
-  print, "Updated/created kp_preferences.txt file."
-endif
-
+  return, mvn_root_data_dir
 end
