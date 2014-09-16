@@ -26,6 +26,8 @@
 ;       Output array containing the average value of the binned key parameter in each bin
 ;    density: in, optional, type=dblarr
 ;       An output array containing the 'density' of the binned parameter    
+;    median: out, optional, type=dblarr
+;       An output array containing the median value of each bin
 ;
 ; :Keywords:
 ;    std: in, optional, type=boolean
@@ -39,7 +41,7 @@
 ;    
 ;-
 pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
-                std = std, density=density, help=help
+                std = std, density=density, help=help, median=median
 
   if keyword_set(help) then begin
     print,'MVN_KP_BIN'
@@ -67,6 +69,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=
     print,'    density:  An output array containing the density of the binned parameter   '
     print,'    std: With this keyword, the routine will calculate the standard deviation within each bin and return in in std_out '
     print,'    list: Used to print out the contents of the input data structure.'
+    print,'    median: An output array containing the median value of each bin.'
     print,'    help: Invoke this list.'
     return
   endif
@@ -219,9 +222,223 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=
    ;CALCULATE THE MEDIAN VALUES AND STANDARD DEVIATIONS
    
    
+   if arg_present(median) eq 1 then begin   
+    
+      bin_min = dblarr(n_elements(total_bins), max(total_bins))
+      bin_max = dblarr(n_elements(total_bins), max(total_bins))
+      
+      if keyword_set(mins) eq 0 then begin
+        mins = dblarr(n_elements(bin_by))
+        for i=0, n_elements(bin_by)-1 do begin
+          mins[i] = min(kp_data.(level0_index[i]).(level1_index[i]), /nan)
+        endfor
+      endif 
+    
+      if keyword_set(maxs) eq 0 then begin
+        maxs = dblarr(n_elements(bin_by))
+        for i=0, n_elements(bin_by)-1 do begin
+          maxs[i] = max(kp_data.(level0_index[i]).(level1_index[i]), /nan)
+        endfor
+      endif
+    
+      for i=0,n_elements(total_bins)-1 do begin
+       for j=0, total_bins[i] -1 do begin
+        bin_min[i,j] = mins[i] + (binsize[i] * j)
+        
+       endfor
+      endfor
+   
+      bin_index = intarr(n_elements(bin_by), n_elements(kp_data))
+   
+      for i=0, n_elements(kp_data) - 1 do begin
+        for j=0, n_elements(total_bins) -1 do begin
+          value = kp_data[i].(level0_index[j]).(level1_index[j])
+          temp_min = max(where(value-bin_min[j,*] ge 0.0),temp_min_index)
+          bin_index[j,i] = temp_min_index
+        endfor
+      endfor
+   
+      medians = make_array(total_bins+1, /double) 
+     
+     case n_elements(bin_by) of 
+      1: begin
+          for i=0, total_bins[0] -1 do begin
+          print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+          temp = where((bin_index[0,*] eq i))
+            if temp[0] ne -1 then begin
+              if n_elements(temp) gt 1 then begin
+                medians[i] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+              endif else begin
+                medians[i] = kp_data[temp[0]].(input_level0).(input_level1)
+              endelse
+            endif
+         endfor
+         end
+      2: begin
+         for i=0, total_bins[0]-1 do begin
+          print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+          for j=0, total_bins[1] -1 do begin
+            temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j))
+            if temp[0] ne -1 then begin
+              if n_elements(temp) gt 1 then begin
+                medians[i,j] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+              endif else begin
+                medians[i,j] = kp_data[temp[0]].(input_level0).(input_level1)
+              endelse
+            endif
+          endfor
+         endfor
+         end
+      3: begin
+          print,'The binning rountine is currently not that efficient. 
+          for i=0, total_bins[0]-1 do begin
+            print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+            for j=0, total_bins[1] -1 do begin
+             for k=0, total_bins[2] -1 do begin
+              temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k))
+              if temp[0] ne -1 then begin
+                if n_elements(temp) gt 1 then begin
+                  medians[i,j,k] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                endif else begin
+                  medians[i,j,k] = kp_data[temp[0]].(input_level0).(input_level1)
+                endelse
+              endif
+             endfor
+            endfor
+           endfor
+         end
+      4: begin
+        print,'Due to the inefficient nature of this routine, it might take a while. Bear with us and complain to Kris.'    
+         for i=0, total_bins[0]-1 do begin
+          print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+          for j=0, total_bins[1] -1 do begin
+           for k=0, total_bins[2] -1 do begin
+            for l=0, total_bins[3] -1 do begin
+              temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l))
+              if temp[0] ne -1 then begin
+                if n_elements(temp) gt 1 then begin
+                  medians[i,j,k,l] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                endif else begin
+                  medians[i,j,k,l] = kp_data[temp[0]].(input_level0).(input_level1)
+                endelse
+              endif
+            endfor
+           endfor
+          endfor
+         endfor
+        end
+       5: begin
+             print,'Due to the inefficient nature of this routine, it might take a while. Bear with us and complain to Kris.'    
+             for i=0, total_bins[0]-1 do begin
+              print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+              for j=0, total_bins[1] -1 do begin
+               for k=0, total_bins[2] -1 do begin
+                for l=0, total_bins[3] -1 do begin
+                  for m=0, total_bins[4] - 1 do begin
+                    temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m))
+                    if temp[0] ne -1 then begin
+                      if n_elements(temp) gt 1 then begin
+                        medians[i,j,k,l,m] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                      endif else begin
+                        medians[i,j,k,l,m] = kp_data[temp[0]].(input_level0).(input_level1)
+                      endelse
+                    endif
+                   endfor 
+                endfor
+               endfor
+              endfor
+             endfor
+          end
+          
+       6: begin
+             print,'Due to the inefficient nature of this routine, it might take a while. Bear with us and complain to Kris.'    
+             for i=0, total_bins[0]-1 do begin
+              print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+              for j=0, total_bins[1] -1 do begin
+               for k=0, total_bins[2] -1 do begin
+                for l=0, total_bins[3] -1 do begin
+                  for m=0, total_bins[4] - 1 do begin
+                    for n=0, total_bins[5] - 1 do begin
+                      temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n))
+                      if temp[0] ne -1 then begin
+                        if n_elements(temp) gt 1 then begin
+                          medians[i,j,k,l,m,n] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                        endif else begin
+                          medians[i,j,k,l,m,n] = kp_data[temp[0]].(input_level0).(input_level1)
+                        endelse
+                      endif
+                    endfor  
+                   endfor 
+                endfor
+               endfor
+              endfor
+             endfor
+          end
+          
+       7: begin
+          print,'Due to the inefficient nature of this routine, it might take a while. Bear with us and complain to Kris.'    
+             for i=0, total_bins[0]-1 do begin
+              print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+              for j=0, total_bins[1] -1 do begin
+               for k=0, total_bins[2] -1 do begin
+                for l=0, total_bins[3] -1 do begin
+                  for m=0, total_bins[4] - 1 do begin
+                    for n=0, total_bins[5] - 1 do begin
+                     for p=0, total_bins[6] -1 do begin 
+                        temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n) and (bin_index[6,*] eq p))
+                        if temp[0] ne -1 then begin
+                          if n_elements(temp) gt 1 then begin
+                            medians[i,j,k,l,m,n,p] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                          endif else begin
+                            medians[i,j,k,l,m,n,p] = kp_data[temp[0]].(input_level0).(input_level1)
+                          endelse
+                        endif
+                      endfor  
+                    endfor  
+                   endfor 
+                endfor
+               endfor
+              endfor
+             endfor
+          end
+          
+       8: begin
+          print,'Due to the inefficient nature of this routine, it might take a while. Bear with us and complain to Kris.'    
+             for i=0, total_bins[0]-1 do begin
+              print,'Now '+strtrim(string(float(i)/(total_bins[0]-1)*100.0 ),2)+'% complete'
+              for j=0, total_bins[1] -1 do begin
+               for k=0, total_bins[2] -1 do begin
+                for l=0, total_bins[3] -1 do begin
+                  for m=0, total_bins[4] - 1 do begin
+                    for n=0, total_bins[5] - 1 do begin
+                     for p=0, total_bins[6] -1 do begin 
+                      for q=0, total_bins[7] -1 do begin
+                          temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n) and (bin_index[6,*] eq p) and (bin_index[7,*] eq q))
+                          if temp[0] ne -1 then begin
+                            if n_elements(temp) gt 1 then begin
+                              medians[i,j,k,l,m,n,p,q] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                            endif else begin
+                              medians[i,j,k,l,m,n,p,q] = kp_data[temp[0]].(input_level0).(input_level1)
+                            endelse
+                          endif
+                        endfor  
+                      endfor  
+                    endfor  
+                   endfor 
+                endfor
+               endfor
+              endfor
+             endfor        
+          end
+        
+        
+     endcase
+    median = medians
+   endif 
+    
    if keyword_set(avg_out) then begin
           average_out= output/density
-   endif
+   end
   
   ;REDO FOR STANDARD DEVIATION CALCULATION
   
