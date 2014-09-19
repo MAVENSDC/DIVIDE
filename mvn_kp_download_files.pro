@@ -24,7 +24,7 @@
 ;       Search/download IUVS KP data files
 ;    
 ;    text_files: in, optional, type=boolean
-;       Search/download ASCII (.txt) versions of the KP data files
+;       Search/download ASCII (.tab) versions of the KP data files
 ;
 ;    cdf_files: in, optional, type=boolean
 ;       Search/download CDF (.cdf) versions of the KP data files
@@ -39,18 +39,18 @@
 ;       End of time range to search/download files. Format='YYYY-MM-DD'
 ;    
 ;    update_prefs: in, optional, type=boolean
-;       Before searching or downloading data, allow user to update kp_preferences.txt - which 
+;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
 ;       contains paths to the in situ data and IUVS data. After selecting new paths to data folders, 
 ;       search or download of data files will continue.
 ;
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update kp_preferences.txt - which contains paths to the in situ data and
+;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and
 ;       IUVS data. After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;    
 ;    local_dir: in, optional, type=string
 ;       Specify a directory to download files to - this overrides what's stored in
-;       kp_preferences.txt
+;       mvn_toolkit_prefs.txt
 ;        
 ;    debug: in, optional, type=boolean
 ;       On error, - "Stop immediately at the statement that caused the error and print 
@@ -88,17 +88,17 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     print,'  list_files: Print to standard output a list of files instead of actually downloading'
     print,'  insitu: Search/download in situ KP data files'
     print,'  iuvs: Search/download IUVS KP data files'
-    print,'  text_files: Search/download ASCII (.txt) versions of the KP data files'
+    print,'  text_files: Search/download ASCII (.tab) versions of the KP data files'
     print,'  cdf_files: Search/download CDF (.cdf) versions of the KP data files'
     print,'  new_files: Only download files you do not already have saved locally'
     print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
     print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
-    print,'  update_prefs: Before searching or downloading data, allow user to update kp_preferences.txt - which '
+    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
     print,'                contains paths to the in situ data and IUVS data. After selecting new paths to data folders, '
     print,'                search or download of data files will continue.'
-    print,'  only_update_prefs: Allow user to update kp_preferences.txt - which contains paths to the in situ data and'
+    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and'
     print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not downloading any data.'
-    print,'  local_dir: Specify a directory to download files to - this overrides what is stored in kp_preferences.txt '
+    print,'  local_dir: Specify a directory to download files to - this overrides what is stored in mvn_toolkit_prefs.txt '
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
@@ -157,17 +157,11 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   
   url_path  = sdc_server_spec.url_path_download      ; Define the URL path for the download web service.
   max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow w/o an extra warning.
-  
-  ;; Default behavior is to download KP data
-  if keyword_set(insitu) then begin
-    data_level='l2'                              ;; FIXME - Currently inconcsistency between insitu/iuvs levels. 
-  endif else if keyword_set(iuvs) then begin
-    data_level='kp'
-  endif
+ 
   
   ;; Set extension keyword based of text_file option or cdf_files
   if keyword_set(text_files) then begin
-    extension = 'txt'
+    extension = 'tab'
   endif else if keyword_set(cdf_files) then begin
     extension = 'cdf'
   endif else if n_elements(filenames) le 0 then begin
@@ -192,9 +186,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   ; Many values may be arrays so join with ",".
   ; Note that a single value will be treated as an array of one by IDL.
   query_args = ["hack"] ;IDL doesn't allow empty arrays before version 8.
-  
-  if keyword_set(insitu)             then query_args = [query_args, "instrument=pfp"]
-  if keyword_set(iuvs)               then query_args = [query_args, "instrument=rs"]
+
+  query_args = [query_args, "instrument=kp"]         ;; Instrument is always 'kp' for insitu or iuvs
+  if keyword_set(insitu)             then query_args = [query_args, "level=insitu"]
+  if keyword_set(iuvs)               then query_args = [query_args, "level=iuvs"]
   if n_elements(filename)       gt 0 then query_args = [query_args, "file=" + strjoin(filename, ",")]
   if n_elements(data_level)     gt 0 then query_args = [query_args, "level=" + strjoin(data_level, ",")]
   if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
@@ -212,8 +207,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     ; Check config file for directories to data
     mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
     
-    insitu_data_dir = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
-    iuvs_data_dir   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()                    
+    insitu_data_dir = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'insitu'+path_sep()
+    iuvs_data_dir   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'iuvs'+path_sep()                    
 
     if keyword_set(insitu) then begin 
       local_dir = insitu_data_dir
@@ -238,7 +233,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     filenames = mvn_kp_get_filenames(query=query)
     ; Warn if no files. Error code or empty.
     if (size(filenames, /type) eq 3 || n_elements(filenames) eq 0) then begin
-      printf, -2, "WARN: No files found for the query: " + query
+      print, "No files found for the query: " + query
       return
     endif
   endif
@@ -254,8 +249,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     iuvs_pattern   = iuvs_file_spec.pattern
     
     ;; Append appropriate extension
-    if keyword_set(text_files) then insitu_pattern += '.txt' else insitu_pattern += '.cdf'
-    if keyword_set(text_files) then iuvs_pattern   += '.txt' else iuvs_pattern   += '.cdf' 
+    if keyword_set(text_files) then insitu_pattern += '.tab' else insitu_pattern += '.cdf'
+    if keyword_set(text_files) then iuvs_pattern   += '.tab' else iuvs_pattern   += '.cdf' 
     
     ; Get list of all files currently downloaded - recursive search to look through year/month subdirs
     if keyword_set(insitu) then begin 

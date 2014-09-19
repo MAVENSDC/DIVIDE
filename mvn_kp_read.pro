@@ -29,11 +29,11 @@
 ;       optional keyword to instruct IDL to query the SDC server to look for any new or missing
 ;       files to download over the input timerange.
 ;    update_prefs: in, optional, type=boolean
-;       Before reading in data, allow user to update kp_preferences.txt - which contains paths
+;       Before reading in data, allow user to update mvn_toolkit_prefs.txt - which contains paths
 ;       to the in situ data and IUVS data. After selecting new paths to data folders, read will
 ;       continue. 
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update kp_preferences.txt - which contains paths to the in situ data and 
+;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and 
 ;       IUVS data. After selecting new paths to data folders, procedure will return - not reading
 ;       in any data. 
 ;    debug:  in, optional, type=boolean
@@ -146,9 +146,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     print,'***************'
     print,'  download_new: optional keyword to instruct IDL to query the SDC server to look for any new or missing
     print,'                files to download over the input timerange.
-    print,'  update_prefs: Before reading in data, allow user to update kp_preferences.txt - which contains paths
+    print,'  update_prefs: Before reading in data, allow user to update mvn_toolkit_prefs.txt - which contains paths
     print,'                to the in situ data and IUVS data. After selecting new paths to data folders, read will continue. 
-    print,'  only_update_prefs: Allow user to update kp_preferences.txt - which contains paths to the in situ data and 
+    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and 
     print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not reading in any data. 
     print,'  debug:  On error, - "Stop immediately at the statement that caused the error and print 
     print,'          the current program stack." If not specified, error message will be printed and 
@@ -237,8 +237,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
     ;; Read or create preferences file 
     mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
-    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'insitu'+path_sep()+'kp'+path_sep()
-    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'iuvs'+path_sep()+'kp'+path_sep()  
+    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'insitu'+path_sep()
+    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'iuvs'+path_sep()  
   endelse
     
 

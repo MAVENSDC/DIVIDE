@@ -81,12 +81,10 @@
 ;   --acc/
 ;      |
 ;      --l2/
-;   --insitu/
+;   --kp/
 ;      |
-;      --kp/
-;   --iuvs/
-;      |
-;      --kp/
+;      --insitu/
+;      --iuvs/
 ;
 ;
 ;   Credit to Doug Lindholm for initial version of this procedure.

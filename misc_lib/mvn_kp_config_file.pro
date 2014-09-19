@@ -125,8 +125,8 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2
     pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
     
     dirs_to_create = [$
-      pre+'insitu'+path_sep()+'kp', $
-      pre+'iuvs'+path_sep()+'kp']
+      pre+'kp'+path_sep()+'insitu', $
+      pre+'kp'+path_sep()+'iuvs']
       
       
     for dir_i=0, n_elements(dirs_to_create)-1 do begin
@@ -149,8 +149,8 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2
       pre+'iuv'+path_sep()+'l2', $
       pre+'acc'+path_sep()+'l2', $
       pre+'ngi'+path_sep()+'l2', $
-      pre+'insitu'+path_sep()+'kp', $
-      pre+'iuvs'+path_sep()+'kp']
+      pre+'kp'+path_sep()+'insitu', $
+      pre+'kp'+path_sep()+'iuvs']
       
      
     for dir_i=0, n_elements(dirs_to_create)-1 do begin
