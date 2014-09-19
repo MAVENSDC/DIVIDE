@@ -29,13 +29,13 @@
 ;       optional keyword to instruct IDL to query the SDC server to look for any new or missing
 ;       files to download over the input timerange.
 ;    update_prefs: in, optional, type=boolean
-;       Before reading in data, allow user to update mvn_toolkit_prefs.txt - which contains paths
-;       to the in situ data and IUVS data. After selecting new paths to data folders, read will
-;       continue. 
+;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
+;       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
+;       search or download of data files will continue.
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and 
-;       IUVS data. After selecting new paths to data folders, procedure will return - not reading
-;       in any data. 
+;       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
+;       After selecting new paths to data folders, procedure will return - not
+;       downloading any data.
 ;    debug:  in, optional, type=boolean
 ;       On error, - "Stop immediately at the statement that caused the error and print 
 ;       the current program stack." If not specified, error message will be printed and 
@@ -146,10 +146,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     print,'***************'
     print,'  download_new: optional keyword to instruct IDL to query the SDC server to look for any new or missing
     print,'                files to download over the input timerange.
-    print,'  update_prefs: Before reading in data, allow user to update mvn_toolkit_prefs.txt - which contains paths
-    print,'                to the in situ data and IUVS data. After selecting new paths to data folders, read will continue. 
-    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and 
-    print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not reading in any data. 
+    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
+    print,'                contains paths to the root data directory. After selecting new path to data folders, '
+    print,'                search or download of data files will continue.'
+    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
+    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
     print,'  debug:  On error, - "Stop immediately at the statement that caused the error and print 
     print,'          the current program stack." If not specified, error message will be printed and 
     print,'          IDL with return to main program level and stop.

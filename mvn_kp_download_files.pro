@@ -40,12 +40,12 @@
 ;    
 ;    update_prefs: in, optional, type=boolean
 ;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
-;       contains paths to the in situ data and IUVS data. After selecting new paths to data folders, 
+;       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
 ;       search or download of data files will continue.
 ;
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and
-;       IUVS data. After selecting new paths to data folders, procedure will return - not
+;       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
+;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;    
 ;    local_dir: in, optional, type=string
@@ -94,10 +94,10 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
     print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
     print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
-    print,'                contains paths to the in situ data and IUVS data. After selecting new paths to data folders, '
+    print,'                contains paths to the root data directory. After selecting new path to data folders, '
     print,'                search or download of data files will continue.'
-    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the in situ data and'
-    print,'                     IUVS data. After selecting new paths to data folders, procedure will return - not downloading any data.'
+    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
+    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
     print,'  local_dir: Specify a directory to download files to - this overrides what is stored in mvn_toolkit_prefs.txt '
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '

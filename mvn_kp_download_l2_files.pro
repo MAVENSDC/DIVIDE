@@ -29,13 +29,13 @@
 ;       End of time range to search/download files. Format='YYYY-MM-DD'
 ;       
 ;    update_prefs: in, optional, type=boolean
-;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which
-;       contains paths to the root maven data directory. After selecting new paths to data folders,
+;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
+;       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
 ;       search or download of data files will continue.
 ;
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root maven data
-;       directory. After selecting new paths to data folders, procedure will return - not
+;       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
+;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;
 ;    debug: in, optional, type=boolean
@@ -117,10 +117,10 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
     print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
     print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
     print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
-    print,'                contains paths to the root data directory. After selecting new paths to data folders, '
+    print,'                contains paths to the root data directory. After selecting new path to data folders, '
     print,'                search or download of data files will continue.'
     print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
-    print,'                     After selecting new paths to data folders, procedure will return - not downloading any data.'
+    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
