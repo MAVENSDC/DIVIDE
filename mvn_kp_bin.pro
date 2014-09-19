@@ -38,6 +38,7 @@
 ;           If set as a variable, list=list, a string array is returned containing the structure index and tag names.
 ;           
 ; :Version:   0.9     July 8, 2014
+; :Version:   1.0     Sept 15, 2014
 ;    
 ;-
 pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, list=list, avg_out=avg_out, mins=mins, maxs=maxs,  $
