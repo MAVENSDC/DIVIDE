@@ -44,7 +44,7 @@ pro mvn_kp_iuvs_cdf_write, infiles, outpath, save_files=save_files, debug=debug
     ;; If keyword set save_files, read in save_files, otherwise read in text_files
     if not keyword_set(save_files) then begin
       ;; Strip out the date from input filenames.
-      base = file_basename(file, '.txt')
+      base = file_basename(file, '.tab')
       ;; Read the file into an iuvs structure in memory
       mvn_kp_read_iuvs_file, file, iuvs, /text_files
     endif else begin

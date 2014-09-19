@@ -6,29 +6,34 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   
   ;; Information describing the in situ filenames and where dates & versions are located
   if keyword_set(insitu_file_spec) then begin
-
-    insitu_filename_spec = create_struct('pattern', 'mvn_pfp_l2_keyparam_*', $
-      'year_index', 20, $
-      'month_index', 24, $
-      'day_index', 26, $
-      'basetrim', 28, $
-      'vpos', 5, $
-      'rpos', 6)
+      
+      ;; Production filename spec
+      insitu_filename_spec = create_struct('pattern', 'mvn_kp_insitu_*', $
+      'year_index', 14, $
+      'month_index', 18, $
+      'day_index', 20, $
+      'basetrim', 23, $
+      'vpos', 4, $
+      'rpos', 5)
+      
       
     return, insitu_filename_spec
+    
+    
   endif
   
   
   ;; Information describing the iuvs filenames and where dates & versions are located
   if keyword_set(iuvs_file_spec) then begin
-
-    iuvs_filename_spec   = create_struct('pattern', 'mvn_rs_kp_*T*', $
-      'year_index', 10, $
-      'month_index', 14, $
-      'day_index', 16, $
-      'hour_index', 19, $
-      'min_index', 21, $
-      'sec_index', 23, $
+      
+      ;; Production filename spec
+      iuvs_filename_spec   = create_struct('pattern', 'mvn_kp_iuvs_*T*', $
+      'year_index', 12, $
+      'month_index', 16, $
+      'day_index', 18, $
+      'hour_index', 21, $
+      'min_index', 23, $
+      'sec_index', 25, $
       'basetrim', 27, $
       'vpos', 4, $
       'rpos', 5)
@@ -41,29 +46,29 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   if keyword_set(data_retrieval) then begin
   
     ;; Rstricted live
-;        sdc_server_spec = create_struct($
-;          'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
-;          'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
-;          'host', 'lasp.colorado.edu', $
-;          'port', 80, $,
-;          'url_scheme', 'https', $
-;          'authentication', 1, $
-;          'check_max_files', 0, $
-;          'max_files', 200, $
-;          'expire_duration', 86400)
+        sdc_server_spec = create_struct($
+          'url_path_file_names', '/maven/sdc/service/files/api/v1/file_names/science', $
+          'url_path_download', '/maven/sdc/service/files/api/v1/download/science', $
+          'host', 'lasp.colorado.edu', $
+          'port', 80, $,
+          'url_scheme', 'https', $
+          'authentication', 1, $
+          'check_max_files', 0, $
+          'max_files', 200, $
+          'expire_duration', 86400)
     
     
     ;; Unrestricted dev
-    sdc_server_spec = create_struct($
-      'url_path_file_names', 'maven/sdc/service/files/api/v1/search/science/fn_metadata/file_names', $
-      'url_path_download', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/download', $
-      'host', 'sdc-webdev1', $
-      'port', 80, $
-      'url_scheme', 'http', $
-      'authentication', 0, $
-      'check_max_files', 1, $
-      'max_files', 200, $
-      'expire_duration', 86400)
+;    sdc_server_spec = create_struct($
+;      'url_path_file_names', 'maven/sdc/service/files/api/v1/search/science/fn_metadata/file_names', $
+;      'url_path_download', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/download', $
+;      'host', 'sdc-webdev1', $
+;      'port', 80, $
+;      'url_scheme', 'http', $
+;      'authentication', 0, $
+;      'check_max_files', 1, $
+;      'max_files', 200, $
+;      'expire_duration', 86400)
       
       
     return, sdc_server_spec

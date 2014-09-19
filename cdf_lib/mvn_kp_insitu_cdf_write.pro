@@ -295,7 +295,7 @@ pro mvn_kp_insitu_cdf_write, infiles, outpath
     
     
     ; Now actually write output CDF file containing all data.
-    base = file_basename(file, '.txt')
+    base = file_basename(file, '.tab')
     dummy = mvn_kp_cdf_save_vars(cdfi_insitu,outpath+'/'+base+'.cdf')
     
     ;; Release insitu_data

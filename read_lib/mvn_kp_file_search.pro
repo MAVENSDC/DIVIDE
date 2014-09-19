@@ -16,7 +16,7 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
   if keyword_set(save_files) then begin 
     insitu_pattern += '.sav' 
   endif else if keyword_set(text_files) then begin
-    insitu_pattern += '.txt' 
+    insitu_pattern += '.tab' 
   endif else begin
     insitu_pattern += '.cdf' 
   endelse
@@ -73,7 +73,7 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
   if keyword_set(save_files) then begin 
     iuvs_pattern += '.sav' 
   endif else if keyword_set(text_files) then begin
-    iuvs_pattern += '.txt' 
+    iuvs_pattern += '.tab' 
   endif else begin
     iuvs_pattern += '.cdf' 
   endelse
