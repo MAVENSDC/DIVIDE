@@ -191,7 +191,6 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
   if keyword_set(insitu)             then query_args = [query_args, "level=insitu"]
   if keyword_set(iuvs)               then query_args = [query_args, "level=iuvs"]
   if n_elements(filename)       gt 0 then query_args = [query_args, "file=" + strjoin(filename, ",")]
-  if n_elements(data_level)     gt 0 then query_args = [query_args, "level=" + strjoin(data_level, ",")]
   if n_elements(start_date)     gt 0 then query_args = [query_args, "start_date=" + start_date]
   if n_elements(end_date)       gt 0 then query_args = [query_args, "end_date=" + end_date]
   if n_elements(extension)      gt 0 then query_args = [query_args, "file_extension=" + extension]
