@@ -36,9 +36,12 @@ pro run_idl_tests, VERBOSE=VERBOSE, IDLDE=IDLDE
   
   print, 'Build ID = ' + GETENV('BUILD_ID')
   
-  mgunit, 'testsuite_uts'
-  
+  mgunit, 'testsuite_uts', nfail=nfail
+ 
   elapsed=systime(1)-start
   print, "TIME ELAPSED - " + strcompress(elapsed/60) + " minutes"
-  
+
+  ; fail the build
+  if nfail gt 0 then exit, status=999
+
 end
