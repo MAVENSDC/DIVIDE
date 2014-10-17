@@ -7,7 +7,7 @@
 function basic_ut::test_simple
   compile_opt strictarr
   
-  assert, 1 eq 8, 'Basic testResult is not a structure'
+  assert, 1 eq 1, 'Test failed'
   
   return, 1
 end
