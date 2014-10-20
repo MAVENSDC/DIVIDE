@@ -11,4 +11,4 @@
 ;    Alexia Newgord, Ed Hartnett
 ;-
 
-run_idl_tests, VERBOSE=1, IDLDE=0
+run_idl_tests, VERBOSE=1

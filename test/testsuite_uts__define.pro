@@ -1,7 +1,8 @@
 ; docformat = 'rst'
 
 ;+
-; Initialize object, adding all test cases.
+; Initialize object, adding all test cases. This automatically finds
+; all tests will name <SOMETHING>_ut__define.pro.
 ;
 ; :Returns:
 ;   1 for success, 0 for failure
@@ -22,7 +23,7 @@ end
 
 
 ;+
-; Define member variables.
+; Define the testsuite. This does not need to be changed as tests are added.
 ;-
 pro testsuite_uts__define
   compile_opt strictarr
