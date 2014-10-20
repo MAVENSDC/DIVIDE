@@ -20,7 +20,7 @@ pro run_idl_tests, VERBOSE=VERBOSE
   if keyword_set(verbose) then print, "ROUTINE INFO - ", ROUTINE_INFO(/SOURCE)
 
   start=systime(1)
-  mgunit, 'testsuite_uts', nfail=nfail
+  mgunit, 'testsuite_uts', nfail=nfail, filename='test-results.html', /html
   elapsed=systime(1)-start
   print, "TIME ELAPSED - " + strcompress(elapsed/60) + " minutes"
 
