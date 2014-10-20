@@ -2,7 +2,7 @@
 
 ;+
 ; Initialize object, adding all test cases. This automatically finds
-; all tests will name <SOMETHING>_ut__define.pro.
+; all tests with a name like: <SOMETHING>_ut__define.pro.
 ;
 ; :Returns:
 ;   1 for success, 0 for failure
