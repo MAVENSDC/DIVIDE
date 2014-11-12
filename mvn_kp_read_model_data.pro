@@ -84,10 +84,11 @@ pro mvn_kp_read_model_data, file, meta, dim, data
         if (size(value, /n_dimensions) eq 3) then begin
           value_dim = size(value, /dimensions)
           
+          stop
           ;; FIXME - Add check of dimension sizes
           
           ;; Create pointer to structure containing variable data & meta data
-          var_ptr = ptr_new(create_struct('name',var_info.name, 'data', double(value)))
+          var_ptr = ptr_new(create_struct('name',var_info.name, 'data', value))
           data = [data,var_ptr]
         endif
       end
