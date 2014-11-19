@@ -75,6 +75,7 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
       netUrl->SetProperty, SSL_VERIFY_PEER = 0
       netUrl->SetProperty, AUTHENTICATION = authentication
       ;1: basic only, 2: digest
+      netURL->SetProperty, SSL_CERTIFICATE_FILE=''
       netUrl->SetProperty, URL_USERNAME = username
       netUrl->SetProperty, URL_PASSWORD = password
     endif
