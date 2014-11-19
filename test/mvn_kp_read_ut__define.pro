@@ -133,18 +133,18 @@ function mvn_kp_read_ut::test_try_read_data_dont_have
   return, 1
 end
 
-function mvn_kp_read_ut::test_read_orbit_number_input
-  compile_opt strictarr
-  ;; Test orbit time range input
-  ;; FIXME - Update when orbit numbers implemented
-  mvn_kp_read, 1021 , insitu, /insitu_only
-  assert, size(insitu, /N_ELEMENTS) ne 0, "Data not read in when orbit number specified"
-  mvn_kp_read, [1021,1030] , insitu, /insitu_only 
-  mvn_kp_read, 1035 , insitu, iuvs
-  mvn_kp_read, [1035,1040] , insitu, iuvs
-  
-  return, 1
-end
+;  ;; FIXME - Update when orbit numbers implemented
+;function mvn_kp_read_ut::test_read_orbit_number_input
+;  compile_opt strictarr
+;  ;; Test orbit time range input
+;  mvn_kp_read, 1021 , insitu, /insitu_only
+;  assert, size(insitu, /N_ELEMENTS) ne 0, "Data not read in when orbit number specified"
+;  mvn_kp_read, [1021,1030] , insitu, /insitu_only 
+;  mvn_kp_read, 1035 , insitu, iuvs
+;  mvn_kp_read, [1035,1040] , insitu, iuvs
+;  
+;  return, 1
+;end
 
 function mvn_kp_read_ut::test_read_ascii_insitu_only
   compile_opt strictarr
