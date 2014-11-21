@@ -7,36 +7,47 @@
 pro mvn_kp_insitu_search_ut::setup
   compile_opt strictarr
   
-  ;; Modify this if running locally (set up for Jenkins build server)
-  mvn_root_data_dir = '/maven/DIViDE_Toolkit/Sample_Data/'
-  
-  ;; Temp copy preference file is one exists so don't overwrite it
-  install_result = routine_info('mvn_kp_insitu_search_ut__define',/source)
-  install_directory = strsplit(install_result.path,'mvn_kp_insitu_search_ut__define.pro',/extract,/regex)
-  install_directory = install_directory+path_sep()+'..'+path_sep()
-  if file_test(install_directory+'mvn_toolkit_prefs.txt') then begin
-    file_move, install_directory+'mvn_toolkit_prefs.txt', install_directory+'mvn_toolkit_prefs.txt.bak'
-  endif
-  
-  ;; Create a config file pointing to the root data dir
-  ;; on dsinteg1
-  openw,lun,install_directory+'mvn_toolkit_prefs.txt',/get_lun
-  printf,lun,'; IDL Toolkit Data Preferences File'
-  printf,lun,'mvn_root_data_dir: '+mvn_root_data_dir
-  free_lun,lun
-  print, "Updated/created mvn_toolkit_prefs.txt file."
-  
 end
-
 
 function mvn_kp_insitu_search_ut::test_insitu_search_list
   compile_opt strictarr
-
-  ;; Read in data to search against  
+  
+  ;; Read in data to search against
   mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-05/02:00:00'] , insitu, /insitu_only
-
+  
   ;; Test listing insitu parameters that can be searched on
+  ;; Compare output line by line against known good output
+  test_journal = getenv('MVN_TEST_JOURNAL')
+  journal, test_journal
   mvn_kp_insitu_search,insitu,insitu_out,/list
+  journal
+
+  ;; Open known good output
+  install_result = routine_info('mvn_kp_insitu_search_ut__define',/source)
+  install_directory = strsplit(install_result.path,'mvn_kp_insitu_search_ut__define.pro',/extract,/regex)
+  correct_list = install_directory+path_sep()+'known_files'+path_sep()+'test_insitu_search_list.txt'
+  
+  openr,lun1,test_journal,/get_lun
+  openr,lun2,correct_list, /get_lun
+  
+  ;; Ignore header
+  while not eof(lun2) do begin
+    line1 = ''
+    line2 = ''
+    readf,lun2,line1
+    readf,lun1,line2
+    if line1 eq ';Fields available for searching are as follows' then break
+  endwhile
+  
+  ;; Make sure we found the end of the header
+  assert, line1 eq ';Fields available for searching are as follows', "Problem parsing header of list output"
+  
+  ;; Compare line by line
+  while not eof(lun2) do begin
+    readf, lun1, line1
+    readf, lun2, line2
+    assert, line1 eq line2, "Output of /list incorrect"
+  endwhile
   
   return, 1
 end
@@ -114,18 +125,6 @@ end
 
 pro mvn_kp_insitu_search_ut::teardown
   compile_opt strictarr
-  
-  install_result = routine_info('mvn_kp_insitu_search_ut__define',/source)
-  install_directory = strsplit(install_result.path,'mvn_kp_insitu_search_ut__define.pro',/extract,/regex)
-  install_directory = install_directory+path_sep()+'..'+path_sep()
-  
-  ;; Remove temp config file
-  file_delete,install_directory+'mvn_toolkit_prefs.txt'
-  
-  ;; If we backed up an exisiting pref file, move it back.
-  if file_test(install_directory+'mvn_toolkit_prefs.txt.bak') then begin
-    file_move, install_directory+'mvn_toolkit_prefs.txt.bak', install_directory+'mvn_toolkit_prefs.txt'
-  endif
   
 end
 
