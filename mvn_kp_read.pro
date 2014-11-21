@@ -554,7 +554,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
         
       endfor
 
-      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED & any observationh modes found
+      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED & any observation modes found
       ; within time range.
       if iuvs_index gt 0 then begin
         iuvs_output = iuvs_data_temp[0:iuvs_index-1]
