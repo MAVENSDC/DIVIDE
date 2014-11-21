@@ -6,25 +6,6 @@
 
 pro mvn_kp_read_ut::setup
   compile_opt strictarr
-
-  ;; Modify this if running locally (set up for Jenkins build server)
-  mvn_root_data_dir = '/maven/DIViDE_Toolkit/Sample_Data/'
-  
-  ;; Temp copy preference file is one exists so don't overwrite it
-  install_result = routine_info('mvn_kp_read_ut__define',/source)
-  install_directory = strsplit(install_result.path,'mvn_kp_read_ut__define.pro',/extract,/regex)
-  install_directory = install_directory+path_sep()+'..'+path_sep()
-  if file_test(install_directory+'mvn_toolkit_prefs.txt') then begin
-    file_move, install_directory+'mvn_toolkit_prefs.txt', install_directory+'mvn_toolkit_prefs.txt.bak'
-  endif
-
-  ;; Create a config file pointing to the root data dir
-  ;; on dsinteg1 
-  openw,lun,install_directory+'mvn_toolkit_prefs.txt',/get_lun
-  printf,lun,'; IDL Toolkit Data Preferences File'
-  printf,lun,'mvn_root_data_dir: '+mvn_root_data_dir
-  free_lun,lun
-  print, "Updated/created mvn_toolkit_prefs.txt file."
   
 end
 
@@ -242,18 +223,6 @@ end
 
 pro mvn_kp_read_ut::teardown
   compile_opt strictarr
-  
-  install_result = routine_info('mvn_kp_read_ut__define',/source)
-  install_directory = strsplit(install_result.path,'mvn_kp_read_ut__define.pro',/extract,/regex)
-  install_directory = install_directory+path_sep()+'..'+path_sep()
-
-  ;; Remove temp config file
-  file_delete,install_directory+'mvn_toolkit_prefs.txt'
-
-  ;; If we backed up an exisiting pref file, move it back.
-  if file_test(install_directory+'mvn_toolkit_prefs.txt.bak') then begin
-    file_move, install_directory+'mvn_toolkit_prefs.txt.bak', install_directory+'mvn_toolkit_prefs.txt'
-  endif
   
 end
 
