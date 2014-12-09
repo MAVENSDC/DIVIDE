@@ -511,8 +511,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     endfor
     
     
-    ;OUTPUT INSITU DATA STRUCTURE
-    insitu_output = kp_data_temp[0:totalEntries-1]
+    ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
+    if totalEntries gt 0 then begin
+      insitu_output = kp_data_temp[0:totalEntries-1]
+    endif 
+    
     print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
     
   endif else begin
@@ -551,8 +554,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
         
       endfor
 
-      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED
-      iuvs_output = iuvs_data_temp[0:iuvs_index-1]
+      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED & any observation modes found
+      ; within time range.
+      if iuvs_index gt 0 then begin
+        iuvs_output = iuvs_data_temp[0:iuvs_index-1]
+      endif 
       print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
       
     endif else begin
