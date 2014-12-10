@@ -78,19 +78,33 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
           ts_split=strsplit(orbit.time_string, '/', COUNT=ts_count, /EXTRACT)
           if ts_count gt 1 then orbit.time_string = ts_split[0]+'T'+ts_split[1]
           
-          if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
+          ;; If io_bound is not [1,1], need to loop through and keep only what is desired (either inbound or outbound)
+          if (io_flag[0] ne 1) or (io_flag[1] ne 1) then begin
+            if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
+              MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments
+              kp_data_temp[index] = insitu_record
+              index=index+1
+            endif
+          endif else begin
             MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments
             kp_data_temp[index] = insitu_record
             index=index+1
-          endif
+          endelse 
         endif
+        
       endif
     endwhile
     
     free_lun,lun
     
-    start_index=0
-    stop_index=index-1
+    ;; If index eq 0, no records fell within time range or passed IO check, set start_index
+    ;; equal to -1 so below the code will return 0 .
+    if index eq 0l then begin
+      start_index=-1
+    endif else begin
+      start_index=0
+      stop_index=index-1
+    endelse
     
   endif else if keyword_set(save_files) then begin
     index=0L
@@ -102,19 +116,30 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, begin_time=begin_time,
       within_time_bounds = MVN_KP_TIME_BOUNDS(orbit[saved_records].time_string, begin_time, end_time)
       if within_time_bounds then begin            ;IF WITHIN TIME RANGE, EXTRACT AND STORE DATA
       
-        if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
-        
+        ;; If io_bound is not [1,1], need to loop through and keep only what is desired (either inbound or outbound)
+        if (io_flag[0] ne 1) or (io_flag[1] ne 1) then begin
+          if ((io_flag[0] eq 1) and (orbit[saved_records].io_bound eq 'I')) or ((io_flag[1] eq 1) and (orbit[saved_records].io_bound eq 'O')) then begin
+                 
+            MVN_KP_INSITU_ASSIGN, insitu_record, orbit[saved_records], instruments
+            kp_data_temp[index] = insitu_record
+            index=index+1
+          endif
+        endif else begin
           MVN_KP_INSITU_ASSIGN, insitu_record, orbit[saved_records], instruments
           kp_data_temp[index] = insitu_record
-          index=index+1
-          
-        endif
+          index=index+1     
+        endelse
       endif
     endfor
-    
-    
-    start_index=0
-    stop_index=index-1
+       
+    ;; If index eq 0, no records fell within time range or passed IO check, set start_index
+    ;; equal to -1 so below the code will return 0 .
+    if index eq 0l then begin
+      start_index=-1
+    endif else begin
+      start_index=0
+      stop_index=index-1
+    endelse
     
   endif else begin
   
