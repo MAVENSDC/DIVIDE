@@ -498,6 +498,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       date_path = mvn_kp_date_subdir(target_kp_filenames[file])
       fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
       
+
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
@@ -514,10 +515,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
     if totalEntries gt 0 then begin
       insitu_output = kp_data_temp[0:totalEntries-1]
-    endif 
-    
-    print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
-    
+      print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
+    endif else begin
+      insitu_output = 0
+      print, 'NO INSITU KP data records were found that met the search criteria.'
+    endelse
+        
   endif else begin
     printf,-2, "Warning: No Insitu files found for input timerange."
   endelse
@@ -558,8 +561,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       ; within time range.
       if iuvs_index gt 0 then begin
         iuvs_output = iuvs_data_temp[0:iuvs_index-1]
-      endif 
-      print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+        print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+      endif else begin
+        iuvs_output = 0
+        print, 'including 0 IUVS data records'
+      endelse
+
       
     endif else begin
       printf, -2, "Warning: No IUVS files found for input timerange"
