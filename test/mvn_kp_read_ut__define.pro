@@ -95,7 +95,7 @@ function mvn_kp_read_ut::test_read_small_time_span
   ;; FIXME - TTHe iuvs output here is broken THere should be no iuvs returned
   mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 454, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 0, "Wrong number of iuvs data points read in"
+  assert, iuvs eq 0, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
