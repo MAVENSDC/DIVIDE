@@ -227,6 +227,9 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
     inst_tag_i = where(tag_names(l2_dirs) eq strupcase(instruments[inst_i]), counter)
     if counter le 0 then begin
       print, "Unknown instrument: "+string(instruments[inst_i])
+      if n_elements(instruments[inst_i]) ne 3 then begin
+        print, "Recall: Instrument must be provided with 3 letter representation"
+      endif
       print, ""
       continue
     endif
