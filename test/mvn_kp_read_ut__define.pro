@@ -114,7 +114,7 @@ function mvn_kp_read_ut::test_try_read_data_dont_have
   return, 1
 end
 
-;  ;; FIXME - Update when orbit numbers implemented
+;  ;; FIXME - Update when we have CDF versions of data files in orbit # range
 ;function mvn_kp_read_ut::test_read_orbit_number_input
 ;  compile_opt strictarr
 ;  ;; Test orbit time range input
@@ -196,19 +196,18 @@ function mvn_kp_read_ut::test_read_ascii_subset
   return, 1
 end
 
-;; FIXME - Add this once orbit number added
-;function mvn_kp_read_ut::test_read_ascii_orbit_number_input
-;  compile_opt strictarr  
-;  ;; Test reading in ascii files when giving orbit number for time
-;;  mvn_kp_read, 1024 , insitu, iuvs, /text_files
-;;  mvn_kp_read, [1021,1032] , insitu, iuvs, /text_files
-;;  mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_all
-;;  mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /static, /euv, /iuvs_periapse
-;;  mvn_kp_read, [1060] , insitu, iuvs, /text_files, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk
-;;  mvn_kp_read, [1021, 1022] , insitu, iuvs, /text_files
-;  
-;  return, 1
-;end
+; FIXME - Add this once orbit number added
+function mvn_kp_read_ut::test_read_ascii_orbit_number_input
+  compile_opt strictarr  
+  ;; Test reading in ascii files when giving orbit number for time
+  insitu=0
+  iuvs=0
+  mvn_kp_read, [3,150] , insitu, iuvs, /text_files
+  assert, size(insitu, /N_ELEMENTS) eq 11637, "Wrong number of insitu data points read in" 
+  assert, iuvs eq 0, "Wrong number of IUVS data points read in"
+  
+  return, 1
+end
 
 function mvn_kp_read_ut::test_read_ascii_data_dont_have
   compile_opt strictarr
