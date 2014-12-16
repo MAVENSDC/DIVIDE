@@ -381,14 +381,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
   ;IF ORBIT(s) SUPPLIED 
   ;;============================
-  if size(time, /type) eq 2 then begin
-    
-    ;;
-    ;; TEMP FIXME ONCE ORBIT FILES CREATED
-    ;;
-    ;;
-    message, "Orbit times currently not functional. This will we updated shortly after MOI when we have orbit -> time mappings"
-    
+  if size(time, /type) eq 2 then begin    
   
     ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
     if n_elements(time) eq 1 then begin
@@ -400,7 +393,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       end_orbit   = time[1]
     endelse
     
-    ;; Use orbit file look up to get time strings for each orbit       -- FIXME check output of this to ensure we found orbits.
+    ;; Use orbit file look up to get time strings for each orbit
     MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time_string, end_time_string
     
     ;; Create Jul day versions
@@ -498,7 +491,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       date_path = mvn_kp_date_subdir(target_kp_filenames[file])
       fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
       
-
+    
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
