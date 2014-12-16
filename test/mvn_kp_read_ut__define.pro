@@ -199,6 +199,10 @@ end
 ; FIXME - Add this once orbit number added
 function mvn_kp_read_ut::test_read_ascii_orbit_number_input
   compile_opt strictarr  
+  
+  ;; First download latest maven orbit # file
+  mvn_kp_download_orbit_file
+  
   ;; Test reading in ascii files when giving orbit number for time
   insitu=0
   iuvs=0
