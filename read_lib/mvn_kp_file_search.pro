@@ -91,14 +91,19 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
     tiuvs_sec   = fix(strmid(local_iuvs_base, iuvs_sec_index, 2))
     
     times_iuvs_jul = julday(tiuvs_month,tiuvs_day,tiuvs_year,tiuvs_hour,tiuvs_min,tiuvs_sec)
-    
+
     ;; Prune list to only be within time range (use ceiling of end day so as not to chop off
     ;; data we may want)
-    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le (ceil(end_jul-.5)+.5))) ;; FIXME ensure this floor/ceil math is good
+    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le (ceil(end_jul-.5)+.5)))
     if (ind[0] lt 0) then begin
       print, "no Files found"
       return, 'None'
     endif
+
+    ;; Always want to check one orbit file earlier for observations that may be within
+    ;; the input time range
+    if ind[0] ne 0 then ind = [ind[0]-1, ind]
+    
     local_iuvs      = local_iuvs[ind]
     local_iuvs_base = local_iuvs_base[ind]
   endif else begin

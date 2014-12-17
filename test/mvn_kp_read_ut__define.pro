@@ -49,14 +49,14 @@ function mvn_kp_read_ut::test_read_array_string_time
   ;; Test range time input - binary
   mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 20446, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 9, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 10, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
   ;; Test range time input longer time input
   mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 68303, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 31, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 32, "Wrong number of iuvs data points read in"
   
   return, 1
 end
@@ -95,7 +95,7 @@ function mvn_kp_read_ut::test_read_small_time_span
   ;; FIXME - TTHe iuvs output here is broken THere should be no iuvs returned
   mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 454, "Wrong number of insitu data points read in"
-  assert, iuvs eq 0, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 1 , "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -164,7 +164,7 @@ function mvn_kp_read_ut::test_read_ascii
   
   mvn_kp_read, ['2015-04-05/00:00:00', '2015-04-08/17:01:05'] , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 43468, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 20, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 21, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
