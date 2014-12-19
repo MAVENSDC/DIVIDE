@@ -38,7 +38,7 @@
 ;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;
-;    disclude_orbit_file: in, optional, type=boolean
+;    exclude_orbit_file: in, optional, type=boolean
 ;       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
 ;
 ;    debug: in, optional, type=boolean
@@ -98,7 +98,7 @@
 pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list_files=list_files, $
                               start_date=start_date, end_date=end_date, new_files=new_files, $
                               update_prefs=update_prefs, only_update_prefs=only_update_prefs, $
-                              disclude_orbit_file=disclude_orbit_file, debug=debug, help=help
+                              exclude_orbit_file=exclude_orbit_file, debug=debug, help=help
                               
 
   ;provide help for those who don't have IDLDOC installed
@@ -124,7 +124,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
     print,'                search or download of data files will continue.'
     print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
     print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
-    print,'  disclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov'
+    print,'  exclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov'
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
@@ -221,7 +221,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
 
 
   ;; Unless specified not to, check for & download updated orbit # file
-  if (not keyword_set(disclude_orbit_file)) and (not keyword_set(list_files)) then begin
+  if (not keyword_set(exclude_orbit_file)) and (not keyword_set(list_files)) then begin
     print, "Before downloading data files, checking for updated orbit # file from naif.jpl.nasa.gov"
     print, ""
     mvn_kp_download_orbit_file
