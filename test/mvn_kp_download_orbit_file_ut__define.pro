@@ -13,7 +13,7 @@ pro mvn_kp_download_orbit_file_ut::setup
   install_directory = install_directory[0]+'..'+path_sep()
   
   if file_test(install_directory+'maven_orb_rec.orb') then begin
-    file_move, install_directory+'maven_orb_rec.orb', install_directory+'maven_orb_rec.orb.bak'
+    file_move, install_directory+'maven_orb_rec.orb', install_directory+'maven_orb_rec.orb.bak', /OVERWRITE
   endif
   
 end
