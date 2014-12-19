@@ -196,7 +196,6 @@ function mvn_kp_read_ut::test_read_ascii_subset
   return, 1
 end
 
-; FIXME - Add this once orbit number added
 function mvn_kp_read_ut::test_read_ascii_orbit_number_input
   compile_opt strictarr  
   
