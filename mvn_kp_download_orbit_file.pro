@@ -45,7 +45,7 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   if keyword_set(help) then begin
     print,'MVN_KP_DOWNLOAD_ORBIT_FILE'
     print, ' Download orbit number file from jpl into toolkit installation directory.'
-    print, ' If orbit file already exists, overwite it.'
+    print, ' If orbit file already exists, overwrite it.'
     print,''
     print,'mvn_kp_download_orbit_file, debug=debug, help=help
     print,''
