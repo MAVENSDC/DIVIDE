@@ -14,6 +14,28 @@
 ; :Keywords:
 ;-
 
+function MVN_KP_CREATE_TIME_STRING, year, mo_abr, day, hhmmss
+  
+  ;; Convert month 3 letter string rep into #
+  case mo_abr of
+    'JAN': mo_num = '01'
+    'FEB': mo_num = '02'
+    'MAR': mo_num = '03'
+    'APR': mo_num = '04'
+    'MAY': mo_num = '05'
+    'JUN': mo_num = '06'
+    'JUL': mo_num = '07'
+    'AUG': mo_num = '08'
+    'SEP': mo_num = '09'
+    'OCT': mo_num = '10'
+    'NOV': mo_num = '11'
+    'DEC': mo_num = '12'
+    ELSE: message, "Unrecognized three letter month abbreviation "
+  endcase
+  
+  return, year+'-'+mo_num+'-'+day+'/'+hhmmss  
+end
+
 pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
 
   ;; FIXME - Take care of sanitizing input, right now orbits can be decimals which can have weird behavior
@@ -49,14 +71,15 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
   restore,install_time_directory+orbit_file_template
   orbits = read_ascii(install_directory+orbit_file ,template=orbit_template)
 
+ 
   ;; Find and create time string for start orbit
   ;; =======================
   begin_index = where(orbits.orbitnum eq begin_orbit, count)  
   if begin_index lt 0 then begin 
     print, "Couldn't find time for input begin orbit"
-    print, "Try running mvn_kp_download_orbit_file to ensure you have the lastest orbit number file"
+    print, "Try running mvn_kp_download_orbit_file to ensure you have the latest orbit number file"
     print, "Current local orbit file contains orbit information from 2 through "+strtrim(string(orbits.orbitnum(n_elements(orbits.orbitnum)-1)),2)
-    message, "Cannot convert obrit # into time string"
+    message, "Cannot convert orbit # into time string"
   endif
 
   if count gt 1 then message, "Matched more than one entry for a single orbit... orbit file corrupt?"
@@ -66,22 +89,7 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
   bt_day = string(orbits.day(begin_index))
   bt_hhmmss = string(orbits.hhmmss(begin_index))
  
-  case bt_mo_string of
-    'JAN': bt_month = '01'
-    'FEB': bt_month = '02'
-    'MAR': bt_month = '03'
-    'APR': bt_month = '04'
-    'MAY': bt_month = '05'
-    'JUN': bt_month = '06'
-    'JUL': bt_month = '07'
-    'AUG': bt_month = '08'
-    'SEP': bt_month = '09'
-    'OCT': bt_month = '10'
-    'NOV': bt_month = '11'
-    'DEC': bt_month = '12'
-  endcase
-  
-  begin_time = strtrim(bt_year,2)+'-'+strtrim(bt_month,2)+'-'+ strtrim(bt_day, 2)+'/'+strtrim(bt_hhmmss,2)
+  begin_time = mvn_kp_create_time_string(bt_year, bt_mo_string, bt_day, bt_hhmmss)
 
 
   ;; Find and create time string for end orbit
@@ -89,9 +97,9 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
   end_index = where(orbits.orbitnum eq end_orbit, count)
   if end_index lt 0 then begin
     print, "Couldn't find time for input end orbit"
-    print, "Try running mvn_kp_download_orbit_file to ensure you have the lastest orbit number file"
+    print, "Try running mvn_kp_download_orbit_file to ensure you have the latest orbit number file"
     print, "Current local orbit file contains orbit information from 2 through "+strtrim(string(orbits.orbitnum(n_elements(orbits.orbitnum)-1)),2)
-    message, "Cannot convert obrit # into time string"
+    message, "Cannot convert orbit # into time string"
   endif
 
   if count gt 1 then message, "Matched more than one entry for a single orbit... orbit file corrupt?"
@@ -101,22 +109,7 @@ pro MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time, end_time
   et_day = string(orbits.day(end_index))
   et_hhmmss = string(orbits.hhmmss(end_index))
   
-  case et_mo_string of
-    'JAN': et_month = '01'
-    'FEB': et_month = '02'
-    'MAR': et_month = '03'
-    'APR': et_month = '04'
-    'MAY': et_month = '05'
-    'JUN': et_month = '06'
-    'JUL': et_month = '07'
-    'AUG': et_month = '08'
-    'SEP': et_month = '09'
-    'OCT': et_month = '10'
-    'NOV': et_month = '11'
-    'DEC': et_month = '12'
-  endcase
-  
-  end_time = strtrim(et_year,2)+'-'+strtrim(et_month,2)+'-'+ strtrim(et_day, 2)+'/'+strtrim(et_hhmmss,2)
+  end_time = mvn_kp_create_time_string(et_year, et_mo_string, et_day, et_hhmmss)
 
   print, "Converted input orbit times to utc time range: "+begin_time+" to "+end_time
 
