@@ -14,7 +14,7 @@
 ;-
 function testsuite_uts::init, _extra=e
   compile_opt strictarr
-  
+
   if (~self->mguttestsuite::init(_strict_extra=e)) then return, 0
   
   self->add, /all
@@ -26,7 +26,8 @@ function testsuite_uts::init, _extra=e
   ;; Back up existing preference file, and create new one for testing
   
   mvn_root_data_dir = getenv('MVN_ROOT_DATA_DIR')
-  if mvn_root_data_dir eq '' then return, 0
+  if mvn_root_data_dir eq '' then message, 'MUST have MVN_ROOT_DATA_DIR set for unit tests'
+
   
   ;; Temp copy preference file if one exists so don't overwrite it
   install_result = routine_info('mvn_kp_read_ut__define',/source)

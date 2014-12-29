@@ -66,6 +66,8 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
     if authentication gt 0 then begin
       username = ''
       password = ''
+      print, ""
+      print, "Login credentials for LASP SDC Web - "
       read, username, prompt='username: '
       ;read, password, prompt='password: '
       password = mvn_kp_read_password(prompt='password: ') ;don't echo password

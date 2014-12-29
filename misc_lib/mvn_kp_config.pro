@@ -48,7 +48,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     'url_path_file_names', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/file_names', $
     'url_path_download', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/download', $
     'host', 'lasp.colorado.edu', $
-    'port', 80, $,
+    'port', 443, $,
     'url_scheme', 'https', $
     'authentication', 1, $
     'check_max_files', 0, $
@@ -84,7 +84,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     return, orbit_file_server_spec
   endif
   
-  ;; Infomration regarding the IUVS kp data format
+  ;; Information regarding the IUVS kp data format
   if keyword_set(iuvs_data) then begin
     
     iuvs_data_spec = create_struct($

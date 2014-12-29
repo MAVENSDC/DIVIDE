@@ -47,6 +47,9 @@
 ;       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
 ;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
+;       
+;    exclude_orbit_file: in, optional, type=boolean
+;       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
 ;    
 ;    local_dir: in, optional, type=string
 ;       Specify a directory to download files to - this overrides what's stored in
@@ -70,7 +73,8 @@
 
 pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insitu, iuvs=iuvs, new_files=new_files, $
                            text_files=text_files, cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
-                           update_prefs=update_prefs, list_files=list_files, debug=debug, only_update_prefs=only_update_prefs, help=help
+                           update_prefs=update_prefs, list_files=list_files, debug=debug, $
+                           exclude_orbit_file=exclude_orbit_file, only_update_prefs=only_update_prefs, help=help
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -98,6 +102,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     print,'                search or download of data files will continue.'
     print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
     print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
+    print,'  exclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov'
     print,'  local_dir: Specify a directory to download files to - this overrides what is stored in mvn_toolkit_prefs.txt '
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
@@ -322,8 +327,14 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, insitu=insi
     endif else print, "Invalid input. Please answer with yes or no."
   endwhile
   
+  ;; Unless specified not to, check for & download updated orbit # file
+  if not keyword_set(exclude_orbit_file) then begin
+    print, "Before downloading data files, checking for updated orbit # file from naif.jpl.nasa.gov"
+    print, ""
+    mvn_kp_download_orbit_file
+  endif
 
-  print, "Starting download..."  
+  print, "Starting download of kp file(s)..."  
   ; Download files one at a time. 
   nerrs = 0 ;count number of errors
   for i = 0, nfiles-1 do begin
