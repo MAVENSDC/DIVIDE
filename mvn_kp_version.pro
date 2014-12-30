@@ -6,6 +6,6 @@
 
 
 PRO MVN_KP_VERSION
-  print, 'Maven KP Toolkit Version: 1.00'
+  print, 'Maven KP Toolkit Version: 1.02'
 
 end
