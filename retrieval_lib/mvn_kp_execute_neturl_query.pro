@@ -4,7 +4,7 @@
 ; If 'filename' is not set, this will return the results as an array of strings.
 ; If an error occurs, a message will be printed and an error code (LONG) returned.
 ;
-function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
+function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename, not_sdc_connection=not_sdc_connection
 
   ;FIXME clean up error handling. 
   exit_worthy = 0
@@ -18,6 +18,8 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
     netURL->GetProperty, RESPONSE_CODE=code
     ;TODO: let callers print messages?
     case code of
+      6: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Couldn't resolve remote host."
+      52: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Server returned nothing."
       200: printf, -1, "No files returned from server." ; FIXME - Can this error code mean somethign other than nothing returned?
       204: printf, -2, "WARNING in mvn_kp_execute_neturl_query: No results found."
       206: printf, -2, "WARNING in mvn_kp_execute_neturl_query: Only partial results were returned."
@@ -37,6 +39,7 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
       end
       500: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Service failed to handle the query: " + query
       23: printf, -2, "ERROR in mvn_kp_execute_neturl_query: Not able to save result to: " + filename
+      
       else: begin
         printf, -2, "ERROR in mvn_kp_execute_neturl_query: Service request failed with IDL error code: " + strtrim(error_status,2)  
         help, !error_state
@@ -44,8 +47,8 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
     endcase
     catch, /cancel ; Cancel catch so other errors don't get caught here.
     
-    ;; If exit worthy, throw error here to end execution
-    if exit_worthy then begin
+    ;; If exit worthy, throw error here to end execution & logout of connection 
+    if exit_worthy and not keyword_set(not_sdc_connection) then begin
       mvn_kp_logout_connection
       message, "Cannot proceed. Exiting.."
     endif

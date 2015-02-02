@@ -49,14 +49,14 @@ function mvn_kp_read_ut::test_read_array_string_time
   ;; Test range time input - binary
   mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-05/06:00:30'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 20446, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 9, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 10, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
   ;; Test range time input longer time input
   mvn_kp_read, ['2015-04-09/01:00:00', '2015-04-14/21:00:00'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 68303, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 31, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 32, "Wrong number of iuvs data points read in"
   
   return, 1
 end
@@ -95,7 +95,7 @@ function mvn_kp_read_ut::test_read_small_time_span
   ;; FIXME - TTHe iuvs output here is broken THere should be no iuvs returned
   mvn_kp_read, ['2015-04-03/12:00:00', '2015-04-03/13:00:30'] , insitu, iuvs
   assert, size(insitu, /N_ELEMENTS) eq 454, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 0, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 1 , "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -114,7 +114,7 @@ function mvn_kp_read_ut::test_try_read_data_dont_have
   return, 1
 end
 
-;  ;; FIXME - Update when orbit numbers implemented
+;  ;; FIXME - Update when we have CDF versions of data files in orbit # range
 ;function mvn_kp_read_ut::test_read_orbit_number_input
 ;  compile_opt strictarr
 ;  ;; Test orbit time range input
@@ -164,7 +164,7 @@ function mvn_kp_read_ut::test_read_ascii
   
   mvn_kp_read, ['2015-04-05/00:00:00', '2015-04-08/17:01:05'] , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 43468, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 20, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 21, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -196,19 +196,21 @@ function mvn_kp_read_ut::test_read_ascii_subset
   return, 1
 end
 
-;; FIXME - Add this once orbit number added
-;function mvn_kp_read_ut::test_read_ascii_orbit_number_input
-;  compile_opt strictarr  
-;  ;; Test reading in ascii files when giving orbit number for time
-;;  mvn_kp_read, 1024 , insitu, iuvs, /text_files
-;;  mvn_kp_read, [1021,1032] , insitu, iuvs, /text_files
-;;  mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_all
-;;  mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /static, /euv, /iuvs_periapse
-;;  mvn_kp_read, [1060] , insitu, iuvs, /text_files, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk
-;;  mvn_kp_read, [1021, 1022] , insitu, iuvs, /text_files
-;  
-;  return, 1
-;end
+function mvn_kp_read_ut::test_read_ascii_orbit_number_input
+  compile_opt strictarr  
+  
+  ;; First download latest maven orbit # file
+  mvn_kp_download_orbit_file
+  
+  ;; Test reading in ascii files when giving orbit number for time
+  insitu=0
+  iuvs=0
+  mvn_kp_read, [3,150] , insitu, iuvs, /text_files
+  assert, size(insitu, /N_ELEMENTS) eq 11637, "Wrong number of insitu data points read in" 
+  assert, iuvs eq 0, "Wrong number of IUVS data points read in"
+  
+  return, 1
+end
 
 function mvn_kp_read_ut::test_read_ascii_data_dont_have
   compile_opt strictarr

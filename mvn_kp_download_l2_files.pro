@@ -38,6 +38,9 @@
 ;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;
+;    exclude_orbit_file: in, optional, type=boolean
+;       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
+;
 ;    debug: in, optional, type=boolean
 ;       On error, - "Stop immediately at the statement that caused the error and print
 ;       the current program stack." If not specified, error message will be printed and
@@ -95,7 +98,7 @@
 pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list_files=list_files, $
                               start_date=start_date, end_date=end_date, new_files=new_files, $
                               update_prefs=update_prefs, only_update_prefs=only_update_prefs, $
-                              debug=debug, help=help
+                              exclude_orbit_file=exclude_orbit_file, debug=debug, help=help
                               
 
   ;provide help for those who don't have IDLDOC installed
@@ -121,6 +124,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
     print,'                search or download of data files will continue.'
     print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
     print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
+    print,'  exclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov'
     print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
     print,'         the current program stack." If not specified, error message will be printed and '
     print,'         IDL with return to main program level and stop.'
@@ -215,7 +219,13 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
   url_path  = sdc_server_spec.url_path_download      ; Define the URL path for the download web service.
   max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow w/o an extra warning.
 
-  
+
+  ;; Unless specified not to, check for & download updated orbit # file
+  if (not keyword_set(exclude_orbit_file)) and (not keyword_set(list_files)) then begin
+    print, "Before downloading data files, checking for updated orbit # file from naif.jpl.nasa.gov"
+    print, ""
+    mvn_kp_download_orbit_file
+  endif
 
   ;; ------------------------------------------------------------------------------------ ;;
   ;; ------------------------------ Main logic ------------------------------------------ ;;
@@ -227,6 +237,9 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
     inst_tag_i = where(tag_names(l2_dirs) eq strupcase(instruments[inst_i]), counter)
     if counter le 0 then begin
       print, "Unknown instrument: "+string(instruments[inst_i])
+      if n_elements(instruments[inst_i]) ne 3 then begin
+        print, "Recall: Instrument must be provided with 3 letter representation"
+      endif
       print, ""
       continue
     endif
@@ -352,7 +365,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
         connection = mvn_kp_get_connection()
       endif
       
-      print, "Starting download..."
+      print, "Starting download of l2 file(s)..."
       ; Download files one at a time.
       nerrs = 0 ;count number of errors
       for i = 0, nfiles-1 do begin

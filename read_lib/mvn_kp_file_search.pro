@@ -14,11 +14,14 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
   ;SET THE FILENAME PATTERN TO SEARCH THE DIRECTORY FOR    - FIXME Make below more consistent
   ;; Default is CDF format
   if keyword_set(save_files) then begin 
-    insitu_pattern += '.sav' 
+    ext = '.sav'
+    insitu_pattern += ext 
   endif else if keyword_set(text_files) then begin
-    insitu_pattern += '.tab' 
+    ext = '.tab'
+    insitu_pattern += ext 
   endif else begin
-    insitu_pattern += '.cdf' 
+    ext = '.cdf'
+    insitu_pattern += ext 
   endelse
   
   ;; - recursive search to look through year/month subdirs
@@ -40,7 +43,7 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
     ind = where((local_times_insitu_jul ge (floor(begin_jul-.5)+.5)) and (local_times_insitu_jul le (ceil(end_jul-.5)+.5))) ;; FIXME ensure this floor/ceil math is good
     
     if(ind[0] lt 0) then begin
-      print, "No Local Files Found"
+      print, "No local insitu files found in format: "+ext
       return, 'None'
     endif
     
@@ -70,12 +73,15 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
 
   ;; SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
   ;; Default is CDF format
-  if keyword_set(save_files) then begin 
-    iuvs_pattern += '.sav' 
+  if keyword_set(save_files) then begin
+    ext = '.sav' 
+    iuvs_pattern += ext
   endif else if keyword_set(text_files) then begin
-    iuvs_pattern += '.tab' 
+    ext = '.tab'
+    iuvs_pattern += ext 
   endif else begin
-    iuvs_pattern += '.cdf' 
+    ext = '.cdf'
+    iuvs_pattern += ext 
   endelse
  
   ;; - recursive search to look through year/month subdirs
@@ -91,14 +97,19 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
     tiuvs_sec   = fix(strmid(local_iuvs_base, iuvs_sec_index, 2))
     
     times_iuvs_jul = julday(tiuvs_month,tiuvs_day,tiuvs_year,tiuvs_hour,tiuvs_min,tiuvs_sec)
-    
+
     ;; Prune list to only be within time range (use ceiling of end day so as not to chop off
     ;; data we may want)
-    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le (ceil(end_jul-.5)+.5))) ;; FIXME ensure this floor/ceil math is good
+    ind = where((times_iuvs_jul ge begin_jul) and (times_iuvs_jul le (ceil(end_jul-.5)+.5)))
     if (ind[0] lt 0) then begin
-      print, "no Files found"
+      print, "No local IUVS files found in format: "+ext
       return, 'None'
     endif
+
+    ;; Always want to check one orbit file earlier for observations that may be within
+    ;; the input time range
+    if ind[0] ne 0 then ind = [ind[0]-1, ind]
+    
     local_iuvs      = local_iuvs[ind]
     local_iuvs_base = local_iuvs_base[ind]
   endif else begin

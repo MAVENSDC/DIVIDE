@@ -381,14 +381,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
   ;IF ORBIT(s) SUPPLIED 
   ;;============================
-  if size(time, /type) eq 2 then begin
-    
-    ;;
-    ;; TEMP FIXME ONCE ORBIT FILES CREATED
-    ;;
-    ;;
-    message, "Orbit times currently not functional. This will we updated shortly after MOI when we have orbit -> time mappings"
-    
+  if size(time, /type) eq 2 then begin    
   
     ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
     if n_elements(time) eq 1 then begin
@@ -400,7 +393,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       end_orbit   = time[1]
     endelse
     
-    ;; Use orbit file look up to get time strings for each orbit       -- FIXME check output of this to ensure we found orbits.
+    ;; Use orbit file look up to get time strings for each orbit
     MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time_string, end_time_string
     
     ;; Create Jul day versions
@@ -498,6 +491,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       date_path = mvn_kp_date_subdir(target_kp_filenames[file])
       fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
       
+    
       MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
         instruments=instruments, save_files=save_files, text_files=text_files
         
@@ -514,10 +508,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
     if totalEntries gt 0 then begin
       insitu_output = kp_data_temp[0:totalEntries-1]
-    endif 
-    
-    print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
-    
+      print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
+    endif else begin
+      insitu_output = 0
+      print, 'NO INSITU KP data records were found that met the search criteria.'
+    endelse
+        
   endif else begin
     printf,-2, "Warning: No Insitu files found for input timerange."
   endelse
@@ -558,8 +554,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       ; within time range.
       if iuvs_index gt 0 then begin
         iuvs_output = iuvs_data_temp[0:iuvs_index-1]
-      endif 
-      print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+        print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+      endif else begin
+        iuvs_output = 0
+        print, 'including 0 IUVS data records'
+      endelse
+
       
     endif else begin
       printf, -2, "Warning: No IUVS files found for input timerange"
