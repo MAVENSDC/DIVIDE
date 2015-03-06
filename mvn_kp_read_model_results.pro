@@ -27,7 +27,7 @@
 ;-
 
 
-pro mvn_kp_read_model_data, file, meta, dim, data
+pro mvn_kp_read_model_results, file, meta, dim, data
 
   ;; Open netcdf file for reading
   id = ncdf_open(file, /NOWRITE)
