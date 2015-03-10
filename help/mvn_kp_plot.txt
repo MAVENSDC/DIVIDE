@@ -1,0 +1,35 @@
+***************
+* MVN_KP_PLOT *
+***************
+
+This is a very basic routine to plot time series data from a 
+MAVEN in-situ Key Parameter data structure.
+
+mvn_kp_plot, kp_data, parameter, $
+             error=error, time=time, list=list, range=range, title=title, $
+             thick=thick, linestyle=linestyle, symbol=symbol, $
+             directgraphic=directgraphic, log=log, yrange=yrange, $
+             y_labels=y_labels, _extra=e, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure
+  parameter: Key Parameter value to be plotted. Either name or index. Single or multiple. See User Guide for more details.
+
+OPTIONAL FIELDS
+***************
+  error: Associated error bars to plot.
+  time: Range of times to plot.
+  list: Display list of parameters in the data structure.
+  range: Display the beginning and end times of the data structure.
+  title: Optional overall plot title.
+  thick: Set the thickness of the plotted line.
+  linestyle: Use the IDL linestyles for plotting.
+  symbol: Use IDL symbols for plotting.
+  directgraphic: Override the default Function Graphics and use direct graphics.
+  log: Plot on a logarthmic axis (y).
+  yrange: Set teh displayed y-axis range.
+  y_labels: Change the displayed Y-axis label.
+  _extra: Use any of the other IDL graphics options.
+  help: Invoke this list.
+

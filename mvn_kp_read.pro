@@ -117,79 +117,80 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
                       
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
-    print,'MVN_KP_READ'
-    print,'  Read local Maven KP data files into memory. Capable of reading both in situ KP data files'
-    print,'  and IUVS KP data files. Capable of reading in either CDF or ASCII formated data files. '
-    print,'  By default, CDF files are read. There are also hooks in place, using /download_new keyword, '
-    print,'  to query the SDC web server and download missing or updated KP data files. '
-    print,''
-    print,'mvn_kp_read, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $'
-    print,'             debug=debug, duration=duration, text_files=text_files, save_files=save_files, $'
-    print,'             insitu_only=insitu_only, insitu_all=insitu_all, inbound=inbound, outbound=outbound, $'
-    print,'             lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    '
-    print,'             iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $'
-    print,'             iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$'
-    print,'             iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $'
-    print,'             iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $'
-    print,'             iuvs_stellarocc=iuvs_stellarocc, only_update_prefs=only_update_prefs, help=help'
-    print,''
-    print,'REQUIRED FIELDS'
-    print,'***************'
-    print,'  time: A start or start & stop time (or orbit #) range for reading kp data.
-    print,'        long(s)        orbit number
-    print,'        string(s)      format:  YYYY-MM-DD/hh:mm:ss       
-    print,'  insitu_output: This paramater will contain the in situ KP data that is read into memory. It will
-    print,'                 be structured as an array of structures. Each array entry corresponds to each time. 
-    print,'  iuvs_output: This parameter will contain the IUVS KP data that is read into memory. It will be
-    print,'               structured as an array of structures. Each array entry corresponds to one orbit of data.
-    print,'OPTIONAL FIELDS'
-    print,'***************'
-    print,'  download_new: optional keyword to instruct IDL to query the SDC server to look for any new or missing
-    print,'                files to download over the input timerange.
-    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
-    print,'                contains paths to the root data directory. After selecting new path to data folders, '
-    print,'                search or download of data files will continue.'
-    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
-    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
-    print,'  debug:  On error, - "Stop immediately at the statement that caused the error and print 
-    print,'          the current program stack." If not specified, error message will be printed and 
-    print,'          IDL with return to main program level and stop.
-    print,'  duration: Length of time range for data read, only used if input time parameter is a single value.
-    print,'            If input time is a string, duration is interpreted as seconds. If input time is an integer
-    print,'            (orbit), duration is interpreted as orbits. 
-    print,'  text_files: Read in ASCII files instead of the default of reading CDF files. 
-    print,'  save_files: Read in .sav files instead of the default of reading CDF files. This option exists primarily
-    print,'              for the developers and debugging. 
-    print,'  insitu_only: Read in only in situ data. If this is supplied, the iuvs_output paramater will be ignored if 
-    print,'               input. Because insitu spacecraft time series ephemeris data is necessary for the visulization
-    print,'               procedures to work, there is no iuvs_only option. 
-
-    print,'  lpw: return all of the LPW data
-    print,'  euv: return all of the EUV data
-    print,'  static: return all of the STATIC data
-    print,'  swia: return all of the SWIA data
-    print,'  swea: return all of the SWEA data
-    print,'  mag: return all of the MAG data
-    print,'  sep: return all of the SEP data
-    print,'  ngims: return all of the NGIMS data
-    print,'  inbound: return only the data from the inbound leg of an orbit
-    print,'  outbound:  return only the data from the outbound leg of an orbit 
-    print,'  insitu_all: return all in situ data. This keyword is necessary if an IUVS observation mode keyword
-    print,'              is specified and you want to still read in all in situ data. If no in situ instrument 
-    print,'              or IUVS observation keyword specified, default behavior is to read in all in situ data. 
-    print,'  iuvs_periapse: return all of the IUVS PERIAPSE limb scan data 
-    print,'  iuvs_apoapse: return all of the IUVS APOAPSE data 
-    print,'  iuvs_coronaEchellehigh: return all of the IUVS Corona Echelle high altitude data 
-    print,'  iuvs_coronaEchelleDisk: return all of the IUVS Corona Echelle disk data 
-    print,'  iuvs_coronaEchelleLimb: return all of the IUVS Corona Echelle limb data 
-    print,'  iuvs_coronaLoresDisk: return all of the IUVS Corona LoRes disk data
-    print,'  iuvs_coronaLoreshigh: return all of the IUVS Corona LoRes high altitude data
-    print,'  iuvs_coronaLoreslimb: return all of the iuvs corona LoREs on limb data 
-    print,'  iuvs_stellarocc: return all of the IUVS Stellar Occulatation data
-    print,'  iuvs_all: return all IUVS observation modes. This keyword is necessary if an in situ instrument 
-    print,'            keyword is specified and you want to still read in all IUVS data. If no in situ instrument
-    print,'            or IUVS observation keyword specified, default behavior is to read in all IUVS data. 
-    print,'  help: Invoke this list.'
+    mvn_kp_get_help,'mvn_kp_read'
+;    print,'MVN_KP_READ'
+;    print,'  Read local Maven KP data files into memory. Capable of reading both in situ KP data files'
+;    print,'  and IUVS KP data files. Capable of reading in either CDF or ASCII formated data files. '
+;    print,'  By default, CDF files are read. There are also hooks in place, using /download_new keyword, '
+;    print,'  to query the SDC web server and download missing or updated KP data files. '
+;    print,''
+;    print,'mvn_kp_read, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $'
+;    print,'             debug=debug, duration=duration, text_files=text_files, save_files=save_files, $'
+;    print,'             insitu_only=insitu_only, insitu_all=insitu_all, inbound=inbound, outbound=outbound, $'
+;    print,'             lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    '
+;    print,'             iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $'
+;    print,'             iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$'
+;    print,'             iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $'
+;    print,'             iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $'
+;    print,'             iuvs_stellarocc=iuvs_stellarocc, only_update_prefs=only_update_prefs, help=help'
+;    print,''
+;    print,'REQUIRED FIELDS'
+;    print,'***************'
+;    print,'  time: A start or start & stop time (or orbit #) range for reading kp data.
+;    print,'        long(s)        orbit number
+;    print,'        string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+;    print,'  insitu_output: This paramater will contain the in situ KP data that is read into memory. It will
+;    print,'                 be structured as an array of structures. Each array entry corresponds to each time. 
+;    print,'  iuvs_output: This parameter will contain the IUVS KP data that is read into memory. It will be
+;    print,'               structured as an array of structures. Each array entry corresponds to one orbit of data.
+;    print,'OPTIONAL FIELDS'
+;    print,'***************'
+;    print,'  download_new: optional keyword to instruct IDL to query the SDC server to look for any new or missing
+;    print,'                files to download over the input timerange.
+;    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
+;    print,'                contains paths to the root data directory. After selecting new path to data folders, '
+;    print,'                search or download of data files will continue.'
+;    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
+;    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
+;    print,'  debug:  On error, - "Stop immediately at the statement that caused the error and print 
+;    print,'          the current program stack." If not specified, error message will be printed and 
+;    print,'          IDL with return to main program level and stop.
+;    print,'  duration: Length of time range for data read, only used if input time parameter is a single value.
+;    print,'            If input time is a string, duration is interpreted as seconds. If input time is an integer
+;    print,'            (orbit), duration is interpreted as orbits. 
+;    print,'  text_files: Read in ASCII files instead of the default of reading CDF files. 
+;    print,'  save_files: Read in .sav files instead of the default of reading CDF files. This option exists primarily
+;    print,'              for the developers and debugging. 
+;    print,'  insitu_only: Read in only in situ data. If this is supplied, the iuvs_output paramater will be ignored if 
+;    print,'               input. Because insitu spacecraft time series ephemeris data is necessary for the visulization
+;    print,'               procedures to work, there is no iuvs_only option. 
+;
+;    print,'  lpw: return all of the LPW data
+;    print,'  euv: return all of the EUV data
+;    print,'  static: return all of the STATIC data
+;    print,'  swia: return all of the SWIA data
+;    print,'  swea: return all of the SWEA data
+;    print,'  mag: return all of the MAG data
+;    print,'  sep: return all of the SEP data
+;    print,'  ngims: return all of the NGIMS data
+;    print,'  inbound: return only the data from the inbound leg of an orbit
+;    print,'  outbound:  return only the data from the outbound leg of an orbit 
+;    print,'  insitu_all: return all in situ data. This keyword is necessary if an IUVS observation mode keyword
+;    print,'              is specified and you want to still read in all in situ data. If no in situ instrument 
+;    print,'              or IUVS observation keyword specified, default behavior is to read in all in situ data. 
+;    print,'  iuvs_periapse: return all of the IUVS PERIAPSE limb scan data 
+;    print,'  iuvs_apoapse: return all of the IUVS APOAPSE data 
+;    print,'  iuvs_coronaEchellehigh: return all of the IUVS Corona Echelle high altitude data 
+;    print,'  iuvs_coronaEchelleDisk: return all of the IUVS Corona Echelle disk data 
+;    print,'  iuvs_coronaEchelleLimb: return all of the IUVS Corona Echelle limb data 
+;    print,'  iuvs_coronaLoresDisk: return all of the IUVS Corona LoRes disk data
+;    print,'  iuvs_coronaLoreshigh: return all of the IUVS Corona LoRes high altitude data
+;    print,'  iuvs_coronaLoreslimb: return all of the iuvs corona LoREs on limb data 
+;    print,'  iuvs_stellarocc: return all of the IUVS Stellar Occulatation data
+;    print,'  iuvs_all: return all IUVS observation modes. This keyword is necessary if an in situ instrument 
+;    print,'            keyword is specified and you want to still read in all IUVS data. If no in situ instrument
+;    print,'            or IUVS observation keyword specified, default behavior is to read in all IUVS data. 
+;    print,'  help: Invoke this list.'
     return
   endif
 

@@ -132,54 +132,55 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbi
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
-    print,'MVN_KP_MAP2D'
-    print,'    This routine will produce a 2d map of Mars, either in planetocentric or the MSO coordinate system, with the '
-    print,'    MAVEN orbital projection and a variety of basemaps (including IUVS Apoapse images). The spacecraft orbital path may be colored by a given'
-    print,'    insitu Key Parameter data valuu. Additionally, IUVS single point observations may be displayed as well. '
-    print,''
-    print,'mvn_kp_map2d, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbit, list=list, basemap=basemap, $;
-    print,'              colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $;
-    print,'              periapse_temp=periapse_temp, optimize=optimize, direct=direct, log=log, i_colortable=i_colortable, $;
-    print,'              corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $;
-    print,'              corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $;
-    print,'              corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $;
-    print,'              map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $;
-    print,'              minimum=minimum, maximum=maximum, help=help;
-    print,''
-    print,'REQUIRED FIELDS'
-    print,'**************'
-    print,'  kp_data: In-situ Key Parameter Data Structure'
-    print,''
-    print,'OPTIONAL FIELDS'
-    print,'***************'
-    print,'  Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
-    print,'  iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.'
-    print,'  time:
-    print,'  orbit
-    print,'  list: if selected, will list the KP data fields included in kp_data.
-    print,'  range: if selected, will list the beginning and end times of kp_data.
-    print,'  nopath:  This will suppress the display of the spacecraft orbital track projection.
-    print,'  periapse_temp: If included, the IUVS periapse temperature measurements will be plotted on the map along with the spacecraft track.
-    print,'  optimize: For large data structures, the plotting of the orbital track can get very slow. This keyword decimates the track to a managable size.
-    print,'  direct: Forces the use of direct graphics instead of function.
-    print,'  log: Colors the spacecraft track with a logarithmic stretch instead of linear.
-    print,'  subsolar: in selected, will plot the subsolar track.
-    print,'  mso: switch between GEO and MSO map projections. Basemaps are not projected into MSO coordinate systems so will display only as lat/long grids.
-    print,'  corona_lo_dust: Plots the IUVS Lo-Res coronal dust depth measurements. 
-    print,'  corona_lo_ozone: Plots the IUVS Lo-Res coronal ozone depth measurements. 
-    print,'  corona_lo_aurora: Plots the IUVS Lo-Res coronal auroral index measurements. 
-    print,'  corona_lo_h_rad: Plots the IUVS Lo-Res coronal H radiance measurements.   
-    print,'  corona_lo_co_rad: Plots the IUVS Lo-Res coronalCO radiance measurements. 
-    print,'  corona_lo_no_rad: Plots the IUVS Lo-Res coronal NO radiance measurements. 
-    print,'  corona_lo_o_rad: Plots the IUVS Lo-Res coronal O radiance measurements. 
-    print,'  corona_e_h_rad: Plots the IUVS Echelle coronal H Radiance measurements. 
-    print,'  corona_e_d_rad: Plots the IUVS Echelle coronal D Radiance measurements. 
-    print,'  corona_e_o_rad: Plots the IUVS Echelle coronal O Radiance measurements. 
-    print,'  apoapse_blend: If an IUVS apaopase image is selected as the basemap, this keyword will average all images into a single basemap, instead of plotting only a single image. 
-    print,'  apoapse_time:  Time of an IUVS Apoapse image to display
-    print,'  minimum: Minimum value to display 
-    print,'  maximum: Maximum value to display
-    print,'  help: Invoke this list.'
+    mvn_kp_get_help,'mvn_kp_map2d'
+;    print,'MVN_KP_MAP2D'
+;    print,'    This routine will produce a 2d map of Mars, either in planetocentric or the MSO coordinate system, with the '
+;    print,'    MAVEN orbital projection and a variety of basemaps (including IUVS Apoapse images). The spacecraft orbital path may be colored by a given'
+;    print,'    insitu Key Parameter data valuu. Additionally, IUVS single point observations may be displayed as well. '
+;    print,''
+;    print,'mvn_kp_map2d, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbit, list=list, basemap=basemap, $;
+;    print,'              colors=colors, range=range, subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $;
+;    print,'              periapse_temp=periapse_temp, optimize=optimize, direct=direct, log=log, i_colortable=i_colortable, $;
+;    print,'              corona_lo_dust=corona_lo_dust,corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $;
+;    print,'              corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, corona_lo_no_rad=corona_lo_no_rad, $;
+;    print,'              corona_lo_o_rad=corona_lo_o_rad, corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, corona_e_o_rad=corona_e_o_rad, $;
+;    print,'              map_limit=map_limit, map_location=map_location, apoapse_blend=apoapse_blend, apoapse_time=apoapse_time, $;
+;    print,'              minimum=minimum, maximum=maximum, help=help;
+;    print,''
+;    print,'REQUIRED FIELDS'
+;    print,'**************'
+;    print,'  kp_data: In-situ Key Parameter Data Structure'
+;    print,''
+;    print,'OPTIONAL FIELDS'
+;    print,'***************'
+;    print,'  Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
+;    print,'  iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.'
+;    print,'  time:
+;    print,'  orbit
+;    print,'  list: if selected, will list the KP data fields included in kp_data.
+;    print,'  range: if selected, will list the beginning and end times of kp_data.
+;    print,'  nopath:  This will suppress the display of the spacecraft orbital track projection.
+;    print,'  periapse_temp: If included, the IUVS periapse temperature measurements will be plotted on the map along with the spacecraft track.
+;    print,'  optimize: For large data structures, the plotting of the orbital track can get very slow. This keyword decimates the track to a managable size.
+;    print,'  direct: Forces the use of direct graphics instead of function.
+;    print,'  log: Colors the spacecraft track with a logarithmic stretch instead of linear.
+;    print,'  subsolar: in selected, will plot the subsolar track.
+;    print,'  mso: switch between GEO and MSO map projections. Basemaps are not projected into MSO coordinate systems so will display only as lat/long grids.
+;    print,'  corona_lo_dust: Plots the IUVS Lo-Res coronal dust depth measurements. 
+;    print,'  corona_lo_ozone: Plots the IUVS Lo-Res coronal ozone depth measurements. 
+;    print,'  corona_lo_aurora: Plots the IUVS Lo-Res coronal auroral index measurements. 
+;    print,'  corona_lo_h_rad: Plots the IUVS Lo-Res coronal H radiance measurements.   
+;    print,'  corona_lo_co_rad: Plots the IUVS Lo-Res coronalCO radiance measurements. 
+;    print,'  corona_lo_no_rad: Plots the IUVS Lo-Res coronal NO radiance measurements. 
+;    print,'  corona_lo_o_rad: Plots the IUVS Lo-Res coronal O radiance measurements. 
+;    print,'  corona_e_h_rad: Plots the IUVS Echelle coronal H Radiance measurements. 
+;    print,'  corona_e_d_rad: Plots the IUVS Echelle coronal D Radiance measurements. 
+;    print,'  corona_e_o_rad: Plots the IUVS Echelle coronal O Radiance measurements. 
+;    print,'  apoapse_blend: If an IUVS apaopase image is selected as the basemap, this keyword will average all images into a single basemap, instead of plotting only a single image. 
+;    print,'  apoapse_time:  Time of an IUVS Apoapse image to display
+;    print,'  minimum: Minimum value to display 
+;    print,'  maximum: Maximum value to display
+;    print,'  help: Invoke this list.'
     return
   endif
 

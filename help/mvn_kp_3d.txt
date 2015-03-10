@@ -1,0 +1,16 @@
+*************
+* MVN_KP_3D *
+*************
+
+Interactive 3D visualization of MAVEN spacecraft trajectory and 
+insitu/iuvs KP parameters.'
+
+REQUIRED INPUTS
+***************
+  insitu: MAVEN In-situ KP data structure.
+
+OPTIONAL KEYWORDS
+*****************
+  Way too many to list here. Consult the Users' Guide if you want to use 
+  command line options to set the 3d visualization options.
+

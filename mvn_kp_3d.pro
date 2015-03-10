@@ -46,18 +46,19 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, cow=cow
   
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
-    print,'MVN_KP_3D'
-    print,''
-    print,'  Interactive 3D visualization of MAVEN spacecraft trajectory and insitu/iuvs KP parameters.'
-    print,''
-    print,'REQUIRED INPUTS'
-    print,'***************'
-    print,'  insitu: MAVEN In-situ KP data structure. '
-    print,''
-    print,'OPTIONAL KEYWORDS'
-    print,'*****************'
-    print,'  Way too many to list here. Consult the User Guide if you want to use command line options'
-    print,'  to set the 3d visualization options.'
+    mvn_kp_get_help,'mvn_kp_3d'
+;    print,'MVN_KP_3D'
+;    print,''
+;    print,'  Interactive 3D visualization of MAVEN spacecraft trajectory and insitu/iuvs KP parameters.'
+;    print,''
+;    print,'REQUIRED INPUTS'
+;    print,'***************'
+;    print,'  insitu: MAVEN In-situ KP data structure. '
+;    print,''
+;    print,'OPTIONAL KEYWORDS'
+;    print,'*****************'
+;    print,'  Way too many to list here. Consult the User Guide if you want to use command line options'
+;    print,'  to set the 3d visualization options.'
     return
   endif
  

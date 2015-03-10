@@ -1,0 +1,42 @@
+******************
+* MVN_KP_ALTPLOT *
+******************
+
+  This simple routine plots one or more altitude profiles 
+  from the insitu KP data structure.
+  Any data fields may be plotted together, on individual or single plots, 
+  using both direct and function graphics.
+
+mvn_kp_altplot, kp_data, parameter, time=time, list=list, range=range, $
+              title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
+              directgraphic=directgraphic, xlog=xlog, ylog=ylog, $
+              xrange=xrange, yrange=yrange,$
+              davin=davin, y_labels=y_labels, _extra = e, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure
+  parameter: Key Parameter value to be plotted. 
+             Either name or index. Single or multiple. 
+             See User Guide for more details.
+
+OPTIONAL FIELDS
+***************
+  time: Range of times to plot.
+  list: Display list of parameters in the data structure.
+  range: Display the beginning and end times of the data structure.
+  title: Optional overall plot title.
+  thick: Set the thickness of the plotted line.
+  linestyle: Use the IDL linestyles for plotting.
+  symbol: Use IDL symbols for plotting.
+  directgraphic: Override the default Function Graphics and use direct graphics.
+  xlog: Plot on a logarthmic axis (X).
+  ylog: Plot on a logarthmix axis (Y).
+  xrange: Set the displayed x-axis range.
+  yrange: Set the displayed y-axis range.
+  davin: Swap the X and Y axes so that altitude is shown as the dependent variable.
+  x_labels: Change the displayed X-axis labels.
+  y_labels: Change the displayed Y-axis labels.
+  _extra: Use any of the other IDL graphics options.
+  help: Invoke this list.
+

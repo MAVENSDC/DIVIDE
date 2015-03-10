@@ -43,18 +43,19 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   
   ;; provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
-    print,'MVN_KP_DOWNLOAD_ORBIT_FILE'
-    print, ' Download orbit number file from jpl into toolkit installation directory.'
-    print, ' If orbit file already exists, overwrite it.'
-    print,''
-    print,'mvn_kp_download_orbit_file, debug=debug, help=help
-    print,''
-    print,'OPTIONAL FIELDS'
-    print,'***************'
-    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
-    print,'         the current program stack." If not specified, error message will be printed and '
-    print,'         IDL with return to main program level and stop.'
-    print,'  help: Invoke this list.'
+    mvn_kp_get_help,'mvn_kp_download_orbit_file'
+;    print,'MVN_KP_DOWNLOAD_ORBIT_FILE'
+;    print, ' Download orbit number file from jpl into toolkit installation directory.'
+;    print, ' If orbit file already exists, overwrite it.'
+;    print,''
+;    print,'mvn_kp_download_orbit_file, debug=debug, help=help
+;    print,''
+;    print,'OPTIONAL FIELDS'
+;    print,'***************'
+;    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
+;    print,'         the current program stack." If not specified, error message will be printed and '
+;    print,'         IDL with return to main program level and stop.'
+;    print,'  help: Invoke this list.'
 
     return
   endif

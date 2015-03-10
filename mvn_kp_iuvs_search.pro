@@ -259,7 +259,7 @@ pro MVN_KP_IUVS_TAG_LIST_COMMON, data
   print,''
   print,'-----------------------------'
   
-  print, "Common Gemoetry Variables"
+  print, "Common Geometry Variables"
   for j=0, common_tags_num - 1 do begin
     print,'   #'+strtrim(string(j),2)+' '+strtrim(string(common_tags[j]) ,2)
   endfor
@@ -737,42 +737,43 @@ pro MVN_KP_IUVS_SEARCH,  iuvs_in, iuvs_out, parameter=parameter, species=species
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
-    print,'MVN_KP_IUVS_SEARCH'
-    print,'  Searches input iuvs KP data structure based on min and/or max search parameters.'
-    print,''
-    print,'mvn_kp_iuvs_search, iuvs_in, iuvs_out, parameter=parameter, species=species, observation=observation, $'
-    print,'                    min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude, help=help
-    print,''
-    print,'REQUIRED FIELDS'
-    print,'***************'
-    print,'  iuvs_in: iuvs KP data structure (data structure output from mvn_kp_read)'
-    print,'  iuvs_out: output KP data structure containing datat that met all search criteria'
-    print,''
-    print,'OPTIONAL FIELDS'
-    print,'***************'
-    print,'  parameter: Required if /list keyword not supplied. The name, or names, of the IUVS data parameter'
-    print,'       (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
-    print,'  species:Specify a species to search. Only applicable if searching a parameter which has multiple species '
-    print,'          (CO2, CO, H, O, C, N, N2 for periapse scale_height)'
-    print,'  observation: Specify a specific observation to either list or search within.
-    print,'  list: List out possible parameters names to search (& index identifiers associated with parameters). No search performed.'
-    print,'        parameter: Required if /list keyword not supplied. The name, or names, of the INSITU data parameter'
-    print,'        (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
-    print,'  min: the minimum value of the parameter to be searched on (or array of values).'
-    print,'       One or more minimum values. If multiple parameters input & multiple min values input, each min'
-    print,'       value will correspond with each parameter (by array position). If multiple parameters & one min value,'
-    print,'       the min value is used for all parameters. Cannot enter more min values than parameters.'
-    print,'  max: the maximum value of the parameter to be searced on (or array of values)'
-    print,'       One or more maximum values. If multiple parameters input & multiple max values input, each max'
-    print,'       value will correspond with each parameter (by array position). If multiple parameters & one max value,'
-    print,'       the max value is used for all parameters. Cannot enter more max values than parameters.'
-    print,'  range: Print out TIME_STRING for first and last element of input data structure. Also prints corresponding orbit numbers.'
-    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print'
-    print,'         the current program stack." If not specified, error message will be printed and'
-    print,'         IDL with return to main program level and stop.'
-    print,'  altitude: Narrow down altitude bins to search within. Provide min/max as two item array. Only '
-    print,'            applicable if searching for a parameter that is binned by altitude (e.g. Periapse radiance values)'
-    print,'  help: Invoke this list.'
+    mvn_kp_get_help,'mvn_kp_iuvs_search'
+;    print,'MVN_KP_IUVS_SEARCH'
+;    print,'  Searches input iuvs KP data structure based on min and/or max search parameters.'
+;    print,''
+;    print,'mvn_kp_iuvs_search, iuvs_in, iuvs_out, parameter=parameter, species=species, observation=observation, $'
+;    print,'                    min=min_value, max=max_value, list=list, range=range, debug=debug, altitude=altitude, help=help
+;    print,''
+;    print,'REQUIRED FIELDS'
+;    print,'***************'
+;    print,'  iuvs_in: iuvs KP data structure (data structure output from mvn_kp_read)'
+;    print,'  iuvs_out: output KP data structure containing datat that met all search criteria'
+;    print,''
+;    print,'OPTIONAL FIELDS'
+;    print,'***************'
+;    print,'  parameter: Required if /list keyword not supplied. The name, or names, of the IUVS data parameter'
+;    print,'       (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
+;    print,'  species:Specify a species to search. Only applicable if searching a parameter which has multiple species '
+;    print,'          (CO2, CO, H, O, C, N, N2 for periapse scale_height)'
+;    print,'  observation: Specify a specific observation to either list or search within.
+;    print,'  list: List out possible parameters names to search (& index identifiers associated with parameters). No search performed.'
+;    print,'        parameter: Required if /list keyword not supplied. The name, or names, of the INSITU data parameter'
+;    print,'        (or integer index) to search on. Use /list keyword to see possible names or index integers to search on.'
+;    print,'  min: the minimum value of the parameter to be searched on (or array of values).'
+;    print,'       One or more minimum values. If multiple parameters input & multiple min values input, each min'
+;    print,'       value will correspond with each parameter (by array position). If multiple parameters & one min value,'
+;    print,'       the min value is used for all parameters. Cannot enter more min values than parameters.'
+;    print,'  max: the maximum value of the parameter to be searced on (or array of values)'
+;    print,'       One or more maximum values. If multiple parameters input & multiple max values input, each max'
+;    print,'       value will correspond with each parameter (by array position). If multiple parameters & one max value,'
+;    print,'       the max value is used for all parameters. Cannot enter more max values than parameters.'
+;    print,'  range: Print out TIME_STRING for first and last element of input data structure. Also prints corresponding orbit numbers.'
+;    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print'
+;    print,'         the current program stack." If not specified, error message will be printed and'
+;    print,'         IDL with return to main program level and stop.'
+;    print,'  altitude: Narrow down altitude bins to search within. Provide min/max as two item array. Only '
+;    print,'            applicable if searching for a parameter that is binned by altitude (e.g. Periapse radiance values)'
+;    print,'  help: Invoke this list.'
     return
   endif                          
 

@@ -1,0 +1,23 @@
+*******************
+* MVN_KP_RESAMPLE *
+*******************
+
+   This routine enables the user to resample an MAVEN insitu KP data structure 
+   to an arbitrary time cadence.  
+   Used in conjunction with mvn_kp_add_data, this enables the user to modify 
+   and extend the KP data (with additional Level-2 data, for example), yet 
+   still use the plotting and visualization components of the Toolkit.
+
+mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure.
+  time: an input array of time stamps to which the data structure will be resampled.
+  data_out: output array resampled to the new time stamps.
+
+OPTIONAL FIELDS
+***************
+  sc_only: Resample and return only the spacecraft ephemeris substructure.
+  help: Invoke this list.
+

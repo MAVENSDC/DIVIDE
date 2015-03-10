@@ -1,0 +1,56 @@
+**********************
+* MVN_KP_IUVS_SEARCH *
+**********************
+
+  Searches input iuvs KP data structure based on min and/or max search parameters.
+
+mvn_kp_iuvs_search, iuvs_in, iuvs_out, parameter=parameter, species=species, $
+                    observation=observation, min=min_value, max=max_value, $
+                    list=list, range=range, debug=debug, altitude=altitude, $
+                    help=help
+
+REQUIRED FIELDS
+***************
+  iuvs_in: iuvs KP data structure (data structure output from mvn_kp_read)
+  iuvs_out: output KP data structure containing datat that met all search criteria
+
+OPTIONAL FIELDS
+***************
+  parameter: Required if /list keyword not supplied. 
+             The name, or names, of the IUVS data parameter (or integer 
+             index) to search on. 
+             Use /list keyword to see possible names or index integers to search on.
+  species: Specify a species to search. 
+           Only applicable if searching a parameter which has multiple species
+           (CO2, CO, H, O, C, N, N2 for periapse scale_height)
+  observation: Specify a specific observation to either list or search within.
+  list: List out possible parameters names to search (& index identifiers 
+        associated with parameters). No search performed.
+  parameter: Required if /list keyword not supplied. 
+             The name, or names, of the INSITU data parameter (or integer 
+             index) to search on. 
+             Use /list keyword to see possible names or index integers to search on.
+        min: the minimum value of the parameter to be searched on (or array of values).
+             One or more minimum values. If multiple parameters input and multiple 
+             min values input, each min value will correspond with each parameter 
+             (by array position). If multiple parameters and one min value, the min 
+             value is used for all parameters. 
+             Cannot enter more min values than parameters.
+        max: the maximum value of the parameter to be searced on (or array of values)
+             One or more maximum values. If multiple parameters input and multiple 
+             max values input, each max value will correspond with each parameter 
+             (by array position).  If multiple parameters and one max value, the max 
+             value is used for all parameters. 
+             Cannot enter more max values than parameters.
+  range: Print out TIME_STRING for first and last element of input data structure. 
+         Also prints corresponding orbit numbers.
+  debug: On error, - "Stop immediately at the statement that caused the error 
+                      and print the current program stack." 
+         If not specified, error message will be printed and
+         IDL with return to main program level and stop.
+  altitude: Narrow down altitude bins to search within. 
+            Provide min/max as two-element array. 
+            Only applicable if searching for a parameter that is binned 
+            by altitude (e.g. Periapse radiance values)
+  help: Invoke this list.
+

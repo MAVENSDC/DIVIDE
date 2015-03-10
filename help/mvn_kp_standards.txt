@@ -1,0 +1,59 @@
+********************
+* MVN_KP_STANDARDS *
+********************
+
+This routine plots a set of standardized MAVEN KP data plots as defined by 
+Dave Brain, using the tplot routines to create and manipulate variables.
+
+mvn_kp_standards, kp_data, altitude=altitude, plot_color=plot_color, $
+                  time=time, list=list, range=range, all=all, euv=euv, $
+                  mag_mso=mag_mso, mag_geo=mag_geo, mag_cone=mag_cone, $
+                  mag_dir=mag_dir, ngims_neutral=ngims_neutral, $
+                  ngims_ions=ngims_ions, eph_angle=eph_angle, eph_geo=eph_geo, $
+                  eph_mso=eph_mso, swea=swea, sep_ion=sep_ion, $
+                  sep_electron=sep_electron, wave=wave, plasma_den=plasma_den, $
+                  plasma_temp=plasma_temp, swia_h_vel=swia_h_vel, $
+                  static_h_vel=static_h_vel, static_o2_vel=static_o2_vel, $
+                  static_flux=static_flux, static_energy=static_energy, $
+                  sun_bar=sun_bar, solar_wind=solar_wind, $
+                  ionosphere=ionosphere, sc_pot=sc_pot, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure
+
+OPTIONAL FIELDS
+***************
+  altitude: Add an additional x-axis label of spacecraft altitude.
+  plot_color: Change the default IDL color table to something new.
+  time: The time range to be plotted.
+  list: Display the list of all Key Parameters included in the data structure.
+  range: Display the start and end time contained in the data structure.
+  all: Display all the standardized plots.
+  euv: Plot the EUV standardized plot.
+  mag_mso:  Plot the MAG standardized plot in MSO coordinates.
+  mag_geo:   Plot the MAG standardized plot in GEO coordinates.
+  mag_cone:  Plot the MAG CONE standardized plot.
+  mag_dir:   Plot the MAG DIR standardized plot.
+  ngims_neutral: Plot the NGIMS NEUTRAL standardized plot.
+  ngims_ions: Plot the NGIMS IONS standardized plot.
+  eph_angle: Plot the EPH ANGLE standardized plot.
+  eph_geo: Plot the EPH GEO standardized plot.
+  eph_mso: Plot the EPH MSO standardized plot.
+  swea: Plot the SWEA standardized plot.
+  sep_ion: Plot the SEP ION standardized plot.
+  sep_electron:  Plot the SEP ELECTRON standardized plot.
+  wave: Plot the WAVE standardized plot.
+  plasma_den: Plot the PLASMA DENSITY standardized plot.
+  plasma_temp: Plot the PLASMA TEMPERATURE standardized plot.
+  swia_h_vel: Plot the SWIA H VELOCITY standardized plot.
+  static_h_vel: Plot the STATIC H VELOCITY standardized plot.
+  static_o2_vel: Plot the STATIC O2 VELOCITY standardized plot.
+  static_flux: Plot the STATIC FLUX standardized plot.
+  static_energy: Plot the STATIC ENERGY standardized plot. 
+  sun_bar: Plot the SUN BAR standardized plot.
+  solar_wind: Plot the SOLAR WIND standardized plot.
+  ionosphere: Plot the IONOSPHERE standardized plot.
+  sc_pot: Plot the SPACECRAFT POTENTIAL standardized plot.
+  help: Invoke this list.
+

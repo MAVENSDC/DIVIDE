@@ -1,0 +1,35 @@
+****************
+* MVN_KP_TPLOT *
+****************
+A simple wrapper routine that creates tplot variables from the MAVEN insitu KP data structure.'
+    
+mvn_kp_tplot, kp_data, parameter=parameter, $
+              time=time, list=list, range=range, createall=createall, $
+              prefix=prefix, message=message, quiet=quiet, euv=euv, lpw=lpw, $
+              static=static, swea=swea, swia=swia, mag=mag, sep=sep, $
+              ngims=ngims, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure
+
+OPTIONAL FIELDS
+***************
+  parameter: Key Parameter value to be plotted. Either name or index.
+  time: Range of times to plot.
+  list: Display list of parameters in the data structure.
+  range: Display the beginning and end times of the data structure.
+  createall: Create tPlot variables from all Key Parameters within the structure.
+  prefix: Modify the default tPlot variable prefix (mvn_kp_).
+  message: Change the message within the tPlot variable.
+  quiet: Suppress the screen output.
+  euv: Create tPlot variables only from EUV data parameters
+  lpw: Create tPlot variables only from LPW data parameters
+  static: Create tPlot variables only from STATIC data parameters
+  swea: Create tPlot variables only from SWEA data parameters
+  swia: Create tPlot variables only from SWIA data parameters
+  mag: Create tPlot variables only from MAG data parameters
+  sep: Create tPlot variables only from SEP data parameters
+  ngims: Create tPlot variables only from NBGIMS data parameters
+  help: Invoke this list.
+
