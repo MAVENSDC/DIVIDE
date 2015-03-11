@@ -390,9 +390,29 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
         begin_orbit = time[0]
         end_orbit = time[0] + duration
     endif else begin
-      begin_orbit = time[0]
-      end_orbit   = time[1]
-    endelse
+;  Check whether time[0] lt time[1]
+;  If not, ask whether to swap them or exit (typo)
+      if( time[0] gt time[1] )then begin
+        print,'WARNING: Orbit input array: Begin orbit later than end orbit'
+        print,'         Given start orbit: ',time[0]
+        print,'         Given end orbit:   ',time[1]
+        do_swap = ''
+        while( do_swap ne 's' and do_swap ne 'S' and $
+               do_swap ne 'q' and do_swap ne 'Q' )do begin
+          read, prompt="Please enter 's' to swap; or 'q' to quit: ",do_swap
+        endwhile
+        if( do_swap eq 's' or do_swap eq 'S' )then begin
+          begin_orbit = time[0] < time[1] ; < chooses smaller of the two
+          end_orbit = time[0] > time[1]   ; > chooses larger of the two
+        endif
+        if( do_swap eq 'q' or do_swap eq 'Q' )then begin
+          message,'Exiting as per user request to re-enter orbit range.'
+        endif
+      endif else begin
+        begin_orbit = time[0]
+        end_orbit   = time[1]
+      endelse ; compare time order
+    endelse   ; n_elements(time)
     
     ;; Use orbit file look up to get time strings for each orbit
     MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time_string, end_time_string
@@ -427,6 +447,26 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       begin_time_jul = julday(mo, dy, yr, hr, min, sec)
       mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
       end_time_jul = julday(mo, dy, yr, hr, min, sec)
+;  Check that begin_time_jul lt end_time_jul
+;  If not, ask user whether to swap or quit
+      if( begin_time_jul gt end_time_jul )then begin
+        print,'WARNING: Time input array: Begin orbit later than end orbit'
+        print,'         Given start date/time: ',time[0]
+        print,'         Given end date/time:   ',time[1]
+        do_swap = ''
+        while( do_swap ne 's' and do_swap ne 'S' and $
+          do_swap ne 'q' and do_swap ne 'Q' )do begin
+          read, prompt="Please enter 's' to swap; or 'q' to quit: ",do_swap
+        endwhile
+        if( do_swap eq 's' or do_swap eq 'S' )then begin
+          temp = begin_time_jul
+          begin_time_jul = end_time_jul
+          end_time_jul = temp
+        endif
+        if( do_swap eq 'q' or do_swap eq 'Q' )then begin
+          message,'Exiting as per user request to re-enter orbit range.'
+        endif
+      endif ; compare time order
     endelse
   endif
   
@@ -446,6 +486,28 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     begin_time_jul = julday(mo, dy, yr, hr, min, sec)
     mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
     end_time_jul = julday(mo, dy, yr, hr, min, sec)
+    ;  Check that begin_time_jul lt end_time_jul
+    ;  If not, ask user whether to swap or quit
+    if( begin_time_jul gt end_time_jul )then begin
+      print,'WARNING: Time input array: Begin orbit later than end orbit'
+      print,'         Given start date/time: ',time[0],begin_time_string, $
+            format="(a,f14.3,'sec; ',a)"
+      print,'         Given end date/time:   ',time[1],end_time_string, $
+            format="(a,f14.3,'sec; ',a)"
+      do_swap = ''
+      while( do_swap ne 's' and do_swap ne 'S' and $
+        do_swap ne 'q' and do_swap ne 'Q' )do begin
+        read, prompt="Please enter 's' to swap; or 'q' to quit: ",do_swap
+      endwhile
+      if( do_swap eq 's' or do_swap eq 'S' )then begin
+        temp = begin_time_jul
+        begin_time_jul = end_time_jul
+        end_time_jul = temp
+      endif
+      if( do_swap eq 'q' or do_swap eq 'Q' )then begin
+        message,'Exiting as per user request to re-enter orbit range.'
+      endif
+    endif ; compare time order
   endif
   
   

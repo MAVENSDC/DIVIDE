@@ -46,10 +46,10 @@ pro MVN_KP_LOOP_PROGRESS,idx,loopbot,looptop,MODVAL=modval,MESSAGE=message,$
      print, message
 
   endif
-  print, strjoin(replicate(string(8B),77)), $
-         round(frac*100.), $
-         strjoin(replicate('*',(round(frac*70) > 1))) ,$
-         FORMAT="($,A77,I3,'%',1x,'|',A-70,'|')"
+
+  print,round(frac*100.), $
+        strjoin(replicate('*',(round(frac*70) > 1))) ,$
+        FORMAT="($,I3,'%',1x,'|',A-70,'|')"
   print
   
    if idx ge (looptop-modval) then print
