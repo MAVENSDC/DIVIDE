@@ -1,0 +1,107 @@
+Mars atmospheric model requirements for compatibility with the LASP DIViDE IDL Toolkit
+
+(All "FIXME"s need discussion & closure)
+
+---------------------------------------------------------------------------------------
+Requirements:
+
+* File format is netCDF 4
+
+* Modeled data is provided in a single grid (data cube or sphere), either:
+	1. spherical coordinates (longitude, latitude, altitude)
+		* longitude need be eastward 
+		* altitude need be either
+			1. from mars surface assuming mars perfect sphere
+			2. from center of mars FIXME -> Steve's thought on this being a requirement. 
+		* altitude units need be either
+			1. kilometers
+			2. Mars radii		
+	2. x,y,z Cartesian cube
+		* Required to be MSO coordinate system (X-axis poitns from mars to sun, Y-axis points antiparallel to Mars' orbital velocity)
+	
+* NetCDF Dimension names conform to either (case sensitive):
+	- latitude, longitude, altitude
+	- x,y,z
+
+* NetCDF Variables containing dimension data are named the same as the dimensions
+	- Example: 
+		NetCDF Dimension: "latitude" 
+		NetCDF Variable with Latitude values named "latitude"
+	- Not:
+		NetCDF Dimension: "NLats"
+		NetCDF Variable with Latitude values named "latitude"
+
+* Required NetCDF Variable specifying which of the two coordinate systems the data are provided in:
+	- Variable name: coordinate_system 
+	- Allowed values: MSO or GEO
+	
+* Required NetCDF Variable specifying where altitude values are measured from
+	- Variable name: altitude_from
+	- Allowed values: center or surface
+
+* Required NetCDF Variable specifying Mars's radius value used (Not required if altitude_from=center
+	& units altitude in kilometers)
+	- Variable name: mars_radius
+	- Required unit: kilometers 
+
+* Three required NetCDF Variables to describe mars & data orientation
+	1. Mars season
+		- Variable name: LS
+	2. Subsolar Longitude
+		- Variable name: longsubsol
+	3. Mars Tilt
+		- Variable name: dec
+		- Optional? - if not included assume 25.1 degrees
+			
+* All modeled measurement NetCDF Variables need an Attribute "Unit"
+
+* All modeled measurement NetCDF Variables need an Attribute "Title"
+	- Short but descriptive title for measurement
+		- Variable named "CO2P"
+		- "Title" = "CO2+ ion density"
+		
+
+
+Required Variables Recap:
+  1. coordinate_system
+  2. LS
+  3. longsubsol
+  4. dec
+  5. altitude_from
+  6. mars_radius (unless altitude_from=center & units altitude are km)
+
+
+
+
+---------------------------------------------------------------------------------------	
+Options/Freedom:
+
+* N number of modeled measurements, each their own NetCDF variable with the same
+	data cube dimensions
+
+* Freedom for names of variables
+	- "CO2PLUS" vs "CO2P"
+	
+* Extra NetCDF global attributes ok
+
+* Extra NetCDF variables (Input conditions, etc.) ok
+
+* Filenames - no required convention
+	
+* Time - Not required or used at this time, possibly in future
+
+
+
+---------------------------------------------------------------------------------------
+Outstanding discussion topics:
+
+* Other set of minimum required input conditions?
+	- Things that may not be needed for IDL Toolkit but are worth
+	standardizing?
+	- For Dave, Steve, Ronan, ...
+
+
+
+
+
+
