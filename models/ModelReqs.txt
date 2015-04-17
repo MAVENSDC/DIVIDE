@@ -1,8 +1,9 @@
-Mars atmospheric model requirements for compatibility with the LASP DIViDE IDL Toolkit
+Mars atmospheric model requirements for compatibility with the 
+LASP DIViDE IDL Toolkit
 
 (All "FIXME"s need discussion & closure)
 
----------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 Requirements:
 
 * File format is netCDF 4
@@ -12,18 +13,21 @@ Requirements:
 		* longitude need be eastward 
 		* altitude need be either
 			1. from mars surface assuming mars perfect sphere
-			2. from center of mars FIXME -> Steve's thought on this being a requirement. 
+			2. from center of mars FIXME -> Steve's thought on 
+                           this being a requirement. 
 		* altitude units need be either
 			1. kilometers
 			2. Mars radii		
 	2. x,y,z Cartesian cube
-		* Required to be MSO coordinate system (X-axis poitns from mars to sun, Y-axis points antiparallel to Mars' orbital velocity)
+		* Required to be MSO coordinate system 
+                  (X-axis points from Mars to Sun, 
+                   Y-axis points antiparallel to Mars' orbital velocity)
 	
 * NetCDF Dimension names conform to either (case sensitive):
 	- latitude, longitude, altitude
 	- x,y,z
 
-* NetCDF Variables containing dimension data are named the same as the dimensions
+* NetCDF Variables containing dimension data are named the same as the dims
 	- Example: 
 		NetCDF Dimension: "latitude" 
 		NetCDF Variable with Latitude values named "latitude"
@@ -31,7 +35,8 @@ Requirements:
 		NetCDF Dimension: "NLats"
 		NetCDF Variable with Latitude values named "latitude"
 
-* Required NetCDF Variable specifying which of the two coordinate systems the data are provided in:
+* Required NetCDF Variable specifying which of the two coordinate systems 
+  the data are provided in:
 	- Variable name: coordinate_system 
 	- Allowed values: MSO or GEO
 	
@@ -39,8 +44,8 @@ Requirements:
 	- Variable name: altitude_from
 	- Allowed values: center or surface
 
-* Required NetCDF Variable specifying Mars's radius value used (Not required if altitude_from=center
-	& units altitude in kilometers)
+* Required NetCDF Variable specifying Mars's radius value used 
+  (Not required if altitude_from=center and units altitude in kilometers)
 	- Variable name: mars_radius
 	- Required unit: kilometers 
 
@@ -73,11 +78,11 @@ Required Variables Recap:
 
 
 
----------------------------------------------------------------------------------------	
+----------------------------------------------------------------------------
 Options/Freedom:
 
-* N number of modeled measurements, each their own NetCDF variable with the same
-	data cube dimensions
+* N number of modeled measurements, each their own NetCDF variable with 
+    the same data cube dimensions
 
 * Freedom for names of variables
 	- "CO2PLUS" vs "CO2P"
@@ -92,16 +97,10 @@ Options/Freedom:
 
 
 
----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 Outstanding discussion topics:
 
 * Other set of minimum required input conditions?
 	- Things that may not be needed for IDL Toolkit but are worth
 	standardizing?
 	- For Dave, Steve, Ronan, ...
-
-
-
-
-
-

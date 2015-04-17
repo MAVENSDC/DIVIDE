@@ -1,0 +1,25 @@
+*************************
+* MVN_KP_INTERPOL_MODEL *
+*************************
+
+This function interpolates a given model result to a spacecraft trajectory
+  contained within a given insitu KP data structure.
+
+mvn_kp_interpol_model, kp_data, model_meta, model_dims, model_data, $
+                       grid3=grid3, nearest_neighbor=nearest_neighbor, $
+                       _extra=e, help=help
+
+REQUIRED FIELDS
+**************
+  kp_data: In-situ Key Parameter Data Structure
+  model_meta: Structure containing metadata for a given model simulation.
+  model_dims: Structure contianing dimension info for a model simulation.
+  model_data: Structure containing the output data from a model simulation.
+
+OPTIONAL FIELDS
+***************
+  grid3: flag to interpolate using IDL's grid3 function
+  nearest_neighbor: flag to interpolate using nearest neighbor approximation.
+  _extra: Use any of the other IDL graphics options.
+  help: Invoke this list.
+

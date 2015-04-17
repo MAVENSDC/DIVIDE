@@ -11,9 +11,11 @@
 
 mvn_kp_read, time, insitu_output, iuvs_output, download_new=download_new, $
              update_prefs=update_prefs, debug=debug, duration=duration, $
-             text_files=text_files, save_files=save_files, insitu_only=insitu_only, $
-             insitu_all=insitu_all, inbound=inbound, outbound=outbound, lpw=lpw, $
-             static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $
+             text_files=text_files, save_files=save_files, $
+             insitu_only=insitu_only, insitu_all=insitu_all, $
+             inbound=inbound, outbound=outbound, $
+             lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, $
+             sep=sep, ngims=ngims, $
              iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, $
              iuvs_apoapse=iuvs_apoapse, $
              iuvs_coronaEchellehigh=iuvs_coronaEchellehigh, $
@@ -39,30 +41,33 @@ REQUIRED FIELDS
 
 OPTIONAL FIELDS
 ***************
-  download_new: optional keyword to instruct IDL to query the SDC server to look 
-                for any new or missing files to download over the input timerange.
+  download_new: optional keyword to instruct IDL to query the SDC server 
+                to look for any new or missing files to download over the 
+                input timerange.
   update_prefs: Before searching or downloading data, allow user to 
                 update mvn_toolkit_prefs.txt - which contains paths to the root 
                 data directory.  After selecting new path to data folders,
                 search or download of data files will continue.
   only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains 
                      paths to the root data directory.  After selecting new path 
-                     to data folders, procedure will return - not downloading any data.
+                     to data folders, procedure will return - not downloading 
+                     any data.
   debug:  On error, - "Stop immediately at the statement that caused the error 
                        and print the current program stack." 
           If not specified, error message will be printed and 
           IDL with return to main program level and stop.
   duration: Length of time range for data read, only used if input time 
             parameter is a single value.
-            If input time is a string, duration is interpreted as seconds. 
-            If input time is an integer (orbit), duration is interpreted as orbits. 
+            If input time is string, duration is interpreted as seconds. 
+            If input time is integer (orbit), duration is interpreted as orbits. 
   text_files: Read in ASCII files instead of the default of reading CDF files. 
   save_files: Read in .sav files instead of the default of reading CDF files. 
               This option exists primarily for the developers and debugging. 
   insitu_only: Read in only in situ data.  
                If this is supplied, the iuvs_output parameter will be ignored.
                Because insitu spacecraft time series ephemeris data is necessary 
-               for the visulization procedures to work, there is no iuvs_only option. 
+               for the visulization procedures to work, 
+               there is no iuvs_only option. 
 
   lpw: return all of the LPW data
   euv: return all of the EUV data
@@ -79,15 +84,15 @@ OPTIONAL FIELDS
               read in all in situ data. If no in situ instrument or IUVS 
               observation keyword specified, the default behavior is to 
               read in all in situ data. 
-  iuvs_periapse: return all of the IUVS PERIAPSE limb scan data 
-  iuvs_apoapse: return all of the IUVS APOAPSE data 
-  iuvs_coronaEchellehigh: return all of the IUVS Corona Echelle high altitude data 
-  iuvs_coronaEchelleDisk: return all of the IUVS Corona Echelle disk data 
-  iuvs_coronaEchelleLimb: return all of the IUVS Corona Echelle limb data 
-  iuvs_coronaLoresDisk: return all of the IUVS Corona LoRes disk data
-  iuvs_coronaLoreshigh: return all of the IUVS Corona LoRes high altitude data
-  iuvs_coronaLoreslimb: return all of the iuvs corona LoREs on limb data 
-  iuvs_stellarocc: return all of the IUVS Stellar Occulatation data
+  iuvs_periapse: return the IUVS PERIAPSE limb scan data 
+  iuvs_apoapse: return the IUVS APOAPSE data 
+  iuvs_coronaEchellehigh: return the IUVS Corona Echelle high altitude data 
+  iuvs_coronaEchelleDisk: return the IUVS Corona Echelle disk data 
+  iuvs_coronaEchelleLimb: return the IUVS Corona Echelle limb data 
+  iuvs_coronaLoresDisk: return the IUVS Corona LoRes disk data
+  iuvs_coronaLoreshigh: return the IUVS Corona LoRes high altitude data
+  iuvs_coronaLoreslimb: return the iuvs corona LoREs on limb data 
+  iuvs_stellarocc: return the IUVS Stellar Occulatation data
   iuvs_all: return all IUVS observation modes. 
             This keyword is necessary if an in situ instrument keyword 
             is specified and you want to still read in all IUVS data. 
