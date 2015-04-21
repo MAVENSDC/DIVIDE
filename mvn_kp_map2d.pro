@@ -234,69 +234,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
     return
   endif
 
-  ;SET THE BEGINNING AND END TIME RANGES TO BE PLOTTED
+;=============================================================================
 
-;-begin of old version of time index selection
-;  if keyword_set(time) then begin
-;   if size(time,/dimension) eq 0 then begin         
-;    ;IF ONLY A SINGLE TIME IS ENTERED, PLOT ONLY 1 ORBIT
-;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time, time_out, $
-;                      begin_index,/min
-;    begin_time = kp_data[time_out].time
-;    end_index = max(where(kp_data.orbit eq (kp_data[begin_index].orbit + 1)))
-;    end_time = kp_data[end_index].time
-;   endif 
-;   if size(time,/dimension) eq 2 then begin
-;    ;IF 2 TIMES ARE ENTERED, USE THEM AS START/STOP TIMES
-;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[0], time_out, $
-;                      begin_index,/min
-;    begin_time = kp_data[time_out].time
-;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[1], time_out, $
-;                      end_index,/max
-;    end_time = kp_data[time_out].time    
-;    end_index = time_out
-;   endif  
-;  endif else begin
-;    ;IF NO TIME SET, THEN PLOT THE ENTIRE SPAN OF KP_DATA
-;    begin_time = kp_data[0].time
-;    end_time = kp_data[n_elements(kp_data.time)-1].time
-;    begin_index = 0
-;    end_index = n_elements(kp_data.time)-1
-;  endelse
-;  ;SET THE BEGINNING AND END TIMES IF THE USER SELECTED ORBIT BASED PLOTTING
-;  if keyword_set(orbit) then begin
-;    if size(orbit, /dimension) eq 0 then begin
-;      ;IF ONLY A SINGLE ORBIT IS ENTERED, ASSUME 1 ORBIT TO BE PLOTTED
-;      begin_index = min(where(kp_data.orbit eq orbit))
-;      end_index = max(where(kp_data.orbit eq (orbit+1)))
-;      begin_time = kp_data[begin_index].time
-;      end_time = kp_data[end_index].time
-;    endif 
-;    if size(orbit, /dimension) eq 2 then begin
-;      ;IF TWO ORBITS ARE ENTERED, PLOT BETWEEN THEM
-;      begin_index = min(where(kp_data.orbit eq orbit[0]))
-;      end_index = max(where(kp_data.orbit eq (orbit[1])))
-;      begin_time = kp_data[begin_index].time
-;      end_time = kp_data[end_index].time    
-;    endif
-;  endif 
-;  
-;  kp_data = kp_data[begin_index:end_index]
-;;CHECK THAT THE TIME RANGES FALL WITHIN THAT COVERED BY KP_DATA
-;
-;if begin_time lt kp_data[0].time then begin
-;  print,'ERROR: Requested start time is before the range covered by the data'
-;  return
-;endif
-;if end_time gt kp_data[n_elements(kp_data.time)-1].time then begin
-;  print,'ERROR: Requested end time is after the range covered by the data'
-;  return
-;endif
-;- end of old version of begin and end time selection
-;============================================================================
-;
-;-begin of use of existing mvn_kp_range_select to get times
-;-copied from mvn_kp_plot
 ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
 
   if keyword_set(time) then begin ;determine the start and end indices to plot
@@ -333,7 +272,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
     if( do_swap eq 'q' or do_swap eq 'Q' )then $
       message,'Exiting as per user request to re-enter time range'
   endif
-;-end of use of existing mvn_kp_range_select to get time indices
+
 ;=============================================================================
   
   ;IF APOAPSE TIMES NOT SELECTED, CALCULATE MIDPOINTS
