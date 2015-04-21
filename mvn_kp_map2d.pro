@@ -234,81 +234,125 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
   endif
 
   ;SET THE BEGINNING AND END TIME RANGES TO BE PLOTTED
-  if keyword_set(time) then begin
-stop
-   if size(time,/dimension) eq 0 then begin         
-    ;IF ONLY A SINGLE TIME IS ENTERED, PLOT ONLY 1 ORBIT
-    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time, time_out, $
-                      begin_index,/min
-    begin_time = kp_data[time_out].time
-    end_index = max(where(kp_data.orbit eq (kp_data[begin_index].orbit + 1)))
-    end_time = kp_data[end_index].time
-   endif 
-   if size(time,/dimension) eq 2 then begin
-    ;IF 2 TIMES ARE ENTERED, USE THEM AS START/STOP TIMES
-    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[0], time_out, $
-                      begin_index,/min
-    begin_time = kp_data[time_out].time
-    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[1], time_out, $
-                      end_index,/max
-    end_time = kp_data[time_out].time    
-    end_index = time_out
-   endif  
-  endif else begin
-    ;IF NO TIME SET, THEN PLOT THE ENTIRE SPAN OF KP_DATA
-    begin_time = kp_data[0].time
-    end_time = kp_data[n_elements(kp_data.time)-1].time
-    begin_index = 0
-    end_index = n_elements(kp_data.time)-1
-  endelse
-  ;SET THE BEGINNING AND END TIMES IF THE USER SELECTED ORBIT BASED PLOTTING
-  if keyword_set(orbit) then begin
-    if size(orbit, /dimension) eq 0 then begin
-      ;IF ONLY A SINGLE ORBIT IS ENTERED, ASSUME 1 ORBIT TO BE PLOTTED
-      begin_index = min(where(kp_data.orbit eq orbit))
-      end_index = max(where(kp_data.orbit eq (orbit+1)))
-      begin_time = kp_data[begin_index].time
-      end_time = kp_data[end_index].time
-    endif 
-    if size(orbit, /dimension) eq 2 then begin
-      ;IF TWO ORBITS ARE ENTERED, PLOT BETWEEN THEM
-      begin_index = min(where(kp_data.orbit eq orbit[0]))
-      end_index = max(where(kp_data.orbit eq (orbit[1])))
-      begin_time = kp_data[begin_index].time
-      end_time = kp_data[end_index].time    
-    endif
-  endif 
-  
-  kp_data = kp_data[begin_index:end_index]
 
-  ;CHECK THAT THE TIME RANGES FALL WITHIN THAT COVERED BY KP_DATA
-  
-  if begin_time lt kp_data[0].time then begin
-    print,'ERROR: Requested start time is before the range covered by the data'
+;-begin of old version of time index selection
+;  if keyword_set(time) then begin
+;   if size(time,/dimension) eq 0 then begin         
+;    ;IF ONLY A SINGLE TIME IS ENTERED, PLOT ONLY 1 ORBIT
+;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time, time_out, $
+;                      begin_index,/min
+;    begin_time = kp_data[time_out].time
+;    end_index = max(where(kp_data.orbit eq (kp_data[begin_index].orbit + 1)))
+;    end_time = kp_data[end_index].time
+;   endif 
+;   if size(time,/dimension) eq 2 then begin
+;    ;IF 2 TIMES ARE ENTERED, USE THEM AS START/STOP TIMES
+;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[0], time_out, $
+;                      begin_index,/min
+;    begin_time = kp_data[time_out].time
+;    MVN_KP_TIME_FIND, kp_data.time_string, kp_data.orbit, time[1], time_out, $
+;                      end_index,/max
+;    end_time = kp_data[time_out].time    
+;    end_index = time_out
+;   endif  
+;  endif else begin
+;    ;IF NO TIME SET, THEN PLOT THE ENTIRE SPAN OF KP_DATA
+;    begin_time = kp_data[0].time
+;    end_time = kp_data[n_elements(kp_data.time)-1].time
+;    begin_index = 0
+;    end_index = n_elements(kp_data.time)-1
+;  endelse
+;  ;SET THE BEGINNING AND END TIMES IF THE USER SELECTED ORBIT BASED PLOTTING
+;  if keyword_set(orbit) then begin
+;    if size(orbit, /dimension) eq 0 then begin
+;      ;IF ONLY A SINGLE ORBIT IS ENTERED, ASSUME 1 ORBIT TO BE PLOTTED
+;      begin_index = min(where(kp_data.orbit eq orbit))
+;      end_index = max(where(kp_data.orbit eq (orbit+1)))
+;      begin_time = kp_data[begin_index].time
+;      end_time = kp_data[end_index].time
+;    endif 
+;    if size(orbit, /dimension) eq 2 then begin
+;      ;IF TWO ORBITS ARE ENTERED, PLOT BETWEEN THEM
+;      begin_index = min(where(kp_data.orbit eq orbit[0]))
+;      end_index = max(where(kp_data.orbit eq (orbit[1])))
+;      begin_time = kp_data[begin_index].time
+;      end_time = kp_data[end_index].time    
+;    endif
+;  endif 
+;  
+;  kp_data = kp_data[begin_index:end_index]
+;;CHECK THAT THE TIME RANGES FALL WITHIN THAT COVERED BY KP_DATA
+;
+;if begin_time lt kp_data[0].time then begin
+;  print,'ERROR: Requested start time is before the range covered by the data'
+;  return
+;endif
+;if end_time gt kp_data[n_elements(kp_data.time)-1].time then begin
+;  print,'ERROR: Requested end time is after the range covered by the data'
+;  return
+;endif
+;- end of old version of begin and end time selection
+;============================================================================
+;
+;-begin of use of existing mvn_kp_range_select to get times
+;-copied from mvn_kp_plot
+;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
+
+  if keyword_set(time) then begin ;determine the start and end indices to plot
+    MVN_KP_RANGE_SELECT, kp_data, time, kp_start_index, kp_end_index
+  endif else begin                ;otherwise plot all data within structure
+    kp_start_index = 0
+    kp_end_index = n_elements(kp_data.orbit)-1
+  endelse
+
+  if kp_start_index eq -1 or kp_end_index eq -1 then begin
+    print,'Sorry, the times you requested are not contained within the data.'
+    print,'Check your time range and try again.'
     return
   endif
-  if end_time gt kp_data[n_elements(kp_data.time)-1].time then begin
-    print,'ERROR: Requested end time is after the range covered by the data'
+  if kp_start_index eq kp_end_index then begin
+    print,'Sorry, start and end times are the same. Nothing to plot!'
     return
   endif
+  if( kp_start_index gt kp_end_index )then begin
+    print,'WARNING: Start time provided is later than end time.'
+    print,'         Start time = ',time[0]
+    print,'           End time = ',time[1]
+    do_swap = ''
+    while( do_swap ne 's' and do_swap ne 'S' and $
+      do_swap ne 'q' and do_swap ne 'Q' )do begin
+      read,prompt="Please press 's' to swap, or 'q' to exit and try again: ",$
+           do_swap
+    endwhile
+    if( do_swap eq 's' or do_swap eq 'q' )then begin
+      temp = kp_start_index
+      kp_start_index = kp_end_index
+      kp_end_index = temp
+    endif
+    if( do_swap eq 'q' or do_swap eq 'Q' )then $
+      message,'Exiting as per user request to re-enter time range'
+  endif
+;-end of use of existing mvn_kp_range_select to get time indices
+;=============================================================================
   
   ;IF APOAPSE TIMES NOT SELECTED, CALCULATE MIDPOINTS
   if keyword_set(apoapse_time) then begin
     apoapse_time_index = time_double(apoapse_time, $
                                      tformat='YYYY-MM-DDThh:mm:ss')
-    if ( (apoapse_time_index le begin_time) or $
-         (apoapse_time_index ge end_time) )then begin
+    if ( (apoapse_time_index le kp_start_index ) or $
+         (apoapse_time_index ge kp_end_timex ) )then begin
       print,'Selected Apopapse image time falls outside the included data range.'
-      apoapse_time_index = (end_time - begin_time)/2l
+      apoapse_time_index = (kp_end_index - kp_start_index)/2l
     endif
   endif else begin
-    apoapse_time_index = (end_time - begin_time)/2l
+    apoapse_time_index = (kp_end_index - kp_start_index)/2l
   endelse
   
   ;CHECK THAT THE REQUESTED FIELD IS INCLUDED IN THE DATA
   
   if keyword_set(parameter) then begin
-    MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, first_level_count, $
+    MVN_KP_TAG_VERIFY, kp_data[kp_start_index:kp_end_index], parameter, $
+                       base_tag_count, first_level_count, $
                        base_tags, first_level_tags, check, level0_index, $
                        level1_index, tag_array
      
@@ -324,10 +368,11 @@ stop
   ;DOWNSCALE THE INPUT DATA SO IT CAN ALL BE PLOTTED CORRECTLY
   
   if keyword_set(optimize) eq 1 then begin
-    optimizer = round(n_elements(kp_data)/5000.) 
-    MVN_KP_3D_OPTIMIZE, kp_data, kp_data1, optimizer
+    optimizer = round(n_elements(kp_data[kp_start_index:kp_end_index])/5000.) 
+    MVN_KP_3D_OPTIMIZE, kp_data[kp_start_index:kp_end_index], $
+                        kp_data1, optimizer
   endif else begin
-    kp_data1 = kp_data
+    kp_data1 = kp_data[kp_start_index:kp_end_index]
   endelse
   
 
