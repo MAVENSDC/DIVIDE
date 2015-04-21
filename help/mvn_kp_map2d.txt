@@ -8,19 +8,24 @@
     orbital path may be colored by a given insitu Key Parameter data value. 
     Additionally, IUVS single point observations may be displayed as well.
 
-mvn_kp_map2d, kp_data, parameter=parameter, iuvs=iuvs, time=time, orbit=orbit, $
+mvn_kp_map2d, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
               list=list, basemap=basemap, colors=colors, range=range, $
-              subsolar=subsolar,alpha = alpha, mso=mso, nopath=nopath, $
+              subsolar=subsolar,alpha=alpha, mso=mso, nopath=nopath, $
               periapse_temp=periapse_temp, optimize=optimize, direct=direct, $
-              log=log, i_colortable=i_colortable, corona_lo_dust=corona_lo_dust, $
-              corona_lo_ozone=corona_lo_ozone, corona_lo_aurora=corona_lo_aurora, $
-              corona_lo_h_rad=corona_lo_h_rad, corona_lo_co_rad=corona_lo_co_rad, $
-              corona_lo_no_rad=corona_lo_no_rad, corona_lo_o_rad=corona_lo_o_rad, $
+              log=log, i_colortable=i_colortable, $
+              corona_lo_dust=corona_lo_dust, $
+              corona_lo_ozone=corona_lo_ozone, $
+              corona_lo_aurora=corona_lo_aurora, $
+              corona_lo_h_rad=corona_lo_h_rad, $
+              corona_lo_co_rad=corona_lo_co_rad, $
+              corona_lo_no_rad=corona_lo_no_rad, $
+              corona_lo_o_rad=corona_lo_o_rad, $
               corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, $
               corona_e_o_rad=corona_e_o_rad, map_limit=map_limit, $
               map_location=map_location, apoapse_blend=apoapse_blend, $
               apoapse_time=apoapse_time, minimum=minimum, maximum=maximum, $
               help=help
+
 REQUIRED FIELDS
 **************
   kp_data: In-situ Key Parameter Data Structure
@@ -28,9 +33,9 @@ REQUIRED FIELDS
 OPTIONAL FIELDS
 ***************
   Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
+             If not provided, only the orbital track is shown.
   iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.
-  time: ********* <Needs to be filled in> **********
-  orbit: ********* <Needs to be filled in> ********** 
+  time: Range of times (or orbit(s)) to be plotted.
   list: if selected, will list the KP data fields included in kp_data.
   range: if selected, will list the beginning and end times of kp_data.
   nopath:  This will suppress the display of the spacecraft orbital 
