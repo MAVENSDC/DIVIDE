@@ -33,9 +33,29 @@ REQUIRED FIELDS
 OPTIONAL FIELDS
 ***************
   Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
-             If not provided, only the orbital track is shown.
+             If not provided, only the altitude of the orbital track is shown.
+  minimum: Minimum value of parameter to display
+  maximum: Maximum value of parameter to display
   iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.
   time: Range of times (or orbit(s)) to be plotted.
+  basemap: The name of the basemap to display on which the data will be plotted
+           If not included, a basic lat/lon grid is shown
+           Choices include:
+          'MDIM': The Mars Digital Image Model.
+          'MOLA': Mars Topography in color.
+          'MOLA_BW': Mars topography in black and white.
+          'MAG':  Mars crustal magnetism.
+          'DUST': IUVS Apopase Dust index image.
+          'OZONE': IUVS Apopase Ozone index image.
+          'RAD_H': IUVS Apopase H Radiance image.
+          'RAD_O': IUVS Apopase O Radiance image.
+          'RAD_CO': IUVS Apopase CO Radiance image.
+          'RAD_NO': IUVS Apopase NO Radiance image.
+          'USER': User definied basemap. Will open a file dialog window. 
+  colors: the name ('bw', 'red') or index of the color table to use when 
+          plotting the selected parameter.
+  alpha: transparency of the basemap between 0(opaque) and 
+         100(transparent), defaults to 0 (opaque).  
   list: if selected, will list the KP data fields included in kp_data.
   range: if selected, will list the beginning and end times of kp_data.
   nopath:  This will suppress the display of the spacecraft orbital 
@@ -44,7 +64,7 @@ OPTIONAL FIELDS
                  be plotted on the map along with the spacecraft track.
   optimize: For large data structures, the plotting of the orbital track can 
             get very slow. This keyword decimates the track to a managable size.
-  direct: Forces the use of direct graphics instead of function.
+  direct: Forces the use of direct graphics instead of function (buggy)
   log: Colors the spacecraft track with a logarithmic stretch instead of linear.
   subsolar: in selected, will plot the subsolar track.
   mso: switch between GEO and MSO map projections. Basemaps are not projected 

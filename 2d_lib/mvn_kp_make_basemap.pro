@@ -32,6 +32,16 @@
 ;         'RAD_NO': IUVS Apopase NO Radiance image.
 ;         'USER': User definied basemap. Will open a file dialog window
 ;                 to select the image.
+;    map_limit: in, optional, type=fltarr
+;       An array that defines the limits of the user selected basemap.
+;       It is defined as follows:
+;         [lower left corner latitude, lower left corner longitude, $
+;          upper right corner latitude, upper right corner longitude]
+;    map_location: in, optional, type=fltarr
+;       An array that defines the location of the user selected basemap.
+;         [lower left corner latitude, lower left corner longitude]
+;    map_projection: in, optional, type=string
+;       The name of one of IDL's given map projections
 ;    alpha: in, optional, type=integer
 ;       the transparency of the basemap between 0(opaque) and
 ;       100(transparent), defaults to 0 (opaque).
@@ -64,8 +74,10 @@
 @mvn_kp_oplotimage
 
 pro MVN_KP_make_basemap, iuvs=iuvs, time=time, basemap=basemap, $
-                              alpha = alpha, mso=mso, $
-                              apoapse_blend=apoapse_blend
+                         map_limit=map_limit, map_location=map_location, $
+                         map_projection=map_projection, $
+                         alpha = alpha, mso=mso, $
+                         apoapse_blend=apoapse_blend
 
   ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
   install_result = routine_info('mvn_kp_map2d',/source)
@@ -88,7 +100,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
     if basemap eq 'mdim' then begin
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
-      map_limit = [-90,0,90,360]
+      if (~keyword_set(map_limit) )then map_limit = [-90,0,90,360]
       map_location = [0,-90]
       map_projection  = 'Equirectangular'
     endif
@@ -96,23 +108,23 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
       mapimage = FILEPATH('MOLA_color_2500x1250.jpg',$
         root_dir=install_directory)
       read_jpeg,mapimage,mapimage
-      map_limit = [-90,-0,90,360]
-      map_location = [-180,-90]
-      map_projection  = 'Equirectangular'
+      if ~keyword_set(map_limit) then map_limit=[-90,0,90,360]
+      if ~keyword_set(map_location) then map_location = [-180,-90]
+      if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
     if basemap eq 'mola_bw' then begin
       mapimage = FILEPATH('MOLA_BW_2500x1250.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
-      map_limit = [-90,0,90,360]
-      map_location = [-180,-90]
-      map_projection  = 'Equirectangular'
+      if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+      if ~keyword_set(map_location) then map_location = [-180,-90]
+      if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
     if basemap eq 'mag' then begin
       mapimage = FILEPATH('MAG_Connerny_2005.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
-      map_limit = [-90,0,90,360]
-      map_location = [0,-90]
-      map_projection  = 'Equirectangular'
+      if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+      if ~keyword_set(map_location) then map_location = [0,-90]
+      if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
     if basemap eq 'dust' then begin
       tag_check = tag_names(iuvs.apoapse)
@@ -122,8 +134,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           if keyword_set(apoapse_blend) then begin
@@ -136,8 +148,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -149,8 +161,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           if keyword_set(apoapse_blend) then begin
@@ -163,8 +175,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -176,8 +188,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           rad_data = reform(iuvs.apoapse.radiance[0,*,*])
@@ -191,8 +203,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -204,8 +216,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           rad_data = reform(iuvs.apoapse.radiance[1,*,*])
@@ -219,8 +231,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -232,8 +244,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           rad_data = reform(iuvs.apoapse.radiance[2,*,*])
@@ -247,8 +259,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -260,8 +272,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
           print,'No IUVS data selected, skipping the basemap.'
           mapimage = FILEPATH('empty.jpg',root_dir=install_directory)
           read_jpeg,mapimage,mapimage
-          map_limit = [-90,0,90,360]
-          map_location = [0,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
+          if ~keyword_set(map_location) then map_location = [0,-90]
         endif else begin
           mapimage = bytarr(3,90,45)
           rad_data = reform(iuvs.apoapse.radiance[3,*,*])
@@ -275,8 +287,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
               iuvs.apoapse.time_start, $
               iuvs.apoapse.time_stop, 1
           endelse
-          map_limit = [-90,-180,90,180]
-          map_location = [-180,-90]
+          if ~keyword_set(map_limit) then map_limit = [-90,-180,90,180]
+          if ~keyword_set(map_location) then map_location = [-180,-90]
         endelse
       endif
     endif
@@ -293,8 +305,14 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         map_projection  = 'Equirectangular'
       endif
     endif
+    ; plotting is done here if a basemap has been chosen
     if keyword_set(direct) eq 0 then begin
-      i = image( mapimage, image_dimensions=[360,180] )
+      xmin = map_limit[1] & xmax = map_limit[3] 
+      ymin = map_limit[0] & ymax = map_limit[2]
+;-TODO: I am unclear whether image_location values must change with map
+      i = image( mapimage, image_dimensions=[360,180], $
+                 image_location=[0,-90], $ 
+                 xrange=[xmin,xmax], yrange=[ymin,ymax] )
       mp = map( map_projection, limit = map_limit, /box_axes, /current )
       mp.limit = map_limit
       plot_color = "White"

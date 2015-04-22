@@ -42,8 +42,6 @@
 ;    colors: in, optional, type=string/integer
 ;       the name (bw, red) or index of the color table to use when 
 ;       plotting the selected parameter.
-;    colortable:  in, optional, type=integer
-;       The index of the IDL colortable by which to plot the IUVS data values.
 ;    alpha: in, optional, type=integer
 ;       the transparency of the basemap between 0(opaque) and 
 ;       100(transparent), defaults to 0 (opaque).  
@@ -305,7 +303,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
      
   endif
   
-  ;DOWNSCALE THE INPUT DATA SO IT CAN ALL BE PLOTTED CORRECTLY
+;DOWNSCALE THE INPUT DATA SO IT CAN ALL BE PLOTTED CORRECTLY
   
   if keyword_set(optimize) eq 1 then begin
     optimizer = round(n_elements(kp_data[kp_start_index:kp_end_index])/5000.) 
@@ -315,12 +313,28 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
     kp_data1 = kp_data[kp_start_index:kp_end_index]
   endelse
   
-
-  ;CREATE THE EMPTY MAP
+;CREATE THE EMPTY MAP
 
   mvn_kp_make_basemap, mso=mso, alpha=alpha, basemap=basemap, iuvs=iuvs, $
+                       map_limit=map_limit, map_location=map_location, $
+                       map_projection=map_projection, $
                        apoapse_blend=apoapse_blend, time=time
   
+;LOAD THE REQUESTED COLOR TABLE
+  color_default = 11
+  if keyword_set(colors) eq 0 then begin
+    loadct,color_default, /silent
+  endif else begin
+    if size(colors, /type) eq 7 then begin
+      if colors eq 'bw' then i_colortable = 0
+      if colors eq 'red' then i_colortable = 3
+    endif
+    if size(colors, /type) eq 2 then begin
+      i_colortable = colors
+    endif
+    loadct, i_colortable, /silent
+  endelse
+
 ;CREATE EASILY PLOTTED DATA VALUES independent of coordinate frame
   if keyword_set(mso) eq 0 then begin
     latitude = kp_data1.spacecraft.sub_sc_latitude
@@ -336,23 +350,30 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
     longitude = atan(y,x)*(180./!pi)
   endelse
 
-  ;PLOT THE SPACECRAFT PATH
+;PLOT THE SPACECRAFT PATH
 
   total_colorbars = 0 ; initialize total_colorbars
   if keyword_set(direct) eq 0 then begin
     ;BUILD THE BASE PLOT
-;    plot_color = ???
+    ; This is needed so that we can add the symbols later
+    
     p = plot(longitude, latitude, overplot=1, margin=0, linestyle=6, $
-             color=plot_color, name='track')
+             name='track')
     if keyword_set(nopath) eq 0 then begin
       ; Show the spacecraft path using color bar for altitude
       ;  Need to calculate the color bars in same way as parameter below
       color_levels = intarr(3,n_elements(latitude))
-      loadct, 39, /silent ; may want to change this back to 11
-                          ; by moving the color table loading above this again
       tvlct, r, g, b, /get
-      parameter_minimum = min( kp_data1.spacecraft.altitude, /NaN )
-      parameter_maximum = max( kp_data1.spacecraft.altitude, /NaN )
+
+      ; define max and min plotting ranges
+      parameter_minimum = keyword_set(minimum) $
+                        ? minimum $ ; if true
+                        : min( kp_data1.spacecraft.altitude, /NaN ) ; if false
+      parameter_maximum = keyword_set(maximum) $
+                        ? maximum $ ; if true
+                        : max( kp_data1.spacecraft.altitude, /NaN ) ; if false
+
+      ; define RGB color levels from max, min, and color table
       color_levels[0,*] $
         = R[fix( ( ( kp_data1.spacecraft.altitude - parameter_minimum ) $
                  / ( parameter_maximum - parameter_minimum ) ) * 255 ) ]
@@ -362,8 +383,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
       color_levels[2,*] $
         = B[fix( ( ( kp_data1.spacecraft.altitude - parameter_minimum ) $
                  / ( parameter_maximum - parameter_minimum ) ) * 255 ) ]
-;      if keyword_set(i_colortable) eq 0 then i_colortable = 11
-      i_colortable = 39 ; use Rainbow+Black for altitude trajectory
+
       ;ADD THE COLORBAR
       if keyword_set(nopath) eq 0 then begin
         total_colorbars = total_colorbars + 1
@@ -371,10 +391,10 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
       p_symbols = symbol(longitude,latitude, "thin_diamond", /data, $
                          sym_color=color_levels, sym_filled=1,$
                          name='track_colors')
-    endif else begin
-      p.symbol = "d"
-      p.thick=2
-    endelse
+    endif; else begin
+      ;p.symbol = "d"
+      ;p.thick=2
+    ;endelse
 
     ;ADD THE SUBSOLAR TRACK
     if keyword_set(subsolar) and (keyword_set(mso) eq 0) then begin
@@ -383,21 +403,6 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
         'circle',/data,sym_color="YELLOW",sym_filled=1)
     endif
   
-    ;LOAD THE REQUESTED COLOR TABLE
-    color_default = 11
-    if keyword_set(colors) eq 0 then begin
-      loadct,color_default, /silent
-    endif else begin
-      if size(colors, /type) eq 7 then begin
-        if colors eq 'bw' then color_default = 0
-        if colors eq 'red' then color_default = 3
-      endif
-      if size(colors, /type) eq 2 then begin
-        color_default = colors
-      endif
-      loadct, color_default, /silent
-    endelse
-
 ;  IF THERE ARE PARAMETERS PROVIDED TO BE PLOTTED, 
 ;  THEN DEFINE THE SYMBOL COLOR LEVELS
   if( keyword_set(parameter) )then begin
@@ -452,7 +457,6 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                  / alog10(parameter_maximum/parameter_minimum) $
                  * 255. ) ]
     endelse 
-    if keyword_set(colortable) eq 0 then i_colortable = 11
     p_symbols = symbol(longitude,latitude, "thin_diamond", /data, $
                        sym_color=color_levels, sym_filled=1,$
                        name='track_colors')
@@ -614,10 +618,11 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
         color_bar_index = 0
         if keyword_set(nopath) eq 0 then begin
         ; We are plotting S/C path; for now skip the NaN check
-          if( min( altitude ) ne max( altitude ) )then begin
-            c_range = [min(altitude), max(altitude)]
+          if( parameter_minimum ne parameter_maximum )then begin
+            c_range = [parameter_minimum, parameter_maximum]
             c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
-            c = COLORBAR( TITLE=c_title, rgb_table=39, orientation=0, $
+            c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
+                          orientation=0, $
                           position=positions[color_bar_index,*], $
                           textpos=0, /border, range=c_range )
           endif
@@ -777,11 +782,11 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
           ytitle=ytitle, xtitle=xtitle,/nodata,charsize=1.5,$
           charthick=2, xthick=2, ythick=2,color='000000'xL,$
           background='FFFFFF'xL,xrange=[0,360]
-;     if keyword_set(mso) eq 0 then begin
-;       if keyword_set(basemap) then begin
-;         mvn_kp_oplotimage,mapimage,imgxrange=[0,360],imgyrange=[-90,90]
-;       endif
-;     endif
+     if keyword_set(mso) eq 0 then begin
+       if keyword_set(basemap) then begin
+         mvn_kp_oplotimage,mapimage,imgxrange=[0,360],imgyrange=[-90,90]
+       endif
+     endif
      if keyword_set(nopath) eq 0 then begin
        loadct,color_default,/silent
        device,decomposed=0
