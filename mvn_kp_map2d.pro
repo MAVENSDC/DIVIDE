@@ -19,6 +19,10 @@
 ;    parameter: in, optional, type=integer/string
 ;       the name or index of the insitu parameter to be plotted (if not 
 ;       selected, only orbital track shown).
+;    minimum: in, optional, type=float
+;       Minimum value of parameter to display
+;    maximum: in, optional, type=float
+;       Maximum value of parameter to display
 ;    time: in, optional, can be a scalar or a two item array of type:
 ;         int(s)         orbit number
 ;         string(s)      format:  YYYY-MM-DD/hh:mm:ss
@@ -55,7 +59,7 @@
 ;         [lower left corner latitude, lower left corner longitude]
 ;    map_projection: in, optional, type=string
 ;       The name of one of IDL's given map projections
-;    apopase_time:  in, optional, either a string or long integer 
+;    apoapse_time:  in, optional, either a string or long integer 
 ;       The time of the aopapse image to display. If not defined, the 
 ;       middle image is selected (unless apoapse_blend is included)
 ;       
@@ -110,13 +114,7 @@
 ;       If an IUVS apaopase image is selected as the basemap, this keyword 
 ;       will average all images into a single basemap, instead of plotting 
 ;       only a single image. 
-;    apoapse_time:  in, optional, type=string
-;       Time of an IUVS Apoapse image to display
-;    minimum: in, optional, type=float
-;       Minimum value to display 
-;    maximum: in, optional, type=float
-;       Maximum value to display
-;    help: in, optiona, type=byte
+;    help: in, optional, type=byte
 ;       Invoke the help listing
 ;    
 ;  :Version:  1.0   July 8, 2014
@@ -138,7 +136,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                   range=range, subsolar=subsolar,alpha = alpha, mso=mso, $
                   nopath=nopath, periapse_temp=periapse_temp, $
                   optimize=optimize, direct=direct, log=log, $
-                  i_colortable=i_colortable, corona_lo_dust=corona_lo_dust, $
+                  corona_lo_dust=corona_lo_dust, $
                   corona_lo_ozone=corona_lo_ozone, $
                   corona_lo_aurora=corona_lo_aurora, $
                   corona_lo_h_rad=corona_lo_h_rad, $
@@ -356,9 +354,9 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
   if keyword_set(direct) eq 0 then begin
     ;BUILD THE BASE PLOT
     ; This is needed so that we can add the symbols later
-    
     p = plot(longitude, latitude, overplot=1, margin=0, linestyle=6, $
              name='track')
+
     if keyword_set(nopath) eq 0 then begin
       ; Show the spacecraft path using color bar for altitude
       ;  Need to calculate the color bars in same way as parameter below
@@ -367,10 +365,10 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 
       ; define max and min plotting ranges
       parameter_minimum = keyword_set(minimum) $
-                        ? minimum $ ; if true
+                        ? minimum $                                 ; if true
                         : min( kp_data1.spacecraft.altitude, /NaN ) ; if false
       parameter_maximum = keyword_set(maximum) $
-                        ? maximum $ ; if true
+                        ? maximum $                                 ; if true
                         : max( kp_data1.spacecraft.altitude, /NaN ) ; if false
 
       ; define RGB color levels from max, min, and color table
@@ -391,12 +389,9 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
       p_symbols = symbol(longitude,latitude, "thin_diamond", /data, $
                          sym_color=color_levels, sym_filled=1,$
                          name='track_colors')
-    endif; else begin
-      ;p.symbol = "d"
-      ;p.thick=2
-    ;endelse
+    endif
 
-    ;ADD THE SUBSOLAR TRACK
+;ADD THE SUBSOLAR TRACK
     if keyword_set(subsolar) and (keyword_set(mso) eq 0) then begin
       p = symbol(kp_data1.spacecraft.subsolar_point_geo_longitude, $
         kp_data1.spacecraft.subsolar_point_geo_latitude, $

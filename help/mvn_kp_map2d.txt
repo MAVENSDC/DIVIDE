@@ -52,6 +52,12 @@ OPTIONAL FIELDS
           'RAD_CO': IUVS Apopase CO Radiance image.
           'RAD_NO': IUVS Apopase NO Radiance image.
           'USER': User definied basemap. Will open a file dialog window. 
+  ** The following three fields are accepted at all times, but can result
+  ** in conflicts if using an existing map projection.  Use with caution
+  ** when not using a user-defined basemap.
+  map_limit: Provide bounds on plotted map region [lllat,llon,urlat,urlon]
+  map_location: Define location of basemap [lllat, lllon]
+  map_projection: Define an IDL map projection type by name
   colors: the name ('bw', 'red') or index of the color table to use when 
           plotting the selected parameter.
   alpha: transparency of the basemap between 0(opaque) and 
@@ -83,7 +89,4 @@ OPTIONAL FIELDS
                  keyword will average all images into a single basemap, 
                  instead of plotting only a single image. 
   apoapse_time:  Time of an IUVS Apoapse image to display
-  minimum: Minimum value to display 
-  maximum: Maximum value to display
   help: Invoke this list.
-

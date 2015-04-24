@@ -5,12 +5,40 @@
 Interactive 3D visualization of MAVEN spacecraft trajectory and 
 insitu/iuvs KP parameters.'
 
+pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
+               cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
+               field=field, color_table=color_table, bgcolor=bgcolor, $
+               plotname=plotname, color_bar=color_bar,axes=axes,$
+               whiskers=whiskers,parameterplot=parameterplot,$
+               periapse_limb_scan=periapse_limb_scan, direct=direct, $
+               ambient=ambient,view_size=view_size, camera_view=camera_view, $
+               mso=mso, sunmodel=sunmodel, optimize=optimize, $
+               initialview=initialview, drawid=drawid, $
+               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, $
+               speckle=speckle, help=help
+ 
 REQUIRED INPUTS
 ***************
   insitu: MAVEN In-situ KP data structure.
 
 OPTIONAL KEYWORDS
 *****************
-  Way too many to list here. Consult the Users' Guide if you want to use 
-  command line options to set the 3d visualization options.
+
+  subsolar: if selected, will plot the subsolar location with a yellow disk.
+  submaven: if selected, will plot the sub S/C location with a blue disk.
+  basemap: The name of the basemap to display on which the data will be plotted
+           If not included, a basic lat/lon grid is shown
+           Choices include:
+          'MDIM': The Mars Digital Image Model.
+          'MOLA': Mars Topography in color.
+          'MOLA_BW': Mars topography in black and white.
+          'MAG':  Mars crustal magnetism.
+          'DUST': IUVS Apopase Dust index image.
+          'OZONE': IUVS Apopase Ozone index image.
+          'RAD_H': IUVS Apopase H Radiance image.
+          'RAD_O': IUVS Apopase O Radiance image.
+          'RAD_CO': IUVS Apopase CO Radiance image.
+          'RAD_NO': IUVS Apopase NO Radiance image.
+          'USER': User definied basemap. Will open a file dialog window. 
+  help: Invoke this list.
 
