@@ -23,9 +23,18 @@ REQUIRED INPUTS
 
 OPTIONAL KEYWORDS
 *****************
-
+  iuvs: MAVEn IUVS KP data structure
+  time: TBD
   subsolar: if selected, will plot the subsolar location with a yellow disk.
+  sunmodel: if selected, will plot the Mars-Sun vector as a yellow line.
   submaven: if selected, will plot the sub S/C location with a blue disk.
+  grid: if selected, overplot a lat/lon grid with 30/45 deg res respectively
+  mso: if selected, plot the S/C track and data in MSO coordinates.
+  axes: if selected, plot the XYZ axes in the widget window.  MSO or GEO.
+  optimize: For large data structures, the plotting of the orbital track can 
+            get very slow. This keyword decimates the track to a managable size.
+  direct: Generate visualization in direct graphics; but with no 
+          interactive capabilities.
   basemap: The name of the basemap to display on which the data will be plotted
            If not included, a basic lat/lon grid is shown
            Choices include:
@@ -40,5 +49,15 @@ OPTIONAL KEYWORDS
           'RAD_CO': IUVS Apopase CO Radiance image.
           'RAD_NO': IUVS Apopase NO Radiance image.
           'USER': User definied basemap. Will open a file dialog window. 
+  color_table: 1 or 4 element integer to provide color table info.
+  bgcolor: 1 or 3 element byte to provide background color
+  color_bar: 3-element byte to define text color in plotting subwindow
+  ambient: Define the intensity of the flashlight that mimics sunlight.
+  initialview: Define the initial view of the planet.  The fields are:
+               latitude, longitude, radius [,x offset, y offset]
+  scale_factor: Scale down the widget window for smaller screens.  
+  spacecraft_scale: in, optional, Change the scale size of the MAVEn S/C.  
+                                  Default value is 0.03
+
   help: Invoke this list.
 

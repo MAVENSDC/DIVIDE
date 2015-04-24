@@ -40,16 +40,48 @@
 ;       Provide a user-input color table.  
 ;       If single integer, load that index table
 ;       If a 4-element integer array, it is [index,min,max,stretch]
+;    bgcolor: in, optional, type=byte or bytarr(3)
+;       Define the background color for the widget window.
+;       If single byte value, assign a gray between 0(black) and 255(white)
+;       If three-element bytarr, it is the RGB color vector
+;    color_bar: in, optional, type=bytearr(3)
+;       Define the text color for the color bar in the plotting subwindow
+;       as an RGB vector.
+;    ambient: in, optional, type=float
+;       Define the intensity of the flashlight that mimics sunlight.
+;       Be aware, a setting of 0.0 does NOT create a crisp terminator.
+;    initialview: in, optional, type=fltarr(3) or fltarr(5)
+;       Define the initial view of the planet.  The fields are:
+;       latitude, longitude, radius [,x offset, y offset]
+;    scale_factor: in, optional, type=float
+;       Scale down the widget window for smaller screens.  As of now, this 
+;       also reduces button sizes, so a small enough value could render 
+;       the widget unuseable.
+;    spacecraft_scale: in, optional, type=float
+;       Change the scale size of the MAVEn S/C.  Default value is 0.03
 ;       
-;
 ; :Keywords:
 ;    subsolar: in, optional, type=boolean
 ;       if selected, will plot the subsolar point with a yellow disk.
+;    sunmodel: in, optional, type=boolean
+;       if selected, will plot the Mars-Sun vector as a yellow line.
 ;    submaven: in, optional, type=boolean
 ;       if selected, will plot the sub S/C point with a blue disk.
-;    grid: in, options, type=boolean
+;    grid: in, optional, type=boolean
 ;       if selected overplot lat/lon grid with 30/45 deg res respectively
-;    
+;    mso: in, optional, type=boolean
+;       if selected, plot the S/C track and data in MSO coordinates
+;    axes: in, optional, type=boolean
+;       if selected, plot the XYZ axes in the widget window.  MSO or GEO.
+;    optimize: in, optional, type=boolean
+;       For large data structures, the plotting of the orbital track can
+;       get very slow. This keyword decimates the track to a managable size.
+;    direct: in, optional, type=boolean
+;       if selected, create direct graphics plots with no widget ability.
+;
+;  :Obsolete:
+;    drawid: Undetermined and unused keyword or parameter
+;    speckle: Undetermined and unused keyword or parameter
 ;-
 
 
@@ -104,117 +136,111 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     
       time_step_size = 10
     
-      start_time = double(insitu1[0].time)
-      end_time = double(insitu1[n_elements(insitu1.time)-1].time)
-    
-      start_time_string = time_string(start_time, format=0)
-      end_time_string = time_string(end_time, format=0)
-      
-      total_points = n_elements(insitu1.time)
-      if keyword_set(time) then begin
-        if size(time,/type) eq 7 then begin         ;string based time 
-          initial_time = time_double(time)
-        endif 
-        if size(time,/type) eq 3 then begin         ;double time
-          initial_time = time
-        endif
-        if n_elements(time) eq 1 then begin       
-          ;use beginning and end times of insitu1, 
-          ;with this as the plotted time
-          if( (initial_time gt start_time) and $
-              (initial_time lt end_time) )then begin
-            time_index=0L
-            temp_time = min(abs(insitu1.time - initial_time),time_index)
-            mid_time = insitu1[time_index].time
-            mid_time_string = time_string(mid_time,format=0)
-          endif else begin
-            print,'REQUESTED INITIAL PLOT TIME OF ',strtrim(string(time),2), $
-                  ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-            print,'PLOTTING MID-TIME INSTEAD'
-            time_index = long(total_points/2L)
-            mid_time = insitu1[time_index].time
-            initial_time = mid_time
-            mid_time_string = time_string(mid_time,format=0)
-          endelse
-        endif  ;end of single value time loop
-        if n_elements(time) eq 2 then begin 
-          ;use this as beginning and end times to be plotted, 
-          ;with initial plot as the midpoint
-          if( (initial_time[0] gt start_time) and $
-              (initial_time[0] lt end_time) )then begin
-            start_time = initial_time[0]
-            start_time_string = time_string(initial_time[0],format=0)
-            start_index=0L
-            temp_time = min(abs(insitu1.time - initial_time[0]),start_index)
-            insitu1 = insitu1[start_index:*]
-          endif else begin
-            print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),$
-                   ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-          endelse
-          if( (initial_time[1] gt start_time) and $
-              (initial_time[1] lt end_time) )then begin
-            end_time = initial_time[1]
-            end_time_string = time_string(initial_time[1],format=0)
-            end_index = 0l
-            temp_time = min(abs(insitu1.time - initial_time[1]),end_index)
-            insitu1 = insitu1[0:end_index]
-          endif else begin
-            print, 'REQUESTED END TIME OF ',strtrim(string(time[1]),2),$
-                   ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-          endelse
-          total_points = n_elements(insitu1.time)
-          time_index = long(total_points/2L)
-          mid_time = insitu1[time_index].time
-          initial_time = mid_time
-          mid_time_string = time_string(mid_time,format=0)
-        endif   ;end of 2 value time loop
-        if n_elements(time) eq 3 then begin 
-          ;use this as the beginning, middle, and end times 
-          if( (initial_time[0] gt start_time) and $
-              (initial_time[0] lt end_time) )then begin
-            start_time = initial_time[0]
-            start_time_string = time_string(initial_time[0],format=0)
-            start_index=0L
-            temp_time = min(abs(insitu1.time - initial_time[0]),start_index)
-            insitu1 = insitu1[start_index:*]
-          endif else begin
-            print, 'REQUESTED START TIME OF ',strtrim(string(time[0]),2),$
-                   ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-          endelse
-          if( (initial_time[2] gt start_time) and $
-              (initial_time[2] lt end_time) )then begin
-            end_time = initial_time[2]
-            end_time_string = time_string(initial_time[2],format=0)
-            end_index = 0l
-            temp_time = min(abs(insitu1.time - initial_time[2]),end_index)
-            insitu1 = insitu1[0:end_index]
-          endif else begin
-            print, 'REQUESTED END TIME OF ',strtrim(string(time[2]),2),$
-                   ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-          endelse
-          if( (initial_time[1] gt start_time) and $
-              (initial_time[1] lt end_time) )then begin
-            time_index=0L
-            temp_time = min(abs(insitu1.time - initial_time[1]),time_index)
-            mid_time = insitu1[time_index].time
-            mid_time_string = time_string(mid_time,format=0)    
-          endif else begin
-            print, 'REQUESTED PLOT TIME OF ',strtrim(string(time[1]),2),$
-                   ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-            print,'PLOTTING THE MID-TIME INSTEAD.'
-            total_points = n_elements(insitu1.time)
-            time_index = long(total_points/2L)
-            mid_time = insitu1[time_index].time
-            initial_time = mid_time
-            mid_time_string = time_string(mid_time,format=0) 
-          endelse
-        endif   ;end of 3 value time loop
+;-km-add
+; Here we will replace with mvn_kp_range_select.  
+; However, since we need to allow for the option of a three-element time 
+; input (where the three are begin, middle, end), we need to be careful 
+; about what we send to that procedure.
+
+      if( keyword_set(time) )then begin
+        case size(time,/dim) of
+          0: begin
+               mvn_kp_range_select, insitu1, time, begin_index, end_index
+               ; Then calculate mid point
+               time_index = long( ( end_index - begin_index ) / 2L )
+               mid_time = insitu1[time_index].time
+               mid_time_string = time_string( mid_time, format=0 )
+print,begin_index,end_index,n_elements(insitu1)
+             end
+          1: begin
+               mvn_kp_range_select, insitu1, time, begin_index, end_index               
+               ; Then calculate mid point
+               time_index = long( ( end_index - begin_index ) / 2L )
+               mid_time = insitu1[time_index].time
+               mid_time_string = time_string( mid_time, format=0 )
+             end
+          2: begin
+               mvn_kp_range_select, insitu1, time, begin_index, end_index
+               ; then calculate midpoint
+               time_index = long( ( end_index - begin_index ) / 2L )
+               mid_time = insitu1[time_index].time
+               mid_time_string = time_string( mid_time, format=0 )
+             end
+          3: begin
+               ; can only accept this if input values are string or float date
+               if( size(time,/type) ne 2 )then begin
+                 ; sort the three,
+                 time=time[sort(time)]
+                 ; Feed largest and smallest to mvn_kp_range_select
+                 mvn_kp_range_select, insitu1, [time[0],time[2]], $
+                                      begin_index, end_index
+                 mid_time = time[1] ; assign middle to middle
+                 mid_time_string = time_string( mid_time )
+               endif else begin
+                 error_message = 'If three times are provided, ' $
+                               + 'they must be either strings or floats.'
+                 message, error_message
+               endelse
+             end
+          else: begin
+                  ; print error message and exit
+                  error_message = 'Number of elements provided in time ' $
+                                + 'variable cannot exceed 3.'
+                  message, error_message
+                end
+        endcase
       endif else begin
-        time_index = long(total_points/2L)
+        begin_index = 0L
+        end_index = n_elements(insitu1)-1; if time keyword is used
+        time_index = long( ( end_index - begin_index ) / 2L )
         mid_time = insitu1[time_index].time
-        initial_time = mid_time
-        mid_time_string = time_string(mid_time,format=0)
-      endelse 
+        mid_time_string = time_string( mid_time, format=0 )
+      endelse
+      start_time = insitu1[begin_index].time
+      end_time = insitu1[end_index].time
+      initial_time = insitu1[begin_index].time
+      start_time_string = time_string( start_time, format=0 )
+      end_time_string = time_string( end_time, format=0 )
+      total_points = end_index - begin_index + 1L
+      time_index = begin_index ; hack: old version was time_index
+
+;-km-remove-old
+;      start_time = double(insitu1[0].time)
+;      end_time = double(insitu1[n_elements(insitu1.time)-1].time)
+;    
+;      start_time_string = time_string(start_time, format=0)
+;      end_time_string = time_string(end_time, format=0)
+;      
+;      total_points = n_elements(insitu1.time)
+;      if keyword_set(time) then begin
+;        if size(time,/type) eq 7 then begin         ;string based time 
+;          initial_time = time_double(time)
+;        endif 
+;        if size(time,/type) eq 3 then begin         ;double time
+;          initial_time = time
+;        endif
+;        if n_elements(time) eq 1 then begin       
+;          ;use beginning and end times of insitu1, 
+;          ;with this as the plotted time
+;          if( (initial_time gt start_time) and $
+;              (initial_time lt end_time) )then begin
+;            time_index=0L
+;            temp_time = min(abs(insitu1.time - initial_time),time_index)
+;            mid_time = insitu1[time_index].time
+;            mid_time_string = time_string(mid_time,format=0)
+;          endif else begin
+;            print,'REQUESTED INITIAL PLOT TIME OF ',strtrim(string(time),2), $
+;                  ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
+;            print,'PLOTTING MID-TIME INSTEAD'
+;            time_index = long(total_points/2L)
+;            mid_time = insitu1[time_index].time
+;            initial_time = mid_time
+;            mid_time_string = time_string(mid_time,format=0)
+;          endelse
+;        endif  ;end of single value time loop
+;        if n_elements(time) eq 2 then begin 
+;          ;use this as beginning and end times to be plotted, 
+;-km-remove-end
    
    
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
@@ -279,11 +305,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                          second_level_tags
 
     ;BACKGROUND COLORS
-    bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],$
-                 [75,75,75],[90,90,90],[105,105,105],[120,120,120],$
-                 [135,135,135],[150,150,150],[165,165,165],[180,180,180],$
-                 [195,195,195],[210,210,210],[225,225,225],[240,240,240],$
-                 [255,255,255]]
+;    bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],$
+;                 [75,75,75],[90,90,90],[105,105,105],[120,120,120],$
+;                 [135,135,135],[150,150,150],[165,165,165],[180,180,180],$
+;                 [195,195,195],[210,210,210],[225,225,225],[240,240,240],$
+;                 [255,255,255]]
   
     if keyword_set(bgcolor) then begin
       if n_elements(bgcolor) eq 3 then begin
@@ -517,8 +543,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                 xsize=scale_factor*1000)
 
 ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
-      time_min = start_time
-      time_max = end_time
+      time_min = insitu1[begin_index].time
+      time_max = insitu1[end_index].time
+;      time_min = start_time
+;      time_max = end_time
 
       timelabelbase = widget_base(timebarbase, xsize=scale_factor*1000, $
                                   ysize=scale_factor*20, /row)
@@ -1656,11 +1684,16 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     ;CREATE THE ORBITAL PATH
 
       if coord_sys eq 0 then begin
-        x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
-        y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
-        z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
-        path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
-        for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+;-orig        x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+;-orig        y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+;-orig        z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+;-orig        path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
+;-orig        for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+        x_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
+        y_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
+        z_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
+        path_connections = lonarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*3)
+        for i=begin_index,end_index do begin
           x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
           x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
@@ -1775,11 +1808,16 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endelse
     
       vector_model = obj_new('IDLgrModel')
-      x_vector = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
-      y_vector = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
-      z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
-      vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
-      for i=0l,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+;-orig      x_vector = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+;-orig      y_vector = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+;-orig      z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+;-orig      vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
+;-orig      for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+      x_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
+      y_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
+      z_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
+      vector_polylines = lonarr(3*n_elements(insitu1[begin_index:end_index].spacecraft.geo_x))
+      for i=0L,n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)-1 do begin
         x_vector[i*2] = x_orbit[i*2]
         y_vector[i*2] = y_orbit[i*2]
         z_vector[i*2] = z_orbit[i*2]       
