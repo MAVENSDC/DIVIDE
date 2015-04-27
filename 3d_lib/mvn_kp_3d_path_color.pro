@@ -25,18 +25,18 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
      colorbar_ticks = [0.0,0.25,0.50,0.75,1.0]
   endif else begin                        ;COLOR THE ORBITAL PATH ACCORDING TO REQUESTED PARAMETER
     if colorbar_min eq -999999 then begin
-      minimum_value = min(insitu.(level0_index).(level1_index))
+      minimum_value = min(insitu.(level0_index).(level1_index),/NaN)
     endif else begin
       minimum_value = colorbar_min
     endelse
     if colorbar_max eq 999999 then begin
-      maximum_value = max(insitu.(level0_index).(level1_index))
+      maximum_value = max(insitu.(level0_index).(level1_index),/NaN)
     endif else begin
       maximum_value = colorbar_max
     endelse 
     if keyword_set(reset) then begin
-      minimum_value = min(insitu.(level0_index).(level1_index))
-      maximum_value = max(insitu.(level0_index).(level1_index))
+      minimum_value = min(insitu.(level0_index).(level1_index),/NaN)
+      maximum_value = max(insitu.(level0_index).(level1_index),/NaN)
       colorbar_min = minimum_value
       colorbar_max = maximum_value
     endif

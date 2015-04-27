@@ -24,7 +24,13 @@ REQUIRED INPUTS
 OPTIONAL KEYWORDS
 *****************
   iuvs: MAVEn IUVS KP data structure
-  time: TBD
+  time: time range to display in visualization.  If scalar is provided, it
+        is interprested as either an orbit (int), or a date (string).  If
+        a two-element vector is given, they are interpreted as start and 
+        end times of data to ingest.  If a three-element array is given, 
+        the middle time is chosen to be the display when the widget opens.
+  list: if selected, will list the KP data fields included in kp_data.
+  range: if selected, will list the beginning and end times of kp_data.
   subsolar: if selected, will plot the subsolar location with a yellow disk.
   sunmodel: if selected, will plot the Mars-Sun vector as a yellow line.
   submaven: if selected, will plot the sub S/C location with a blue disk.
@@ -56,8 +62,8 @@ OPTIONAL KEYWORDS
   initialview: Define the initial view of the planet.  The fields are:
                latitude, longitude, radius [,x offset, y offset]
   scale_factor: Scale down the widget window for smaller screens.  
-  spacecraft_scale: in, optional, Change the scale size of the MAVEn S/C.  
-                                  Default value is 0.03
+  spacecraft_scale: Change the scale size of the MAVEn S/C. 
+                    Default value is 0.03
 
   help: Invoke this list.
 

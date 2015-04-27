@@ -44,9 +44,14 @@
 ;       Define the background color for the widget window.
 ;       If single byte value, assign a gray between 0(black) and 255(white)
 ;       If three-element bytarr, it is the RGB color vector
-;    color_bar: in, optional, type=bytearr(3)
+;    color_bar: in, optional, type=bytearr(3) or boolean
+;       If provided as a boolean, display color bar upon opening window.
 ;       Define the text color for the color bar in the plotting subwindow
 ;       as an RGB vector.
+;    parameterplot: in, optional, type=boolean or structure
+;       If boolean, display the chosen parameter or S/C altitude at the 
+;       bottom of the widget window.
+;       If a structure, it provides the information to create the plot
 ;    ambient: in, optional, type=float
 ;       Define the intensity of the flashlight that mimics sunlight.
 ;       Be aware, a setting of 0.0 does NOT create a crisp terminator.
@@ -61,6 +66,10 @@
 ;       Change the scale size of the MAVEn S/C.  Default value is 0.03
 ;       
 ; :Keywords:
+;    list: in, optional, type=boolean
+;       if selected, will list the KP data fields included in kp_data.
+;    range: in, optional, type=boolean
+;       if selected, will list the beginning and end times of kp_data.
 ;    subsolar: in, optional, type=boolean
 ;       if selected, will plot the subsolar point with a yellow disk.
 ;    sunmodel: in, optional, type=boolean
@@ -78,6 +87,7 @@
 ;       get very slow. This keyword decimates the track to a managable size.
 ;    direct: in, optional, type=boolean
 ;       if selected, create direct graphics plots with no widget ability.
+;    help: Invoke this list.
 ;
 ;  :Obsolete:
 ;    drawid: Undetermined and unused keyword or parameter
@@ -95,11 +105,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                mso=mso, sunmodel=sunmodel, optimize=optimize, $
                initialview=initialview, drawid=drawid, $
                scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, $
-               speckle=speckle, help=help
+               speckle=speckle, range=range, list=list, help=help
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
-  
+  ;CHECK THE insitu1 DATA STRUCTURE FOR RELEVANT FIELDS
+  MVN_KP_TAG_PARSER, insitu, base_tag_count, first_level_count, $
+    second_level_count, base_tags,  first_level_tags, $
+    second_level_tags
+
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_3d'
@@ -118,14 +132,39 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     orbit_offset = 0.001
    endelse
       
-  ;OPTIMIZATION OPTION
-  
-    if keyword_set(optimize) then begin
-      MVN_KP_3D_OPTIMIZE, insitu, insitu1, optimize
-    endif else begin
-      insitu1 = insitu
-    endelse
-  
+   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
+
+   if arg_present(list)  then begin
+     list = strarr(250)
+     index2=0
+     for i=0,base_tag_count-1 do begin
+       if first_level_count[i] ne 0 then begin
+         for j=0,first_level_count[i]-1 do begin
+           if first_level_count[i] ne 0 then begin
+             list[index2] = '#'+strtrim(string(index2+1),2)+' ' $
+               + base_tags[i] + '.' $
+               + strtrim(string(first_level_tags[index2-1]),2)
+             index2 = index2+1
+           endif
+         endfor
+       endif
+     endfor
+     list = list[0:index2-1]
+     return
+   endif else begin
+     if keyword_set(list) then begin
+       MVN_KP_TAG_LIST, insitu, base_tag_count, first_level_count, $
+         base_tags,  first_level_tags
+       return
+     endif
+   endelse
+
+   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS
+   ;IF REQUESTED.
+   if keyword_set(range) then begin
+     MVN_KP_RANGE, insitu
+     return
+   endif
   
   ;PARSE DATA STRUCTURES FOR BEGINNING, END, AND MID TIMES
     ;SET THE TIME BOUNDS BASED ON THE INSITU DATA STRUCTURE
@@ -145,25 +184,24 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       if( keyword_set(time) )then begin
         case size(time,/dim) of
           0: begin
-               mvn_kp_range_select, insitu1, time, begin_index, end_index
+               mvn_kp_range_select, insitu, time, begin_index, end_index
                ; Then calculate mid point
-               time_index = long( ( end_index - begin_index ) / 2L )
-               mid_time = insitu1[time_index].time
+               time_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[time_index].time
                mid_time_string = time_string( mid_time, format=0 )
-print,begin_index,end_index,n_elements(insitu1)
              end
           1: begin
-               mvn_kp_range_select, insitu1, time, begin_index, end_index               
+               mvn_kp_range_select, insitu, time, begin_index, end_index               
                ; Then calculate mid point
-               time_index = long( ( end_index - begin_index ) / 2L )
-               mid_time = insitu1[time_index].time
+               time_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[time_index].time
                mid_time_string = time_string( mid_time, format=0 )
              end
           2: begin
-               mvn_kp_range_select, insitu1, time, begin_index, end_index
+               mvn_kp_range_select, insitu, time, begin_index, end_index
                ; then calculate midpoint
-               time_index = long( ( end_index - begin_index ) / 2L )
-               mid_time = insitu1[time_index].time
+               time_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[time_index].time
                mid_time_string = time_string( mid_time, format=0 )
              end
           3: begin
@@ -172,7 +210,7 @@ print,begin_index,end_index,n_elements(insitu1)
                  ; sort the three,
                  time=time[sort(time)]
                  ; Feed largest and smallest to mvn_kp_range_select
-                 mvn_kp_range_select, insitu1, [time[0],time[2]], $
+                 mvn_kp_range_select, insitu, [time[0],time[2]], $
                                       begin_index, end_index
                  mid_time = time[1] ; assign middle to middle
                  mid_time_string = time_string( mid_time )
@@ -193,16 +231,16 @@ print,begin_index,end_index,n_elements(insitu1)
         begin_index = 0L
         end_index = n_elements(insitu1)-1; if time keyword is used
         time_index = long( ( end_index - begin_index ) / 2L )
-        mid_time = insitu1[time_index].time
+        mid_time = insitu[time_index].time
         mid_time_string = time_string( mid_time, format=0 )
       endelse
-      start_time = insitu1[begin_index].time
-      end_time = insitu1[end_index].time
-      initial_time = insitu1[begin_index].time
+      start_time = insitu[begin_index].time
+      end_time = insitu[end_index].time
+      initial_time = insitu[begin_index].time
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
       total_points = end_index - begin_index + 1L
-      time_index = begin_index ; hack: old version was time_index
+      time_index = 0L; begin_index ; hack: old version was time_index
 
 ;-km-remove-old
 ;      start_time = double(insitu1[0].time)
@@ -242,7 +280,16 @@ print,begin_index,end_index,n_elements(insitu1)
 ;          ;use this as beginning and end times to be plotted, 
 ;-km-remove-end
    
-   
+;OPTIMIZATION OPTION
+
+  if keyword_set(optimize) then begin
+    ; May need a check on an input value for optimization...
+    optimizer = round(n_elements(insitu[begin_index:end_index])/5000.)
+    MVN_KP_3D_OPTIMIZE, insitu[begin_index:end_index], insitu1, optimizer
+  endif else begin
+    insitu1 = insitu[begin_index:end_index]
+  endelse
+
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
     ;flags to indicate if a given instrumnet data is present
@@ -299,11 +346,6 @@ print,begin_index,end_index,n_elements(insitu1)
     install_directory = strsplit(install_result.path,'mvn_kp_3d.pro',$
                                  /extract,/regex)
     
-    ;CHECK THE insitu1 DATA STRUCTURE FOR RELEVANT FIELDS
-      MVN_KP_TAG_PARSER, insitu1, base_tag_count, first_level_count, $
-                         second_level_count, base_tags,  first_level_tags, $
-                         second_level_tags
-
     ;BACKGROUND COLORS
 ;    bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],$
 ;                 [75,75,75],[90,90,90],[105,105,105],[120,120,120],$
@@ -543,10 +585,10 @@ print,begin_index,end_index,n_elements(insitu1)
                                 xsize=scale_factor*1000)
 
 ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
-      time_min = insitu1[begin_index].time
-      time_max = insitu1[end_index].time
-;      time_min = start_time
-;      time_max = end_time
+;      time_min = insitu1[begin_index].time
+;      time_max = insitu1[end_index].time
+      time_min = start_time
+      time_max = end_time
 
       timelabelbase = widget_base(timebarbase, xsize=scale_factor*1000, $
                                   ysize=scale_factor*20, /row)
@@ -576,7 +618,8 @@ print,begin_index,end_index,n_elements(insitu1)
       button1 = widget_button(tbase2, value='+', uname='timeplusone',$
                               xsize=scale_factor*50)                     
       widget_control,timeline,set_value=mid_time
-        
+print,time_min,mid_time,time_max
+
       ;MARS GLOBE/LABEL OPTIONS MENU 
       subbaseR2 = widget_base(subbaseR,/column)
       marsbase = widget_base(subbaseR2,/column)
@@ -1684,16 +1727,16 @@ print,begin_index,end_index,n_elements(insitu1)
     ;CREATE THE ORBITAL PATH
 
       if coord_sys eq 0 then begin
-;-orig        x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
-;-orig        y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
-;-orig        z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
-;-orig        path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
-;-orig        for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
-        x_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
-        y_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
-        z_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
-        path_connections = lonarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*3)
-        for i=begin_index,end_index do begin
+        x_orbit = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+        y_orbit = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+        z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+        path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
+        for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+;        x_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
+;        y_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
+;        z_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
+;        path_connections = lonarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*3)
+;        for i=0L,end_index-begin_index do begin
           x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
           x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
@@ -1808,16 +1851,16 @@ print,begin_index,end_index,n_elements(insitu1)
         endelse
     
       vector_model = obj_new('IDLgrModel')
-;-orig      x_vector = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
-;-orig      y_vector = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
-;-orig      z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
-;-orig      vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
-;-orig      for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
-      x_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
-      y_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
-      z_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
-      vector_polylines = lonarr(3*n_elements(insitu1[begin_index:end_index].spacecraft.geo_x))
-      for i=0L,n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)-1 do begin
+      x_vector = fltarr(n_elements(insitu1.spacecraft.geo_x)*2)
+      y_vector = fltarr(n_elements(insitu1.spacecraft.geo_y)*2)
+      z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
+      vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
+      for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
+;      x_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
+;      y_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
+;      z_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
+;      vector_polylines = lonarr(3*n_elements(insitu1[begin_index:end_index].spacecraft.geo_x))
+;      for i=0L,n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)-1 do begin
         x_vector[i*2] = x_orbit[i*2]
         y_vector[i*2] = y_orbit[i*2]
         z_vector[i*2] = z_orbit[i*2]       
@@ -1922,13 +1965,13 @@ print,begin_index,end_index,n_elements(insitu1)
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,$
                                install_directory
     ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
-         x = x + x_orbit(time_index*2)
-         y = y + y_orbit(time_index*2)
-         z = z + z_orbit(time_index*2)
+         x = x + x_orbit[time_index*2]
+         y = y + y_orbit[time_index*2]
+         z = z + z_orbit[time_index*2]
         ;add its position to the camera tracking variable
-         maven_location[0] = x_orbit(time_index*2)
-         maven_location[1] = y_orbit(time_index*2)
-         maven_location[2] = z_orbit(time_index*2)
+         maven_location[0] = x_orbit[time_index*2]
+         maven_location[1] = y_orbit[time_index*2]
+         maven_location[2] = z_orbit[time_index*2]
          maven_location[3] = 1.0                        ;default scale factor
         maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, $
                              color=[255,102,0], shading=1,reject=1,$
@@ -1967,7 +2010,6 @@ print,begin_index,end_index,n_elements(insitu1)
         plot_model = obj_new('IDLgrModel')
         view->add,plot_model
         plot_x = insitu1.time
-        plot_y = fltarr(n_elements(insitu1.spacecraft.altitude))
         if keyword_set(field) then begin
           plot_y = insitu1.(level0_index).(level1_index)
         endif else begin
