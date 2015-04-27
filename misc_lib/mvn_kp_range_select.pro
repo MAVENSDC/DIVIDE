@@ -18,14 +18,17 @@
 pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
 
 
-  if size(time,/type) eq 2 then begin         ;IF USER SUPPIED ORBIT NUMBER (IE INTEGERS)
-    if size(time,/dimensions) eq 0 then begin               ;user gives only 1 integer, then default to plotting 1 orbit
+  if size(time,/type) eq 2 then begin         
+    ;IF USER SUPPIED ORBIT NUMBER (IE INTEGERS)
+    if size(time,/dimensions) eq 0 then begin               
+      ;user gives only 1 integer, then default to plotting 1 orbit
       begin_index = where(kp_data.orbit eq time)
       begin_index = begin_index[0]
       end_index = where(kp_data.orbit eq (time+1))
       end_index = end_index[n_elements(end_index)-1]
     endif
-    if size(time,/dimensions) eq 2 then begin               ;user gives 2 integers, so find indices that match start/end orbits
+    if size(time,/dimensions) eq 2 then begin               
+      ;user gives 2 integers, so find indices that match start/end orbits
 ; If time[1] < time[0], ask use if is OK to swap
       if( time[1] lt time[0] )then begin
         print,'Time input array: start_time later than end_time:'
@@ -52,7 +55,8 @@ pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
     endif
   endif 
   
-  if size(time,/type) eq 7 then begin         ;IF USER SUPPLIED STRING BASED TIME
+  if size(time,/type) eq 7 then begin         
+    ;IF USER SUPPLIED STRING BASED TIME
     if size(time,/dimensions) eq 0 then begin
       time = time_double(time, tformat="YYYY-MM-DDThh:mm:ss")
       t1 = min((kp_data.time - time),begin_index,/absolute)
@@ -66,12 +70,15 @@ pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
     endif
   endif
   
-  if size(time,/type) eq 3 then begin         ;IF USER SUPPLIED POSIX TIME (IE LONG INTEGERS)
-    if size(time,/dimensions) eq 0 then begin   ;user gives only 1 integer, then default to 1 day of plotting
+  if size(time,/type) eq 3 then begin         
+    ;IF USER SUPPLIED POSIX TIME (IE LONG INTEGERS)
+    if size(time,/dimensions) eq 0 then begin   
+      ;user gives only 1 integer, then default to 1 day of plotting
       t1 = min((kp_data.time - time),begin_index,/absolute)
       t2 = min((kp_data.time - (time + 86400L)),end_index,/absolute)
     endif 
-    if size(time,/dimensions) eq 2 then begin   ;user gives 2 integers, so find indices that match start/end times
+    if size(time,/dimensions) eq 2 then begin   
+      ;user gives 2 integers, so find indices that match start/end times
       t1 = min((kp_data.time - time[0]),begin_index,/absolute)
       t2 = min((kp_data.time - time[1]),end_index,/absolute)      
     endif

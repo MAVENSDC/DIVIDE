@@ -240,7 +240,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
       total_points = end_index - begin_index + 1L
-      time_index = 0L; begin_index ; hack: old version was time_index
+      time_index = ( end_index - begin_index ) / 2L
 
 ;-km-remove-old
 ;      start_time = double(insitu1[0].time)
@@ -585,8 +585,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                 xsize=scale_factor*1000)
 
 ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
-;      time_min = insitu1[begin_index].time
-;      time_max = insitu1[end_index].time
       time_min = start_time
       time_max = end_time
 
@@ -618,7 +616,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       button1 = widget_button(tbase2, value='+', uname='timeplusone',$
                               xsize=scale_factor*50)                     
       widget_control,timeline,set_value=mid_time
-print,time_min,mid_time,time_max
 
       ;MARS GLOBE/LABEL OPTIONS MENU 
       subbaseR2 = widget_base(subbaseR,/column)
@@ -1732,11 +1729,6 @@ print,time_min,mid_time,time_max
         z_orbit = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
         path_connections = lonarr(n_elements(insitu1.spacecraft.geo_x)*3)
         for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
-;        x_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
-;        y_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
-;        z_orbit = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
-;        path_connections = lonarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*3)
-;        for i=0L,end_index-begin_index do begin
           x_orbit[i*2] = insitu1[i].spacecraft.geo_x/10000.0
           x_orbit[(i*2)+1] = insitu1[i].spacecraft.geo_x/10000.0+orbit_offset
           y_orbit[i*2] = insitu1[i].spacecraft.geo_y/10000.0
@@ -1856,11 +1848,6 @@ print,time_min,mid_time,time_max
       z_vector = fltarr(n_elements(insitu1.spacecraft.geo_z)*2)
       vector_polylines = lonarr(3*n_elements(insitu1.spacecraft.geo_x))
       for i=0L,n_elements(insitu1.spacecraft.geo_x)-1 do begin
-;      x_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)*2)
-;      y_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_y)*2)
-;      z_vector = fltarr(n_elements(insitu1[begin_index:end_index].spacecraft.geo_z)*2)
-;      vector_polylines = lonarr(3*n_elements(insitu1[begin_index:end_index].spacecraft.geo_x))
-;      for i=0L,n_elements(insitu1[begin_index:end_index].spacecraft.geo_x)-1 do begin
         x_vector[i*2] = x_orbit[i*2]
         y_vector[i*2] = y_orbit[i*2]
         z_vector[i*2] = z_orbit[i*2]       

@@ -15,15 +15,25 @@
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
 ;-
-pro MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, path_color_table, vert_color, colorbar_ticks, $
-                          colorbar_min, colorbar_max, colorbar_stretch, reset=reset
+pro MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, $
+                          path_color_table, vert_color, colorbar_ticks, $
+                          colorbar_min, colorbar_max, colorbar_stretch, $
+                          reset=reset
 
 common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
-  if level0_index eq -9 then begin        ;NO DATA PARAMETER FOR PLOTTING REQUESTED, DEFAULT TO SOLID RED ORBIT PATH
-     vert_color[0,*] = 255 
-     colorbar_ticks = [0.0,0.25,0.50,0.75,1.0]
-  endif else begin                        ;COLOR THE ORBITAL PATH ACCORDING TO REQUESTED PARAMETER
+  if level0_index eq -9 then begin        
+    ;NO DATA PARAMETER FOR PLOTTING REQUESTED, DEFAULT TO SOLID RED ORBIT PATH
+    vert_color[0,*] = 255
+    ; The plotted parameter in this case is altitude, so use those to
+    ;  define the color bar ticks
+;-orig     colorbar_ticks = [0.0,0.25,0.50,0.75,1.0]
+    minimum_value = min( insitu.spacecraft.altitude, /NaN )
+    maximum_value = max( insitu.spacecraft.altitude, /NaN )
+    colorbar_min = minimum_value
+    colorbar_max = maximum_value
+  endif else begin                        
+    ;COLOR THE ORBITAL PATH ACCORDING TO REQUESTED PARAMETER
     if colorbar_min eq -999999 then begin
       minimum_value = min(insitu.(level0_index).(level1_index),/NaN)
     endif else begin
@@ -41,7 +51,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
       colorbar_max = maximum_value
     endif
     
-    if colorbar_stretch eq 0 then begin                         ;STRAIGHT LINEAR DATA STRETCH
+    if colorbar_stretch eq 0 then begin                         
+      ;STRAIGHT LINEAR DATA STRETCH
       delta = (maximum_value-minimum_value)/255.
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do begin
         if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
@@ -74,7 +85,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
       endfor
     endif 
     
-    if colorbar_stretch eq 1 then begin                         ;Log stretch
+    if colorbar_stretch eq 1 then begin                         
+      ;Log stretch
       exponent = 2
       data_mean = 0.5
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do  begin
@@ -95,7 +107,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
             vert_color[1,(i*2)+1] = g_orig[255]
             vert_color[2,(i*2)+1] = b_orig[255]
           endif
-          if (insitu[i].(level0_index).(level1_index) gt minimum_value) and (insitu[i].(level0_index).(level1_index) lt maximum_value) then begin
+          if( (insitu[i].(level0_index).(level1_index) gt minimum_value) and $
+              (insitu[i].(level0_index).(level1_index) lt maximum_value) )then begin
             t = 255./(1.+(data_mean/insitu[i].(level0_index).(level1_index))^exponent)
             vert_color[0,(i*2)] = r_orig[t]
             vert_color[1,(i*2)] = g_orig[t]
@@ -107,15 +120,11 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         endif
       endfor      
     endif
-    
-    colorbar_ticks = fltarr(5)
-    for i=0,4 do begin
-      colorbar_ticks[i] = minimum_value + i*((maximum_value-minimum_value)/4.)
-    endfor
-  
   endelse
 
-
-
+  colorbar_ticks = fltarr(5)
+  for i=0,4 do begin
+    colorbar_ticks[i] = minimum_value + i*((maximum_value-minimum_value)/4.)
+  endfor
 
 END
