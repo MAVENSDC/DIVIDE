@@ -7,11 +7,13 @@
   of orbits and species. By default, all limb scan data, both radiance and 
   density profiles, are displayed. 
 
-mvn_kp_iuvs_limb, kp_data, density=density, radiance=radiance, profiles=profiles, $
-                  den_species=den_species, rad_species=rad_species, legend=legend,$
+mvn_kp_iuvs_limb, kp_data, density=density, radiance=radiance, $
+                  profiles=profiles, den_species=den_species, $
+                  rad_species=rad_species, legend=legend,$
                   linear=linear, species_expand=species_expand, $
-                  profile_expand=profile_expand, range=range, colortable=colortable, $
-                  window=window, winX=winX, winY=winY, help=help
+                  profile_expand=profile_expand, range=range, $
+                  colortable=colortable, window=window, winX=winX, $
+                  winY=winY, help=help
 
 REQUIRED FIELDS
 **************
@@ -26,7 +28,8 @@ OPTIONAL FIELDS
                 particular species to be plotted 
   rad_species : an array listing the radiance measurements of 
                 particular species to be plotted 
-  legend : either VERTICAL or HORIZONTAL, defining the orientation of the legend.
+  legend : either VERTICAL or HORIZONTAL, 
+           defining the orientation of the legend.
   linear : optional keyword to make plots on a linear scale, 
            instead of the logarithmic default
   species_expand: if this keyword is selected, then all the species for a 

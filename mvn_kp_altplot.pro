@@ -19,13 +19,6 @@
 ;         long(s)        orbit number
 ;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
 ;       A start or start & stop time (or orbit #) range for reading kp data. 
-;    xrange: in, optional, type=fltarr
-;       Minimum and maximum range for the x-axis. If multiple plots are 
-;       included, the number of xrange arrays must match.
-;    yrange: in, optional, type=fltarr
-;       Minimum and maximum range for the y-axis. If multiple plots are 
-;       included, the number of yrange arrays must match.
-;
 ; 
 ; :Keywords:
 ;    list: in, optional, type=boolean
@@ -35,26 +28,30 @@
 ;           containing the structure index and tag names.
 ;    range: in, optional, type=boolean
 ;       if selected, will list the beginning and end times of kp_data
-;    title:in, optional, type=string
-;       a optional title string for the plot
-;    thick: in, optional, type=integer
-;       the thickness of the altitude profile lines
-;    symbol: in, optional, type=integer
-;       the idl symbol to be used in plotting
-;    linestyle: in, optional, type=integer
-;       the idl linestyle to be used in plotting
+;    oo: out, optional
+;       if provided, the name of the variable to which the plot created
+;       will be assigned.  Ignored if /directgraphic is also set.
 ;    directgraphic: in, optional, type=boolean
 ;       if selected, will override teh default Graphics plot procedure and 
 ;       use direct graphics instead
-;    xlog: in, optional, type=boolean
-;       if selected, will force the x-axis to logarithmic scale
-;    ylog: in, optional, type=boolean
-;       if selected, will force the y-axis to logarithmic scale
 ;    davin: in, optional, type=boolean
 ;       As requested by Davin Larson, this keyword will flip the X and Y 
 ;       axis of each plot.
-;       
-; :Version:   1.0     July 8, 2014
+;
+; :Obsolete:
+;    The following are kept in case we wish to return this functionality
+;
+;    xrange: in, optional, type=fltarr
+;       Minimum and maximum range for the x-axis. If multiple plots are
+;       included, the number of xrange arrays must match.
+;    yrange: in, optional, type=fltarr
+;       Minimum and maximum range for the y-axis. If multiple plots are
+;       included, the number of yrange arrays must match.
+;
+; :Version:   1.1 (2015-Apr 28) McGouldrick  
+;
+; :History:
+;   v1.0 (July 8, 2014)
 ;-
 @mvn_kp_tag_parser
 @mvn_kp_tag_list
@@ -63,10 +60,9 @@
 @mvn_kp_tag_verify
 
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
-                    title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-                    directgraphic=directgraphic, xlog=xlog, ylog=ylog, $
-                    xrange=xrange, yrange=yrange,$
-                    davin=davin, y_labels=y_labels, _extra = e, help=help
+                    directgraphic=directgraphic, $
+                    davin=davin, y_labels=y_labels, oo=oo, $
+                    _extra = e, help=help
 
 
   ;provide help for those who don't have IDLDOC installed
@@ -74,7 +70,6 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     mvn_kp_get_help,'mvn_kp_altplot'
     return
   endif
-
 
   ;CHECK THAT THE INPUT PARAMETERS ARE VALID
   ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
@@ -112,7 +107,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
-    goto,finish
+    return
   endif
   
   ;SET THE VARIOUS PLOT OPTIONS, SHOULD THEY REQUIRE IT
@@ -121,31 +116,27 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
    if n_elements(parameter) ne 1 then title=strarr(n_elements(parameter))
   endif
   
-  if keyword_set(thick) eq 0 then thick=1     ;SET DEFAULT PLOT LINE THICKNESS
-  if keyword_set(linestyle) eq 0 then linestyle=0 ;SET DEFAULT PLOT LINE STYLE
-  if keyword_set(symbol) eq 0 then symbol="None"  ;SET DEFAULT PLOT SYMBOL
-  if keyword_set(xlog) eq 1 then xaxis_log = 1
-  if keyword_set(xlog) eq 0 then xaxis_log = 0
-  if keyword_set(ylog) eq 1 then yaxis_log = 1
-  if keyword_set(ylog) eq 0 then yaxis_log = 0
+;  if keyword_set(thick) eq 0 then thick=1     ;SET DEFAULT PLOT LINE THICKNESS
+;  if keyword_set(linestyle) eq 0 then linestyle=0 ;SET DEFAULT PLOT LINE STYLE
+;  if keyword_set(symbol) eq 0 then symbol="None"  ;SET DEFAULT PLOT SYMBOL
   if keyword_set(directgraphic) eq 0 then begin
-   if Float(!Version.Release) GE 8.0 THEN $
-      directgraphic = 0  ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
+   if Float(!Version.Release) lt 8.0 THEN $
+      directgraphic = 1  ;FORCE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
   endif
   
   ;CHECK THAT, IF INCLUDED, XRANGE AND YRANGE CONTAIN SUFFICIENT DATA
-  if keyword_set(yrange) then begin
-    if (n_elements(yrange)/n_elements(parameter)) ne 2 then begin
-      print,'When using the YRANGE keyword, ranges must be set for each plot'
-      return    
-    endif
-  endif
-  if keyword_set(xrange) then begin
-    if (n_elements(xrange)/n_elements(parameter)) ne 2 then begin
-      print,'When using the XRANGE keyword, ranges must be set for each plot'
-      return    
-    endif
-  endif  
+;  if keyword_set(yrange) then begin
+;    if (n_elements(yrange)/n_elements(parameter)) ne 2 then begin
+;      print,'When using the YRANGE keyword, ranges must be set for each plot'
+;      return    
+;    endif
+;  endif
+;  if keyword_set(xrange) then begin
+;    if (n_elements(xrange)/n_elements(parameter)) ne 2 then begin
+;      print,'When using the XRANGE keyword, ranges must be set for each plot'
+;      return    
+;    endif
+;  endif  
   
   ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
   
@@ -158,12 +149,12 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   
   
   ;CREATE THE PLOT VECTORS
-  
+ 
   if n_elements(parameter) eq 1 then begin 
   ;only going to plot a single altitude plot
       pos = strpos(parameter,',')  ; check if there's more than one 
                                    ; parameter being overplot
-      if pos ne -1 then goto,overplots      
+      if pos ne -1 then overplots=byte(1)      
     if size(parameter,/type) eq 2 then begin      ;INTEGER PARAMETER INDEX
           MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
             first_level_count, base_tags, first_level_tags, check, $
@@ -177,7 +168,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
        endif else begin
          print,'Requested plot parameter is not included in the data.'
          print,' Try /LIST to confirm your parameter choice.'
-         goto,finish
+         return
        endelse
     endif ;end of integer parameter loop
     if size(parameter,/type) eq 7 then begin      ;STRING PARAMETER NAME  
@@ -190,7 +181,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
           ' is not part of the KP data structure.'
          print,'Check the spelling, or the structure tags with the ' $
                + '/LIST keyword.'
-         goto,finish
+         return
        endif else begin
         x = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
         y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude    
@@ -208,15 +199,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
         plot1 = plot(y,x,xtitle='Spacecraft Altitude, km',$
              ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-             title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-             xlog=xaxis_log,ylog=yaxis_log, /current,xrange=yrange, $
-             yrange=xrange,xstyle=1, ystyle=1, _extra = e)
+             /current, xstyle=1, ystyle=1, _extra = e)
       endif else begin
         plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',$
               xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-              title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-              xlog=xaxis_log,ylog=yaxis_log, /current,xrange=xrange, $
-              yrange=yrange, xstyle=1, ystyle=1, _extra = e)
+              /current, xstyle=1, ystyle=1, _extra = e)
       endelse
     endif
   endif
@@ -229,15 +216,12 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
         plot,y,x,xtitle='Spacecraft Altitude, km', $
              ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-             title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,$
-             ylog=yaxis_log, background=255, color=0,$
+             background=255, color=0,$
              xrange=yrange,yrange=xrange,xstyle=1,ystyle=1, _extra = e
       endif else begin
         plot,x,y,ytitle='Spacecraft Altitude, km', $
              xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-             title=title,thick=thick,linestyle=linestyle,xlog=xaxis_log,$
-             ylog=yaxis_log, background=255, color=0,$
-             xrange=xrange,yrange=yrange,xstyle=1,ystyle=1, _extra = e
+             background=255, color=0,xstyle=1,ystyle=1, _extra = e
       endelse
     endif
   endif
@@ -263,14 +247,14 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
        endif else begin
          print,'Requested plot parameter is not included in the data.'
          print,'Try /LIST to confirm your parameter choice.'
-         goto,finish
+         return
        endelse
       endfor
     endif                ;END OF THE INTEGER ARRAY PARAMETER LOOP
     if size(parameter,/type) eq 7 then begin
      for i=0, n_elements(parameter) -1 do begin
       pos = strpos(parameter[i],',')
-      if pos ne -1 then goto,overplots
+      if pos ne -1 then overplots=byte(1)
      endfor
       x = fltarr(n_elements(parameter),$
                  n_elements(kp_data[kp_start_index:kp_end_index].$
@@ -286,7 +270,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                  ' is not part of the KP data structure.'
            print,'Check the spelling, or the structure tags with ' $
                  + 'the /LIST keyword.'
-           goto,finish
+           return
          endif else begin            
            
            x[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).$
@@ -331,16 +315,14 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
          plot1 = plot(y,x[i,*], xtitle='Spacecraft Altitude, km', $
                       ytitle=x_axis_title[i], $
                       layout=[n_elements(parameter),1,i+1],/current,$
-                      title=title[i],thick=thick,linestyle=linestyle,$
-                      symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                      title=title[i],$
                       xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
                       yrange=temp_xrange[*,i], _extra = e) 
         endif else begin
          plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', $
                       xtitle=x_axis_title[i], $
                       layout=[n_elements(parameter),1,i+1],/current,$
-                      title=title[i],thick=thick,linestyle=linestyle,$
-                      symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                      title=title[i],$
                       xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
                       xrange=temp_xrange[*,i], _extra = e)
         endelse
@@ -356,37 +338,32 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       if keyword_set(davin) then begin
          plot,y,x[0,*],xtitle='Spacecraft Altitude, km', $
               ytitle=x_axis_title[0],xstyle=1,ystyle=1,$
-              title=title[0],thick=thick,linestyle=linestyle,$
-              xlog=xaxis_log,ylog=yaxis_log, background=255,color=0,$
+              title=title[0],background=255,color=0,$
               charsize=2,font=-1,$
               xrange=temp_yrange[*,0],yrange=temp_xrange[*,0], _extra = e
         for i=1,n_elements(parameter)-1 do begin
          plot,y,x[i,*],xtitle='Spacecraft Altitude, km', $
               ytitle=x_axis_title[i],xstyle=1,ystyle=1,$
-              title=title[i],thick=thick,linestyle=linestyle,$
-              xlog=xaxis_log,ylog=yaxis_log, color=0,charsize=2,font=-1,$
+              title=title[i],color=0,charsize=2,font=-1,$
               xrange=temp_yrange[*,i],yrange=temp_xrange[*,i], _extra = e
         endfor 
       endif else begin
         plot,x[0,*],y,ytitle='Spacecraft Altitude, km', $
              xtitle=x_axis_title[0],xstyle=1,ystyle=1,$
-             title=title[0],thick=thick,linestyle=linestyle,xlog=xaxis_log,$
-             ylog=yaxis_log, background=255,color=0,charsize=2,font=-1,$
+             title=title[0],background=255,color=0,charsize=2,font=-1,$
              yrange=temp_yrange[*,0],xrange=temp_xrange[*,0], _extra = e
         for i=1,n_elements(parameter)-1 do begin
          plot,x[i,*],y,ytitle='Spacecraft Altitude, km', $
               xtitle=x_axis_title[i],xstyle=1,ystyle=1,$
-              title=title[i],thick=thick,linestyle=linestyle,$
-              xlog=xaxis_log,ylog=yaxis_log, color=0,charsize=2,font=-1,$
+              title=title[i], color=0,charsize=2,font=-1,$
               yrange=temp_yrange[*,i],xrange=temp_xrange[*,i], _extra = e
         endfor 
       endelse
     endif
-  endif
-  return       ;SKIP OVER THE OVERPLOT OPTIONS
+  endif  
   
-  
-overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
+  if( keyword_set(overplots) )then begin
+    ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
 
   ;ANALYZE TEH INPUT STRINGS TO DETERMINE PARAMETERS AND SIZES
     
@@ -448,7 +425,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
                  ' is not part of the KP data structure.'
            print,'Check the spelling, or the structure tags with the' $
                  + ' /LIST keyword.'
-           goto,finish
+           return
          endif else begin            
            
            x[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).$
@@ -495,8 +472,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
                          xtitle='Spacecraft Altitude [km]', $
                          ytitle=x_axis_title[oplot_index], $
                          layout=[n_elements(parameter),1,i+1],/current,$
-                         title=title[i],thick=thick,linestyle=linestyle,$
-                         symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                         title=title[i],$
                          xstyle=1,ystyle=1,yrange=temp_xrange[*,oplot_index],$
                          xrange=temp_yrange[*,oplot_index], _extra = e)
             oplot_index= oplot_index+1
@@ -504,8 +480,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
             plot1 = plot(y,x[oplot_index,*], $
                          xtitle='Spacecraft Altitude [km]', $
                          layout=[n_elements(parameter),1,i+1],/current,$
-                         title=title[i],thick=thick,linestyle=0,$
-                         symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                         title=title[i],linestyle=0,$
                          yrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
                          xrange=temp_yrange[*,oplot_index],$
                          name=x_axis_title[oplot_index], _extra = e)
@@ -519,8 +494,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
               plot1 = plot(y,x[oplot_index,*], $
                            xtitle='Spacecraft Altitude[ km]', $
                            layout=[n_elements(parameter),1,i+1],/current,$
-                           title=title[i],thick=thick,linestyle=j,$
-                           symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                           title=title[i],linestyle=j,$
                            xstyle=1,ystyle=1,$
                            yrange=temp_xrange[*,hold_index],$
                            name=x_axis_title[oplot_index], $
@@ -539,8 +513,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
                          ytitle='Spacecraft Altitude [km]', $
                          xtitle=x_axis_title[oplot_index], $
                          layout=[n_elements(parameter),1,i+1],/current,$
-                         title=title[i],thick=thick,linestyle=linestyle,$
-                         symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                         title=title[i],$
                          xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],$
                          yrange=temp_yrange[*,oplot_index], _extra = e)
             oplot_index= oplot_index+1
@@ -548,8 +521,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
             plot1 = plot(x[oplot_index,*], y, $
                          ytitle='Spacecraft Altitude [km]', $
                          layout=[n_elements(parameter),1,i+1],/current,$
-                         title=title[i],thick=thick,linestyle=0,$
-                         symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                         title=title[i],linestyle=0,$
                          xrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
                          yrange=temp_yrange[*,oplot_index],$
                          name=x_axis_title[oplot_index], _extra = e)
@@ -563,8 +535,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
               plot1 = plot(x[oplot_index,*], y, $
                            ytitle='Spacecraft Altitude [km]', $
                            layout=[n_elements(parameter),1,i+1],/current,$
-                           title=title[i],thick=thick,linestyle=j,$
-                           symbol=symbol,xlog=xaxis_log,ylog=yaxis_log, $
+                           title=title[i],linestyle=j,$
                            xstyle=1,ystyle=1,$
                            xrange=temp_xrange[*,hold_index],$
                            name=x_axis_title[oplot_index], $
@@ -579,7 +550,6 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           endelse
         endelse 
       endfor
-  ;  endif
   endif 
   if directgraphic eq 1 then begin
     device,decomposed=1
@@ -591,8 +561,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot,y,x[oplot_index,*],xtitle='Spacecraft Altitude [km]', $
                  xtitle=x_axis_title[oplot_index],title=title[i],$
-                 thick=thick,linestyle=linestyle,xlog=xaxis_log,$
-                 ylog=yaxis_log, background='FFFFFF'x,color=0,$
+                 background='FFFFFF'x,color=0,$
                  font=-1,xstyle=1,ystyle=1,$
                  yrange=temp_xrange[*,oplot_index],$
                  xrange=temp_yrange[*,oplot_index], _extra = e
@@ -632,16 +601,14 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           if plot_count[i] eq 1 then begin
             plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude [km]', $
                  xtitle=x_axis_title[oplot_index],title=title[i],$
-                 thick=thick,linestyle=linestyle,xlog=xaxis_log,$
-                 ylog=yaxis_log, background='FFFFFF'x,color=0,$
+                 background='FFFFFF'x,color=0,$
                  font=-1,xstyle=1,ystyle=1,$
                  xrange=temp_xrange[*,oplot_index],$
                  yrange=temp_yrange[*,oplot_index], _extra = e
             oplot_index = oplot_index+1
           endif else begin 
             plot,x[oplot_index,*],y,ytitle='Spacecraft Altitude [km]',$
-                 title=title[oplot_index],thick=thick,$
-                 linestyle=linestyle,xlog=xaxis_log,ylog=yaxis_log, $
+                 title=title[oplot_index],$
                  background='FFFFFF'x,color=0,xstyle=1,ystyle=1,$
                  xrange=temp_xrange[*,oplot_index],$
                  yrange=temp_yrange[*,oplot_index], _extra = e
@@ -655,7 +622,7 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
                     .8,x_axis_title[oplot_index],color=0,/normal
             oplot_index = oplot_index+1
             for j=1,plot_count[i]-1 do begin      
-              oplot,x[oplot_index,*],y,linestyle=j,thick=thick,color=0
+              oplot,x[oplot_index,*],y,linestyle=j,color=0, _extra=e
               plots,[(i*(1./n_elements(parameter)))$
                     +(.25/(n_elements(parameter))),$
                     (i*(1./n_elements(parameter)))$
@@ -669,9 +636,11 @@ overplots: ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
           endelse 
          endfor 
       endelse
-     
-   ; endif
+    endif
   endif
-  
-finish:
+;
+;  If using oo graphics and a variable was provided, return plot to that var
+;
+  if( ~keyword_set(directgraphic) and arg_present(oo) )then oo=plot1
+
 end

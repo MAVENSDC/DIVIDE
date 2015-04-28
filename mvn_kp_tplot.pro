@@ -5,34 +5,41 @@
 ; :Author: Kristopher Larsen
 ; 
 ; :Description:
-;   A simple wrapper routine that creates tplot variables from the MAVEN insitu KP data structure.
+;   A simple wrapper routine that creates tplot variables from the 
+;   MAVEN insitu KP data structure.
 ;
 ; :Params:
 ;    kp_data: in, required, type=structure
 ;       the INSITU KP data structure from which to create tplot variables. 
 ;    parameter: in, required, type=strarr,intarr
-;       the INSITU kp data fields to make into tplot variables, maybe an integer or string array for multiple choices.
+;       the INSITU kp data fields to make into tplot variables, 
+;       may be an integer or string array for multiple choices.
 ;    time: in, required, can be a scalar or a two item array of type:
 ;         long(s)        orbit number
 ;         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
 ;       A start or start & stop time (or orbit #) range for extracting kp data.
 ;    prefix: in, optional, type=string
-;       By default, the tplot variables created are called 'MVN_KP_*DATA NAME*', where *DATA NAME* is the Key Parameter name. 
+;       By default, the tplot variables created are called 
+;       'MVN_KP_*DATA NAME*', where *DATA NAME* is the Key Parameter name. 
 ;       Setting prefix to a string will replace MVN_KP with a user defined string.
 ;    message: in, optional, type=string
-;       This string will be included in the tplot dlimits source field. May be set to a user defined string to describe the source of the data.
+;       This string will be included in the tplot dlimits source field. 
+;       May be set to a user defined string to describe the source of the data.
 ;    
 ; :Keywords:
 ;    list: in, optional, type=boolean
 ;       if selected, will list the KP data fields included in kp_data.
 ;       if /list, then the list will be printed to the screen.
-;       if list=list, then list will be a string array containing the structure indices and tag names. 
+;       if list=list, then list will be a string array containing the 
+;       structure indices and tag names. 
 ;    range: in, optional, type=boolean
 ;       if selected, will list the beginning and end times of kp_data.
 ;    createall: in, optional, type=boolean
-;       This keyword will create tplot variables from all the KP data fields within the structure.
+;       This keyword will create tplot variables from all the KP data 
+;       fields within the structure.
 ;    quiet: in, optional, type=boolean
-;       This keyword suppresses all screen output during the creation of tplot variables.
+;       This keyword suppresses all screen output during the creation of 
+;       tplot variables.
 ;    euv: in, optional, type=boolean
 ;       This keyword will create tplot variables from all the EUV data fields.
 ;        It may be used in conjunction with any other instrument keywords.
@@ -68,52 +75,24 @@
 @mvn_kp_range_select
 @mvn_kp_tag_verify
 
-pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range,$
-                  createall=createall, prefix=prefix, message=message, quiet=quiet, $
-                  euv=euv, lpw=lpw, static=static, swea=swea, swia=swia, mag=mag, sep=sep, ngims=ngims,$
-                  help=help
+pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,$
+                  range=range, createall=createall, prefix=prefix, $
+                  message=message, quiet=quiet, euv=euv, lpw=lpw, $
+                  static=static, swea=swea, swia=swia, mag=mag, sep=sep, $
+                  ngims=ngims, help=help
 
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_tplot'
-;    print,'MVN_KP_TPLOT'
-;    print,'A simple wrapper routine that creates tplot variables from the MAVEN insitu KP data structure.'
-;    print,''
-;    print,'mvn_kp_tplot, kp_data, parameter=parameter, $'
-;    print,'              time=time, list=list, range=range, createall=createall, prefix=prefix, message=message, $
-;    print,'              quiet=quiet, euv=euv, lpw=lpw, static=static, swea=swea, swia=swia, mag=mag, sep=sep, $
-;    print,'              ngims=ngims, help=help'
-;    print,''
-;    print,'REQUIRED FIELDS'
-;    print,'**************'
-;    print,'  kp_data: In-situ Key Parameter Data Structure'
-;    print,''
-;    print,'OPTIONAL FIELDS'
-;    print,'***************'
-;    print,'  parameter: Key Parameter value to be plotted. Either name or index.'
-;    print,'  time: Range of times to plot.'
-;    print,'  list: Display list of parameters in the data structure.'
-;    print,'  range: Display the beginning and end times of the data structure.'
-;    print,'  createall: Create tPlot variables from all Key Parameters within the structure.'
-;    print,'  prefix: Modify the default tPlot variable prefix (mvn_kp_).'
-;    print,'  message: Change the message within the tPlot variable.'
-;    print,'  quiet: Suppress the screen output.'
-;    print,'  euv: Create tPlot variables only from EUV data parameters'
-;    print,'  lpw: Create tPlot variables only from LPW data parameters'
-;    print,'  static: Create tPlot variables only from STATIC data parameters'
-;    print,'  swea: Create tPlot variables only from SWEA data parameters'
-;    print,'  swia: Create tPlot variables only from SWIA data parameters'
-;    print,'  mag: Create tPlot variables only from MAG data parameters'
-;    print,'  sep: Create tPlot variables only from SEP data parameters'
-;    print,'  ngims: Create tPlot variables only from NBGIMS data parameters'
-;    print,'  help: Invoke this list.'
     return
   endif
 
 
 
-  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
+                     second_level_count, base_tags,  $
+                     first_level_tags, second_level_tags
 
 
     if arg_present(list)  then begin  
@@ -123,7 +102,9 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
           if first_level_count[i] ne 0 then begin
               for j=0,first_level_count[i]-1 do begin
                 if first_level_count[i] ne 0 then begin 
-                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    list[index2] = '#' + strtrim(string(index2+1),2) + ' ' $
+                                 + base_tags[i] + '.' $
+                                 + strtrim(string(first_level_tags[index2-1]),2)
                     index2 = index2+1
                 endif 
               endfor
@@ -133,13 +114,15 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
       return
     endif else begin
       if keyword_set(list) then begin
-        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, $
+                         base_tags,  first_level_tags
         return
       endif
     endelse
 
 
-  ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
+  ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET 
+  ;IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
     return
@@ -148,11 +131,13 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
 
   ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
   
-  if keyword_set(time) then begin     ;determine the start and end indices to plot
+  if keyword_set(time) then begin     
+    ;determine the start and end indices to plot
     MVN_KP_RANGE_SELECT, kp_data, time, kp_start_index, kp_end_index
-  endif else begin                    ;otherwise plot all data within structure
-   kp_start_index = 0
-   kp_end_index = n_elements(kp_data.orbit)-1
+  endif else begin                    
+    ;otherwise plot all data within structure
+    kp_start_index = 0
+    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
 
 
@@ -178,9 +163,11 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
     !p.color=0
     loadct,39,/silent
     
-;IF THE USER SELECTS ANY OF THE INSTRUMENT FLAGS, THEY TAKE PRECEDENCE AND OVER-WRITE PARAMETERS REQUESTED
-  if keyword_set(euv) or keyword_set(lpw) or keyword_set(static) or keyword_set(swea) or keyword_set(swia) $
-      or keyword_set(mag) or keyword_set(sep) or keyword_set(ngims) then begin
+;IF THE USER SELECTS ANY OF THE INSTRUMENT FLAGS, THEY TAKE PRECEDENCE 
+;AND OVER-WRITE PARAMETERS REQUESTED
+  if keyword_set(euv) or keyword_set(lpw) or keyword_set(static) or $
+     keyword_set(swea) or keyword_set(swia) or keyword_set(mag) or $
+     keyword_set(sep) or keyword_set(ngims) then begin
       
       temp_parameters = intarr(300)
       temp_index=0
@@ -262,7 +249,8 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
   endif
     
     
-;IF USER CHOOSES CREATEALL, BUILD TPLOT VARIABLES FROM ALL PARAMETERS AND THEN QUIT
+;IF USER CHOOSES CREATEALL, 
+;BUILD TPLOT VARIABLES FROM ALL PARAMETERS AND THEN QUIT
 
   if keyword_set(createall) then begin
     print,'**** Creating Tplot variables from all available KP Parameters ****'
@@ -270,8 +258,12 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
     for i=0, n_elements(first_level_count)-1 do begin
       if first_level_count[i] gt 0 then begin
         for j=0, first_level_count[i]-1 do begin
-          tplot_name = strtrim(prefix+base_tags[i],2)+':'+strtrim(first_level_tags[index])
-          store_data,tplot_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(i).(j)},dlimits=message,verbose=0
+          tplot_name = strtrim(prefix+base_tags[i],2) + ':' $
+                     + strtrim(first_level_tags[index])
+          store_data,tplot_name, $
+                     data={x:kp_data[kp_start_index:kp_end_index].time, $
+                           y:kp_data[kp_start_index:kp_end_index].(i).(j)},$
+                     dlimits=message,verbose=0
           index=index+1
         endfor
       endif
@@ -280,20 +272,29 @@ pro MVN_KP_TPLOT, kp_data, parameter=parameter, time=time, list=list,range=range
     return
   endif else begin
      
-    ;OTHERWISE CREAT ONLY THE TPLOT VARIABLES REQUESTED
+    ;OTHERWISE CREATE ONLY THE TPLOT VARIABLES REQUESTED
       ;CREATE THE PLOT VECTORS
       
       for i=0, n_elements(parameter)-1 do begin                                   
-              MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, first_level_count, base_tags,  $
-                          first_level_tags, check, level0_index, level1_index, tag_array
+              MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, $
+                                 first_level_count, base_tags,  $
+                                 first_level_tags, check, level0_index, $
+                                 level1_index, tag_array
     
-           if check eq 0 then begin            ;CHECK THAT THE REQUESTED PARAMETER EXISTS
+           if check eq 0 then begin            
+            ;CHECK THAT THE REQUESTED PARAMETER EXISTS
     
-              tplot_name = strtrim(prefix+tag_array[0],2)+':'+strtrim(tag_array[1],2)
-              store_data,tplot_name, data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)},dlimits=message,verbose=0
+              tplot_name = strtrim(prefix+tag_array[0],2) + ':' $
+                         + strtrim(tag_array[1],2)
+              store_data,tplot_name, $
+                         data={x:kp_data[kp_start_index:kp_end_index].time, $
+                               y:kp_data[kp_start_index:kp_end_index]$
+                                 .(level0_index).(level1_index)},$
+                         dlimits=message,verbose=0
             
            endif else begin
-             print,'Requested plot parameter is not included in the data. Try /LIST to confirm your parameter choice.'
+             print,'Requested plot parameter is not included in the data.'
+             print,'Try /LIST to confirm your parameter choice.'
              return
            endelse
      endfor

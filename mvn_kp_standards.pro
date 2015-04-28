@@ -127,61 +127,8 @@ pro MVN_KP_STANDARDS, kp_data, $
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_standards'
-;    print,'MVN_KP_STANDARDS'
-;    print,'This routine plots a set of standardized MAVEN KP data plots as defined by Dave Brain, using the tplot routines to create and manipulate variables.'
-;    print,''
-;    print,'mvn_kp_standards, kp_data, altitude=altitude, plot_color=plot_color, $'
-;    print,'                  time=time, list=list, range=range, all=all, euv=euv, mag_mso=mag_mso, mag_geo=mag_geo, $
-;    print,'                  mag_cone=mag_cone, mag_dir=mag_dir, ngims_neutral=ngims_neutral, ngims_ions=ngims_ions, $
-;    print,'                  eph_angle=eph_angle, eph_geo=eph_geo, eph_mso=eph_mso, swea=swea, sep_ion=sep_ion, $'
-;    print,'                  sep_electron=sep_electron, wave=wave, plasma_den=plasma_den, plasma_temp=plasma_temp, $
-;    print,'                  swia_h_vel=swia_h_vel, static_h_vel=static_h_vel, static_o2_vel=static_o2_vel, static_flux=static_flux,$
-;    print,'                  static_energy=static_energy, sun_bar=sun_bar, solar_wind=solar_wind, ionosphere=ionosphere, $
-;    print,'                  sc_pot=sc_pot, help=help
-;    print,''
-;    print,'REQUIRED FIELDS'
-;    print,'**************'
-;    print,'  kp_data: In-situ Key Parameter Data Structure'
-;    print,''
-;    print,'OPTIONAL FIELDS'
-;    print,'***************'
-;    print,'  altitude: Add an additional x-axis label of spacecraft altitude.'
-;    print,'  plot_color: Change the default IDL color table to something new.'
-;    print,'  time: The time range to be plotted.'
-;    print,'  list: Display the list of all Key Parameters included in the data structure.'
-;    print,'  range: Display the start and end time contained in the data structure.'
-;    print,'  all: Display all the standardized plots.'
-;    print,'  euv: Plot the EUV standardized plot.'
-;    print,'  mag_mso:  Plot the MAG standardized plot in MSO coordinates.'
-;    print,'  mag_geo:   Plot the MAG standardized plot in GEO coordinates.'
-;    print,'  mag_cone:  Plot the MAG CONE standardized plot.'
-;    print,'  mag_dir:   Plot the MAG DIR standardized plot.'
-;    print,'  ngims_neutral: Plot the NGIMS NEUTRAL standardized plot.'
-;    print,'  ngims_ions: Plot the NGIMS IONS standardized plot.'
-;    print,'  eph_angle: Plot the EPH ANGLE standardized plot.'
-;    print,'  eph_geo: Plot the EPH GEO standardized plot.'
-;    print,'  eph_mso: Plot the EPH MSO standardized plot.'
-;    print,'  swea: Plot the SWEA standardized plot.'
-;    print,'  sep_ion: Plot the SEP ION standardized plot.'
-;    print,'  sep_electron:  Plot the SEP ELECTRON standardized plot.'
-;    print,'  wave: Plot the WAVE standardized plot.'
-;    print,'  plasma_den: Plot the PLASMA DENSITY standardized plot.'
-;    print,'  plasma_temp: Plot the PLASMA TEMPERATURE standardized plot.'
-;    print,'  swia_h_vel: Plot the SWIA H VELOCITY standardized plot.'
-;    print,'  static_h_vel: Plot the STATIC H VELOCITY standardized plot.'
-;    print,'  static_o2_vel: Plot the STATIC O2 VELOCITY standardized plot.'
-;    print,'  static_flux: Plot the STATIC FLUX standardized plot.'
-;    print,'  static_energy: Plot the STATIC ENERGY standardized plot. '
-;    print,'  sun_bar: Plot the SUN BAR standardized plot.'
-;    print,'  solar_wind: Plot the SOLAR WIND standardized plot.'
-;    print,'  ionosphere: Plot the IONOSPHERE standardized plot.'
-;    print,'  sc_pot: Plot the SPACECRAFT POTENTIAL standardized plot.'
-;    print,'  help: Invoke this list.'
     return
   endif
-
-
-
 
   ;IF /ALL IS CALLED, SET EVERY KEYWORD TO ACTIVE SO ALL PLOTS ARE CREATED
 
@@ -214,7 +161,9 @@ pro MVN_KP_STANDARDS, kp_data, $
   endif
 
   ;PULL OUT THE INCLUDED TAGS
-  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
+  MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
+                     second_level_count, base_tags,  $
+                     first_level_tags, second_level_tags
 
   ;IF LIST IS SET, PRINT THE CONTENTS OF THE STRUCTURE OR OUTPUT IT
     if arg_present(list)  then begin  
@@ -224,7 +173,9 @@ pro MVN_KP_STANDARDS, kp_data, $
           if first_level_count[i] ne 0 then begin
               for j=0,first_level_count[i]-1 do begin
                 if first_level_count[i] ne 0 then begin 
-                    list[index2] = '#'+strtrim(string(index2+1),2)+' '+base_tags[i]+'.'+strtrim(string(first_level_tags[index2-1]),2)
+                    list[index2] = '#' + strtrim(string(index2+1),2) $
+                              + ' ' + base_tags[i] + '.' $
+                              + strtrim(string(first_level_tags[index2-1]),2)
                     index2 = index2+1
                 endif 
               endfor
@@ -234,12 +185,14 @@ pro MVN_KP_STANDARDS, kp_data, $
       return
     endif else begin
       if keyword_set(list) then begin
-        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, base_tags,  first_level_tags
+        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, $
+                         base_tags,  first_level_tags
         return
       endif
     endelse
 
-  ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS IF REQUESTED.
+  ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH 
+  ;DATE/TIME AND ORBITS IF REQUESTED.
   if keyword_set(range) then begin
     MVN_KP_RANGE, kp_data
     return
@@ -269,11 +222,13 @@ pro MVN_KP_STANDARDS, kp_data, $
 
   ;IF THE USER SUPPLIES A TIME RANGE, SET THE BEGINNING AND END INDICES
   
-  if keyword_set(time) then begin     ;determine the start and end indices to plot
+  if keyword_set(time) then begin     
+    ;determine the start and end indices to plot
     MVN_KP_RANGE_SELECT, kp_data, time, kp_start_index, kp_end_index
-  endif else begin                    ;otherwise plot all data within structure
-   kp_start_index = 0
-   kp_end_index = n_elements(kp_data.orbit)-1
+  endif else begin                    
+    ;otherwise plot all data within structure
+    kp_start_index = 0
+    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
 
 
@@ -288,13 +243,24 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'EUV')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_LOW')
-        if t2 ne -1 then euv_data[*,0] = kp_data[kp_start_index:kp_end_index].euv.irradiance_low
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_MID')
-        if t2 ne -1 then euv_data[*,1] = kp_data[kp_start_index:kp_end_index].euv.irradiance_mid
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'IRRADIANCE_LYMAN')
-        if t2 ne -1 then euv_data[*,2] = kp_data[kp_start_index:kp_end_index].euv.irradiance_lyman
-      store_data,'EUV',data={x:kp_data[kp_start_index:kp_end_index].time, y:euv_data, v:euv_v}, dlim={labels:euv_labels},verbose=0
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] $
+                 eq 'IRRADIANCE_LOW')
+        if t2 ne -1 then euv_data[*,0] = kp_data[kp_start_index:kp_end_index]$
+                                         .euv.irradiance_low
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] $
+                 eq 'IRRADIANCE_MID')
+        if t2 ne -1 then euv_data[*,1] = kp_data[kp_start_index:kp_end_index]$
+                                         .euv.irradiance_mid
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] $
+                 eq 'IRRADIANCE_LYMAN')
+        if t2 ne -1 then euv_data[*,2] = kp_data[kp_start_index:kp_end_index]$
+                                         .euv.irradiance_lyman
+      store_data,'EUV',data={x:kp_data[kp_start_index:kp_end_index].time, $
+                             y:euv_data, v:euv_v}, $
+                       dlim={labels:euv_labels},verbose=0
       options,'EUV','labflag',-1
       
       
@@ -305,20 +271,32 @@ pro MVN_KP_STANDARDS, kp_data, $
   endif
 
   if keyword_set(mag_mso) then begin
-    mag_mso_data = fltarr(n_elements(kp_data[kp_start_index:kp_end_index].time), 4)
+    mag_mso_data = fltarr(n_elements(kp_data[kp_start_index:$
+                                             kp_end_index].time), 4)
     mag_mso_v= findgen(4)*(255./3.)
     mag_mso_labels = ['X','Y','Z','Magnitude']
     
     t1 = where(base_tags eq 'MAG')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_X')
-        if t2 ne -1 then mag_mso_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.mso_x
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Y')
-        if t2 ne -1 then mag_mso_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.mso_y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Z')
-        if t2 ne -1 then mag_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.mso_z
-      mag_mso_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].mag.mso_x^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_y^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_z^2))
-      store_data,'MAG_MSO',data={x:kp_data[kp_start_index:kp_end_index].time, y:mag_mso_data, v:mag_mso_v}, dlim={labels:mag_mso_labels},verbose=0
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] eq 'MSO_X')
+        if t2 ne -1 then $
+          mag_mso_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.mso_x
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]:)$
+                                  total(first_level_count[0:t1])] eq 'MSO_Y')
+        if t2 ne -1 then $
+          mag_mso_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.mso_y
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] eq 'MSO_Z')
+        if t2 ne -1 then $
+          mag_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.mso_z
+      mag_mso_data[*,3] $
+        = sqrt( (kp_data[kp_start_index:kp_end_index].mag.mso_x^2) $
+              + (kp_data[kp_start_index:kp_end_index].mag.mso_y^2) $
+              + (kp_data[kp_start_index:kp_end_index].mag.mso_z^2) )
+      store_data,'MAG_MSO',data={x:kp_data[kp_start_index:kp_end_index].time, $
+                                 y:mag_mso_data, v:mag_mso_v}, $
+                           dlim={labels:mag_mso_labels},verbose=0
       options,'MAG_MSO','labflag',-1
       
       tplot_2plot[plot_count] = 'MAG_MSO'
@@ -328,20 +306,32 @@ pro MVN_KP_STANDARDS, kp_data, $
   endif
 
   if keyword_set(mag_geo) then begin
-    mag_geo_data = fltarr(n_elements(kp_data[kp_start_index:kp_end_index].time), 4)
+    mag_geo_data = fltarr(n_elements(kp_data[kp_start_index:$
+                                             kp_end_index].time), 4)
     mag_geo_v= findgen(4)*(255./3.)
     mag_geo_labels = ['X','Y','Z','Magnitude']
     
     t1 = where(base_tags eq 'MAG')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_X')
-        if t2 ne -1 then mag_geo_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.geo_x
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Y')
-        if t2 ne -1 then mag_geo_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.geo_y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Z')
-        if t2 ne -1 then mag_geo_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.geo_z
-      mag_geo_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].mag.geo_x^2)+(kp_data[kp_start_index:kp_end_index].mag.geo_y^2)+(kp_data[kp_start_index:kp_end_index].mag.geo_z^2))
-      store_data,'MAG_GEO',data={x:kp_data[kp_start_index:kp_end_index].time, y:mag_geo_data, v:mag_geo_v}, dlim={labels:mag_geo_labels},verbose=0
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] eq 'GEO_X')
+        if t2 ne -1 then $
+          mag_geo_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.geo_x
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] eq 'GEO_Y')
+        if t2 ne -1 then $
+          mag_geo_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.geo_y
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
+                                  total(first_level_count[0:t1])] eq 'GEO_Z')
+        if t2 ne -1 then $
+          mag_geo_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.geo_z
+      mag_geo_data[*,3] $
+        = sqrt( (kp_data[kp_start_index:kp_end_index].mag.geo_x^2) $
+              + (kp_data[kp_start_index:kp_end_index].mag.geo_y^2) $
+              + (kp_data[kp_start_index:kp_end_index].mag.geo_z^2) )
+      store_data,'MAG_GEO',data={x:kp_data[kp_start_index:kp_end_index].time, $
+                                 y:mag_geo_data, v:mag_geo_v}, $
+                           mvndlim={labels:mag_geo_labels},verbose=0
       options,'MAG_GEO','labflag',-1
       
       tplot_2plot[plot_count] = 'MAG_GEO'

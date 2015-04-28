@@ -25,7 +25,8 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
     line = strsplit(temp, ' ', /extract)
     
     if line[0] eq 'TIME_START' then begin
-      ;; We've reached the common block, break out and handle all variables in next for block.
+      ;; We've reached the common block, break out and handle all 
+      ;; variables in next for block.
       break      
     endif
   endwhile
@@ -43,7 +44,9 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
      line = strsplit(temp, ' ', /extract)
      
      ;; These are arrays of 3 values split but commas & white space
-     if (line[0] eq 'SC_GEO') or (line[0] eq 'SC_MSO') or (line[0] eq 'SUN_GEO') then begin
+     if( (line[0] eq 'SC_GEO') or $
+         (line[0] eq 'SC_MSO') or $
+         (line[0] eq 'SUN_GEO') )then begin
       
       ;; Remove commas from first two & convert to double
       val1 = strsplit(line[2], ',', /EXTRACT)
@@ -64,7 +67,8 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
 end
 
 pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
-  ;; Assume next line with data will contain a single specicies and temperature
+  ;; Assume next line with data will contain 
+  ;; a single specicies and temperature
   temp = ''
  
   ;; Temperature_id, temperature, and temperature_err
@@ -130,23 +134,29 @@ pro mvn_kp_read_iuvs_ascii_c_l_disk, lun, in_struct
   temp = ''
 
   ;; Ozone_depth, Ozone_depth_err  
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'OZONE_DEPTH') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'OZONE_DEPTH') then message, "Cannot parse IUVS ascii"
   in_struct.ozone_depth     = float(line[2])
   readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT) 
   in_struct.ozone_depth_err = float(line[2])
   
   ;; Auroral_index, Dust_depth, Dust_depth_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'AURORAL_INDEX') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'AURORAL_INDEX') then message, "Cannot parse IUVS ascii"
   in_struct.auroral_index  = float(line[2])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & if (line[0] ne 'DUST_DEPTH') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  if (line[0] ne 'DUST_DEPTH') then message, "Cannot parse IUVS ascii"
   in_struct.dust_depth     = float(line[2])
   readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
   in_struct.dust_depth_err = float(line[2])
 
   ;; Radiance_ID, Radiance & Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.radiance_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.radiance_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_err = float(line[1:*])
 
   return
 end
@@ -155,18 +165,26 @@ pro mvn_kp_read_iuvs_ascii_c_l_limb, lun, in_struct
   temp = ''
  
   ;; Temperature_ID, Temperature, Temperature_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.temperature_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.temperature     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.temperature_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.temperature_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.temperature     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.temperature_err = float(line[1:*])
   
   ;; Scale_height_id, Scale_height, Scale_height_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.scale_height_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.scale_height     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.scale_height_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.scale_height_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.scale_height     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.scale_height_err = float(line[1:*])
   
   ;; Density
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DENSITY') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.density_id       = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DENSITY') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.density_id       = string(line[1:*])
   num_dens = (size(in_struct.density, /DIMENSIONS))[1]
   for i=0, num_dens-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -175,7 +193,8 @@ pro mvn_kp_read_iuvs_ascii_c_l_limb, lun, in_struct
   endfor
   
   ;; Density Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DENSITY_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DENSITY_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_dens = (size(in_struct.density_err, /DIMENSIONS))[1]
   for i=0, num_dens-1 do begin
@@ -184,8 +203,10 @@ pro mvn_kp_read_iuvs_ascii_c_l_limb, lun, in_struct
   endfor
   
   ;; Radiance
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_id   = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_id   = string(line[1:*])
   num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -193,7 +214,8 @@ pro mvn_kp_read_iuvs_ascii_c_l_limb, lun, in_struct
   endfor
   
   ;; Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_rads = (size(in_struct.radiance_err, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
@@ -208,13 +230,18 @@ pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   temp = ''
   
   ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.half_int_distance_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.half_int_distance_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance_err = float(line[1:*])
   
   ;; Density_id, Density, alt
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DENSITY') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.density_id       = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DENSITY') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.density_id       = string(line[1:*])
   num_dens = (size(in_struct.density, /DIMENSIONS))[1]
   for i=0, num_dens-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -223,7 +250,8 @@ pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   endfor
   
   ;; Density Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DENSITY_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DENSITY_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_dens = (size(in_struct.density_err, /DIMENSIONS))[1]
   for i=0, num_dens-1 do begin
@@ -232,8 +260,10 @@ pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   endfor
   
   ;; Radiance, radiance_id
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_id   = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_id   = string(line[1:*])
   num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -241,7 +271,8 @@ pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   endfor
   
   ;; Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_rads = (size(in_struct.radiance_err, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
@@ -257,9 +288,12 @@ pro mvn_kp_read_iuvs_ascii_c_e_disk, lun, in_struct
   temp = ''
   
   ;; Radiance_ID, Radiance & Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.radiance_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.radiance_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_err = float(line[1:*])
   
   return
 end
@@ -268,13 +302,18 @@ pro mvn_kp_read_iuvs_ascii_c_e_limb, lun, in_struct
   temp = ''
  
   ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.half_int_distance_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.half_int_distance_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance_err = float(line[1:*])
   
   ;; Radiance
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_id   = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_id   = string(line[1:*])
   num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -283,7 +322,8 @@ pro mvn_kp_read_iuvs_ascii_c_e_limb, lun, in_struct
   endfor
   
   ;; Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_rads = (size(in_struct.radiance_err, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
@@ -298,13 +338,18 @@ pro mvn_kp_read_iuvs_ascii_c_e_high, lun, in_struct
   temp = ''
   
    ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & in_struct.half_int_distance_id  = string(line)
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance     = float(line[1:*])
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.half_int_distance_err = float(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.half_int_distance_id  = string(line)
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance     = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.half_int_distance_err = float(line[1:*])
   
   ;; Radiance
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.radiance_id   = string(line[1:*])
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.radiance_id   = string(line[1:*])
   num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -313,7 +358,8 @@ pro mvn_kp_read_iuvs_ascii_c_e_high, lun, in_struct
   endfor
   
   ;; Radiance Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'RADIANCE_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_rads = (size(in_struct.radiance_err, /DIMENSIONS))[1]
   for i=0, num_rads-1 do begin
@@ -329,8 +375,10 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   temp = ''
   
   ;; Solar Zenith Angle Backplane
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'SOLAR_ZENITH_ANGLE_BACKPLANE') then message, "Cannot parse IUVS ascii"
-  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)  & in_struct.lon_bins  = string(line)
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'SOLAR_ZENITH_ANGLE_BACKPLANE') then message, "Cannot parse IUVS ascii"
+  readf, lun, temp & line = strsplit(temp, ' ',/EXTRACT)
+  in_struct.lon_bins  = string(line)
   num_sza_bps = (size(in_struct.sza_bp, /DIMENSIONS))[1]
   for i=0, num_sza_bps-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
@@ -339,7 +387,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
   
   ;; Local Time Backplane
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'LOCAL_TIME_BACKPLANE') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'LOCAL_TIME_BACKPLANE') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_ltimes = (size(in_struct.local_time_bp, /DIMENSIONS))[1]
   for i=0, num_ltimes-1 do begin
@@ -348,7 +397,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
 
   ;; Ozone Depth
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'OZONE_DEPTH') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'OZONE_DEPTH') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_odepths = (size(in_struct.ozone_depth, /DIMENSIONS))[1]
   for i=0, num_odepths-1 do begin
@@ -357,7 +407,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
   
   ;; Ozone Depth Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'OZONE_DEPTH_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'OZONE_DEPTH_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_odepth_errs = (size(in_struct.ozone_depth_err, /DIMENSIONS))[1]
   for i=0, num_odepth_errs-1 do begin
@@ -366,7 +417,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
   
   ;; Auroral Index
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'AURORAL_INDEX') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'AURORAL_INDEX') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_aurorals = (size(in_struct.auroral_index, /DIMENSIONS))[1]
   for i=0, num_aurorals-1 do begin
@@ -375,7 +427,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
   
   ;; Dust Depth
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DUST_DEPTH') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DUST_DEPTH') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_dusts = (size(in_struct.dust_depth, /DIMENSIONS))[1]
   for i=0, num_dusts-1 do begin
@@ -384,7 +437,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   endfor
   
   ;; Dust Depth Err
-  line = mvn_kp_iuvs_ascii_read_blanks(lun)               & if (line[0] ne 'DUST_DEPTH_ERR') then message, "Cannot parse IUVS ascii"
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  if (line[0] ne 'DUST_DEPTH_ERR') then message, "Cannot parse IUVS ascii"
   readf, lun, temp
   num_dust_errs = (size(in_struct.dust_depth_err, /DIMENSIONS))[1]
   for i=0, num_dust_errs-1 do begin
@@ -396,7 +450,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   ;; Radiance_id, radiance & Radiance Err
   for j=0, n_elements(in_struct.radiance_id)-1 do begin
     line = mvn_kp_iuvs_ascii_read_blanks(lun)
-    line2 = strsplit(line, '_', /EXTRACT)                   & if (line2[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
+    line2 = strsplit(line, '_', /EXTRACT)
+    if (line2[0] ne 'RADIANCE') then message, "Cannot parse IUVS ascii"
     rad_trim = stregex(line, '\_.*$', /EXTRACT)
     rad_id   = strmid(rad_trim, 1)
     in_struct.radiance_id[j] = rad_id
@@ -419,9 +474,8 @@ pro mvn_kp_read_iuvs_ascii_apoapse, lun, in_struct
   
   return
 end
-
-
-
+;;
+;;
 ;;
 ;;
 ;; Main procedure - Read in one iuvs ascii file
