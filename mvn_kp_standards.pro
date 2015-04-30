@@ -282,7 +282,7 @@ pro MVN_KP_STANDARDS, kp_data, $
                                   total(first_level_count[0:t1])] eq 'MSO_X')
         if t2 ne -1 then $
           mag_mso_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.mso_x
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]:)$
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
                                   total(first_level_count[0:t1])] eq 'MSO_Y')
         if t2 ne -1 then $
           mag_mso_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.mso_y

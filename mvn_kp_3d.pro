@@ -121,7 +121,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
   endif 
   
   ;variables to be added to command line at some points
-  apoapse_image_choice = 'Ozone Depth'
+  apoapse_image_choice = 'Ozone Depth' ; ????
   
   ;correction for IDL 'features' in 8.1
 
@@ -162,7 +162,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
    ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS
    ;IF REQUESTED.
    if keyword_set(range) then begin
-     MVN_KP_RANGE, insitu
+; ToDo: may wish to return orbits and verify overlap between IUVS and in-situ
+     mvn_kp_range,insitu,iuvs=iuvs
      return
    endif
   
@@ -186,22 +187,22 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           0: begin
                mvn_kp_range_select, insitu, time, begin_index, end_index
                ; Then calculate mid point
-               time_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[time_index].time
+               mid_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[mid_index].time
                mid_time_string = time_string( mid_time, format=0 )
              end
           1: begin
                mvn_kp_range_select, insitu, time, begin_index, end_index               
                ; Then calculate mid point
-               time_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[time_index].time
+               mid_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[mid_index].time
                mid_time_string = time_string( mid_time, format=0 )
              end
           2: begin
                mvn_kp_range_select, insitu, time, begin_index, end_index
                ; then calculate midpoint
-               time_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[time_index].time
+               mid_index = long( ( end_index + begin_index ) / 2L )
+               mid_time = insitu[mid_index].time
                mid_time_string = time_string( mid_time, format=0 )
              end
           3: begin
@@ -214,6 +215,12 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                       begin_index, end_index
                  mid_time = time[1] ; assign middle to middle
                  mid_time_string = time_string( mid_time )
+                 if( size(time,/type) eq 7 )then begin ; time is a string
+                   mid_index = value_locate( insitu.time_string, mid_time )
+                   mid_time = insitu[mid_index].time
+                 endif else begin ; time is a float
+                   mid_index = value_locate( insitu.time, mid_time )
+                 endelse
                endif else begin
                  error_message = 'If three times are provided, ' $
                                + 'they must be either strings or floats.'
@@ -229,18 +236,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endcase
       endif else begin
         begin_index = 0L
-        end_index = n_elements(insitu1)-1; if time keyword is used
-        time_index = long( ( end_index - begin_index ) / 2L )
-        mid_time = insitu[time_index].time
+        end_index = n_elements(insitu)-1; if time keyword is used
+        mid_index = long( ( end_index - begin_index ) / 2L )
+        mid_time = insitu[mid_index].time
         mid_time_string = time_string( mid_time, format=0 )
       endelse
       start_time = insitu[begin_index].time
       end_time = insitu[end_index].time
-      initial_time = insitu[begin_index].time
+      initial_time = insitu[mid_index].time
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
       total_points = end_index - begin_index + 1L
-      time_index = ( end_index - begin_index ) / 2L
+      time_index = mid_index
 
 ;-km-remove-old
 ;      start_time = double(insitu1[0].time)
@@ -1779,7 +1786,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             path_color_stretch = 0 ;default RAINBOW color table, changable
         endelse
         loadct,path_color_table,/silent
-        
+
         if keyword_set(field) then begin      
           ;if parameter not selected, pass an invalid value
           MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
@@ -1805,6 +1812,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           level0_index = -9
           level1_index = -9
         endelse 
+
+        print,path_color_min,path_color_max,path_color_stretch
 
         vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
         MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, $
@@ -2025,16 +2034,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                  linestyle=parameter_plot_linestyle,$
                                  symbol=parameter_plot_symbol,thick=1)
         plot_model -> add, parameter_plot
-        
         parameter_plot->getproperty, xrange=xr, yrange=yr
         xc = mg_linear_function(xr, [-1.7,1.4])
         yc = mg_linear_function(yr, [-1.9,-1.5])
         parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-
         parameter_yaxis_ticktext $
           = obj_new('idlgrtext',$
-                    [strtrim(string(fix(min(plot_y))),2), $
-                     strtrim(string(fix(max(plot_y))),2)])
+                    [strtrim(string(min(plot_y,/NaN),format='(e7.0)'),2), $
+                     strtrim(string(max(plot_y,/NaN),format='(e7.0)'),2)])
         parameter_yaxis = obj_new('IDLgrAxis', 1, range=yr,$
                                   color=parameter_plot_axis_color,thick=2,$
                                   tickdir=1,$
@@ -2422,9 +2429,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         for i=0, total_e_disk-1 do begin
           corona_e_disk_model->add,corona_e_disk_poly[i]
         endfor
-        
-        
-        
+                
         view->add, corona_e_disk_model
         corona_e_disk_model->setproperty, hide=1
       endif       
@@ -2797,6 +2802,4 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
   endif               ;END OF THE /DIRECT KEYWORD CHECK LOOP
 
-finish:
 end
-

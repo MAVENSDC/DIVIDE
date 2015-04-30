@@ -17,7 +17,9 @@ REQUIRED FIELDS
   parameter: Key Parameter value to be plotted. Either name or index. Single or multiple. See User Guide for more details.
 
 OPTIONAL FIELDS
-***************
+*************** 
+  oo: The name of the variable to which the plot created
+      will be assigned.  Ignored if /directgraphic is also set.
   error: Associated error bars to plot.
   time: Range of times to plot.
   list: Display list of parameters in the data structure.

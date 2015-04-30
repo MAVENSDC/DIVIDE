@@ -75,10 +75,10 @@
 ;    outbound: in, optional, type=boolean
 ;       return only the data from the outbound leg of an orbit 
 ;    insitu_all: in, optional, type=boolean
-;       return all in situ data. This keyword is necessary if an IUVS observation mode keyword
-;       is specified and you want to still read in all in situ data. If no in situ instrument 
-;       or IUVS observation keyword specified, default behavior is to read in all in situ data. 
-;       
+;       return all in situ data. This keyword is necessary if an IUVS 
+;       observation mode keyword is specified and you want to still read 
+;       in all in situ data. If no in situ instrument or IUVS observation 
+;       keyword specified, default behavior is to read in all in situ data. 
 ;    iuvs_periapse: in, optional, type=boolean
 ;       return all of the IUVS PERIAPSE limb scan data 
 ;    iuvs_apoapse: in, optional, type=boolean
@@ -98,22 +98,31 @@
 ;    iuvs_stellarocc: in, optional, type=boolean
 ;       return all of the IUVS Stellar Occulatation data
 ;    iuvs_all: in, optional, type=boolean
-;       return all IUVS observation modes. This keyword is necessary if an in situ instrument 
-;       keyword is specified and you want to still read in all IUVS data. If no in situ instrument
-;       or IUVS observation keyword specified, default behavior is to read in all IUVS data. 
+;       return all IUVS observation modes. This keyword is necessary if 
+;       an in situ instrument keyword is specified and you want to still 
+;       read in all IUVS data. If no in situ instrument or IUVS observation 
+;       keyword specified, default behavior is to read in all IUVS data. 
 ;
 ;-
 
 
-pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, update_prefs=update_prefs, $
-                 debug=debug, duration=duration, text_files=text_files, save_files=save_files, $
-                 insitu_only=insitu_only, insitu_all=insitu_all, inbound=inbound, outbound=outbound, $
-                 lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, mag=mag, sep=sep, ngims=ngims, $    
-                 iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, iuvs_apoapse=iuvs_apoapse, $
-                 iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
-                 iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
-                 iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
-                 iuvs_stellarocc=iuvs_stellarocc, only_update_prefs=only_update_prefs, help=help
+pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
+                 update_prefs=update_prefs, debug=debug, duration=duration, $
+                 text_files=text_files, save_files=save_files, $
+                 insitu_only=insitu_only, insitu_all=insitu_all, $
+                 inbound=inbound, outbound=outbound, $
+                 lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, $
+                 mag=mag, sep=sep, ngims=ngims, $    
+                 iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, $
+                 iuvs_apoapse=iuvs_apoapse, $
+                 iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,$
+                 iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
+                 iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, $
+                 iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
+                 iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, $
+                 iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
+                 iuvs_stellarocc=iuvs_stellarocc, $
+                 only_update_prefs=only_update_prefs, help=help
                       
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -141,11 +150,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif
   
   
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; ---------------------------- Check input options ----------------------------------- ;;
+  ;; -------------------------------------------------------------------- ;;
+  ;; -------------------- Check input options --------------------------- ;;
   
   
-  ; IF DEBUG SET, CREATE ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS CALLED CAN CHECK FOR IT
+  ; IF DEBUG SET, CREATE ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS 
+  ; CALLED CAN CHECK FOR IT
   if keyword_set(debug) then begin
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
@@ -157,7 +167,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     ;; Warn user if other parameters supplied
     if keyword_set(time) or keyword_set(insitu) or keyword_set(iuvs) then begin
       print, "Warning. /ONLY_UPDATE_PREFS option supplied, not reading any data." 
-      print, "If you want to update the preferences file & read data, use /UPDATE_PREFS instead"
+      print, "If you want to update the preferences file & read data, "$
+            + "use /UPDATE_PREFS instead"
     endif
     
     ;; Only update prefs option, return now. 
@@ -166,82 +177,114 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
     ;; Read or create preferences file 
     mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
-    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'insitu'+path_sep()
-    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()+'kp'+path_sep()+'iuvs'+path_sep()  
+    kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()$
+                             +'data'+path_sep()+'sci'+path_sep()$
+                             +'kp'+path_sep()+'insitu'+path_sep()
+    kp_iuvs_data_directory   = mvn_root_data_dir+'maven'+path_sep()$
+                             +'data'+path_sep()+'sci'+path_sep()$
+                             +'kp'+path_sep()+'iuvs'+path_sep()  
   endelse
     
 
-  ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE & CONTROLLING WHICH INSTRUMENTS DATA TO READ
-  if keyword_set(lpw) or keyword_set(euv) or keyword_set(static) or keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or keyword_set(sep) or $
-    keyword_set(ngims) or keyword_set(iuvs_all) or keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
-    keyword_set(iuvs_coronaEchelleDisk) or keyword_set(iuvs_coronaEchelleLimb) or keyword_set(iuvs_coronaEchelleHigh) or keyword_set(iuvs_coronaLoresHigh) or $
-    keyword_set(iuvs_coronaloreslimb) or keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or keyword_set(insitu_all) then begin
+  ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE 
+  ;AND CONTROLLING WHICH INSTRUMENTS DATA TO READ
+  if keyword_set(lpw) or keyword_set(euv) or keyword_set(static) or $
+     keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or $
+     keyword_set(sep) or keyword_set(ngims) or keyword_set(iuvs_all) or $
+     keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
+     keyword_set(iuvs_coronaEchelleDisk) or $
+     keyword_set(iuvs_coronaEchelleLimb) or $
+     keyword_set(iuvs_coronaEchelleHigh) or $
+     keyword_set(iuvs_coronaLoresHigh) or $
+     keyword_set(iuvs_coronaloreslimb) or $
+     keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or $
+     keyword_set(insitu_all) then begin
 
 
-  ;; Setup instrument struct which is used for creating data structure & controlling which instruments to read
-    instruments = CREATE_STRUCT('lpw',      0, 'euv',      0, 'static',   0, 'swia',     0, $
+  ;; Setup instrument struct which is used for creating data structure 
+  ;; and controlling which instruments to read
+    instruments = CREATE_STRUCT('lpw',      0, 'euv',      0, 'static',   0, $
+                                'swia',     0, $
                                 'swea',     0, 'mag',      0, 'sep',      0, $
                                 'ngims',    0, 'periapse', 0, 'c_e_disk', 0, $
                                 'c_e_limb', 0, 'c_e_high', 0, 'c_l_disk', 0, $
-                                'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, 'stellarocc', 0)                            
+                                'c_l_limb', 0, 'c_l_high', 0, 'apoapse' , 0, $
+                                'stellarocc', 0)                            
    
     if keyword_set(lpw)    then begin
-      instruments.lpw    = 1 & print,'Returning All LPW Instrument KP Data.'  
+      instruments.lpw    = 1
+      print,'Returning All LPW Instrument KP Data.'  
     endif
     if keyword_set(euv)    then begin
-      instruments.euv    = 1 & print,'Returning All EUV Instrument KP Data.'
+      instruments.euv    = 1
+      print,'Returning All EUV Instrument KP Data.'
     endif
     if keyword_set(static) then begin
-      instruments.static = 1 & print,'Returning All STATIC Instrument KP Data.'
+      instruments.static = 1
+      print,'Returning All STATIC Instrument KP Data.'
     endif
     if keyword_set(swia)   then begin
-      instruments.swia   = 1 & print,'Returning All SWIA Instrument KP Data.'
+      instruments.swia   = 1
+      print,'Returning All SWIA Instrument KP Data.'
     endif
     if keyword_set(swea)   then begin
-      instruments.swea   = 1 & print,'Returning All SWEA Instrument KP Data.'
+      instruments.swea   = 1
+      print,'Returning All SWEA Instrument KP Data.'
     endif
     if keyword_set(mag)    then begin
-      instruments.mag    = 1 & print,'Returning All MAG Instrument KP Data.'
+      instruments.mag    = 1
+      print,'Returning All MAG Instrument KP Data.'
     endif
     if keyword_set(sep)    then begin
-      instruments.sep    = 1 & print,'Returning All SEP Instrument KP Data.'
+      instruments.sep    = 1
+      print,'Returning All SEP Instrument KP Data.'
     endif
     if keyword_set(ngims)  then begin
-      instruments.ngims  = 1 & print,'Returning All NGIMS Instrument KP Data.'
+      instruments.ngims  = 1
+      print,'Returning All NGIMS Instrument KP Data.'
     endif
     if keyword_set(inbound) then begin
-                               print,'Returning only inbound in situ data'
+      print,'Returning only inbound in situ data'
     endif
     if keyword_set(outbound) then begin
-                               print,'Returning only outbound in situ data'
+      print,'Returning only outbound in situ data'
     endif
     
     if keyword_set(iuvs_periapse)          then begin
-      instruments.periapse   = 1 & print,'Returning All IUVS Instrument Periapse KP Data.'  
+      instruments.periapse   = 1
+      print,'Returning All IUVS Instrument Periapse KP Data.'  
     endif
     if keyword_set(iuvs_apoapse)           then begin
-      instruments.apoapse    = 1 & print,'Returning All IUVS Instrument Apoapse KP Data.'
+      instruments.apoapse    = 1
+      print,'Returning All IUVS Instrument Apoapse KP Data.'
     endif
     if keyword_set(iuvs_coronaEchellehigh) then begin
-      instruments.c_e_high   = 1 & print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
+      instruments.c_e_high   = 1
+      print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
     endif
     if keyword_set(iuvs_coronaEchellelimb) then begin
-      instruments.c_e_limb   = 1 & print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
+      instruments.c_e_limb   = 1
+      print,'Returning All IUVS Instrument Corona Echelle Limb KP Data.'
     endif
     if keyword_set(iuvs_stellarocc)        then begin
-      instruments.stellarocc = 1 & print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
+      instruments.stellarocc = 1
+      print,'Returning All IUVS Instrument Stellar Occultation KP Data.'
     endif
     if keyword_set(iuvs_coronaLoreshigh)   then begin
-      instruments.c_l_high   = 1 & print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
+      instruments.c_l_high   = 1
+      print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
     endif
     if keyword_set(iuvs_coronaLoreslimb)   then begin
-      instruments.c_l_limb   = 1 & print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
+      instruments.c_l_limb   = 1
+      print,'Returning All IUVS Instrument Corona Lores Limb KP Data.'
     endif
     if keyword_set(iuvs_coronaLoresdisk)   then begin
-      instruments.c_l_disk   = 1 & print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
+      instruments.c_l_disk   = 1
+      print,'Returning All IUVS Instrument Corona Lores Disk KP Data.'
     endif
     if keyword_set(iuvs_coronaechelledisk) then begin
-      instruments.c_e_disk   = 1 & print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
+      instruments.c_e_disk   = 1
+      print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
     endif
     
     if keyword_set(insitu_all) then begin
@@ -271,12 +314,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
   endif else begin
     
-    ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE FULL STRUCTURE FOR ALL INSTRUMENT DATA
-    instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, 'swia',     1, $
+    ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE 
+    ;FULL STRUCTURE FOR ALL INSTRUMENT DATA
+    instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, $
+                                'swia',     1, $
                                 'swea',     1, 'mag',      1, 'sep',      1, $
                                 'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
                                 'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
-                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, 'stellarocc', 1)   
+                                'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, $
+                                'stellarocc', 1)   
   endelse
   
   
@@ -297,8 +343,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     
 
 
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; ----------------------- Process input time/orbit range  ---------------------------- ;;
+  ;; -------------------------------------------------------------------- ;;
+  ;; --------------- Process input time/orbit range  -------------------- ;;
 
   
   ; DEFAULT RETRIEVAL PERIOD TO 1 DAY OR 1 ORBIT
@@ -311,9 +357,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;;============================
   if size(time, /type) eq 2 then begin    
   
-    ;; If only one orbit supplied, add duration to first orbit to created end_orbit  
+    ;; If only one orbit supplied, add duration to first orbit 
+    ;; to create end_orbit  
     if n_elements(time) eq 1 then begin
-        print,'Retrieving KP data for ',strtrim(string(duration),2),' orbits beginning at orbit #',strtrim(string(time),2)
+        print,'Retrieving KP data for ',strtrim(string(duration),2),$
+              ' orbits beginning at orbit #',strtrim(string(time),2)
         begin_orbit = time[0]
         end_orbit = time[0] + duration
     endif else begin
@@ -342,12 +390,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     endelse   ; n_elements(time)
     
     ;; Use orbit file look up to get time strings for each orbit
-    MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, begin_time_string, end_time_string
+    MVN_KP_ORBIT_TIME, begin_orbit, end_orbit, $
+                       begin_time_string, end_time_string
     
     ;; Create Jul day versions
-    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, $
+                              hour=hr, min=min, sec=sec, /FIX
     begin_time_jul = julday(mo, dy, yr, hr, min, sec)
-    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, $
+                              hour=hr, min=min, sec=sec, /FIX
     end_time_jul = julday(mo, dy, yr, hr, min, sec) 
   endif
   
@@ -355,9 +406,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   ;;============================
   if size(time, /type) eq 7 then begin 
     if n_elements(time) eq 1 then begin 
-      ; IF ONE TIME SUPPLIED USE IT AS START. DETERMINE END TIME BASED ON duration (DEFAULT 1 DAY OR USER SUPPLIED)
+      ; IF ONE TIME SUPPLIED USE IT AS START. DETERMINE END TIME BASED ON 
+      ; duration (DEFAULT 1 DAY OR USER SUPPLIED)
       begin_time_string = time[0]
-      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, $
+                                day=dy, hour=hr, min=min, sec=sec, /FIX
       begin_time_jul = julday(mo, dy, yr, hr, min, sec)
 
       ;; Add seconds onto begin jul date to get end jul date
@@ -370,9 +423,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
       end_time_string   = time[1]
       
       ;; Create Jul day versions
-      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, $
+                                day=dy, hour=hr, min=min, sec=sec, /FIX
       begin_time_jul = julday(mo, dy, yr, hr, min, sec)
-      mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+      mvn_kp_time_split_string, end_time_string, year=yr, month=mo, $
+                                day=dy, hour=hr, min=min, sec=sec, /FIX
       end_time_jul = julday(mo, dy, yr, hr, min, sec)
 ;  Check that begin_time_jul lt end_time_jul
 ;  If not, ask user whether to swap or quit
@@ -409,9 +464,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     endelse
     
     ;; Create Jul day versions
-    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    mvn_kp_time_split_string, begin_time_string, year=yr, month=mo, $
+                              day=dy, hour=hr, min=min, sec=sec, /FIX
     begin_time_jul = julday(mo, dy, yr, hr, min, sec)
-    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, hour=hr, min=min, sec=sec, /FIX
+    mvn_kp_time_split_string, end_time_string, year=yr, month=mo, day=dy, $
+                              hour=hr, min=min, sec=sec, /FIX
     end_time_jul = julday(mo, dy, yr, hr, min, sec)
     ;  Check that begin_time_jul lt end_time_jul
     ;  If not, ask user whether to swap or quit
@@ -438,23 +495,31 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   endif
   
   
-  ;; Create structs for both begin/end times containing string versions and jul days
-  begin_time_struct = create_struct('string', begin_time_string, 'jul', begin_time_jul)
-  end_time_struct   = create_struct('string', end_time_string,   'jul', end_time_jul)
+  ;; Create structs for both begin/end times containing 
+  ;; string versions and jul days
+  begin_time_struct = create_struct('string', begin_time_string, $
+                                    'jul', begin_time_jul)
+  end_time_struct   = create_struct('string', end_time_string, $
+                                    'jul', end_time_jul)
 
 
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; -------------- Find files which contain data in input time range ------------------- ;;
-  ;; -------------- and initialize data structures for holding data --------------------- ;;
+  ;; -------------------------------------------------------------------- ;;
+  ;; ------ Find files which contain data in input time range ----------- ;;
+  ;; ------ and initialize data structures for holding data ------------- ;;
 
   ;; FIXME variable names
-  MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, target_KP_filenames, kp_insitu_data_directory, iuvs_filenames, $
-     kp_iuvs_data_directory, save_files=save_files, text_files=text_files, insitu_only=insitu_only, download_new=download_new
+  MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, $
+                      target_KP_filenames, kp_insitu_data_directory, $
+                      iuvs_filenames, kp_iuvs_data_directory, $
+                      save_files=save_files, text_files=text_files, $
+                      insitu_only=insitu_only, download_new=download_new
  
 
-  ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS & INITIALIZE ARRAY OF DATA STRUTURES 
+  ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS AND INITIALIZE 
+  ;ARRAY OF DATA STRUTURES 
   MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
-  kp_data_temp = replicate(insitu_record,21600L*n_elements(target_KP_filenames))
+  kp_data_temp = replicate(insitu_record,$
+                           21600L*n_elements(target_KP_filenames))
     
   if not keyword_set(insitu_only) then begin  
     MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
@@ -463,8 +528,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
 
  
   
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; ----------------------- Main read loop: In situ data    ---------------------------- ;;
+  ;; ---------------------------------------------------------------------- ;;
+  ;; ---------------- Main read loop: In situ data    --------------------- ;;
   
   
   overall_start_time = systime(1)
@@ -475,20 +540,27 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     for file=0,n_elements(target_KP_filenames)-1 do begin
     
       ;UPDATE THE READ STATUS BAR
-      MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,message='In-situ KP File Read Progress'
+      MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,$
+                           message='In-situ KP File Read Progress'
       
       ;; Construct path to file
       date_path = mvn_kp_date_subdir(target_kp_filenames[file])
-      fileAndPath = kp_insitu_data_directory+date_path+target_kp_filenames[file]
+      fileAndPath = kp_insitu_data_directory+date_path $
+                  +target_kp_filenames[file]
       
     
-      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, begin_time=begin_time_struct, end_time=end_time_struct, io_flag=io_flag, $
-        instruments=instruments, save_files=save_files, text_files=text_files
+      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, $
+                               begin_time=begin_time_struct, $
+                               end_time=end_time_struct, io_flag=io_flag, $
+                               instruments=instruments, $
+                               save_files=save_files, text_files=text_files
         
     
-      ;; Ensure what was returned is a structure, (and not int 0 indicating no matches)
+      ;; Ensure what was returned is a structure, 
+      ;; (and not int 0 indicating no matches)
       if size(kp_data, /TYPE) eq 8 then begin
-        kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] = kp_data
+        kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] $
+          = kp_data
         start_index += n_elements(kp_data)
         totalEntries += n_elements(kp_data)
       endif
@@ -498,40 +570,50 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
     ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
     if totalEntries gt 0 then begin
       insitu_output = kp_data_temp[0:totalEntries-1]
-      print,'A total of ',strtrim(n_elements(insitu_output),2),' INSITU KP data records were found that met the search criteria.'
+      print,'A total of ',strtrim(n_elements(insitu_output),2),$
+          + ' INSITU KP data records were found that met the search criteria.'
     endif else begin
       insitu_output = 0
-      print, 'NO INSITU KP data records were found that met the search criteria.'
+      print, 'NO INSITU KP data records were found that met '$
+           + 'the search criteria.'
     endelse
         
   endif else begin
     printf,-2, "Warning: No Insitu files found for input timerange."
   endelse
   
-  ;; ------------------------------------------------------------------------------------ ;;
-  ;; ----------------------- Main read loop: IUVS  data   ------------------------------- ;;
+  ;; ---------------------------------------------------------------------- ;;
+  ;; ---------------- Main read loop: IUVS  data   ------------------------ ;;
   
   
   ;IF ANY IUVS DATA IS REQUESTED & NOT IN INSITU ONLY MODE
-  if not keyword_set(insitu_only) and (instruments.periapse or instruments.c_e_disk or instruments.c_e_limb or instruments.c_e_high or $
-                                      instruments.apoapse  or instruments.c_l_disk or instruments.c_l_limb or instruments.c_l_high or $ 
-                                      instruments.stellarocc) then begin
+  if( not keyword_set(insitu_only) and $
+      (instruments.periapse or instruments.c_e_disk or $
+       instruments.c_e_limb or instruments.c_e_high or $
+       instruments.apoapse  or instruments.c_l_disk or $
+       instruments.c_l_limb or instruments.c_l_high or $ 
+       instruments.stellarocc) )then begin
     iuvs_index=0
     if iuvs_filenames[0] ne 'None' then begin
     
       ;; Loop through each file
       for file=0,n_elements(iuvs_filenames)-1 do begin
       
-        MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,message='IUVS KP File Read Progress'
+        MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,$
+                             message='IUVS KP File Read Progress'
         
         ;; Construct path to file
         date_path = mvn_kp_date_subdir(iuvs_filenames[file])
         fileAndPath = kp_iuvs_data_directory+date_path+iuvs_filenames[file]
         
-        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, begin_time=begin_time_struct, end_time=end_time_struct, $
-          instruments=instruments, save_files=save_files, text_files=text_files
+        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
+                               begin_time=begin_time_struct, $
+                               end_time=end_time_struct, $
+                               instruments=instruments, $
+                               save_files=save_files, text_files=text_files
           
-        ;; If iuvs_record not eq -1 (Indicating some observation within time range) add to temp array
+        ;; If iuvs_record not eq -1 (Indicating some observation within 
+        ;; time range) add to temp array
         if size(iuvs_record, /type) eq 8 then begin
           ;; Add single iuvs_record to array of iuvs records
           iuvs_data_temp[iuvs_index] = iuvs_record
@@ -540,8 +622,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
         
       endfor
 
-      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED & any observation modes found
-      ; within time range.
+      ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED and 
+      ; any observation modes found within time range.
       if iuvs_index gt 0 then begin
         iuvs_output = iuvs_data_temp[0:iuvs_index-1]
         print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
@@ -559,7 +641,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, up
   
   ;TIME TO RUN ROUTINE 
   overall_end_time = systime(1)
-  print,'Your query took ', overall_end_time - overall_start_time,' seconds to complete.'
+  print,'Your query took ', overall_end_time - overall_start_time,$
+    + ' seconds to complete.'
   
   
   ; UNSET DEBUG ENV VARIABLE

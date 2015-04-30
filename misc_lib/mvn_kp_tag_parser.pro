@@ -1,11 +1,13 @@
 ;+
-; A ROUTINE TO DYNAMICALLY RETURN WHICH TAGS ARE INCLUDED IN THE KP DATA STRUCTURE
+; A ROUTINE TO DYNAMICALLY RETURN WHICH TAGS ARE INCLUDED IN THE 
+;   KP DATA STRUCTURE
 ;
 ; :Params:
 ;    kp_data : in, required, type=structure
 ;       the kp data structure from which to extract tag names
 ;    base_tag_count: out, required, type=integer
-;       the number of tags in the base level of the structure (will be instrument names of observational modes)
+;       the number of tags in the base level of the structure 
+;       (will be instrument names of observational modes)
 ;    first_level_count: out, required, type=integer
 ;       the number of tags in the first level of the structure 
 ;    second_level_count: out, required, type=integer
@@ -18,8 +20,9 @@
 ;       the names of hte second level tags
 ;
 ;-
-pro MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, second_level_count, $
-                       base_tags,  first_level_tags, second_level_tags
+pro MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
+                       second_level_count, base_tags,  $
+                       first_level_tags, second_level_tags
 
   ;DETERMINE WHETHER THE DATA INCLUDES IUVS DATA AS WELL AS INSITU
 

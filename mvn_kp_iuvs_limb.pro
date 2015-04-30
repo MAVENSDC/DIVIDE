@@ -76,9 +76,9 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     !p.background='FFFFFF'x
     !p.color=0
     if keyword_set(colortable) then begin
-      loadct,colortable
+      loadct,colortable,/silent
     endif else begin
-      loadct,39
+      loadct,39,/silent
     endelse
 
   ;SET FLAGS IF THE USER WANTS LINEAR SCALES INSTEAD OF LOGARITHMIC
@@ -117,6 +117,17 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       return
     endif
 
+  ; Check that either radiance, or density, or a list of species 
+  ;  has been requested by the user.  If not, exit.
+  if( ~keyword_set(radiance) and ~keyword_set(density) and $
+      ~keyword_set(rad_species) and ~keyword_set(den_species) )then begin
+        print,"****ERROR****"
+        print,"At least one of '/radiance' or '/density', or a selection of "
+        print,"   'rad_species' or 'den_species' must be provided."
+        print,"See users guide, and/or use the keyword '/help' " $
+            + "for more information."
+        return
+  endif
     
   ;DEFINE THE SPECIES NAME STRINGS FOR DENSITY AND RADIANCE
     density_names = ['CO2/CO2+','CO','H','O','C','N','N2']

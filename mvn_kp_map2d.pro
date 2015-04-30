@@ -183,7 +183,27 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                          iuvs_first_level_tags, iuvs_second_level_tags
     endif
     
-    
+  ; Check the compatibility of IUVS presence with IUVS plot requests
+
+    if( keyword_set(corona_lo_dust) or $
+        keyword_set(corona_lo_ozone) or $
+        keyword_set(corona_lo_aurora) or $
+        keyword_set(corona_lo_h_rad) or $
+        keyword_set(corona_lo_co_rad) or $
+        keyword_set(corona_lo_no_rad) or $
+        keyword_set(corona_lo_o_rad) or $
+        keyword_set(corona_e_h_rad) or $
+        keyword_set(corona_e_d_rad) or $
+        keyword_set(corona_e_o_rad) ) then begin
+      if( ~arg_present(iuvs) )then begin
+        print,'****WARNING****'
+        print,'Cannot plot requested IUVS data without an IUVS data structure'
+        print,'  being passed to the procedure using the iuvs= keyword.'
+        print,'Code will procede with whatever In-Situ instructions were'
+        print,'  provided; but IUVS plotting will be ignored.'
+      endif
+    endif
+
 ;CHECK THE IDL VERSION NUMBER FOR FUNCTION GRAPHICS
  if keyword_set(direct) eq 0 then begin
    if Float(!Version.Release) GE 8.0 THEN directgraphic = 0    
@@ -322,6 +342,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
   color_default = 11
   if keyword_set(colors) eq 0 then begin
     loadct,color_default, /silent
+    i_colortable = color_default
   endif else begin
     if size(colors, /type) eq 7 then begin
       if colors eq 'bw' then i_colortable = 0
@@ -462,8 +483,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 
 ;ADD IUVS PARAMETERS, IF SELECTED.
     ;PERIAPSE TEMPERATURE
-    if keyword_set(periapse_temp) then begin
-      if keyword_set(iuvs) then begin
+    if keyword_set(iuvs) then begin
+      if keyword_set(periapse_temp) then begin
         check = where(iuvs_base_tags eq 'PERIAPSE')
         if check eq -1 then begin
           print, 'IUVS DATA STRUCTURE DOES NOT CONTAIN PERIAPSE DATA TO PLOT.'
@@ -478,291 +499,291 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
           endif
         endelse
       endif
-    endif 
+
     ;CORONA LO-RES DISK OZONE
-    if keyword_set(corona_lo_ozone) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_OZONE', mso, o_lat, o_lon, $
-                              o_fill_color, i_colortable, o_colorbar, $
-                              o_data_exist, oz_min, oz_max
-      if o_data_exist eq 1 then begin
-        s1 = symbol(o_lon, o_lat, "Circle", /data, sym_color=o_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
-      endif 
+      if keyword_set(corona_lo_ozone) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_OZONE', mso, o_lat, o_lon, $
+                                o_fill_color, i_colortable, o_colorbar, $
+                               o_data_exist, oz_min, oz_max
+        if o_data_exist eq 1 then begin
+          s1 = symbol(o_lon, o_lat, "Circle", /data, sym_color=o_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif 
             
-    endif
+      endif
         
     ;CORONA LO-RES DISK DUST
-    if keyword_set(corona_lo_dust) then begin
+      if keyword_set(corona_lo_dust) then begin
 
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_DUST', mso, d_lat, $
-                              d_lon, d_fill_color, i_colortable, $
-                              d_colorbar, d_data_exist, d_min, d_max
-      if d_data_exist eq 1 then begin
-        s1 = symbol(d_lon, d_lat, "Circle", /data, sym_color=d_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
-      endif 
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_DUST', mso, d_lat, $
+                                d_lon, d_fill_color, i_colortable, $
+                                d_colorbar, d_data_exist, d_min, d_max
+        if d_data_exist eq 1 then begin
+          s1 = symbol(d_lon, d_lat, "Circle", /data, sym_color=d_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif 
             
-    endif
+      endif
                     
     ;CORONA LO-RES DISK AURORA
-    if keyword_set(corona_lo_aurora) then begin
+      if keyword_set(corona_lo_aurora) then begin
 
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_AURORA', mso, a_lat, a_lon, $
-                              a_fill_color, i_colortable, a_colorbar, $
-                              a_data_exist,a_min, a_max
-      if a_data_exist eq 1 then begin
-        s1 = symbol(a_lon, a_lat, "Circle", /data, sym_color=a_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
-      endif 
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_AURORA', mso, a_lat, a_lon, $
+                                a_fill_color, i_colortable, a_colorbar, $
+                                a_data_exist,a_min, a_max
+        if a_data_exist eq 1 then begin
+          s1 = symbol(a_lon, a_lat, "Circle", /data, sym_color=a_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif 
             
-    endif   
+      endif   
         
     ;CORONA ECHELLE DISK H RADIANCE
-    if keyword_set(corona_e_h_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_H_RAD', mso, eh_lat, eh_lon, $
-                              eh_fill_color, i_colortable, eh_colorbar, $
-                              eh_data_exist, eh_min, eh_max
-      if eh_data_exist eq 1 then begin
-        s1 = symbol(eh_lon, eh_lat, "Circle", /data, sym_color=eh_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_e_h_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_H_RAD', mso, eh_lat, eh_lon, $
+                                eh_fill_color, i_colortable, eh_colorbar, $
+                                eh_data_exist, eh_min, eh_max
+        if eh_data_exist eq 1 then begin
+          s1 = symbol(eh_lon, eh_lat, "Circle", /data, sym_color=eh_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
     ;CORONA ECHELLE DISK D RADIANCE
-    if keyword_set(corona_e_d_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_D_RAD', mso, ed_lat, ed_lon, $
-                              ed_fill_color, i_colortable, ed_colorbar, $
-                              ed_data_exist, ed_min, ed_max
-      if ed_data_exist eq 1 then begin
-        s1 = symbol(ed_lon, ed_lat, "Circle", /data, sym_color=ed_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_e_d_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_D_RAD', mso, ed_lat, ed_lon, $
+                                ed_fill_color, i_colortable, ed_colorbar, $
+                                ed_data_exist, ed_min, ed_max
+        if ed_data_exist eq 1 then begin
+          s1 = symbol(ed_lon, ed_lat, "Circle", /data, sym_color=ed_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
     ;CORONA ECHELLE DISK O1304 RADIANCE
-    if keyword_set(corona_e_o_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_O_RAD', mso, eo_lat, eo_lon, $
-                              eo_fill_color, i_colortable, eo_colorbar, $
-                              eo_data_exist, eo_min, eo_max
-      if eo_data_exist eq 1 then begin
-        s1 = symbol(eo_lon, eo_lat, "Circle", /data, sym_color=eo_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_e_o_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_E_O_RAD', mso, eo_lat, eo_lon, $
+                                eo_fill_color, i_colortable, eo_colorbar, $
+                                eo_data_exist, eo_min, eo_max
+        if eo_data_exist eq 1 then begin
+          s1 = symbol(eo_lon, eo_lat, "Circle", /data, sym_color=eo_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
         
     ;CORONA LO-RES DISK H RADIANCE
-    if keyword_set(corona_lo_h_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_H_RAD', mso, lh_lat, lh_lon, $
-                              lh_fill_color, i_colortable, lh_colorbar, $
-                              lh_data_exist, lh_min, lh_max
+      if keyword_set(corona_lo_h_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_H_RAD', mso, lh_lat, lh_lon, $
+                                lh_fill_color, i_colortable, lh_colorbar, $
+                                lh_data_exist, lh_min, lh_max
       if lh_data_exist eq 1 then begin
-        s1 = symbol(lh_lon, lh_lat, "Circle", /data, sym_color=lh_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
+          s1 = symbol(lh_lon, lh_lat, "Circle", /data, sym_color=lh_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
     ;CORONA LO-RES DISK CO RADIANCE
-    if keyword_set(corona_lo_co_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_CO_RAD', mso, lco_lat, lco_lon, $
-                              lco_fill_color, i_colortable, lco_colorbar, $
-                              lco_data_exist, lco_min, lco_max
-      if lco_data_exist eq 1 then begin
-        s1 = symbol(lco_lon, lco_lat, "Circle", /data, $
-                    sym_color=lco_fill_color, sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_lo_co_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_CO_RAD', mso, lco_lat, lco_lon, $
+                                lco_fill_color, i_colortable, lco_colorbar, $
+                                lco_data_exist, lco_min, lco_max
+        if lco_data_exist eq 1 then begin
+          s1 = symbol(lco_lon, lco_lat, "Circle", /data, $
+                      sym_color=lco_fill_color, sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
     ;CORONA LO-RES DISK NO RADIANCE
-    if keyword_set(corona_lo_no_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_NO_RAD', mso, lno_lat, lno_lon, $
-                              lno_fill_color, i_colortable, lno_colorbar, $
-                              lno_data_exist, lno_min, lno_max
-      if lno_data_exist eq 1 then begin
-        s1 = symbol(lno_lon, lno_lat, "Circle", /data, $
-                    sym_color=lno_fill_color, sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_lo_no_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_NO_RAD', mso, lno_lat, lno_lon, $
+                                lno_fill_color, i_colortable, lno_colorbar, $
+                                lno_data_exist, lno_min, lno_max
+        if lno_data_exist eq 1 then begin
+          s1 = symbol(lno_lon, lno_lat, "Circle", /data, $
+                      sym_color=lno_fill_color, sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
         
     ;CORONA LO-RES DISK O1304 RADIANCE
-    if keyword_set(corona_lo_o_rad) then begin
-      mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_O_RAD', mso, lo_lat, lo_lon, $
-                              lo_fill_color, i_colortable, lo_colorbar, $
-                              lo_data_exist, lo_min, lo_max
-      if lo_data_exist eq 1 then begin
-        s1 = symbol(lo_lon, lo_lat, "Circle", /data, sym_color=lo_fill_color, $
-                    sym_filled=1)
-        total_colorbars = total_colorbars + 1
+      if keyword_set(corona_lo_o_rad) then begin
+        mvn_kp_map2d_iuvs_plot, iuvs, 'CORONA_LO_O_RAD', mso, lo_lat, lo_lon, $
+                                lo_fill_color, i_colortable, lo_colorbar, $
+                                lo_data_exist, lo_min, lo_max
+        if lo_data_exist eq 1 then begin
+          s1 = symbol(lo_lon, lo_lat, "Circle", /data, sym_color=lo_fill_color, $
+                      sym_filled=1)
+          total_colorbars = total_colorbars + 1
+        endif
       endif
-    endif
         
     ;DISPLAY THE RELEVANT COLORBARS
-    if total_colorbars gt 0 then begin
-      if version_check eq 1 then begin
-        MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
-        color_bar_index = 0
-        if keyword_set(nopath) eq 0 then begin
-        ; We are plotting S/C path; for now skip the NaN check
-          if( parameter_minimum ne parameter_maximum )then begin
-            c_range = [parameter_minimum, parameter_maximum]
-            c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
-            c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
-                          orientation=0, $
-                          position=positions[color_bar_index,*], $
-                          textpos=0, /border, range=c_range )
+      if total_colorbars gt 0 then begin
+        if version_check eq 1 then begin
+          MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
+          color_bar_index = 0
+          if keyword_set(nopath) eq 0 then begin
+          ; We are plotting S/C path; for now skip the NaN check
+            if( parameter_minimum ne parameter_maximum )then begin
+              c_range = [parameter_minimum, parameter_maximum]
+              c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
+              c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
+                            orientation=0, $
+                            position=positions[color_bar_index,*], $
+                            textpos=0, /border, range=c_range )
+            endif
+            color_bar_index++ ; increment the plotted color bar count
           endif
-          color_bar_index++ ; increment the plotted color bar count
-        endif
 
         ; Next, we plot the parameter
 
-        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-        if keyword_set(parameter) then begin
-          nan_error_check = 0
-          for i=0,n_elements(kp_data1.(level0_index).(level1_index))-1 do begin
-            var1 = finite(kp_data1[i].(level0_index).(level1_index))
-            if var1 eq 1 then nan_error_check=1 
-          endfor
-          if nan_error_check eq 1 then begin
-            var1 = finite(kp_data1.(level0_index).(level1_index))
-            if( min(kp_data.(level0_index).(level1_index),/NaN) ne $
-                max(kp_data.(level0_index).(level1_index),/NaN) )then begin
+          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+          if keyword_set(parameter) then begin
+            nan_error_check = 0
+            for i=0,n_elements(kp_data1.(level0_index).(level1_index))-1 do begin
+              var1 = finite(kp_data1[i].(level0_index).(level1_index))
+              if var1 eq 1 then nan_error_check=1 
+            endfor
+            if nan_error_check eq 1 then begin
+              var1 = finite(kp_data1.(level0_index).(level1_index))
+              if( min(kp_data.(level0_index).(level1_index),/NaN) ne $
+                  max(kp_data.(level0_index).(level1_index),/NaN) )then begin
 ;
 ;  Define the range and title depending upon value of the log keyword:
 ;
-              c_range = keyword_set(log) $
-                      ? alog10([parameter_minimum,parameter_maximum]) $
-                      : [parameter_minimum,parameter_maximum]
-              c_title = keyword_set(log) $
-                      ? 'Log$_{10}$(' $
-                        + strupcase(string(tag_array[0]+tag_array[1]))+')' $
-                      : strupcase(string(tag_array[0]+'.'+tag_array[1]))
+                c_range = keyword_set(log) $
+                        ? alog10([parameter_minimum,parameter_maximum]) $
+                        : [parameter_minimum,parameter_maximum]
+                c_title = keyword_set(log) $
+                        ? 'Log$_{10}$(' $
+                          + strupcase(string(tag_array[0]+tag_array[1]))+')' $
+                        : strupcase(string(tag_array[0]+'.'+tag_array[1]))
 ;
 ; Create or add to the colorbar(s)
 ;
-              c = COLORBAR(TITLE=c_title, $
-                           rgb_table=11,ORIENTATION=0, $
-                           position=positions[color_bar_index,*],TEXTPOS=0,$
-                           /border, range=c_range)
+                c = COLORBAR(TITLE=c_title, $
+                             rgb_table=11,ORIENTATION=0, $
+                             position=positions[color_bar_index,*],TEXTPOS=0,$
+                             /border, range=c_range)
+              endif
+            endif  ; NaN error check
+            color_bar_index++
+          endif ; keyword_set parameter
+          if keyword_set(periapse_temp) then begin
+            if p_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',$
+                           rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[t_min,t_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
             endif
-          endif  ; NaN error check
-          color_bar_index++
-        endif ; keyword_set parameter
-        if keyword_set(periapse_temp) then begin
-          if p_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',$
-                         rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[t_min,t_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
           endif
-        endif
-        if keyword_set(corona_lo_ozone) then begin
-          if o_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',$
-                         rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[o_min,o_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_ozone) then begin
+            if o_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',$
+                           rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[o_min,o_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_dust) then begin
-          if d_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',$
-                         rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[d_min,d_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_dust) then begin
+            if d_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',$
+                           rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[d_min,d_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_aurora) then begin
-          if a_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',$
-                         rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[a_min,a_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_aurora) then begin
+            if a_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',$
+                           rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[a_min,a_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_e_h_rad) then begin
-          if eh_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Echelle Radiance: H',$
-                         rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[eh_min,eh_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_e_h_rad) then begin
+            if eh_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Echelle Radiance: H',$
+                           rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[eh_min,eh_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_e_d_rad) then begin
-          if ed_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Echelle Radiance: D',$
-                         rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[ed_min,ed_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_e_d_rad) then begin
+            if ed_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Echelle Radiance: D',$
+                           rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[ed_min,ed_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_e_o_rad) then begin
-          if eo_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',$
-                         rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[eo_min,eo_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_e_o_rad) then begin
+            if eo_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',$
+                           rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[eo_min,eo_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_h_rad) then begin
-          if lh_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',$
-                         rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[lh_min,lh_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_h_rad) then begin
+            if lh_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',$
+                           rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[lh_min,lh_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_co_rad) then begin
-          if lco_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',$
-                         rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[lco_min,lco_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_co_rad) then begin
+            if lco_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',$
+                           rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[lco_min,lco_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_no_rad) then begin
-          if lno_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',$
-                         rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[lno_min,lno_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
+          if keyword_set(corona_lo_no_rad) then begin
+            if lno_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',$
+                           rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[lno_min,lno_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
           endif
-        endif
-        if keyword_set(corona_lo_o_rad) then begin
-          if lo_data_exist eq 1 then begin
-            c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',$
-                         rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                         /border,range=[lo_min,lo_max],$
-                         position=positions[color_bar_index,*])
-            color_bar_index++
-          endif
-        endif   
-      endif ; version check
-    endif   ; total colorbars
-                      
+          if keyword_set(corona_lo_o_rad) then begin
+            if lo_data_exist eq 1 then begin
+              c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',$
+                           rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                           /border,range=[lo_min,lo_max],$
+                           position=positions[color_bar_index,*])
+              color_bar_index++
+            endif
+          endif   
+        endif ; version check
+      endif   ; total colorbars
+    endif     ; Check whether IUVS dta exist
   endif else begin   ;DIRECT GRAPHICS VERSION 
     
-   DEVICE, DECOMPOSED=1
+     DEVICE, DECOMPOSED=1
     
      ;BUILD THE BASE PLOT
      if keyword_set(mso) then begin

@@ -7,9 +7,9 @@
   By default, calling this routine with just the data structure defined will 
   plot ALL the coronal data.
 
-mvn_kp_iuvs_corona, kp_data, echelle=echelle, lores=lores, disk=disk, limb=limb, $
-                    high=high, range=range, colortable=colortable, $
-                    nolabels=nolabels, nolegend=nolegend, save_window=save_window, $
+mvn_kp_iuvs_corona, kp_data, echelle=echelle, lores=lores, disk=disk, $
+                    limb=limb, high=high, range=range, colortable=colortable, $
+                    nolabels=nolabels, nolegend=nolegend, window=window, $
                     help=help
 
 REQUIRED FIELDS
@@ -18,29 +18,29 @@ REQUIRED FIELDS
 
 OPTIONAL FIELDS
 ***************
-     echelle:  Used to plot the Echelle coronal data. Can be used in conjunction
-               with /lores, but that is equivalent to using neither.
-     lores: Used to plot the LoRes coronal data. Can be used in conjunction with
-            /echelle, but that is equivalent to using neither.
-     disk: Used to plot all the Disk Coronal data within the structure.
-           This keyword may be used in conjunction with /limb and /high, as well 
-           as /echelle and /lores, to show the desired subset of IUVS data.
-     limb: Used to plot all the Limb Coronal Scan data within the input structure.
-           This keyword may be used in conjunction with /disk and /high, as well 
-           as /echelle and /lores, to show the desired subset of IUVS data.
-     high: Used to plot all the High Altitude Coronal Scan data within the 
-           input structure
-           This keyword may be used in conjunction with /disk and /limb, as well 
-           as /echelle and /lores, to show the desired subset of IUVS data.
-     range: Used to print the beginning and end times/orbits contained within the 
-            input data structure.
-            Using this keyword will result in no plot being produced.
-     colortable: This variable is the integer index of a pre-defined IDL color 
-                 table. By default, the routine will use #39 (Rainbow+White).
-     nolabels: Used to suppress the labels on each plot.
-     nolegend: Used to suppress the additional legend windows created by the routine.
-     save_window: If this keyword is used, the currently displayed idl direct 
-                  graphic plot windows are retained.
-                  Useful for making multiple plots to compare different coronal scans.
-     help: Invokes this list.
+  echelle: Used to plot the Echelle coronal data. Can be used in conjunction
+           with /lores, but that is equivalent to using neither.
+  lores: Used to plot the LoRes coronal data. Can be used in conjunction with
+         /echelle, but that is equivalent to using neither.
+  disk: Used to plot all the Disk Coronal data within the structure.
+        This keyword may be used in conjunction with /limb and /high, as well 
+        as /echelle and /lores, to show the desired subset of IUVS data.
+  limb: Used to plot all the Limb Coronal Scan data within the input structure.
+        This keyword may be used in conjunction with /disk and /high, as well 
+        as /echelle and /lores, to show the desired subset of IUVS data.
+  high: Used to plot all the High Altitude Coronal Scan data within the 
+        input structure
+        This keyword may be used in conjunction with /disk and /limb, as well 
+        as /echelle and /lores, to show the desired subset of IUVS data.
+  range: Used to print the beginning and end times/orbits contained within the 
+         input data structure.
+         Using this keyword will result in no plot being produced.
+  colortable: This variable is the integer index of a pre-defined IDL color 
+              table. By default, the routine will use #39 (Rainbow+White).
+  nolabels: Suppress the labels on each plot.
+  nolegend: Suppress the additional legend windows created by the routine.
+  window: If this keyword is used, the currently displayed idl direct 
+          graphic plot windows are retained.  Useful for making 
+          multiple plots to compare different coronal scans.
+  help: Invokes this list.
 

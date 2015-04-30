@@ -18,16 +18,16 @@
 pro mvn_kp_get_help, proc_name
 
 ;DETERMINE THE INSTALL DIRECTORY SO THE HELPFILE CAN BE FOUND
-    install_result = routine_filepath(proc_name,/either)
-    install_dir = strsplit(install_result, proc_name, /extract, /regex)
+  install_result = routine_filepath(proc_name,/either)
+  install_dir = strsplit(install_result, proc_name, /extract, /regex)
 ; Change the suffix to .txt to find the help file, using proper path 
 ; designators as a function of OS
-    if !version.os_family eq 'unix' then begin
-      helpfile = install_dir[0] + 'help/' + proc_name + '.txt'
-    endif else begin
-      helpfile = install_dir[0] + 'help\' + proc_name + '.txt'
-    endelse
+  if !version.os_family eq 'unix' then begin
+    helpfile = install_dir[0] + 'help/' + proc_name + '.txt'
+  endif else begin
+    helpfile = install_dir[0] + 'help\' + proc_name + '.txt'
+  endelse
 
-    xdisplayfile, helpfile, height=50, Title='Help', done_button='Close'
+  xdisplayfile, helpfile, height=50, Title='Help', done_button='Close'
 
-    end
+end

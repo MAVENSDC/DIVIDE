@@ -3,7 +3,7 @@
 *******************
 
    A simple routine for adding up to 9 user defined data arrays 
-   to the insitu KP data structure
+   to the insitu KP data structure'
 
    ** RESTRICTIONS **: 
        The new data arrays must be of the same length and time cadence as the 
@@ -13,7 +13,9 @@
        All new data fields will be added to a USER substructure. 
        This name is required for later use by the 3d vis. routine.
 
-mvn_kp_add_data, kp_data, data_name, output, _extra = e, help=help
+mvn_kp_add_data, kp_data, data_name, output, data1=data1, data2=data2, $
+                 data3=data3, data4=data4, data5=data5, data6=data6, $
+                 data7=data7, data8=data8, data9=data9, help=help
 
 REQUIRED FIELDS
 **************
@@ -22,10 +24,17 @@ REQUIRED FIELDS
               either a single string or an array of strings equal in length 
               to the number of new data fields.
   output : the name of the newly created data structure
-  data: the data array(s) to be added to the kp data structure.
-        The number of listed arrays MUST equal the number of data_name
+  data1: the first new data array to be added to the kp data structure
 
 OPTIONAL FIELDS
 ***************
+  data2: Optional additional data array to be added to the structure.
+  data3: Optional additional data array to be added to the structure.
+  data4: Optional additional data array to be added to the structure.
+  data5: Optional additional data array to be added to the structure.
+  data6: Optional additional data array to be added to the structure.
+  data7: Optional additional data array to be added to the structure.
+  data8: Optional additional data array to be added to the structure.
+  data9: Optional additional data array to be added to the structure.
   help: Invoke this list.
 
