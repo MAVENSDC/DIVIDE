@@ -1813,7 +1813,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           level1_index = -9
         endelse 
 
-        print,path_color_min,path_color_max,path_color_stretch
+;        print,path_color_min,path_color_max,path_color_stretch
 
         vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
         MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, $
@@ -1925,7 +1925,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       endelse
       colorbarmodel = obj_new('IDLgrModel')
       barDims = [0.1, 0.4]
-      colorbar_ticktext = obj_new('idlgrtext',string(colorbar_ticks),$
+      colorbar_ticktext = obj_new('idlgrtext',$
+                                  string(colorbar_ticks,format='(e7.0)'),$
                                   color=colorbar_color)
       colorbar1 = obj_new('IdlgrColorbar', dimensions=barDims, $
                           r_curr,g_curr, b_curr, $
