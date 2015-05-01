@@ -22,6 +22,7 @@ pro MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, $
 
 common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
+print,colorbar_stretch
   if level0_index eq -9 then begin        
     ;NO DATA PARAMETER FOR PLOTTING REQUESTED, DEFAULT TO SOLID RED ORBIT PATH
     vert_color[0,*] = 255
@@ -32,18 +33,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
     maximum_value = max( insitu.spacecraft.altitude, /NaN )
     colorbar_min = minimum_value
     colorbar_max = maximum_value
-  endif else begin                        
+  endif else begin
+    ; ToDo: May need to allow for log scaling.
+    ; Not sure when reset is ever sent to this procedure.
+    minimum_value = colorbar_min
+    maximum_value = colorbar_max
     ;COLOR THE ORBITAL PATH ACCORDING TO REQUESTED PARAMETER
-;    if colorbar_min eq -999999 then begin
-      minimum_value = min(insitu.(level0_index).(level1_index),/NaN)
-;    endif else begin
-;      minimum_value = colorbar_min
-;    endelse
-;    if colorbar_max eq 999999 then begin
-      maximum_value = max(insitu.(level0_index).(level1_index),/NaN)
-;    endif else begin
-;      maximum_value = colorbar_max
-;    endelse 
     if keyword_set(reset) then begin
       minimum_value = min(insitu.(level0_index).(level1_index),/NaN)
       maximum_value = max(insitu.(level0_index).(level1_index),/NaN)
@@ -56,7 +51,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
       delta = (maximum_value-minimum_value)/255.
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do begin
         if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
-          t = floor((insitu[i].(level0_index).(level1_index)-minimum_value)/delta)
+          t = floor( ( insitu[i].(level0_index).(level1_index) $
+                     - minimum_value ) $
+                   / delta )
           if t gt 255 then begin
             vert_color[0,(i*2)] = r_orig[255]
             vert_color[1,(i*2)] = g_orig[255]
@@ -87,11 +84,15 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
     
     if colorbar_stretch eq 1 then begin                         
       ;Log stretch
-      exponent = 2
-      data_mean = 0.5
+;-km- may need to multiply this by signum(arg) to preserve negative vals
+      delta = alog10( maximum_value / minimum_value ) / 255.
+      print,'In 3d_path_color: ',minimum_value,maximum_value,delta
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do  begin
+        t = floor( alog10( insitu[i].(level0_index).(level1_index) $
+                         / minimum_value ) $
+                 / delta )
         if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
-          if insitu[i].(level0_index).(level1_index) lt minimum_value then begin
+          if t gt 255 then begin
             vert_color[0,(i*2)] = r_orig[0]
             vert_color[1,(i*2)] = g_orig[0]
             vert_color[2,(i*2)] = b_orig[0]
@@ -99,7 +100,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
             vert_color[1,(i*2)+1] = g_orig[0]
             vert_color[2,(i*2)+1] = b_orig[0]
           endif
-          if insitu[i].(level0_index).(level1_index) gt maximum_value then begin
+          if t lt 0 then begin
             vert_color[0,(i*2)] = r_orig[255]
             vert_color[1,(i*2)] = g_orig[255]
             vert_color[2,(i*2)] = b_orig[255]
@@ -107,9 +108,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
             vert_color[1,(i*2)+1] = g_orig[255]
             vert_color[2,(i*2)+1] = b_orig[255]
           endif
-          if( (insitu[i].(level0_index).(level1_index) gt minimum_value) and $
-              (insitu[i].(level0_index).(level1_index) lt maximum_value) )then begin
-            t = 255./(1.+(data_mean/insitu[i].(level0_index).(level1_index))^exponent)
+          if t ge 0 and t le 255 then begin
             vert_color[0,(i*2)] = r_orig[t]
             vert_color[1,(i*2)] = g_orig[t]
             vert_color[2,(i*2)] = b_orig[t]
@@ -124,7 +123,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
   colorbar_ticks = fltarr(5)
   for i=0,4 do begin
-    colorbar_ticks[i] = minimum_value + i*((maximum_value-minimum_value)/4.)
+    colorbar_ticks[i] = keyword_set( colorbar_stretch ) $
+      ? minimum_value * 10.^(i*alog10(maximum_value/minimum_value)/4.)$
+      : minimum_value + i*((maximum_value-minimum_value)/4.)
   endfor
-
+print,colorbar_ticks
 END

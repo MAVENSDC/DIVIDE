@@ -36,10 +36,18 @@
 ;         'RAD_NO': IUVS Apopase NO Radiance image.
 ;         'USER': User definied basemap. Will open a file dialog window
 ;                 to select the image.
-;    color_table: in, optional, type=int or intarr(4)
+;    field: in, optional, type=string
+;       The name of the field to initiall plot in the widget window
+;     minimum: in, optional, type=float
+;       THe minimum value to assign to color level 0
+;     maximum: in, optional, type=float
+;       The maximum value to assign to color level 255
+;
+;-obsolete    color_table: in, optional, type=int or intarr(4)
 ;       Provide a user-input color table.  
 ;       If single integer, load that index table
 ;       If a 4-element integer array, it is [index,min,max,stretch]
+;-/obsolete
 ;    bgcolor: in, optional, type=byte or bytarr(3)
 ;       Define the background color for the widget window.
 ;       If single byte value, assign a gray between 0(black) and 255(white)
@@ -82,6 +90,8 @@
 ;       if selected, plot the S/C track and data in MSO coordinates
 ;    axes: in, optional, type=boolean
 ;       if selected, plot the XYZ axes in the widget window.  MSO or GEO.
+;    log: in, optional, type=boolean
+;       if selected, use log scale for all visualizations
 ;    optimize: in, optional, type=boolean
 ;       For large data structures, the plotting of the orbital track can
 ;       get very slow. This keyword decimates the track to a managable size.
@@ -97,7 +107,8 @@
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
-               field=field, color_table=color_table, bgcolor=bgcolor, $
+               field=field, minimum=minimum, maximum=maximum, $
+               log=log, color_table=color_table, bgcolor=bgcolor, $
                plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,$
                periapse_limb_scan=periapse_limb_scan, direct=direct, $
@@ -175,12 +186,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
    ; ************************************************** 
     
       time_step_size = 10
-    
-;-km-add
-; Here we will replace with mvn_kp_range_select.  
-; However, since we need to allow for the option of a three-element time 
-; input (where the three are begin, middle, end), we need to be careful 
-; about what we send to that procedure.
 
       if( keyword_set(time) )then begin
         case size(time,/dim) of
@@ -247,45 +252,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
       total_points = end_index - begin_index + 1L
-      time_index = mid_index
-
-;-km-remove-old
-;      start_time = double(insitu1[0].time)
-;      end_time = double(insitu1[n_elements(insitu1.time)-1].time)
-;    
-;      start_time_string = time_string(start_time, format=0)
-;      end_time_string = time_string(end_time, format=0)
-;      
-;      total_points = n_elements(insitu1.time)
-;      if keyword_set(time) then begin
-;        if size(time,/type) eq 7 then begin         ;string based time 
-;          initial_time = time_double(time)
-;        endif 
-;        if size(time,/type) eq 3 then begin         ;double time
-;          initial_time = time
-;        endif
-;        if n_elements(time) eq 1 then begin       
-;          ;use beginning and end times of insitu1, 
-;          ;with this as the plotted time
-;          if( (initial_time gt start_time) and $
-;              (initial_time lt end_time) )then begin
-;            time_index=0L
-;            temp_time = min(abs(insitu1.time - initial_time),time_index)
-;            mid_time = insitu1[time_index].time
-;            mid_time_string = time_string(mid_time,format=0)
-;          endif else begin
-;            print,'REQUESTED INITIAL PLOT TIME OF ',strtrim(string(time),2), $
-;                  ' IS OUTSIDE THE RANGE INCLUDED IN THE DATA STRUCTURES.'
-;            print,'PLOTTING MID-TIME INSTEAD'
-;            time_index = long(total_points/2L)
-;            mid_time = insitu1[time_index].time
-;            initial_time = mid_time
-;            mid_time_string = time_string(mid_time,format=0)
-;          endelse
-;        endif  ;end of single value time loop
-;        if n_elements(time) eq 2 then begin 
-;          ;use this as beginning and end times to be plotted, 
-;-km-remove-end
+      time_index = mid_index ; the initial time to plot
    
 ;OPTIMIZATION OPTION
 
@@ -354,11 +321,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                  /extract,/regex)
     
     ;BACKGROUND COLORS
-;    bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],$
-;                 [75,75,75],[90,90,90],[105,105,105],[120,120,120],$
-;                 [135,135,135],[150,150,150],[165,165,165],[180,180,180],$
-;                 [195,195,195],[210,210,210],[225,225,225],[240,240,240],$
-;                 [255,255,255]]
+;-ToDo: these are gray scale bu they are being offered in widget as rainbow
+    
+    bg_colors = [[0,0,0],[15,15,15],[30,30,30],[45,45,45],[60,60,60],$
+                 [75,75,75],[90,90,90],[105,105,105],[120,120,120],$
+                 [135,135,135],[150,150,150],[165,165,165],[180,180,180],$
+                 [195,195,195],[210,210,210],[225,225,225],[240,240,240],$
+                 [255,255,255]]
   
     if keyword_set(bgcolor) then begin
       if n_elements(bgcolor) eq 3 then begin
@@ -682,7 +651,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       ;COLOR OPTIONS
       label2 = widget_label(marsbase, value='Background Color Options')
       gridbase1 = widget_base(marsbase,/column,/frame)
-      loadct,0,/silent
+      loadct,13,/silent
       bgcolor = cw_clr_index(gridbase1, uname ='background_color',$
                              color_values=bg_colors,xsize=scale_factor*210,$
                              ysize=scale_factor*30)
@@ -957,11 +926,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         label7 = widget_label(subbaseR7d, value='Min')
         text7 = widget_text(subbaseR7d, value= string(colorbar_min), $
                             /editable,xsize=scale_factor*3,$
-                            uname='colorbar_min')
+                            uname='colorbar_min', scr_xsize=60)
         label7 = widget_label(subbaseR7d, value='Max')
         text7 = widget_text(subbaseR7d, value=string(colorbar_max), $
                             /editable,xsize=scale_factor*3,$
-                            uname='colorbar_max')
+                            uname='colorbar_max', scr_xsize=60)
         button7 = widget_button(subbaseR7d, value='Reset', $
                                 uname='colorbar_reset')
         subbaseR7e = widget_base(subbaseR7d, /row,/exclusive)
@@ -973,7 +942,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         button7 = widget_button(subbaseR7, value='Return',$
                                 uname='insitu_return',$
                                 xsize=scale_factor*300,ysize=scale_factor*30)
-        
+
         ;insitu1 VECTOR DATA MENU
         subbaseR10 = widget_base(subbaseR, /column)
             
@@ -1427,17 +1396,17 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       points = (2*!pi/359.0) * FINDGEN(360)
       radius = rplanet+(rplanet*0.0001)
       for i=0,4 do begin
-        x = (xcenter + radius * cos(points))*cos((-60.+(30.*i))*(!pi/180.))
-        y = (ycenter + radius * sin(points))*cos((-60.+(30.*i))*(!pi/180.))
-        z = (points*0.)+(ycenter + (radius * sin((-60.+(30.*i))*(!pi/180.))))
+        x = (xcenter + radius * cos(points))*cos((-60.+(30.*i))*!dtor)
+        y = (ycenter + radius * sin(points))*cos((-60.+(30.*i))*!dtor)
+        z = (points*0.)+(ycenter + (radius * sin((-60.+(30.*i))*!dtor)))
         arr = transpose ([[x],[y],[z]])
         ogridarr[i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2,$
                               color=grid_color)
       endfor
      ;LONGITUDE
       for i=0,7 do begin
-        x = xcenter + radius * cos((45.*i)*(!pi/180.)) * cos(points)
-        y = ycenter + radius * sin((45.*i)*(!pi/180.)) * cos(points)
+        x = xcenter + radius * cos((45.*i)*!dtor) * cos(points)
+        y = ycenter + radius * sin((45.*i)*!dtor) * cos(points)
         z = ycenter + radius * sin(points)
         arr = transpose([[x],[y],[z]])
         ogridarr[5+i] = obj_new('IDLgrPolyline',arr,linestyle=2,thick=2,$
@@ -1470,15 +1439,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       ;CONVERT SOLAR POSITION TO X,Y,Z
       solar_x_coord $
         = 10000. $
-        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) $
-        * cos(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor) $
+        * cos(insitu1.spacecraft.subsolar_point_geo_longitude*!dtor)
       solar_y_coord $
         = 10000. $
-        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) $
-        * sin(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor) $
+        * sin(insitu1.spacecraft.subsolar_point_geo_longitude*!dtor)
       solar_z_coord $
         = 10000. $
-        * sin(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
+        * sin(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor)
       
       dirLight = obj_new('IDLgrLight', type=2, $
                          location=[solar_x_coord[time_index],$
@@ -1517,15 +1486,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                 size=[0.02,0.02,0.02])
       subsolar_x_coord $
         = rplanet $
-        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) $
-        * cos(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor) $
+        * cos(insitu1.spacecraft.subsolar_point_geo_longitude*!dtor)
       subsolar_y_coord $
         = rplanet $
-        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.)) $
-        * sin(insitu1.spacecraft.subsolar_point_geo_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor) $
+        * sin(insitu1.spacecraft.subsolar_point_geo_longitude*!dtor)
       subsolar_z_coord $
         = rplanet $
-        * sin(insitu1.spacecraft.subsolar_point_geo_latitude*(!pi/180.))
+        * sin(insitu1.spacecraft.subsolar_point_geo_latitude*!dtor)
       
       sub_solar_line = obj_new('IDLgrPolyline', $
                                [subsolar_x_coord[time_index],$
@@ -1549,14 +1518,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                size=[0.02,0.02,0.02])
       submaven_x_coord $
         = rplanet $
-        * cos(insitu1.spacecraft.sub_sc_latitude*(!pi/180.)) $
-        * cos(insitu1.spacecraft.sub_sc_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.sub_sc_latitude*!dtor) $
+        * cos(insitu1.spacecraft.sub_sc_longitude*!dtor)
       submaven_y_coord $
         = rplanet $
-        * cos(insitu1.spacecraft.sub_sc_latitude*(!pi/180.)) $
-        * sin(insitu1.spacecraft.sub_sc_longitude*(!pi/180.))
+        * cos(insitu1.spacecraft.sub_sc_latitude*!dtor) $
+        * sin(insitu1.spacecraft.sub_sc_longitude*!dtor)
       submaven_z_coord $
-        = rplanet * sin(insitu1.spacecraft.sub_sc_latitude*(!pi/180.))
+        = rplanet * sin(insitu1.spacecraft.sub_sc_latitude*!dtor)
          
       sub_maven_line = obj_new('IDLgrPolyline', $
                                [submaven_x_coord[time_index],$
@@ -1766,7 +1735,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       
 
       ;DEFINE THE COLORS ALONG THE FLIGHT PATH
-; TODO What are path_color_stretch and max and min?
+;-km-this will be removed by lines beginning after field keyword block
         if keyword_set(color_table) then begin
           if n_elements(color_table) eq 4 then begin
             path_color_table = color_table[0]
@@ -1786,7 +1755,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             path_color_stretch = 0 ;default RAINBOW color table, changable
         endelse
         loadct,path_color_table,/silent
+;-km-end-remove
 
+; IDENTIFY THE FIELD TO BE PLOTTED
+          
         if keyword_set(field) then begin      
           ;if parameter not selected, pass an invalid value
           MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
@@ -1806,14 +1778,57 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             current_plotted_value = insitu1[time_index]$
                                     .(level0_index).(level1_index)
           endelse             
-        endif else begin                ;if no parameter selected, default to none
-          plotted_parameter_name = ''
-          current_plotted_value = ''
-          level0_index = -9
-          level1_index = -9
+        endif else begin  
+          ;if no parameter selected, default to spacecraft altitude
+          plotted_parameter_name = 'altitude'
+          current_plotted_value = insitu1.spacecraft.altitude
+          level0_index = 12
+          level1_index = 10
         endelse 
 
-;        print,path_color_min,path_color_max,path_color_stretch
+; DEFINE THE COLOR TABLE AND MAX AND MIN PLOT VALUES
+
+;
+;  Will replace above but for now keep as a fallback  ALl should be
+;  overwrtten in the next few lines
+;
+      ; First, define and load the color table
+        if( keyword_set( color_table ) )then begin
+          if( n_elements (color_table) gt 1 )then begin
+            print,'Invalid entry for keyword color_table.'
+            print,'Should only be single integer.'
+            print,'Will revert to default (Rainbow: IDL-13)'
+            path_color_table = 13
+          endif else begin
+            path_color_table = color_table
+          endelse
+        endif else begin
+          ; Default color table is Rainbow (IDL-13)
+          path_color_table = 13
+        endelse
+        loadct,path_color_table,/silent
+
+      ; Next, define max and min values of color table
+        if( keyword_set( minimum ) )then begin
+          path_color_min = minimum
+        endif else begin
+          path_color_min = keyword_set( log ) $
+            ? min( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
+            : min( insitu1.(level0_index).(level1_index), /NaN )
+        endelse
+
+        if( keyword_set( maximum ) )then begin
+          path_color_max = maximum
+        endif else begin
+          path_color_max = keyword_set( log ) $
+            ? max( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
+            : max( insitu1.(level0_index).(level1_index), /NaN )
+        endelse
+
+      ; finally, explicitly assign the stretch value if log
+        path_color_stretch = keyword_set( log )
+
+;-ToDo        print,path_color_min,path_color_max,path_color_stretch
 
         vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
         MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, $
@@ -2144,19 +2159,19 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                   = ( rplanet $
                     + ( ( iuvs[i].periapse[j].alt[k]*peri_scale_factor ) $
                         / 10000.0 ) ) $
-                  * cos(iuvs[i].periapse[j].lat*(!pi/180.)) $
-                  * cos(iuvs[i].periapse[j].lon*(!pi/180.))
+                  * cos(iuvs[i].periapse[j].lat*!dtor) $
+                  * cos(iuvs[i].periapse[j].lon*!dtor)
                 periapse_y[peri_index] $
                   = ( rplanet $
                     + ( ( iuvs[i].periapse[j].alt[k]*peri_scale_factor ) $
                         / 10000.0 ) ) $
-                  * cos(iuvs[i].periapse[j].lat*(!pi/180.)) $
-                  * sin(iuvs[i].periapse[j].lon*(!pi/180.))
+                  * cos(iuvs[i].periapse[j].lat*!dtor) $
+                  * sin(iuvs[i].periapse[j].lon*!dtor)
                 periapse_z[peri_index] $
                   = ( rplanet $
                     + ( ( iuvs[i].periapse[j].alt[k]*peri_scale_factor ) $
                         / 10000.0 ) ) $
-                  * sin(iuvs[i].periapse[j].lat*(!pi/180.)) 
+                  * sin(iuvs[i].periapse[j].lat*!dtor) 
                 peri_index = peri_index+1
               endfor
             endfor
@@ -2360,13 +2375,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
               
               mesh_obj, 4, vertices, polygons, arr
               disk_x_offset = rplanet $
-                            * cos(iuvs[i].corona_lo_disk.lat*(!pi/180.)) $
-                            * cos(iuvs[i].corona_lo_disk.lon*(!pi/180.))
+                            * cos(iuvs[i].corona_lo_disk.lat*!dtor) $
+                            * cos(iuvs[i].corona_lo_disk.lon*!dtor)
               disk_y_offset = rplanet $
-                            * cos(iuvs[i].corona_lo_disk.lat*(!pi/180.)) $
-                            * sin(iuvs[i].corona_lo_disk.lon*(!pi/180.))
+                            * cos(iuvs[i].corona_lo_disk.lat*!dtor) $
+                            * sin(iuvs[i].corona_lo_disk.lon*!dtor)
               disk_z_offset = rplanet $
-                            * sin(iuvs[i].corona_lo_disk.lat*(!pi/180.))
+                            * sin(iuvs[i].corona_lo_disk.lat*!dtor)
             
               vertices[0,*] = vertices[0,*] + disk_x_offset
               vertices[1,*] = vertices[1,*] + disk_y_offset
@@ -2407,13 +2422,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
               
               mesh_obj, 4, vertices, polygons, arr
               disk_x_offset = rplanet $
-                            * cos(iuvs[i].corona_e_disk.lat*(!pi/180.)) $
-                            * cos(iuvs[i].corona_e_disk.lon*(!pi/180.))
+                            * cos(iuvs[i].corona_e_disk.lat*!dtor) $
+                            * cos(iuvs[i].corona_e_disk.lon*!dtor)
               disk_y_offset = rplanet $
-                            * cos(iuvs[i].corona_e_disk.lat*(!pi/180.)) $
-                            * sin(iuvs[i].corona_e_disk.lon*(!pi/180.))
+                            * cos(iuvs[i].corona_e_disk.lat*!dtor) $
+                            * sin(iuvs[i].corona_e_disk.lon*!dtor)
               disk_z_offset = rplanet $
-                            * sin(iuvs[i].corona_e_disk.lat*(!pi/180.))
+                            * sin(iuvs[i].corona_e_disk.lat*!dtor)
             
               vertices[0,*] = vertices[0,*] + disk_x_offset
               vertices[1,*] = vertices[1,*] + disk_y_offset
@@ -2802,5 +2817,5 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                 event_handler='MVN_KP_3D_event'
 
   endif               ;END OF THE /DIRECT KEYWORD CHECK LOOP
-
+;stop
 end
