@@ -22,13 +22,11 @@ pro MVN_KP_3D_PATH_COLOR, insitu, level0_index, level1_index, $
 
 common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
-print,colorbar_stretch
   if level0_index eq -9 then begin        
     ;NO DATA PARAMETER FOR PLOTTING REQUESTED, DEFAULT TO SOLID RED ORBIT PATH
     vert_color[0,*] = 255
     ; The plotted parameter in this case is altitude, so use those to
     ;  define the color bar ticks
-;-orig     colorbar_ticks = [0.0,0.25,0.50,0.75,1.0]
     minimum_value = min( insitu.spacecraft.altitude, /NaN )
     maximum_value = max( insitu.spacecraft.altitude, /NaN )
     colorbar_min = minimum_value
@@ -50,7 +48,7 @@ print,colorbar_stretch
       ;STRAIGHT LINEAR DATA STRETCH
       delta = (maximum_value-minimum_value)/255.
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do begin
-        if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
+;        if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
           t = floor( ( insitu[i].(level0_index).(level1_index) $
                      - minimum_value ) $
                    / delta )
@@ -78,35 +76,34 @@ print,colorbar_stretch
             vert_color[1,(i*2)+1] = g_orig[t]
             vert_color[2,(i*2)+1] = b_orig[t]
           endif
-        endif
-      endfor
-    endif 
+;        endif ; check on value ne 0
+      endfor  ; loop over elements in insitu1
+    endif     ; if linear stretch
     
     if colorbar_stretch eq 1 then begin                         
       ;Log stretch
 ;-km- may need to multiply this by signum(arg) to preserve negative vals
       delta = alog10( maximum_value / minimum_value ) / 255.
-      print,'In 3d_path_color: ',minimum_value,maximum_value,delta
       for i=0,n_elements(insitu.(level0_index).(level1_index))-1 do  begin
         t = floor( alog10( insitu[i].(level0_index).(level1_index) $
                          / minimum_value ) $
                  / delta )
         if insitu[i].(level0_index).(level1_index) ne 0.0 then begin
           if t gt 255 then begin
-            vert_color[0,(i*2)] = r_orig[0]
-            vert_color[1,(i*2)] = g_orig[0]
-            vert_color[2,(i*2)] = b_orig[0]
-            vert_color[0,(i*2)+1] = r_orig[0]
-            vert_color[1,(i*2)+1] = g_orig[0]
-            vert_color[2,(i*2)+1] = b_orig[0]
-          endif
-          if t lt 0 then begin
             vert_color[0,(i*2)] = r_orig[255]
             vert_color[1,(i*2)] = g_orig[255]
             vert_color[2,(i*2)] = b_orig[255]
             vert_color[0,(i*2)+1] = r_orig[255]
             vert_color[1,(i*2)+1] = g_orig[255]
             vert_color[2,(i*2)+1] = b_orig[255]
+          endif
+          if t lt 0 then begin
+            vert_color[0,(i*2)] = r_orig[0]
+            vert_color[1,(i*2)] = g_orig[0]
+            vert_color[2,(i*2)] = b_orig[0]
+            vert_color[0,(i*2)+1] = r_orig[0]
+            vert_color[1,(i*2)+1] = g_orig[0]
+            vert_color[2,(i*2)+1] = b_orig[0]
           endif
           if t ge 0 and t le 255 then begin
             vert_color[0,(i*2)] = r_orig[t]
@@ -127,5 +124,4 @@ print,colorbar_stretch
       ? minimum_value * 10.^(i*alog10(maximum_value/minimum_value)/4.)$
       : minimum_value + i*((maximum_value-minimum_value)/4.)
   endfor
-print,colorbar_ticks
 END

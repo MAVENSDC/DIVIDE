@@ -173,11 +173,32 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
    ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS
    ;IF REQUESTED.
    if keyword_set(range) then begin
-; ToDo: may wish to return orbits and verify overlap between IUVS and in-situ
      mvn_kp_range,insitu,iuvs=iuvs
      return
    endif
   
+   ;OPTIMIZATION OPTION
+
+   if keyword_set(optimize) then begin
+; For now, just use the optimization to ~5000 points
+;     if( size(optimize,/type) eq 3 or size(optimize,/type) eq 4 or $
+;         size(optimize,/type) eq 5 )then begin
+       ; only proceed if the optimization value is given as an integer
+       ; data type or integer-like data type (byte, int, long)
+       ; May expand to uint, etc. at a future date
+;       optimizer = optimize
+;     endif else begin
+;       print,"*****WARNING*****"
+;       print,"Use of 'optimize=<value>' recognized ONLY if value is of '
+;       print,"type BYTE, INT, or LONG."
+       
+ ;    endelse
+     optimizer = round(n_elements(insitu[begin_index:end_index])/5000.)
+     MVN_KP_3D_OPTIMIZE, insitu, insitu1, optimizer
+   endif else begin
+     insitu1 = insitu;[begin_index:end_index]
+   endelse
+
   ;PARSE DATA STRUCTURES FOR BEGINNING, END, AND MID TIMES
     ;SET THE TIME BOUNDS BASED ON THE INSITU DATA STRUCTURE
     
@@ -189,43 +210,17 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
       if( keyword_set(time) )then begin
         case size(time,/dim) of
-          0: begin
-               mvn_kp_range_select, insitu, time, begin_index, end_index
-               ; Then calculate mid point
-               mid_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[mid_index].time
-               mid_time_string = time_string( mid_time, format=0 )
-             end
-          1: begin
-               mvn_kp_range_select, insitu, time, begin_index, end_index               
-               ; Then calculate mid point
-               mid_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[mid_index].time
-               mid_time_string = time_string( mid_time, format=0 )
-             end
-          2: begin
-               mvn_kp_range_select, insitu, time, begin_index, end_index
-               ; then calculate midpoint
-               mid_index = long( ( end_index + begin_index ) / 2L )
-               mid_time = insitu[mid_index].time
-               mid_time_string = time_string( mid_time, format=0 )
-             end
+          0: mvn_kp_range_select, insitu1, time, begin_index, end_index
+          1: mvn_kp_range_select, insitu1, time, begin_index, end_index               
+          2: mvn_kp_range_select, insitu1, time, begin_index, end_index
           3: begin
                ; can only accept this if input values are string or float date
-               if( size(time,/type) ne 2 )then begin
-                 ; sort the three,
-                 time=time[sort(time)]
-                 ; Feed largest and smallest to mvn_kp_range_select
-                 mvn_kp_range_select, insitu, [time[0],time[2]], $
+               ; range_select takes care of types other than INT
+               if( size(time,/type) ne 2)then begin
+                 time=time[sort(time)] ; sort the three
+                 ; Feed largest and smallest to range_select
+                 mvn_kp_range_select, insitu1, [time[0],time[2]], $
                                       begin_index, end_index
-                 mid_time = time[1] ; assign middle to middle
-                 mid_time_string = time_string( mid_time )
-                 if( size(time,/type) eq 7 )then begin ; time is a string
-                   mid_index = value_locate( insitu.time_string, mid_time )
-                   mid_time = insitu[mid_index].time
-                 endif else begin ; time is a float
-                   mid_index = value_locate( insitu.time, mid_time )
-                 endelse
                endif else begin
                  error_message = 'If three times are provided, ' $
                                + 'they must be either strings or floats.'
@@ -240,29 +235,48 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                 end
         endcase
       endif else begin
+      ;  time keyword is not set, use the whole data structure
         begin_index = 0L
-        end_index = n_elements(insitu)-1; if time keyword is used
-        mid_index = long( ( end_index - begin_index ) / 2L )
-        mid_time = insitu[mid_index].time
-        mid_time_string = time_string( mid_time, format=0 )
+        end_index = n_elements(insitu1)-1; if time keyword is used
       endelse
-      start_time = insitu[begin_index].time
-      end_time = insitu[end_index].time
-      initial_time = insitu[mid_index].time
+;
+;  Use begin and end index to subset the input datra structure
+;
+      insitu1 = insitu1[begin_index:end_index]
+;
+;  Redefine the begin and end indices
+;
+      begin_index = 0L & end_index = n_elements(insitu1)-1
+;
+;  Now, define the opening view time for the widget window
+;
+      if( size(time,/dim) eq 3 )then begin
+      ; open view time has been provided
+        if( size(time,/type) eq 7 )then begin ; time is a string
+          time_index = value_locate( insitu1.time_string, time[1] )
+        endif else begin ; time is a UNIX time
+          time_index = value_locate( insitu1.time, time[1] )
+        endelse
+      endif else begin
+      ; open view time not provided: use mid-time
+        time_index = end_index / 2L
+      endelse
+;
+;  Now define the strings and times needed for widget display windows
+;
+      start_time = insitu1[begin_index].time
+      end_time = insitu1[end_index].time
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
-      total_points = end_index - begin_index + 1L
-      time_index = mid_index ; the initial time to plot
-   
-;OPTIMIZATION OPTION
-
-  if keyword_set(optimize) then begin
-    ; May need a check on an input value for optimization...
-    optimizer = round(n_elements(insitu[begin_index:end_index])/5000.)
-    MVN_KP_3D_OPTIMIZE, insitu[begin_index:end_index], insitu1, optimizer
-  endif else begin
-    insitu1 = insitu[begin_index:end_index]
-  endelse
+      initial_time = insitu1[time_index].time
+;
+;      start_time = insitu[begin_index].time
+;      end_time = insitu[end_index].time
+;      initial_time = insitu[mid_index].time
+;      start_time_string = time_string( start_time, format=0 )
+;      end_time_string = time_string( end_time, format=0 )
+;      total_points = end_index - begin_index + 1L
+;      time_index = mid_index ; the initial time to plot
 
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
@@ -362,123 +376,18 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
   
     ;parse the input iuvs structure (if it exists) 
     ;to see which coronal observations are present
+
     if instrument_array[7] eq 1 then begin
-      e_disk_list = 'Echelle Disk'
-      if instrument_array[11] eq 1 then begin           ;Echelle Disk
-        tag_list = tag_names(iuvs.corona_e_disk)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_e_disk.radiance_id[0] ne '')
-          e_disk_list = [e_disk_list,$
-                         'Radiance:'+iuvs[min(temp)].corona_e_disk.radiance_id]
-        endif
-      endif
-      e_limb_list = 'Echelle Limb'
-      if instrument_array[15] eq 1 then begin           ;Echelle Limb
-        tag_list = tag_names(iuvs.corona_e_limb)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_e_limb.radiance_id[0] ne '')
-          e_limb_list = [e_limb_list, $
-                         'Radiance:'+iuvs[min(temp)].corona_e_limb.radiance_id]
-        endif
-        check = where(tag_list eq 'HALF_INT_DISTANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_e_limb.half_int_distance_id[0] ne '')
-          e_limb_list $
-            = [e_limb_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
-                                    .corona_e_limb.half_int_distance_id]
-        endif
-      endif
-      e_high_list = 'Echelle High'
-      if instrument_array[10] eq 1 then begin           ;Echelle High
-        tag_list = tag_names(iuvs.corona_e_high)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_e_high.radiance_id[0] ne '')
-          e_high_list = [e_high_list, $
-                         'Radiance:'+iuvs[min(temp)].corona_e_high.radiance_id]
-        endif
-        check = where(tag_list eq 'HALF_INT_DISTANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_e_high.half_int_distance_id[0] ne '')
-          e_high_list $
-            = [e_high_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
-                                    .corona_e_high.half_int_distance_id]
-        endif
-      endif
-      lo_disk_list = 'LoRes Disk'
-      if instrument_array[16] eq 1 then begin           ;Low Res Disk
-        tag_list = tag_names(iuvs.corona_lo_disk)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp  = where(iuvs.corona_lo_disk.radiance_id[0] ne '')
-          lo_disk_list = [lo_disk_list, $
-                          'Radiance:'+iuvs[min(temp)]$
-                                      .corona_lo_disk.radiance_id]
-        endif
-        check = where(tag_list eq 'DUST_DEPTH:')
-        if check ne -1 then lo_disk_list = [lo_disk_list, 'Dust Depth']
-        check = where(tag_list eq 'OZONE_DEPTH:')
-        if check ne -1 then lo_disk_list = [lo_disk_list, 'Ozone Depth']
-        check = where(tag_list eq 'AURORAL_INDEX:')
-        if check ne -1 then lo_disk_list = [lo_disk_list, 'Auroral Index']
-      endif
-      lo_limb_list = 'LoRes Limb'
-      if instrument_array[14] eq 1 then begin           ;Low Res Limb
-        tag_list = tag_names(iuvs.corona_lo_limb)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_limb.radiance_id[0] ne '')    
-          lo_limb_list = [lo_limb_list, $
-                          'Radiance:'+iuvs[min(temp)]$
-                                      .corona_lo_limb.radiance_id]
-        endif
-        check = where(tag_list eq 'SCALE_HEIGHT')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_limb.scale_height_id[0] ne '')    
-          lo_limb_list = [lo_limb_list, $
-                          'Scale_Height:'+iuvs[min(temp)]$
-                                          .corona_lo_limb.scale_height_id]
-        endif
-        check = where(tag_list eq 'DENSITY')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_limb.density_id[0] ne '')
-          lo_limb_list = [lo_limb_list, $
-                          'Density:'+iuvs[min(temp)]$
-                                     .corona_lo_limb.density_id]
-        endif
-        check = where(tag_list eq 'TEMPERATURE')
-        if check ne -1 then lo_limb_list = [lo_limb_list, 'Temperature:']
-      endif
-      lo_high_list = 'LoRes High'
-      if instrument_array[13] eq 1 then begin           ;Row Res High
-        tag_list = tag_names(iuvs.corona_lo_high)
-        check = where(tag_list eq 'RADIANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_high.radiance_id[0] ne '')    
-          lo_high_list = [lo_high_list, $
-                          'Radiance:'+iuvs[min(temp)]$
-                                      .corona_lo_high.radiance_id]
-        endif
-        check = where(tag_list eq 'DENSITY')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_high.density_id[0] ne '')    
-          lo_high_list = [lo_high_list, $
-                          'Density:'+iuvs[min(temp)].corona_lo_high.density_id]
-        endif        
-        check = where(tag_list eq 'HALF_INT_DISTANCE')
-        if check ne -1 then begin
-          temp = where(iuvs.corona_lo_high.half_int_distance_id[0] ne '')    
-          lo_high_list $
-            = [lo_high_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
-                                    .corona_lo_high.half_int_distance_id]
-        endif          
-      endif
+      mvn_kp_3d_iuvs_parse, instrument_array, e_disk_list=e_disk_list, $
+            e_limb_list=e_limb_list, e_high_list, lo_disk_list=lo_disk_list, $
+            lo_limb_list=lo_limb_list, lo_high_list=lo_high_list
     endif
+
+;If there is an error, replace above with the contents of 
+; mvn_kp_3d_iuvs_parse, with an additional bracketing of 
+; if instrument_array[7] eq 1 then begin
+;   ...
+; endif
     
     ;SET WHETHER GEO OR MSO COORDINATES ARE USED
     if keyword_set(mso) then begin
@@ -561,9 +470,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                 xsize=scale_factor*1000)
 
 ;PROVIDES LATER ABILITY TO CHANGE AND UPDATE START/END TIMES
-      time_min = start_time
+      time_min=start_time
       time_max = end_time
-
       timelabelbase = widget_base(timebarbase, xsize=scale_factor*1000, $
                                   ysize=scale_factor*20, /row)
       label5 = $
@@ -591,7 +499,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                               xsize=scale_factor*50) 
       button1 = widget_button(tbase2, value='+', uname='timeplusone',$
                               xsize=scale_factor*50)                     
-      widget_control,timeline,set_value=mid_time
+      widget_control,timeline,set_value=initial_time
 
       ;MARS GLOBE/LABEL OPTIONS MENU 
       subbaseR2 = widget_base(subbaseR,/column)
@@ -1641,7 +1549,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
     ;ADD TEXT LABELS 
       textModel = obj_new('IDLgrModel')
-      timetext = OBJ_NEW('IDLgrText',time_string(mid_time,format=0), $
+      timetext = OBJ_NEW('IDLgrText',time_string(initial_time,format=0), $
                          color=[0,255,0], locations=[-2,1.9,0] )
       textModel->add, timetext
       view->add,textModel
@@ -1735,27 +1643,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       
 
       ;DEFINE THE COLORS ALONG THE FLIGHT PATH
-;-km-this will be removed by lines beginning after field keyword block
-        if keyword_set(color_table) then begin
-          if n_elements(color_table) eq 4 then begin
-            path_color_table = color_table[0]
-            path_color_min = color_table[1]
-            path_color_max = color_table[2]
-            path_color_stretch = color_table[3]
-          endif else begin
-            path_color_table = color_table
-            path_color_min = -999999
-            path_color_max = 999999
-            path_color_stretch = 0
-          endelse 
-        endif else begin
-            path_color_table = 13
-            path_color_min = -999999
-            path_color_max = 999999
-            path_color_stretch = 0 ;default RAINBOW color table, changable
-        endelse
-        loadct,path_color_table,/silent
-;-km-end-remove
 
 ; IDENTIFY THE FIELD TO BE PLOTTED
           
@@ -1781,17 +1668,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endif else begin  
           ;if no parameter selected, default to spacecraft altitude
           plotted_parameter_name = 'altitude'
-          current_plotted_value = insitu1.spacecraft.altitude
+          current_plotted_value = insitu1[time_index].spacecraft.altitude
           level0_index = 12
           level1_index = 10
         endelse 
 
 ; DEFINE THE COLOR TABLE AND MAX AND MIN PLOT VALUES
 
-;
-;  Will replace above but for now keep as a fallback  ALl should be
-;  overwrtten in the next few lines
-;
       ; First, define and load the color table
         if( keyword_set( color_table ) )then begin
           if( n_elements (color_table) gt 1 )then begin
@@ -1810,7 +1693,23 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
       ; Next, define max and min values of color table
         if( keyword_set( minimum ) )then begin
-          path_color_min = minimum
+          if( minimum gt $
+              min( insitu1.(level0_index).(level1_index), /NaN ) )then begin
+            print,'Provided minimum value: ',minimum
+            print,'Minimum value of '+plotted_parameter_name+' is: ',$
+                  min( insitu1.(level0_index).(level1_index), /NaN )
+            print,'For visualization purposes, provided min must be smaller '$
+                  +'than data minimum'
+            print,'Resetting mininum plot value.'
+          endif
+          if( keyword_set(log) )then begin
+            path_color_min $
+              = minimum $
+              < 10.^(min(alog10(insitu1.(level0_index).(level1_index)),/NaN ))
+          endif else begin
+            path_color_min $
+              = minimum < min( insitu1.(level0_index).(level1_index), /NaN )
+          endelse
         endif else begin
           path_color_min = keyword_set( log ) $
             ? min( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
@@ -1818,7 +1717,23 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endelse
 
         if( keyword_set( maximum ) )then begin
-          path_color_max = maximum
+          if( maximum lt $
+            max( insitu1.(level0_index).(level1_index), /NaN ) )then begin
+            print,'Provided maximum value: ',maximum
+            print,'Maximum value of '+plotted_parameter_name+' is: ',$
+                  max( insitu1.(level0_index).(level1_index), /NaN )
+            print,'For visualization purposes, provided max must be smaller '$
+                  +'than data maximum'
+            print,'Resetting maximum plot value.'
+          endif
+          if( keyword_set(log) )then begin
+            path_color_max $
+              = maximum $
+              > 10.^(max(alog10(insitu1.(level0_index).(level1_index)),/NaN))
+          endif else begin
+            path_color_max $
+              = maximum > max( insitu1.(level0_index).(level1_index), /NaN )
+          endelse
         endif else begin
           path_color_max = keyword_set( log ) $
             ? max( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
@@ -1827,8 +1742,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
       ; finally, explicitly assign the stretch value if log
         path_color_stretch = keyword_set( log )
-
-;-ToDo        print,path_color_min,path_color_max,path_color_stretch
 
         vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
         MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, $
@@ -1840,7 +1753,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                              polylines=path_connections, thick=2,$
                              vert_color=vert_color,shading=1)
         for i=0,n_elements(orbit_path) -1 do orbit_model -> add,orbit_path[i]
-
 
     ;CREATE THE VECTOR MODEL TO HOLD SUCH DATA
     
@@ -1977,14 +1889,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,$
                                install_directory
     ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
-         x = x + x_orbit[time_index*2]
-         y = y + y_orbit[time_index*2]
-         z = z + z_orbit[time_index*2]
+        x = x + x_orbit[time_index*2]
+        y = y + y_orbit[time_index*2]
+        z = z + z_orbit[time_index*2]
         ;add its position to the camera tracking variable
-         maven_location[0] = x_orbit[time_index*2]
-         maven_location[1] = y_orbit[time_index*2]
-         maven_location[2] = z_orbit[time_index*2]
-         maven_location[3] = 1.0                        ;default scale factor
+        maven_location[0] = x_orbit[time_index*2]
+        maven_location[1] = y_orbit[time_index*2]
+        maven_location[2] = z_orbit[time_index*2]
+        maven_location[3] = 1.0                        ;default scale factor
         maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, $
                              color=[255,102,0], shading=1,reject=1,$
                              specular=[0,255,255],style=model_style)
@@ -2018,7 +1930,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             parameter_plot_hide = 1
            endelse
         endelse
-        
+
         plot_model = obj_new('IDLgrModel')
         view->add,plot_model
         plot_x = insitu1.time
@@ -2027,7 +1939,22 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endif else begin
           plot_y = insitu1.spacecraft.altitude
         endelse
+
+help,insitu1,plot_x
+; Above shows that plotx has same number elems as insitu1
+; and vertcolor has 2x as many (in 3d)
+
         ;set the plot colors before and after the selected time
+;temp = where(finite(plot_y),ngood)
+;print,ngood
+;plot_colors=intarr(3,ngood)
+;for i = 0,ngood-1 do begin
+;  plot_colors[*,i] $
+;    = (plot_x[i] lt plot_x[time_index]) $
+;    ? parameter_plot_before_color $
+;    : parameter_plot_after_color
+;endfor 
+
         plot_colors = intarr(3,n_elements(plot_x))
         for i=0, n_elements(plot_x) -1 do begin
           if i lt time_index then begin
@@ -2036,7 +1963,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             plot_colors[*,i] = parameter_plot_after_color
           endelse
         endfor
-        
+
         if parameter_plot_connected eq 1 then begin
           parameter_plot_symbol=0
           parameter_plot_linestyle=0
@@ -2045,24 +1972,84 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           parameter_plot_linestyle=6
         endelse
 
-        parameter_plot = obj_new('IDLgrPlot', plot_x, plot_y,color=[0,255,0],$
-                                 vert_colors=plot_colors,$
-                                 linestyle=parameter_plot_linestyle,$
-                                 symbol=parameter_plot_symbol,thick=1)
+; Force the maximum and minimum values outside of the data bounds.
+; I do not like this, but it may be the only way that IDL widget 
+;  plotting will work properly...
+;
+        if( keyword_set(minimum) )then begin
+          if( keyword_set(log) )then begin
+            yrmin = minimum < 10.^(min(alog10(plot_y),/NaN))
+          endif else begin
+            yrmin = minimum < min( plot_y, /NaN )
+          endelse
+        endif
+        if( keyword_set(maximum) )then begin
+          if( keyword_set(log) )then begin
+            yrmax = maximum > 10.^(max(alog10(plot_y),/NaN))
+          endif else begin
+            yrmax = maximum > max( plot_y, /NaN )
+          endelse
+        endif
+        yr = [yrmin, yrmax]
+        xr = [min(plot_x),max(plot_x)]
+
+; Now make the data log if requested
+; ToDo: May need to use signum to preserve sign of data
+
+        if( keyword_set(log) )then begin
+;
+;  Possible hack: force all plot_y NaNs to the minimum plotted value 
+;  so that the IDLgrPlot command correctly matches the number of plotted 
+;  indices to the number of indices in the time array.  
+;  Using minimum so that the red line for data remains on the screen
+;  May need to fix the location of the x-axis a few lines later.
+;
+          temp = where( ~finite(plot_y) or plot_y lt 0, num_nan )
+          if( num_nan gt 0 )then plot_y[temp] = minimum; 1e-40
+          parameter_plot = obj_new('IDLgrPlot', plot_x-plot_x[0], $
+                                   alog10(plot_y), $
+                                   color=[0,255,0],$
+                                   vert_colors=plot_colors,$
+                                   linestyle=parameter_plot_linestyle,$
+                                   symbol=parameter_plot_symbol,thick=1)
+        endif else begin
+;
+;  Possible hack: force all plot_y NaNs to -1e-40 so that the IDLgrPlot
+;   command correctly mayches the number of plotted indices to the number
+;   of indices in the time array.  Can use this in linear plot because
+;   the plot tool will plot this as basivcally zero.
+;
+          temp = where( ~finite(plot_y), num_nan )
+          if( num_nan gt 0 )then plot_y[temp] = -1e-40
+
+          parameter_plot = obj_new('IDLgrPlot', plot_x-plot_x[0], plot_y, $
+                                   color=[0,255,0],$
+                                   vert_colors=plot_colors,$
+                                   linestyle=parameter_plot_linestyle,$
+                                   symbol=parameter_plot_symbol,thick=1)
+        endelse
+
         plot_model -> add, parameter_plot
-        parameter_plot->getproperty, xrange=xr, yrange=yr
-        xc = mg_linear_function(xr, [-1.7,1.4])
-        yc = mg_linear_function(yr, [-1.9,-1.5])
+;        parameter_plot->getproperty, xrange=xr;, yrange=yr (only need xrange)
+
+        xc = mg_linear_function(xr-xr[0], [-1.7,1.4])
+;
+;  If log plots then we need to scale the log of the y-values
+;
+        yc = keyword_set(log) $
+           ? mg_linear_function(alog10(yr), [-1.9,-1.5]) $
+           : mg_linear_function(yr, [-1.9,-1.5])
+
         parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-        parameter_yaxis_ticktext $
-          = obj_new('idlgrtext',$
-                    [strtrim(string(min(plot_y,/NaN),format='(e7.0)'),2), $
-                     strtrim(string(max(plot_y,/NaN),format='(e7.0)'),2)])
-        parameter_yaxis = obj_new('IDLgrAxis', 1, range=yr,$
+        ya = strtrim( string( yr, format='(e7.0)' ), 2)
+        parameter_yaxis_ticktext = obj_new('idlgrtext',ya)
+
+        parameter_yaxis = obj_new('IDLgrAxis', 1, range=yr, log=log,$
                                   color=parameter_plot_axis_color,thick=2,$
                                   tickdir=1,$
                                   ticktext=parameter_yaxis_ticktext,$
                                   /exact,major=2)
+                                  ; can add more axis vals by chaging major
         parameter_xaxis = obj_new('IDLgrAxis', 0, range=xr,$
                                   color=parameter_plot_axis_color,thick=2,$
                                   tickdir=1,/exact,notext=1)
@@ -2817,5 +2804,5 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                 event_handler='MVN_KP_3D_event'
 
   endif               ;END OF THE /DIRECT KEYWORD CHECK LOOP
-;stop
+
 end
