@@ -38,9 +38,9 @@
 ;                 to select the image.
 ;    field: in, optional, type=string
 ;       The name of the field to initiall plot in the widget window
-;     minimum: in, optional, type=float
+;    minimum: in, optional, type=float
 ;       THe minimum value to assign to color level 0
-;     maximum: in, optional, type=float
+;    maximum: in, optional, type=float
 ;       The maximum value to assign to color level 255
 ;
 ;-obsolete    color_table: in, optional, type=int or intarr(4)
@@ -107,7 +107,9 @@
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
-               field=field, minimum=minimum, maximum=maximum, $
+;               field=field, minimum=minimum, maximum=maximum, $
+               field=field, $
+               colorbar_min=colorbar_min, colorbar_max=colorbar_max, $
                log=log, color_table=color_table, bgcolor=bgcolor, $
                plotname=plotname, color_bar=color_bar,axes=axes,$
                whiskers=whiskers,parameterplot=parameterplot,$
@@ -269,14 +271,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       start_time_string = time_string( start_time, format=0 )
       end_time_string = time_string( end_time, format=0 )
       initial_time = insitu1[time_index].time
-;
-;      start_time = insitu[begin_index].time
-;      end_time = insitu[end_index].time
-;      initial_time = insitu[mid_index].time
-;      start_time_string = time_string( start_time, format=0 )
-;      end_time_string = time_string( end_time, format=0 )
-;      total_points = end_index - begin_index + 1L
-;      time_index = mid_index ; the initial time to plot
 
   ;PARSE DATA STRUCTURES FOR KP DATA AVAILABILITY
   
@@ -362,10 +356,39 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       backgroundcolor = [15,15,15]
     endelse
 
+    if keyword_set(field) then begin
+      ;if parameter not selected, pass an invalid value
+      MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+        first_level_count, base_tags,  $
+        first_level_tags, check, level0_index, $
+        level1_index, tag_array
+      if check ne 0 then begin
+        ;if requested parameter doesn't exist, default to none
+        print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2) $
+          +' IS NOT PART OF THE DATA STRUCTURE.'
+        plotted_parameter_name = ''
+        current_plotted_value = ''
+        level0_index = -9
+        level1_index = -9
+      endif else begin
+        plotted_parameter_name = tag_array[0]+':'+tag_array[1]
+        current_plotted_value = insitu1[time_index]$
+          .(level0_index).(level1_index)
+      endelse
+    endif else begin
+      ;if no parameter selected, default to spacecraft altitude
+      plotted_parameter_name = 'altitude'
+      current_plotted_value = insitu1[time_index].spacecraft.altitude
+      level0_index = 12
+      level1_index = 10
+    endelse
+
     ;default colorbar settings
-      colorbar_max = 100.
-      colorbar_min = 0.0
-      colorbar_stretch=0
+    if( ~arg_present(colorbar_max) )then $
+      colorbar_max = max(insitu1.(level0_index).(level1_index),/NaN) ; 100.
+    if (~arg_present(colorbar_min) )then $
+      colorbar_min = min(insitu1.(level0_index).(level1_index),/NaN) ;0.0
+    colorbar_stretch = keyword_set(log) ; 0
 
     ;camera viewpoint: 
     ;  0=default free view camera, 
@@ -513,7 +536,10 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       button1 = widget_button(basemapbase, value='MDIM',uname='basemap1',$
                               xsize=scale_factor*300,ysize=scale_factor*30, $
                               /no_release)
-      mars_base_map = 'mdim'
+;      mars_base_map = 'mdim' ;-km I think this is unnecessary.
+;-km The following control command sets the MDIM button.
+;-km  This is in error if the basemap keyword is set.
+;-km  It should set the button of the chosen basemap; default to MDIM.
       widget_control,button1, /set_button                  
       button1 = widget_button(basemapbase, value='MOLA',uname='basemap1',$
                               xsize=scale_factor*300,ysize=scale_factor*30, $
@@ -832,11 +858,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                                 ysize=scale_factor*30)
         subbaseR7d = widget_base(subbaseR7c, /row)
         label7 = widget_label(subbaseR7d, value='Min')
-        text7 = widget_text(subbaseR7d, value= string(colorbar_min), $
+        text7 = widget_text(subbaseR7d, value=strtrim(string(colorbar_min),2), $
                             /editable,xsize=scale_factor*3,$
                             uname='colorbar_min', scr_xsize=60)
         label7 = widget_label(subbaseR7d, value='Max')
-        text7 = widget_text(subbaseR7d, value=string(colorbar_max), $
+        text7 = widget_text(subbaseR7d, value=strtrim(string(colorbar_max),2), $
                             /editable,xsize=scale_factor*3,$
                             uname='colorbar_max', scr_xsize=60)
         button7 = widget_button(subbaseR7d, value='Reset', $
@@ -1646,32 +1672,32 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
 ; IDENTIFY THE FIELD TO BE PLOTTED
           
-        if keyword_set(field) then begin      
-          ;if parameter not selected, pass an invalid value
-          MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
-                             first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, $
-                             level1_index, tag_array
-          if check ne 0 then begin         
-            ;if requested parameter doesn't exist, default to none
-            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2) $
-                  +' IS NOT PART OF THE DATA STRUCTURE.'
-            plotted_parameter_name = ''
-            current_plotted_value = ''
-            level0_index = -9
-            level1_index = -9
-          endif else begin
-            plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-            current_plotted_value = insitu1[time_index]$
-                                    .(level0_index).(level1_index)
-          endelse             
-        endif else begin  
-          ;if no parameter selected, default to spacecraft altitude
-          plotted_parameter_name = 'altitude'
-          current_plotted_value = insitu1[time_index].spacecraft.altitude
-          level0_index = 12
-          level1_index = 10
-        endelse 
+;        if keyword_set(field) then begin      
+;          ;if parameter not selected, pass an invalid value
+;          MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+;                             first_level_count, base_tags,  $
+;                             first_level_tags, check, level0_index, $
+;                             level1_index, tag_array
+;          if check ne 0 then begin         
+;            ;if requested parameter doesn't exist, default to none
+;            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2) $
+;                  +' IS NOT PART OF THE DATA STRUCTURE.'
+;            plotted_parameter_name = ''
+;            current_plotted_value = ''
+;            level0_index = -9
+;            level1_index = -9
+;          endif else begin
+;            plotted_parameter_name = tag_array[0]+':'+tag_array[1]
+;            current_plotted_value = insitu1[time_index]$
+;                                    .(level0_index).(level1_index)
+;          endelse             
+;        endif else begin  
+;          ;if no parameter selected, default to spacecraft altitude
+;          plotted_parameter_name = 'altitude'
+;          current_plotted_value = insitu1[time_index].spacecraft.altitude
+;          level0_index = 12
+;          level1_index = 10
+;        endelse 
 
 ; DEFINE THE COLOR TABLE AND MAX AND MIN PLOT VALUES
 
@@ -1711,7 +1737,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
               = minimum < min( insitu1.(level0_index).(level1_index), /NaN )
           endelse
         endif else begin
-          path_color_min = keyword_set( log ) $
+          path_color_min = keyword_set( colorbar_stretch ) $
             ? min( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
             : min( insitu1.(level0_index).(level1_index), /NaN )
         endelse
@@ -1726,7 +1752,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                   +'than data maximum'
             print,'Resetting maximum plot value.'
           endif
-          if( keyword_set(log) )then begin
+          if( keyword_set( colorbar_stretch ) )then begin
             path_color_max $
               = maximum $
               > 10.^(max(alog10(insitu1.(level0_index).(level1_index)),/NaN))
@@ -1735,13 +1761,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
               = maximum > max( insitu1.(level0_index).(level1_index), /NaN )
           endelse
         endif else begin
-          path_color_max = keyword_set( log ) $
+          path_color_max = keyword_set( colorbar_stretch ) $
             ? max( alog10(insitu1.(level0_index).(level1_index) ), /NaN ) $
             : max( insitu1.(level0_index).(level1_index), /NaN )
         endelse
 
       ; finally, explicitly assign the stretch value if log
-        path_color_stretch = keyword_set( log )
+        path_color_stretch = keyword_set( colorbar_stretch )
 
         vert_color = intarr(3,n_elements(insitu1.spacecraft.geo_x)*2)        
         MVN_KP_3D_PATH_COLOR, insitu1, level0_index, level1_index, $
@@ -1814,7 +1840,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endif
         vector_model->setproperty,hide=0
       endif
-      
       
     ;CREATE A LABEL FOR WHAT IS PLOTTED ALONG THE SPACECRAFT ORBIT
       if keyword_set(plotname) then begin
@@ -1940,21 +1965,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           plot_y = insitu1.spacecraft.altitude
         endelse
 
-help,insitu1,plot_x
-; Above shows that plotx has same number elems as insitu1
-; and vertcolor has 2x as many (in 3d)
-
-        ;set the plot colors before and after the selected time
-;temp = where(finite(plot_y),ngood)
-;print,ngood
-;plot_colors=intarr(3,ngood)
-;for i = 0,ngood-1 do begin
-;  plot_colors[*,i] $
-;    = (plot_x[i] lt plot_x[time_index]) $
-;    ? parameter_plot_before_color $
-;    : parameter_plot_after_color
-;endfor 
-
         plot_colors = intarr(3,n_elements(plot_x))
         for i=0, n_elements(plot_x) -1 do begin
           if i lt time_index then begin
@@ -1976,27 +1986,54 @@ help,insitu1,plot_x
 ; I do not like this, but it may be the only way that IDL widget 
 ;  plotting will work properly...
 ;
-        if( keyword_set(minimum) )then begin
-          if( keyword_set(log) )then begin
-            yrmin = minimum < 10.^(min(alog10(plot_y),/NaN))
-          endif else begin
-            yrmin = minimum < min( plot_y, /NaN )
-          endelse
-        endif
-        if( keyword_set(maximum) )then begin
-          if( keyword_set(log) )then begin
-            yrmax = maximum > 10.^(max(alog10(plot_y),/NaN))
-          endif else begin
-            yrmax = maximum > max( plot_y, /NaN )
-          endelse
-        endif
+; The following works for input values; need to see how to make it work for changes to widget
+
+;        if( keyword_set(minimum) )then begin
+;          yrmin = keyword_set(log) $
+;                ? minimum < 10.^(min(alog10(plot_y),/NaN)) $
+;                : minimum < min( plot_y, /NaN )
+;        endif else begin
+;          yrmin = keyword_set(log) $
+;                ? 10.^(min(alog10(plot_y),/NaN)) $
+;                : min( plot_y, /NaN )
+;        endelse
+;        if( keyword_set(maximum) )then begin
+;          yrmax = keyword_set(log) $
+;            ? maximum < 10.^(max(alog10(plot_y),/NaN)) $
+;            : maximum < max( plot_y, /NaN )
+;        endif else begin
+;          yrmax = keyword_set(log) $
+;            ? 10.^(max(alog10(plot_y),/NaN)) $
+;            : max( plot_y, /NaN )
+;        endelse
+
+        if( arg_present( colorbar_min ) )then begin
+          yrmin = keyword_set(colorbar_stretch) $
+                ? colorbar_min < 10.^(min(alog10(plot_y),/NaN)) $
+                : colorbar_min < min( plot_y, /NaN )
+        endif else begin
+          yrmin = keyword_set(colorbar_stretch) $
+                ? 10.^(min(alog10(plot_y),/NaN))$
+                : min( plot_y,/NaN)
+        endelse
+        if( arg_present( colorbar_max ) )then begin
+          yrmax = keyword_set(colorbar_stretch) $
+            ? colorbar_max < 10.^(max(alog10(plot_y),/NaN)) $
+            : colorbar_max < max( plot_y, /NaN )
+        endif else begin
+          yrmax = keyword_set(colorbar_stretch) $
+            ? 10.^(max(alog10(plot_y),/NaN))$
+            : max( plot_y,/NaN)
+        endelse
+
         yr = [yrmin, yrmax]
         xr = [min(plot_x),max(plot_x)]
 
+        
 ; Now make the data log if requested
 ; ToDo: May need to use signum to preserve sign of data
 
-        if( keyword_set(log) )then begin
+        if( keyword_Set( colorbar_stretch ) )then begin
 ;
 ;  Possible hack: force all plot_y NaNs to the minimum plotted value 
 ;  so that the IDLgrPlot command correctly matches the number of plotted 
@@ -2036,7 +2073,7 @@ help,insitu1,plot_x
 ;
 ;  If log plots then we need to scale the log of the y-values
 ;
-        yc = keyword_set(log) $
+        yc = keyword_set(colorbar_stretch) $
            ? mg_linear_function(alog10(yr), [-1.9,-1.5]) $
            : mg_linear_function(yr, [-1.9,-1.5])
 
@@ -2746,6 +2783,7 @@ help,insitu1,plot_x
            colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, $
            colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
            colorbar_min:colorbar_min, colorbar_max:colorbar_max, $
+;           log:log, $
            colorbar_stretch:colorbar_stretch, $
            plot_model: plot_model, parameter_plot: parameter_plot, $
            plot_colors:plot_colors, parameter_yaxis:parameter_yaxis, $
