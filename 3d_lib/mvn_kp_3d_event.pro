@@ -15,154 +15,155 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
        RETURN
     ENDIF
   
-  
   case uname of 
-    'draw': begin
-              if (*pstate).camera_view eq 0 then begin
-                 ; rotate
-                translate = event.modifiers and 1
-                update = (*pstate).track->update(event, transform=rotTransform, translate=translate)
+    'draw':$
+       begin
+        if (*pstate).camera_view eq 0 then begin
+          ; rotate
+          translate = event.modifiers and 1
+          update = (*pstate).track->update(event, transform=rotTransform, $
+                                           translate=translate)
                               
-                if (update) then begin
-                  (*pstate).model->getProperty, transform=curTransform
-                  (*pstate).atmModel1->getproperty,transform=atmtrans1
-                  (*pstate).atmModel2->getproperty,transform=atmtrans2
-                  (*pstate).atmModel3->getproperty,transform=atmtrans3
-                  (*pstate).atmModel4->getproperty,transform=atmtrans4
-                  (*pstate).atmModel5->getproperty,transform=atmtrans5
-                  (*pstate).atmModel6->getproperty,transform=atmtrans6
-                  (*pstate).maven_model->getProperty, transform=mavTrans
-                  (*pstate).sub_solar_model->getProperty,transform=ssTrans
-                  (*pstate).sub_maven_model->getProperty,transform=smTrans
-                  (*pstate).sub_maven_model_mso->getProperty,transform=smTransMSO
-                  (*pstate).vector_model->getProperty,transform=vertTrans
-                  (*pstate).sun_model->getproperty,transform=SunTrans
-                  (*pstate).axesmodel_mso->getproperty,transform=xaxesTrans
-                  newTransform = curTransform # rotTransform
-                  newatmtrans1 = atmtrans1 # rotTransform
-                  newatmtrans2 = atmtrans2 # rotTransform
-                  newatmtrans3 = atmtrans3 # rotTransform
-                  newatmtrans4 = atmtrans4 # rotTransform
-                  newatmtrans5 = atmtrans5 # rotTransform
-                  newatmtrans6 = atmtrans6 # rotTransform
-                  newMavTrans = mavTrans # rotTransform
-                  newSsTrans = ssTrans # rotTransform
-                  newSmTrans = smTrans # rotTransform
-                  newSmTransMSO = smTransMSO # rotTransform
-                  newVertTrans = vertTrans # rotTransform
-                  newSunTrans = sunTrans # rotTransform
-                  newXaxes = xAxesTrans # rotTransform
-                  (*pstate).model->setProperty, transform=newTransform
-                  (*pstate).atmModel1->setProperty, transform=newatmtrans1
-                  (*pstate).atmModel2->setProperty, transform=newatmtrans2
-                  (*pstate).atmModel3->setProperty, transform=newatmtrans3
-                  (*pstate).atmModel4->setProperty, transform=newatmtrans4
-                  (*pstate).atmModel5->setProperty, transform=newatmtrans5
-                  (*pstate).atmModel6->setProperty, transform=newatmtrans6
-                  (*pstate).gridlines->setproperty, transform=newtransform
-                  (*pstate).orbit_model -> setProperty, transform=newTransform
-                  (*pstate).maven_model -> setProperty, transform=newMavTrans
-                  (*pstate).sub_solar_model->setProperty,transform=newSsTrans
-                  (*pstate).sub_maven_model->setProperty,transform=newSmTrans
-                  (*pstate).sub_maven_model_mso->setProperty,transform=newSmTransMSO
-                  (*pstate).vector_model->setProperty,transform=newVertTrans
-                  (*pstate).axesmodel -> setProperty, transform=newtransform
-                  (*pstate).sun_model ->setProperty, transform=newSunTrans
-                  (*pstate).axesmodel_mso->setProperty, transform=newXaxes
-                  if (*pstate).instrument_array[8] eq 1 then begin
-                    (*pstate).periapse_limb_model->getProperty,transform=periTrans
-                    newPeriTrans = periTrans # rotTransform
-                    (*pstate).periapse_limb_model ->setproperty, transform=newPeriTrans
-                  endif
-                  if (*pstate).instrument_array[10] eq 1 then begin
-                    (*pstate).corona_e_high_model->getProperty, transform=cEHtrans
-                    newCEHtrans = cEHtrans # rotTransform
-                    (*pstate).corona_e_high_model->setProperty, transform=newCEHtrans
-                  endif
-                  if (*pstate).instrument_array[11] eq 1 then begin
-                    (*pstate).corona_e_disk_model->getproperty, transform=cEDtrans
-                    newcEDtrans = cEDtrans # rotTransform
-                    (*pstate).corona_e_disk_model->setproperty, transform=newcEDtrans
-                  endif
-                  if (*pstate).instrument_array[13] eq 1 then begin
-                    (*pstate).corona_lo_high_model->getProperty, transform=cLHtrans
-                    newCLHtrans = cLHtrans # rotTransform
-                    (*pstate).corona_lo_high_model->setproperty, transform=newCLHtrans
-                  endif
-                  if (*pstate).instrument_array[14] eq 1 then begin
-                    (*pstate).corona_lo_limb_model->getProperty, transform=cLLtrans
-                    newCLLtrans = cLLtrans # rotTransform
-                    (*pstate).corona_lo_limb_model->setproperty, transform=newCLLtrans
-                  endif
-                  if (*pstate).instrument_array[15] eq 1 then begin
-                    (*pstate).corona_e_limb_model->getProperty, transform=cELtrans
-                    newCELtrans = cELtrans # rotTransform
-                    (*pstate).corona_e_limb_model->setproperty, transform=newCELtrans
-                  endif
-                  if (*pstate).instrument_array[16] eq 1 then begin
-                    (*pstate).corona_lo_disk_model->getProperty, transform=cLDTrans
-                    newcLDTrans = cLDTrans # rotTransform
-                    (*pstate).corona_lo_disk_model->setProperty, transform=newcLDTrans
-                  endif
-                  (*pstate).maven_location = (*pstate).maven_location#rotTransform
-                  (*pstate).z_position = (*pstate).z_position#rotTransform
-                  
-                  (*pstate).window->draw, (*pstate).view          
-                endif
-             endif       ;end of camera view check     
-                ; scale
-                if (event.type eq 7) then begin
-                  s = 1.07 ^ event.clicks
+          if (update) then begin
+            (*pstate).model->getProperty, transform=curTransform
+            (*pstate).atmModel1->getproperty,transform=atmtrans1
+            (*pstate).atmModel2->getproperty,transform=atmtrans2
+            (*pstate).atmModel3->getproperty,transform=atmtrans3
+            (*pstate).atmModel4->getproperty,transform=atmtrans4
+            (*pstate).atmModel5->getproperty,transform=atmtrans5
+            (*pstate).atmModel6->getproperty,transform=atmtrans6
+            (*pstate).maven_model->getProperty, transform=mavTrans
+            (*pstate).sub_solar_model->getProperty,transform=ssTrans
+            (*pstate).sub_maven_model->getProperty,transform=smTrans
+            (*pstate).sub_maven_model_mso->getProperty,transform=smTransMSO
+            (*pstate).vector_model->getProperty,transform=vertTrans
+            (*pstate).sun_model->getproperty,transform=SunTrans
+            (*pstate).axesmodel_mso->getproperty,transform=xaxesTrans
+            newTransform = curTransform # rotTransform
+            newatmtrans1 = atmtrans1 # rotTransform
+            newatmtrans2 = atmtrans2 # rotTransform
+            newatmtrans3 = atmtrans3 # rotTransform
+            newatmtrans4 = atmtrans4 # rotTransform
+            newatmtrans5 = atmtrans5 # rotTransform
+            newatmtrans6 = atmtrans6 # rotTransform
+            newMavTrans = mavTrans # rotTransform
+            newSsTrans = ssTrans # rotTransform
+            newSmTrans = smTrans # rotTransform
+            newSmTransMSO = smTransMSO # rotTransform
+            newVertTrans = vertTrans # rotTransform
+            newSunTrans = sunTrans # rotTransform
+            newXaxes = xAxesTrans # rotTransform
+            (*pstate).model->setProperty, transform=newTransform
+            (*pstate).atmModel1->setProperty, transform=newatmtrans1
+            (*pstate).atmModel2->setProperty, transform=newatmtrans2
+            (*pstate).atmModel3->setProperty, transform=newatmtrans3
+            (*pstate).atmModel4->setProperty, transform=newatmtrans4
+            (*pstate).atmModel5->setProperty, transform=newatmtrans5
+            (*pstate).atmModel6->setProperty, transform=newatmtrans6
+            (*pstate).gridlines->setproperty, transform=newtransform
+            (*pstate).orbit_model -> setProperty, transform=newTransform
+            (*pstate).maven_model -> setProperty, transform=newMavTrans
+            (*pstate).sub_solar_model->setProperty,transform=newSsTrans
+            (*pstate).sub_maven_model->setProperty,transform=newSmTrans
+            (*pstate).sub_maven_model_mso->setProperty,transform=newSmTransMSO
+            (*pstate).vector_model->setProperty,transform=newVertTrans
+            (*pstate).axesmodel -> setProperty, transform=newtransform
+            (*pstate).sun_model ->setProperty, transform=newSunTrans
+            (*pstate).axesmodel_mso->setProperty, transform=newXaxes
+            if (*pstate).instrument_array[8] eq 1 then begin
+              (*pstate).periapse_limb_model->getProperty,transform=periTrans
+              newPeriTrans = periTrans # rotTransform
+              (*pstate).periapse_limb_model->setproperty, transform=newPeriTrans
+            endif
+            if (*pstate).instrument_array[10] eq 1 then begin
+              (*pstate).corona_e_high_model->getProperty, transform=cEHtrans
+              newCEHtrans = cEHtrans # rotTransform
+              (*pstate).corona_e_high_model->setProperty, transform=newCEHtrans
+            endif
+            if (*pstate).instrument_array[11] eq 1 then begin
+              (*pstate).corona_e_disk_model->getproperty, transform=cEDtrans
+              newcEDtrans = cEDtrans # rotTransform
+              (*pstate).corona_e_disk_model->setproperty, transform=newcEDtrans
+            endif
+            if (*pstate).instrument_array[13] eq 1 then begin
+              (*pstate).corona_lo_high_model->getProperty, transform=cLHtrans
+              newCLHtrans = cLHtrans # rotTransform
+              (*pstate).corona_lo_high_model->setproperty, transform=newCLHtrans
+            endif
+            if (*pstate).instrument_array[14] eq 1 then begin
+              (*pstate).corona_lo_limb_model->getProperty, transform=cLLtrans
+              newCLLtrans = cLLtrans # rotTransform
+              (*pstate).corona_lo_limb_model->setproperty, transform=newCLLtrans
+            endif
+            if (*pstate).instrument_array[15] eq 1 then begin
+              (*pstate).corona_e_limb_model->getProperty, transform=cELtrans
+              newCELtrans = cELtrans # rotTransform
+              (*pstate).corona_e_limb_model->setproperty, transform=newCELtrans
+            endif
+            if (*pstate).instrument_array[16] eq 1 then begin
+              (*pstate).corona_lo_disk_model->getProperty, transform=cLDTrans
+              newcLDTrans = cLDTrans # rotTransform
+              (*pstate).corona_lo_disk_model->setProperty, transform=newcLDTrans
+            endif
+            (*pstate).maven_location = (*pstate).maven_location#rotTransform
+            (*pstate).z_position = (*pstate).z_position#rotTransform
+   
+            (*pstate).window->draw, (*pstate).view          
+          endif
+        endif       ;end of camera view check     
+        ; scale
+        if (event.type eq 7) then begin
+          s = 1.07 ^ event.clicks
               
-                  if (((*pstate).z_position(3) ge 0.25) and ((*pstate).z_position(3) le 10.0)) $
-                    or (((*pstate).z_position(3) le 0.25) and (s ge 1.0)) $
-                    or (((*pstate).z_position(3) ge 10.0) and (s le 1.0)) then begin
+          if( ( ( (*pstate).z_position(3) ge 0.25 ) and $
+                ( (*pstate).z_position(3) le 10.0 ) ) or $
+              ( ( (*pstate).z_position(3) le 0.25) and (s ge 1.0) ) or $
+              ( ( (*pstate).z_position(3) ge 10.0) and (s le 1.0) ) )then begin
                     
-                    (*pstate).model->scale, s, s, s
-                    (*pstate).atmModel1->scale,s,s,s
-                    (*pstate).atmModel2->scale,s,s,s
-                    (*pstate).atmModel3->scale,s,s,s
-                    (*pstate).atmModel4->scale,s,s,s
-                    (*pstate).atmModel5->scale,s,s,s
-                    (*pstate).atmModel6->scale,s,s,s
-                    (*pstate).gridlines->scale,s,s,s
-                    (*pstate).orbit_model->scale,s,s,s
-                    (*pstate).maven_model->scale,s,s,s
-                    (*pstate).sub_solar_model->scale,s,s,s
-                    (*pstate).sub_maven_model->scale,s,s,s
-                    (*pstate).sub_maven_model_mso->scale,s,s,s
-                    (*pstate).axesmodel->scale,s,s,s
-                    (*pstate).vector_model->scale,s,s,s
-                    (*pstate).sun_model -> scale,s,s,s
-                    (*pstate).axesmodel_mso->scale, s,s,s
-                    if (*pstate).instrument_array[8] eq 1 then begin
-                      (*pstate).periapse_limb_model->scale,s,s,s
-                    endif
-                    if (*pstate).instrument_array[10] eq 1 then begin
-                      (*pstate).corona_e_high_model->scale,s,s,s
-                    endif
-                    if (*pstate).instrument_array[11] eq 1 then begin
-                      (*pstate).corona_e_disk_model->scale, s,s,s
-                    endif
-                    if (*pstate).instrument_array[13] eq 1 then begin
-                      (*pstate).corona_lo_high_model->scale, s,s,s
-                    endif
-                    if (*pstate).instrument_array[14] eq 1 then begin
-                      (*pstate).corona_lo_limb_model->scale, s,s,s
-                    endif
-                    if (*pstate).instrument_array[15] eq 1 then begin
-                      (*pstate).corona_e_limb_model->scale, s,s,s
-                    endif
-                    if (*pstate).instrument_array[16] eq 1 then begin
-                      (*pstate).corona_lo_disk_model->scale, s,s,s
-                    endif
-                    (*pstate).maven_location = (*pstate).maven_location*s
-                    (*pstate).z_position = (*pstate).z_position*s
-                    (*pstate).window->draw, (*pstate).view       
-                  endif 
-                endif       
-           
-            end
+            (*pstate).model->scale, s, s, s
+            (*pstate).atmModel1->scale,s,s,s
+            (*pstate).atmModel2->scale,s,s,s
+            (*pstate).atmModel3->scale,s,s,s
+            (*pstate).atmModel4->scale,s,s,s
+            (*pstate).atmModel5->scale,s,s,s
+            (*pstate).atmModel6->scale,s,s,s
+            (*pstate).gridlines->scale,s,s,s
+            (*pstate).orbit_model->scale,s,s,s
+            (*pstate).maven_model->scale,s,s,s
+            (*pstate).sub_solar_model->scale,s,s,s
+            (*pstate).sub_maven_model->scale,s,s,s
+            (*pstate).sub_maven_model_mso->scale,s,s,s
+            (*pstate).axesmodel->scale,s,s,s
+            (*pstate).vector_model->scale,s,s,s
+            (*pstate).sun_model -> scale,s,s,s
+            (*pstate).axesmodel_mso->scale, s,s,s
+            if (*pstate).instrument_array[8] eq 1 then begin
+              (*pstate).periapse_limb_model->scale,s,s,s
+            endif
+            if (*pstate).instrument_array[10] eq 1 then begin
+              (*pstate).corona_e_high_model->scale,s,s,s
+            endif
+            if (*pstate).instrument_array[11] eq 1 then begin
+              (*pstate).corona_e_disk_model->scale, s,s,s
+            endif
+            if (*pstate).instrument_array[13] eq 1 then begin
+              (*pstate).corona_lo_high_model->scale, s,s,s
+            endif
+            if (*pstate).instrument_array[14] eq 1 then begin
+              (*pstate).corona_lo_limb_model->scale, s,s,s
+            endif
+            if (*pstate).instrument_array[15] eq 1 then begin
+              (*pstate).corona_e_limb_model->scale, s,s,s
+            endif
+            if (*pstate).instrument_array[16] eq 1 then begin
+              (*pstate).corona_lo_disk_model->scale, s,s,s
+            endif
+            (*pstate).maven_location = (*pstate).maven_location*s
+            (*pstate).z_position = (*pstate).z_position*s
+            (*pstate).window->draw, (*pstate).view       
+          endif ; multi-tiered conditional
+        endif   ; event type eq 7
+       end      ; end case 'draw'
  
     'mars': begin
               widget_control, (*pstate).subbaseR1, map=0
@@ -181,1133 +182,931 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       widget_control, (*pstate).subbaseR9, map=0
                       widget_control, (*pstate).subbaseR1, map=1
                     end
-     'time': begin
-                widget_control, event.id, get_value=newval
+     'time':$
+       begin
+         widget_control, event.id, get_value=newval
                
-                ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
-                  t = min(abs(((*pstate).insitu.time - newval)),t_index)
+         ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
+         t = min(abs(((*pstate).insitu.time - newval)),t_index)
 
-     ;             data = *(*pstate).orbit_path.data
-                  (*pstate).orbit_path -> getproperty, data=data
-                  (*pstate).orbit_model->GetProperty,transform=curtrans
-                  cur_x = data[0,(*pstate).time_index*2]
-                  cur_y = data[1,(*pstate).time_index*2]
-                  cur_z = data[2,(*pstate).time_index*2]
-                  new = fltarr(1,3)
-                  new[0,0] = data[0,t_index*2]-cur_x
-                  new[0,1] = data[1,t_index*2]-cur_y
-                  new[0,2] = data[2,t_index*2]-cur_z
-                  delta = new # curtrans[0:2,0:2]
-                  (*pstate).maven_model -> translate, delta[0],delta[1],delta[2]
-                  (*pstate).maven_location[0] = (*pstate).maven_location[0]+delta[0]
-                  (*pstate).maven_location[1] = (*pstate).maven_location[1]+delta[1]
-                  (*pstate).maven_location[2] = (*pstate).maven_location[2]+delta[2]
+     ;    data = *(*pstate).orbit_path.data
+         (*pstate).orbit_path -> getproperty, data=data
+         (*pstate).orbit_model->GetProperty,transform=curtrans
+         cur_x = data[0,(*pstate).time_index*2]
+         cur_y = data[1,(*pstate).time_index*2]
+         cur_z = data[2,(*pstate).time_index*2]
+         new = fltarr(1,3)
+         new[0,0] = data[0,t_index*2]-cur_x
+         new[0,1] = data[1,t_index*2]-cur_y
+         new[0,2] = data[2,t_index*2]-cur_z
+         delta = new # curtrans[0:2,0:2]
+         (*pstate).maven_model -> translate, delta[0],delta[1],delta[2]
+         (*pstate).maven_location[0] = (*pstate).maven_location[0]+delta[0]
+         (*pstate).maven_location[1] = (*pstate).maven_location[1]+delta[1]
+         (*pstate).maven_location[2] = (*pstate).maven_location[2]+delta[2]
                   
-                ;UPDATE THE PARAMETERS ON SCREEN
-                  (*pstate).paratext1->setProperty,strings='Distance to Sun:'+strtrim(string((*pstate).insitu(t_index).spacecraft.mars_sun_distance),2)+' AU'
-                  (*pstate).paratext2->setProperty,strings='Mars Season:'+strtrim(string((*pstate).insitu(t_index).spacecraft.mars_season),2)
-                  (*pstate).paratext3->setProperty,strings='MAVEN Altitude:'+strtrim(string((*pstate).insitu(t_index).spacecraft.altitude),2)
-                  (*pstate).paratext4->setProperty,strings='Solar Zenith Angle:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sza),2)
-                  (*pstate).paratext5->setProperty,strings='Local Time:'+strtrim(string((*pstate).insitu(t_index).spacecraft.local_time),2)
-                  (*pstate).paratext6->setProperty,strings='SubMaven Lat:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sub_sc_latitude),2)
-                  (*pstate).paratext7->setProperty,strings='SubMaven Lon:'+strtrim(string((*pstate).insitu(t_index).spacecraft.sub_sc_longitude),2)
-                  (*pstate).timetext->setProperty,strings=time_string(newval,format=0)
-                  (*pstate).plottext1->getproperty,strings=temp_string
-                  if temp_string ne '' then begin
-                    (*pstate).plottext2->setProperty, strings = strtrim(string((*pstate).insitu(t_index).((*pstate).level0_index).((*pstate).level1_index)),2)
-                  endif
-                  
-                ;MOVE THE SUN'S LIGHT SOURCE TO THE PROPER LOCATION
-                if (*pstate).coord_sys eq 0 then begin        ;GEO COORDINATE SYSTEM
-                  (*pstate).dirlight->setProperty,location=[(*pstate).solar_x_coord(t_index),(*pstate).solar_y_coord(t_index),(*pstate).solar_z_coord(t_index)]
-                ;UPDATE THE SUBSOLAR POINT
-                 (*pstate).sub_solar_line->setProperty,data=[(*pstate).subsolar_x_coord[t_index],(*pstate).subsolar_y_coord[t_index],(*pstate).subsolar_z_coord[t_index]]
-                ;UPDATE THE SUBMAVEN POINT  
-                 (*pstate).sub_maven_line->setProperty,data=[(*pstate).submaven_x_coord[t_index],(*pstate).submaven_y_coord[t_index],(*pstate).submaven_z_coord[t_index]]
-                ;UPDATE THE SUN VECTOR
-                  (*pstate).sun_vector -> getproperty, data=data1
-                  data1[0,1] = (*pstate).solar_x_coord(t_index)
-                  data1[1,1] = (*pstate).solar_y_coord(t_index)
-                  data1[2,1] = (*pstate).solar_z_coord(t_index)
-                  (*pstate).sun_vector->setProperty,data=data1
-                ;UPDATE THE MSO AXES, EVEN THOUGH THEY'RE HIDDEN
-                  lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
-                  lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
-                  (*pstate).axesModel_mso->rotate, [0,0,1], lon2-lon1
-      
-                endif else begin                              ;MSO COORDINATE DISPLAY
-                  lon1 = (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude 
-                  lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
-
-                  (*pstate).sub_maven_line_mso->setproperty,data=[(*pstate).submaven_x_coord_mso[t_index],(*pstate).submaven_y_coord_mso[t_index],(*pstate).submaven_z_coord_mso[t_index]]
-                  (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
-                  (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
-                endelse
-                
-      
-                
-                ;UPDATE THE TERMINATOR LOCATION
-                
+         ;UPDATE THE PARAMETERS ON SCREEN
+         (*pstate).paratext1->setProperty,$
+          strings='Distance to Sun:'$
+                 +strtrim(string((*pstate).insitu(t_index).spacecraft.$
+                                           mars_sun_distance),2)+' AU'
+         (*pstate).paratext2->setProperty,$
+          strings='Mars Season:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.mars_season),2)
+         (*pstate).paratext3->setProperty,$
+          strings='MAVEN Altitude:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.altitude),2)
+         (*pstate).paratext4->setProperty,$
+          strings='Solar Zenith Angle:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.sza),2)
+         (*pstate).paratext5->setProperty,$
+          strings='Local Time:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.local_time),2)
+         (*pstate).paratext6->setProperty,$
+          strings='SubMaven Lat:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.sub_sc_latitude),2)
+         (*pstate).paratext7->setProperty,$
+          strings='SubMaven Lon:'$
+                 +strtrim(string((*pstate).insitu(t_index)$
+                                          .spacecraft.sub_sc_longitude),2)
+         (*pstate).timetext->setProperty,$
+          strings=time_string(newval,format=0)
+         (*pstate).plottext1->getproperty,strings=temp_string
+         if temp_string ne '' then begin
+           temp_string = strtrim( string( (*pstate).insitu(t_index)$
+                                                   .((*pstate).level0_index)$
+                                                   .((*pstate).level1_index)),2)
+           (*pstate).plottext2->setProperty, strings = temp_string
  
-
+         endif
                   
-                ;UPDATE THE PARAMETER PLOT COLORS
-                 (*pstate).parameter_plot->getproperty,vert_colors=colors
+         ;MOVE THE SUN'S LIGHT SOURCE TO THE PROPER LOCATION
+         if (*pstate).coord_sys eq 0 then begin        ;GEO COORDINATE SYSTEM
+           (*pstate).dirlight->setProperty,$
+              location=[(*pstate).solar_x_coord(t_index),$
+                        (*pstate).solar_y_coord(t_index),$
+                        (*pstate).solar_z_coord(t_index)]
+           ;UPDATE THE SUBSOLAR POINT
+           (*pstate).sub_solar_line->setProperty,$
+              data=[(*pstate).subsolar_x_coord[t_index],$
+                    (*pstate).subsolar_y_coord[t_index],$
+                    (*pstate).subsolar_z_coord[t_index]]
+           ;UPDATE THE SUBMAVEN POINT  
+           (*pstate).sub_maven_line->setProperty,$
+              data=[(*pstate).submaven_x_coord[t_index],$
+                    (*pstate).submaven_y_coord[t_index],$
+                    (*pstate).submaven_z_coord[t_index]]
+           ;UPDATE THE SUN VECTOR
+           (*pstate).sun_vector -> getproperty, data=data1
+           data1[0,1] = (*pstate).solar_x_coord(t_index)
+           data1[1,1] = (*pstate).solar_y_coord(t_index)
+           data1[2,1] = (*pstate).solar_z_coord(t_index)
+           (*pstate).sun_vector->setProperty,data=data1
+           ;UPDATE THE MSO AXES, EVEN THOUGH THEY'RE HIDDEN
+           lon1 = (*pstate).insitu(t_index).spacecraft.$
+                            subsolar_point_geo_longitude 
+           lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.$
+                            subsolar_point_geo_longitude
+           (*pstate).axesModel_mso->rotate, [0,0,1], lon2-lon1
+      
+         endif else begin  ;MSO COORDINATE DISPLAY
+           lon1 = (*pstate).insitu(t_index).spacecraft.$
+                            subsolar_point_geo_longitude 
+           lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.$
+                            subsolar_point_geo_longitude
+
+           (*pstate).sub_maven_line_mso->setproperty,$
+              data=[(*pstate).submaven_x_coord_mso[t_index],$
+                    (*pstate).submaven_y_coord_mso[t_index],$
+                    (*pstate).submaven_z_coord_mso[t_index]]
+           (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
+           (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
+         endelse
+                
+                
+       ;UPDATE THE TERMINATOR LOCATION
+
+         ;UPDATE THE PARAMETER PLOT COLORS
+         (*pstate).parameter_plot->getproperty,vert_colors=colors
                  
-                 for i=0,n_elements(colors[0,*])-1 do begin
-                  if i lt t_index then begin
-                    colors[*,i] = (*pstate).parameter_plot_before_color
-                  endif else begin
-                    colors[*,i] = (*pstate).parameter_plot_after_color
-                  endelse
-                 endfor
+         for i=0,n_elements(colors[0,*])-1 do begin
+           if i lt t_index then begin
+             colors[*,i] = (*pstate).parameter_plot_before_color
+           endif else begin
+             colors[*,i] = (*pstate).parameter_plot_after_color
+           endelse
+         endfor
         
-                 (*pstate).parameter_plot->setproperty,vert_colors=colors 
+         (*pstate).parameter_plot->setproperty,vert_colors=colors 
                   
-                 if (*pstate).instrument_array[8] eq 1 then begin
-   ;               ;UPDATE THE IUVS PERIAPSE ALTITUDE PLOT
-                   MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, (*pstate).insitu[t_index].time, peri_data, (*pstate).periapse_limb_scan, xlabel
-                   (*pstate).alt_xaxis_title->setproperty,strings=xlabel
-                   (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
-                   (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
-                   (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
-                   (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
-                   xc = mg_linear_function(xr, [-1.75,-1.5])
-                   yc = mg_linear_function(yr, [-1.3,1.0])
-                   (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                   (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
-                 endif
+         if (*pstate).instrument_array[8] eq 1 then begin
+         ;UPDATE THE IUVS PERIAPSE ALTITUDE PLOT
+           MVN_KP_3D_CURRENT_PERIAPSE, (*pstate).iuvs.periapse, $
+                  (*pstate).insitu[t_index].time, peri_data, $
+                  (*pstate).periapse_limb_scan, xlabel
+           (*pstate).alt_xaxis_title->setproperty,strings=xlabel
+           (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
+           (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
+           (*pstate).alt_plot->setproperty,$
+              xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+           (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
+           xc = mg_linear_function(xr, [-1.75,-1.5])
+           yc = mg_linear_function(yr, [-1.3,1.0])
+           (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
+           (*pstate).alt_xaxis_ticks->setproperty,$
+           strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])],$
+                                  format='(E8.2)'),2)       
+         endif
                   
-                 (*pstate).time_index = t_index 
+         (*pstate).time_index = t_index 
                   
-                 ;IF THE SCENE IS SPACECRAFT LOCKED, ROTATE EVERYTHING TO KEEP MAVEN CENTERED
-                 if (*pstate).camera_view eq 1 then begin
+;IF THE SCENE IS SPACECRAFT LOCKED, ROTATE EVERYTHING TO KEEP MAVEN CENTERED
+         if (*pstate).camera_view eq 1 then begin
 
-                     v1 = [0.0,0.0,1.0]
-                     v2 = (*pstate).maven_location[0:2]
+           v1 = [0.0,0.0,1.0]
+           v2 = (*pstate).maven_location[0:2]
 
-                     axis = crossp(v1,v2)
-                     angle = acos( transpose(v1)#v2 / sqrt(total(v1^2)) / sqrt(total(v2^2)) ) * 180./!pi 
-      ;              print,axis
-      ;              print,angle
-                     ;rotate everything around to the right location
-                      (*pstate).maven_model->rotate,axis,-angle
-                      (*pstate).model->rotate,axis,-angle
-                      (*pstate).atmModel1->rotate,axis,-angle
-                      (*pstate).atmModel2->rotate,axis,-angle
-                      (*pstate).atmModel3->rotate,axis,-angle
-                      (*pstate).atmModel4->rotate,axis,-angle
-                      (*pstate).atmModel5->rotate,axis,-angle
-                      (*pstate).atmModel6->rotate,axis,-angle
-                      (*pstate).gridlines -> rotate,axis,-angle
-                      (*pstate).orbit_model -> rotate,axis,-angle
-                      (*pstate).sub_solar_model->rotate,axis,-angle
-                      (*pstate).sub_maven_model->rotate,axis,-angle
-                      (*pstate).vector_model->rotate,axis,-angle
-                      (*pstate).axesmodel -> rotate,axis,-angle
-                      if (*pstate).instrument_array[8] eq 1 then begin
-                        (*pstate).periapse_limb_model ->rotate,axis,-angle
-                      endif;;
+           axis = crossp(v1,v2)
+           angle = acos( transpose(v1)#v2 $
+                       / ( sqrt(total(v1^2)) * sqrt(total(v2^2)) ) $
+                       ) * !radeg 
+      ;    print,axis
+      ;    print,angle
+           ;rotate everything around to the right location
+           (*pstate).maven_model->rotate,axis,-angle
+           (*pstate).model->rotate,axis,-angle
+           (*pstate).atmModel1->rotate,axis,-angle
+           (*pstate).atmModel2->rotate,axis,-angle
+           (*pstate).atmModel3->rotate,axis,-angle
+           (*pstate).atmModel4->rotate,axis,-angle
+           (*pstate).atmModel5->rotate,axis,-angle
+           (*pstate).atmModel6->rotate,axis,-angle
+           (*pstate).gridlines -> rotate,axis,-angle
+           (*pstate).orbit_model -> rotate,axis,-angle
+           (*pstate).sub_solar_model->rotate,axis,-angle
+           (*pstate).sub_maven_model->rotate,axis,-angle
+           (*pstate).vector_model->rotate,axis,-angle
+           (*pstate).axesmodel -> rotate,axis,-angle
+           if (*pstate).instrument_array[8] eq 1 then begin
+             (*pstate).periapse_limb_model ->rotate,axis,-angle
+           endif
 ;
-;                      ;update the maven location 
-                     (*pstate).maven_location[0:2] = [0.0,0.0,1.0]
-                 endif 
+           ;update the maven location 
+           (*pstate).maven_location[0:2] = [0.0,0.0,1.0]
+         endif 
               
-                 ;IF APOAPSE IMAGES ARE DISPLAYED AS A SINGLE FRAME (APOPAPSE_BLEND = 0) THEN UPDATE
-                 if (*pstate).instrument_array[9] eq 1 then begin
-                   if (*pstate).apoapse_blend eq 0 then begin
-                    if (*pstate).mars_base_map eq 'apoapse' then begin
-                      image = bytarr(3,90,45)
-                      time = (*pstate).insitu[(*pstate).time_index].time_string
-                      case (*pstate).apoapse_image_choice of 
-                                'Ozone Depth': MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.ozone_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                'Dust Depth' : MVN_KP_3D_APOAPSE_IMAGES, (*pstate).iuvs.apoapse.dust_depth, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                'Radiance Map: H': begin
-                                                      sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
-                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                      for i=0,sizes(4)-1 do begin
-                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[0,*,*]
-                                                      endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                                   end
-                                'Radiance Map: O_1304': begin
-                                                            sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
-                                                            input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                            for i=0,sizes(4)-1 do begin
-                                                              input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[1,*,*]
-                                                            endfor
-                                                            MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                                         end  
-                                'Radiance Map: CO': begin
-                                                      sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
-                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                      for i=0,sizes(4)-1 do begin
-                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[2,*,*]
-                                                      endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                                   end
-                                'Radiance Map: NO': begin
-                                                      sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
-                                                      input_data = fltarr(sizes(2),sizes(3),sizes(4))
-                                                      for i=0,sizes(4)-1 do begin
-                                                        input_data[*,*,i] = (*pstate).iuvs[i].apoapse.radiance[3,*,*]
-                                                      endfor
-                                                      MVN_KP_3D_APOAPSE_IMAGES, input_data, image, (*pstate).apoapse_blend, time, (*pstate).iuvs.apoapse.time_start, (*pstate).iuvs.apoapse.time_stop, (*pstate).apo_time_blend
-                                                   end
-                              endcase                           
-                      oImage = OBJ_NEW('IDLgrImage', image )
-                      (*pstate).opolygons -> setproperty, texture_map=oimage
-                     endif  
-                   endif
-                 endif
-                  
-                  
-                ;FINALLY, REDRAW THE SCENE  
+;IF APOAPSE IMAGES ARE DISPLAYED AS A SINGLE FRAME 
+;(APOPAPSE_BLEND = 0) THEN UPDATE
+         if (*pstate).instrument_array[9] eq 1 then begin
+           if (*pstate).apoapse_blend eq 0 then begin
+             if (*pstate).mars_base_map eq 'apoapse' then begin
+               image = bytarr(3,90,45)
+               time = (*pstate).insitu[(*pstate).time_index].time_string
+               case (*pstate).apoapse_image_choice of 
+                 'Ozone Depth': $
+                   MVN_KP_3D_APOAPSE_IMAGES, $
+                     (*pstate).iuvs.apoapse.ozone_depth, image, $
+                     (*pstate).apoapse_blend, time, $
+                     (*pstate).iuvs.apoapse.time_start, $
+                     (*pstate).iuvs.apoapse.time_stop, $
+                     (*pstate).apo_time_blend
+                 'Dust Depth' : $
+                   MVN_KP_3D_APOAPSE_IMAGES, $
+                     (*pstate).iuvs.apoapse.dust_depth, image, $
+                     (*pstate).apoapse_blend, time, $
+                     (*pstate).iuvs.apoapse.time_start, $
+                     (*pstate).iuvs.apoapse.time_stop, $
+                     (*pstate).apo_time_blend
+                 'Radiance Map: H': $
+                  begin
+                    sizes = size((*pstate).iuvs.apoapse.radiance[0,*,*])
+                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                    for i=0,sizes(4)-1 do begin
+                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.$
+                                                    radiance[0,*,*]
+                    endfor
+                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, $
+                      (*pstate).apoapse_blend, time, $
+                      (*pstate).iuvs.apoapse.time_start, $
+                      (*pstate).iuvs.apoapse.time_stop, $
+                      (*pstate).apo_time_blend
+                  end
+                 'Radiance Map: O_1304': $
+                  begin
+                    sizes = size((*pstate).iuvs.apoapse.radiance[1,*,*])
+                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                    for i=0,sizes(4)-1 do begin
+                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.$
+                                                    radiance[1,*,*]
+                    endfor
+                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, $
+                      (*pstate).apoapse_blend, time, $
+                      (*pstate).iuvs.apoapse.time_start, $
+                      (*pstate).iuvs.apoapse.time_stop, $
+                      (*pstate).apo_time_blend
+                  end  
+                 'Radiance Map: CO': $
+                  begin
+                    sizes = size((*pstate).iuvs.apoapse.radiance[2,*,*])
+                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                    for i=0,sizes(4)-1 do begin
+                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.$
+                                                    radiance[2,*,*]
+                    endfor
+                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, $
+                      (*pstate).apoapse_blend, time, $
+                      (*pstate).iuvs.apoapse.time_start, $
+                      (*pstate).iuvs.apoapse.time_stop, $
+                      (*pstate).apo_time_blend
+                  end
+                 'Radiance Map: NO': $
+                  begin
+                    sizes = size((*pstate).iuvs.apoapse.radiance[3,*,*])
+                    input_data = fltarr(sizes(2),sizes(3),sizes(4))
+                    for i=0,sizes(4)-1 do begin
+                      input_data[*,*,i] = (*pstate).iuvs[i].apoapse.$
+                                                    radiance[3,*,*]
+                    endfor
+                    MVN_KP_3D_APOAPSE_IMAGES, input_data, image, $
+                      (*pstate).apoapse_blend, time, $
+                      (*pstate).iuvs.apoapse.time_start, $
+                      (*pstate).iuvs.apoapse.time_stop, $
+                      (*pstate).apo_time_blend
+                  end
+               endcase                           
+               oImage = OBJ_NEW('IDLgrImage', image )
+               (*pstate).opolygons -> setproperty, texture_map=oimage
+             endif ; mars_base_map eq apoapse
+           endif   ; apoapse blend eq 0
+         endif     ; instrument_array[9] = 1
+
+       ;FINALLY, REDRAW THE SCENE  
            
-                (*pstate).window->draw, (*pstate).view
-             end                   
-                 
+         (*pstate).window->draw, (*pstate).view
+       end  ; 'time' case                 
+
      'timestep_define': begin
                           widget_control, event.id, get_value=newval
                           (*pstate).time_step_size = fix(newval)
                         end
-     'timeminusone': begin
-                        mvn_kp_3d_time_increment, (*pstate), -(*pstate).time_step_size
-                        (*pstate).window->draw, (*pstate).view
-                        widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
-                     end
-     'timeplusone':  begin
-                        mvn_kp_3d_time_increment, (*pstate), (*pstate).time_step_size
-                        (*pstate).window->draw, (*pstate).view
-                        widget_control,(*pstate).timeline,set_value=(*pstate).insitu[(*pstate).time_index].time
-                     end
+
+     'timeminusone': $
+      begin
+        mvn_kp_3d_time_increment, (*pstate), -(*pstate).time_step_size
+        (*pstate).window->draw, (*pstate).view
+        widget_control,(*pstate).timeline,$
+                       set_value=(*pstate).insitu[(*pstate).time_index].time
+      end
+
+     'timeplusone': $
+      begin
+        mvn_kp_3d_time_increment, (*pstate), (*pstate).time_step_size
+        (*pstate).window->draw, (*pstate).view
+        widget_control,(*pstate).timeline,$
+                        set_value=(*pstate).insitu[(*pstate).time_index].time
+      end
                  
-     'basemap1': begin
-              widget_control,event.id,get_value=newval
+     'basemap1': $
+      begin
+        widget_control,event.id,get_value=newval
               
-              case newval of 
-                'BLANK': begin
-                          ;START WITH A WHITE GLOBE
-                            image = bytarr(3,2048,1024)
-                            image[*,*,*] = 255
-                            oImage = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).mars_base_map = 'blank'
-                            (*pstate).opolygons -> setproperty, texture_map=oimage
-                            (*pstate).gridlines -> setProperty, hide=0
-                            (*pstate).window ->draw,(*pstate).view
-                        end
-                'MDIM': begin 
-                          read_jpeg,(*pstate).bm_install_directory+'MDIM_2500x1250.jpg',image
-                          oImage = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).mars_base_map = 'mdim'
-                          (*pstate).opolygons -> setproperty, texture_map=oimage
-                          (*pstate).window->draw, (*pstate).view 
-                        end
-                'MOLA': begin
-                          read_jpeg,(*pstate).bm_install_directory+'MOLA_color_2500x1250.jpg',image
-                          oImage = OBJ_NEW('IDLgrImage', image )
-                          (*pstate).mars_base_map = 'mola'
-                          (*pstate).opolygons -> setproperty, texture_map=oimage
-                          (*pstate).window->draw, (*pstate).view 
-                        end
-                'MOLA_BW': begin
-                             read_jpeg,(*pstate).bm_install_directory+'MOLA_BW_2500x1250.jpg',image
-                             oImage = OBJ_NEW('IDLgrImage', image )
-                             (*pstate).mars_base_map = 'mola_bw'
-                             (*pstate).opolygons -> setproperty, texture_map=oimage
-                             (*pstate).window->draw, (*pstate).view 
-                           end
-                'CRUSTAL MAG': begin
-                         read_jpeg,(*pstate).bm_install_directory+'MAG_Connerny_2005.jpg',image
-                         oImage = OBJ_NEW('IDLgrImage', image )
-                         (*pstate).mars_base_map = 'mag'
-                         (*pstate).opolygons -> setproperty, texture_map=oimage
-                         (*pstate).window->draw, (*pstate).view
-                       end
-                'User Defined': begin
-                                  input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.jpg')
-                                  if input_file ne '' then begin
-                                    read_jpeg,input_file,image
-                                    oImage = OBJ_NEW('IDLgrImage', image )
-                                    (*pstate).mars_base_map = 'user'
-                                    (*pstate).opolygons -> setproperty, texture_map=oimage
-                                    (*pstate).window->draw, (*pstate).view
-                                  endif
-                                end
+        case newval of 
+          'BLANK': $
+            begin
+              ;START WITH A WHITE GLOBE
+              image = bytarr(3,2048,1024)
+              image[*,*,*] = 255
+              oImage = OBJ_NEW('IDLgrImage', image )
+              (*pstate).mars_base_map = 'blank'
+              (*pstate).opolygons -> setproperty, texture_map=oimage
+              (*pstate).gridlines -> setProperty, hide=0
+              (*pstate).window ->draw,(*pstate).view
+            end
+          'MDIM': $
+            begin 
+              read_jpeg,(*pstate).bm_install_directory+'MDIM_2500x1250.jpg',$
+                        image
+              oImage = OBJ_NEW('IDLgrImage', image )
+              (*pstate).mars_base_map = 'mdim'
+              (*pstate).opolygons -> setproperty, texture_map=oimage
+              (*pstate).window->draw, (*pstate).view 
+            end
+          'MOLA': $
+            begin
+              read_jpeg,(*pstate).bm_install_directory $
+                        +'MOLA_color_2500x1250.jpg',image
+              oImage = OBJ_NEW('IDLgrImage', image )
+              (*pstate).mars_base_map = 'mola'
+              (*pstate).opolygons -> setproperty, texture_map=oimage
+              (*pstate).window->draw, (*pstate).view 
+            end
+          'MOLA_BW': $
+            begin
+              read_jpeg,(*pstate).bm_install_directory $
+                        +'MOLA_BW_2500x1250.jpg',image
+              oImage = OBJ_NEW('IDLgrImage', image )
+              (*pstate).mars_base_map = 'mola_bw'
+              (*pstate).opolygons -> setproperty, texture_map=oimage
+              (*pstate).window->draw, (*pstate).view 
+            end
+          'CRUSTAL MAG': $
+            begin
+              read_jpeg,(*pstate).bm_install_directory $
+                        +'MAG_Connerny_2005.jpg',image
+              oImage = OBJ_NEW('IDLgrImage', image )
+              (*pstate).mars_base_map = 'mag'
+              (*pstate).opolygons -> setproperty, texture_map=oimage
+              (*pstate).window->draw, (*pstate).view
+            end
+          'User Defined': $
+            begin
+              input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                           filter='*.jpg')
+              if input_file ne '' then begin
+                read_jpeg,input_file,image
+                oImage = OBJ_NEW('IDLgrImage', image )
+                (*pstate).mars_base_map = 'user'
+                (*pstate).opolygons -> setproperty, texture_map=oimage
+                (*pstate).window->draw, (*pstate).view
+              endif
+            end
               
-              endcase
-             end 
-       'grid': begin
-                (*pstate).gridlines.getProperty, HIDE=result
-                if result eq 1 then (*pstate).gridlines -> setProperty,hide=0
-                if result eq 0 then (*pstate).gridlines -> setProperty,hide=1
-                (*pstate).window -> draw, (*pstate).view
-               end
-               
-       'subsolar': begin
+        endcase
+      end ; 'basemap1' case of uname
 
-                    (*pstate).sub_solar_model.getProperty, HIDE=result
-                    if result eq 1 then (*pstate).sub_solar_model -> setProperty,hide=0
-                    if result eq 0 then (*pstate).sub_solar_model -> setProperty,hide=1
-                    (*pstate).window -> draw, (*pstate).view
-                   end
+     'grid': $
+      begin
+        (*pstate).gridlines.getProperty, HIDE=result
+        if result eq 1 then (*pstate).gridlines -> setProperty,hide=0
+        if result eq 0 then (*pstate).gridlines -> setProperty,hide=1
+        (*pstate).window -> draw, (*pstate).view
+      end
+               
+     'subsolar': $
+      begin
+        (*pstate).sub_solar_model.getProperty, HIDE=result
+        if result eq 1 then (*pstate).sub_solar_model -> setProperty,hide=0
+        if result eq 0 then (*pstate).sub_solar_model -> setProperty,hide=1
+        (*pstate).window -> draw, (*pstate).view
+      end
                   
-       'submaven': begin
-                    (*pstate).sub_maven_model.getProperty, HIDE=result
-                    if (*pstate).coord_sys eq 0 then begin
-                      if result eq 1 then (*pstate).sub_maven_model -> setProperty,hide=0
-                      if result eq 0 then (*pstate).sub_maven_model -> setProperty,hide=1
-                    endif 
-                    if (*pstate).coord_sys eq 1 then begin
-                      if result eq 1 then (*pstate).sub_maven_model_mso -> setProperty,hide=0
-                      if result eq 0 then (*pstate).sub_maven_model_mso -> setProperty,hide=1
-                    endif
-                    (*pstate).window -> draw, (*pstate).view
-                   end
+     'submaven': $
+      begin
+        (*pstate).sub_maven_model.getProperty, HIDE=result
+        if (*pstate).coord_sys eq 0 then begin
+          if result eq 1 then (*pstate).sub_maven_model->setProperty,hide=0
+          if result eq 0 then (*pstate).sub_maven_model->setProperty,hide=1
+        endif 
+        if (*pstate).coord_sys eq 1 then begin
+          if result eq 1 then (*pstate).sub_maven_model_mso->setProperty,hide=0
+          if result eq 0 then (*pstate).sub_maven_model_mso->setProperty,hide=1
+        endif
+        (*pstate).window -> draw, (*pstate).view
+      end
                
-       'terminator': begin
-                      t1 = dialog_message('Not yet implemented',/information)
-;                      (*pstate).terminator.getProperty, HIDE=result
-;                      if result eq 1 then (*pstate).terminator -> setProperty,hide=0
-;                      if result eq 0 then (*pstate).terminator -> setProperty,hide=1
-                      (*pstate).window -> draw, (*pstate).view
-                     end
+     'terminator': $
+      begin
+        t1 = dialog_message('Not yet implemented',/information)
+;        (*pstate).terminator.getProperty, HIDE=result
+;        if result eq 1 then (*pstate).terminator -> setProperty,hide=0
+;        if result eq 0 then (*pstate).terminator -> setProperty,hide=1
+        (*pstate).window -> draw, (*pstate).view
+      end
 
-       'sunvector': begin
-                      (*pstate).sun_model.getProperty, HIDE=result
-                      if result eq 1 then (*pstate).sun_model -> setProperty,hide=0
-                      if result eq 0 then (*pstate).sun_model -> setProperty,hide=1
-                      (*pstate).window -> draw, (*pstate).view
-                     end
+     'sunvector': $
+      begin
+        (*pstate).sun_model.getProperty, HIDE=result
+        if result eq 1 then (*pstate).sun_model -> setProperty,hide=0
+        if result eq 0 then (*pstate).sun_model -> setProperty,hide=1
+        (*pstate).window -> draw, (*pstate).view
+      end
 
-       'axes': begin
-                      if (*pstate).coord_sys eq 0 then begin
-                        (*pstate).axesmodel.getProperty, HIDE=result
-                        if result eq 1 then (*pstate).axesmodel -> setProperty,hide=0
-                        if result eq 0 then (*pstate).axesmodel -> setProperty,hide=1
-                      endif
-                      if (*pstate).coord_sys eq 1 then begin
-                        (*pstate).axesmodel_mso.getProperty, HIDE=result
-                        if result eq 1 then begin
-                          (*pstate).axesmodel_mso->setproperty,hide=0
-                        endif
-                        if result eq 0 then begin
-                          (*pstate).axesmodel_mso->setproperty,hide=1
-                        endif
-                      endif
-                      (*pstate).window -> draw, (*pstate).view
-                     end      
+     'axes': $
+      begin
+        if (*pstate).coord_sys eq 0 then begin
+          (*pstate).axesmodel.getProperty, HIDE=result
+          if result eq 1 then (*pstate).axesmodel -> setProperty,hide=0
+          if result eq 0 then (*pstate).axesmodel -> setProperty,hide=1
+        endif
+        if (*pstate).coord_sys eq 1 then begin
+          (*pstate).axesmodel_mso.getProperty, HIDE=result
+          if result eq 1 then (*pstate).axesmodel_mso->setproperty,hide=0
+          if result eq 0 then (*pstate).axesmodel_mso->setproperty,hide=1
+        endif
+        (*pstate).window -> draw, (*pstate).view
+      end      
 
-       'parameters': begin
-                      (*pstate).parameterModel.getProperty, HIDE=result
-                      if result eq 1 then (*pstate).parameterModel->setProperty,hide=0
-                      if result eq 0 then (*pstate).parameterModel->setProperty,hide=1
-                      (*pstate).window ->draw,(*pstate).view
-                     end          
+     'parameters': $
+      begin
+        (*pstate).parameterModel.getProperty, HIDE=result
+        if result eq 1 then (*pstate).parameterModel->setProperty,hide=0
+        if result eq 0 then (*pstate).parameterModel->setProperty,hide=1
+        (*pstate).window ->draw,(*pstate).view
+      end          
 
-       'background_color': begin
-                                widget_control, event.id, get_value=newval
-                                (*pstate).view->setProperty,color=newval
-                                (*pstate).window ->draw,(*pstate).view
-                           end
-       'ambient': begin
-                    widget_control,event.id, get_value=newval
-                    (*pstate).ambientlight->setProperty,intensity=newval/100.0
-                    (*pstate).window->draw,(*pstate).view
-                  end
-                            
-                            
-       'views': begin
-                  widget_control,(*pstate).subbaseR1, map=0
-                  widget_control,(*pstate).subbaseR3, map=1
-               end
+     'background_color': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).view->setProperty,color=newval
+        (*pstate).window ->draw,(*pstate).view
+      end
+
+     'ambient': $
+      begin
+        widget_control,event.id, get_value=newval
+        (*pstate).ambientlight->setProperty,intensity=newval/100.0
+        (*pstate).window->draw,(*pstate).view
+      end
+                       
+     'views': $
+      begin
+        widget_control,(*pstate).subbaseR1, map=0
+        widget_control,(*pstate).subbaseR3, map=1
+      end
        
-       'view_return': begin
-                    widget_control, (*pstate).subbaseR3, map=0
-                    widget_control, (*pstate).subbaseR1, map=1
-                   end
+     'view_return': $
+      begin
+        widget_control, (*pstate).subbaseR3, map=0
+        widget_control, (*pstate).subbaseR1, map=1
+      end
                
-       'models': begin
-                  widget_control,(*pstate).subbaseR1, map=0
-                  widget_control,(*pstate).subbaseR4, map=1
-                 end
+     'models': $
+      begin
+        widget_control,(*pstate).subbaseR1, map=0
+        widget_control,(*pstate).subbaseR4, map=1
+      end
 
-       'model_return': begin
-                    widget_control, (*pstate).subbaseR4, map=0
-                    widget_control, (*pstate).subbaseR1, map=1
-                   end
+     'model_return': $
+      begin
+        widget_control, (*pstate).subbaseR4, map=0
+        widget_control, (*pstate).subbaseR1, map=1
+      end
        
-       'atmLevel1': begin
-                      result = widget_info((*pstate).button41a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button41a, sensitive=1
-                        widget_control, (*pstate).button41b, sensitive=1
-                        widget_control, (*pstate).button41c, sensitive=1
-                          (*pstate).atmModel1 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button41a, sensitive=0
-                        widget_control, (*pstate).button41b, sensitive=0
-                        widget_control, (*pstate).button41c, sensitive=0
-                        (*pstate).atmModel1 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel1': $
+      begin
+        result = widget_info((*pstate).button41a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button41a, sensitive=1
+          widget_control, (*pstate).button41b, sensitive=1
+          widget_control, (*pstate).button41c, sensitive=1
+          (*pstate).atmModel1 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button41a, sensitive=0
+          widget_control, (*pstate).button41b, sensitive=0
+          widget_control, (*pstate).button41c, sensitive=0
+          (*pstate).atmModel1 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel1Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                           if input_file ne '' then begin
-                            read_png,input_file,image
-                            oImage1 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons1 -> setproperty, texture_map=oimage1
-                            (*pstate).opolygons1 -> setProperty, alpha_channel=((*pstate).atmLevel1alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                           endif
-                        end
+     'atmLevel1Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage1 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons1 -> setproperty, texture_map=oimage1
+          (*pstate).opolygons1 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel1alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel1alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel1alpha = newval
-                          (*pstate).opolygons1 -> setProperty, alpha_channel=((*pstate).atmLevel1alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end
+     'atmLevel1alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel1alpha = newval
+        (*pstate).opolygons1 -> setProperty, $
+                    alpha_channel=((*pstate).atmLevel1alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end
                          
-       'atmLevel1height': begin
-                            widget_control, event.id, get_value=newval
-                            (*pstate).atmModel1->GetProperty,transform=curtrans
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel1height))
-                            (*pstate).atmLevel1height=newval
-                            (*pstate).atmModel1->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end
+     'atmLevel1height': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmModel1->GetProperty,transform=curtrans
+        new_scale = (3396.+float(newval))$
+                  / (3396.+float((*pstate).atmLevel1height))
+        (*pstate).atmLevel1height=newval
+        (*pstate).atmModel1->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end
        
-       'atmLevel2': begin
-                      result = widget_info((*pstate).button42a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button42a, sensitive=1
-                        widget_control, (*pstate).button42b, sensitive=1
-                        widget_control, (*pstate).button42c, sensitive=1
-                          (*pstate).atmModel2 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button42a, sensitive=0
-                        widget_control, (*pstate).button42b, sensitive=0
-                        widget_control, (*pstate).button42c, sensitive=0
-                        (*pstate).atmModel2 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel2': $
+      begin
+        result = widget_info((*pstate).button42a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button42a, sensitive=1
+          widget_control, (*pstate).button42b, sensitive=1
+          widget_control, (*pstate).button42c, sensitive=1
+          (*pstate).atmModel2 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button42a, sensitive=0
+          widget_control, (*pstate).button42b, sensitive=0
+          widget_control, (*pstate).button42c, sensitive=0
+          (*pstate).atmModel2 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel2Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                          if input_file ne '' then begin
-                            read_png,input_file,image
-                            oImage2 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons2 -> setproperty, texture_map=oimage2
-                            (*pstate).opolygons2 -> setProperty, alpha_channel=((*pstate).atmLevel2alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                          endif
-                        end
+     'atmLevel2Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage2 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons2 -> setproperty, texture_map=oimage2
+          (*pstate).opolygons2 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel2alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel2alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel2alpha = newval
-                          (*pstate).opolygons2 -> setProperty, alpha_channel=((*pstate).atmLevel2alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end    
+     'atmLevel2alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel2alpha = newval
+        (*pstate).opolygons2 -> setProperty, $
+                    alpha_channel=((*pstate).atmLevel2alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end    
                          
-       'atmLevel2height': begin
-                            widget_control, event.id, get_value=newval
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel2height))
-                            (*pstate).atmLevel2height=fix(newval)
-                            (*pstate).atmModel2->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end                  
+     'atmLevel2height': $
+      begin
+        widget_control, event.id, get_value=newval
+        new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel2height))
+        (*pstate).atmLevel2height=fix(newval)
+        (*pstate).atmModel2->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end                  
                          
-       'atmLevel3': begin
-                      result = widget_info((*pstate).button43a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button43a, sensitive=1
-                        widget_control, (*pstate).button43b, sensitive=1
-                        widget_control, (*pstate).button43c, sensitive=1
-                          (*pstate).atmModel3 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button43a, sensitive=0
-                        widget_control, (*pstate).button43b, sensitive=0
-                        widget_control, (*pstate).button43c, sensitive=0
-                        (*pstate).atmModel3 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel3': $
+      begin
+        result = widget_info((*pstate).button43a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button43a, sensitive=1
+          widget_control, (*pstate).button43b, sensitive=1
+          widget_control, (*pstate).button43c, sensitive=1
+          (*pstate).atmModel3 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button43a, sensitive=0
+          widget_control, (*pstate).button43b, sensitive=0
+          widget_control, (*pstate).button43c, sensitive=0
+          (*pstate).atmModel3 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel3Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                          if input_file ne '' then begin
-                          read_png,input_file,image
-                            oImage3 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons3 -> setproperty, texture_map=oimage3
-                            (*pstate).opolygons3 -> setProperty, alpha_channel=((*pstate).atmLevel3alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                          endif
-                        end
+     'atmLevel3Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage3 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons3 -> setproperty, texture_map=oimage3
+          (*pstate).opolygons3 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel3alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel3alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel3alpha = newval
-                          (*pstate).opolygons3 -> setProperty, alpha_channel=((*pstate).atmLevel3alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end  
+     'atmLevel3alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel3alpha = newval
+        (*pstate).opolygons3 -> setProperty, $
+                    alpha_channel=((*pstate).atmLevel3alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end  
 
-       'atmLevel3height': begin
-                            widget_control, event.id, get_value=newval
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel3height))
-                            (*pstate).atmLevel3height=fix(newval)
-                            (*pstate).atmModel3->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end
+     'atmLevel3height': $
+      begin
+        widget_control, event.id, get_value=newval
+        new_scale = (3396.+float(newval))$
+                  / (3396.+float((*pstate).atmLevel3height))
+        (*pstate).atmLevel3height=fix(newval)
+        (*pstate).atmModel3->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end
                          
-       'atmLevel4': begin
-                      result = widget_info((*pstate).button44a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button44a, sensitive=1
-                        widget_control, (*pstate).button44b, sensitive=1
-                        widget_control, (*pstate).button44c, sensitive=1
-                          (*pstate).atmModel4 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button44a, sensitive=0
-                        widget_control, (*pstate).button44b, sensitive=0
-                        widget_control, (*pstate).button44c, sensitive=0
-                        (*pstate).atmModel4 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel4': $
+      begin
+        result = widget_info((*pstate).button44a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button44a, sensitive=1
+          widget_control, (*pstate).button44b, sensitive=1
+          widget_control, (*pstate).button44c, sensitive=1
+          (*pstate).atmModel4 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button44a, sensitive=0
+          widget_control, (*pstate).button44b, sensitive=0
+          widget_control, (*pstate).button44c, sensitive=0
+          (*pstate).atmModel4 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel4Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                          if input_file ne '' then begin
-                            read_png,input_file,image
-                            oImage4 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons4 -> setproperty, texture_map=oimage4
-                            (*pstate).opolygons4 -> setProperty, alpha_channel=((*pstate).atmLevel4alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                          endif
-                        end
+     'atmLevel4Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage4 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons4 -> setproperty, texture_map=oimage4
+          (*pstate).opolygons4 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel4alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel4alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel4alpha = newval
-                          (*pstate).opolygons4 -> setProperty, alpha_channel=((*pstate).atmLevel4alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end  
+     'atmLevel4alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel4alpha = newval
+        (*pstate).opolygons4 -> setProperty, alpha_channel=((*pstate).atmLevel4alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end  
 
-       'atmLevel4height': begin
-                            widget_control, event.id, get_value=newval
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel4height))
-                            (*pstate).atmLevel4height=fix(newval)
-                            (*pstate).atmModel4->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end
+     'atmLevel4height': $
+      begin
+        widget_control, event.id, get_value=newval
+        new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel4height))
+        (*pstate).atmLevel4height=fix(newval)
+        (*pstate).atmModel4->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end
                          
-       'atmLevel5': begin
-                      result = widget_info((*pstate).button45a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button45a, sensitive=1
-                        widget_control, (*pstate).button45b, sensitive=1
-                        widget_control, (*pstate).button45c, sensitive=1
-                          (*pstate).atmModel5 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button45a, sensitive=0
-                        widget_control, (*pstate).button45b, sensitive=0
-                        widget_control, (*pstate).button45c, sensitive=0
-                        (*pstate).atmModel5 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel5': $
+      begin
+        result = widget_info((*pstate).button45a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button45a, sensitive=1
+          widget_control, (*pstate).button45b, sensitive=1
+          widget_control, (*pstate).button45c, sensitive=1
+          (*pstate).atmModel5 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button45a, sensitive=0
+          widget_control, (*pstate).button45b, sensitive=0
+          widget_control, (*pstate).button45c, sensitive=0
+          (*pstate).atmModel5 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel5Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                          if input_file ne '' then begin
-                            read_png,input_file,image
-                            oImage5 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons5 -> setproperty, texture_map=oimage5
-                            (*pstate).opolygons5 -> setProperty, alpha_channel=((*pstate).atmLevel5alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                          endif
-                        end
+     'atmLevel5Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage5 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons5 -> setproperty, texture_map=oimage5
+          (*pstate).opolygons5 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel5alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel5alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel5alpha = newval
-                          (*pstate).opolygons5 -> setProperty, alpha_channel=((*pstate).atmLevel5alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end
+     'atmLevel5alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel5alpha = newval
+        (*pstate).opolygons5 -> setProperty, $
+                    alpha_channel=((*pstate).atmLevel5alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end
 
-       'atmLevel5height': begin
-                            widget_control, event.id, get_value=newval
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel5height))
-                            (*pstate).atmLevel5height=fix(newval)
-                            (*pstate).atmModel5->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end
+     'atmLevel5height': $
+      begin
+        widget_control, event.id, get_value=newval
+        new_scale = (3396.+float(newval))$
+                  / (3396.+float((*pstate).atmLevel5height))
+        (*pstate).atmLevel5height=fix(newval)
+        (*pstate).atmModel5->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end
                          
-       'atmLevel6': begin
-                      result = widget_info((*pstate).button46a, /sensitive)
-                      if result eq 0 then begin
-                        widget_control, (*pstate).button46a, sensitive=1
-                        widget_control, (*pstate).button46b, sensitive=1
-                        widget_control, (*pstate).button46c, sensitive=1
-                          (*pstate).atmModel6 -> setProperty, hide=0
-                          (*pstate).window->draw, (*pstate).view 
-                      endif
-                      if result eq 1 then begin
-                        widget_control, (*pstate).button46a, sensitive=0
-                        widget_control, (*pstate).button46b, sensitive=0
-                        widget_control, (*pstate).button46c, sensitive=0
-                        (*pstate).atmModel6 -> setProperty, hide=1
-                        (*pstate).window->draw,(*pstate).view
-                      endif
-                    end
+     'atmLevel6': $
+      begin
+        result = widget_info((*pstate).button46a, /sensitive)
+        if result eq 0 then begin
+          widget_control, (*pstate).button46a, sensitive=1
+          widget_control, (*pstate).button46b, sensitive=1
+          widget_control, (*pstate).button46c, sensitive=1
+          (*pstate).atmModel6 -> setProperty, hide=0
+          (*pstate).window->draw, (*pstate).view 
+        endif
+        if result eq 1 then begin
+          widget_control, (*pstate).button46a, sensitive=0
+          widget_control, (*pstate).button46b, sensitive=0
+          widget_control, (*pstate).button46c, sensitive=0
+          (*pstate).atmModel6 -> setProperty, hide=1
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                     
-       'atmLevel6Load': begin
-                          input_file = dialog_pickfile(path=(*pstate).install_directory,filter='*.png')
-                          if input_file ne '' then begin
-                            read_png,input_file,image
-                            oImage6 = OBJ_NEW('IDLgrImage', image )
-                            (*pstate).opolygons6 -> setproperty, texture_map=oimage6
-                            (*pstate).opolygons6 -> setProperty, alpha_channel=((*pstate).atmLevel6alpha)/100.0
-                            (*pstate).window->draw,(*pstate).view
-                          endif
-                        end
+     'atmLevel6Load': $
+      begin
+        input_file = dialog_pickfile(path=(*pstate).install_directory,$
+                                     filter='*.png')
+        if input_file ne '' then begin
+          read_png,input_file,image
+          oImage6 = OBJ_NEW('IDLgrImage', image )
+          (*pstate).opolygons6 -> setproperty, texture_map=oimage6
+          (*pstate).opolygons6 -> setProperty, $
+                      alpha_channel=((*pstate).atmLevel6alpha)/100.0
+          (*pstate).window->draw,(*pstate).view
+        endif
+      end
                         
-       'atmLevel6alpha': begin
-                          widget_control, event.id, get_value=newval
-                          (*pstate).atmLevel6alpha = newval
-                          (*pstate).opolygons6 -> setProperty, alpha_channel=((*pstate).atmLevel6alpha)/100.0
-                          (*pstate).window->draw, (*pstate).view                           
-                         end             
+     'atmLevel6alpha': $
+      begin
+        widget_control, event.id, get_value=newval
+        (*pstate).atmLevel6alpha = newval
+        (*pstate).opolygons6 -> setProperty, alpha_channel=((*pstate).atmLevel6alpha)/100.0
+        (*pstate).window->draw, (*pstate).view                           
+      end             
                          
-       'atmLevel6height': begin
-                            widget_control, event.id, get_value=newval
-                            new_scale = (3396.+float(newval))/(3396.+float((*pstate).atmLevel6height))
-                            (*pstate).atmLevel6height=fix(newval)
-                            (*pstate).atmModel6->scale,new_scale,new_scale,new_scale
-                            (*pstate).window->draw,(*pstate).view
-                          end                         
+     'atmLevel6height': $
+      begin
+        widget_control, event.id, get_value=newval
+        new_scale = (3396.+float(newval))$
+                  / (3396.+float((*pstate).atmLevel6height))
+        (*pstate).atmLevel6height=fix(newval)
+        (*pstate).atmModel6->scale,new_scale,new_scale,new_scale
+        (*pstate).window->draw,(*pstate).view
+      end                         
                                                                                                                                            
-       'output': begin
+     'output': begin
                   widget_control,(*pstate).subbaseR1, map=0
                   widget_control,(*pstate).subbaseR5, map=1
-                 end
+               end
                  
-       'output_return': begin
-                    widget_control, (*pstate).subbaseR5, map=0
-                    widget_control, (*pstate).subbaseR1, map=1
-                   end                 
+     'output_return': begin
+                        widget_control, (*pstate).subbaseR5, map=0
+                        widget_control, (*pstate).subbaseR1, map=1
+                      end                 
           
-       'insitu_return': begin
+     'insitu_return': begin
                           widget_control, (*pstate).subbaseR7, map=0
                           widget_control, (*pstate).subbaseR1, map=1
-                         end    
+                      end    
 
-       'insitu': begin
+     'insitu': begin
                   widget_control,(*pstate).subbaseR1, map=0
                   widget_control,(*pstate).subbaseR7, map=1
                end
 
-       'insitu_vector': begin
+     'insitu_vector': begin
                           widget_control, (*pstate).subbaseR1, map=0
                           widget_control, (*pstate).subbaseR10, map=1
                         end
                         
-       'vec_scale': begin
-                      widget_control,event.id, get_value=newval
-                      scale_factor=newval/100.0
-                      ;RESCALE THE DISPLAYED VECTOR FIELD
-                      (*pstate).vector_path->getproperty,data=old_data
+     'vec_scale': $
+      begin
+        widget_control,event.id, get_value=newval
+        scale_factor=newval/100.0
+        ;RESCALE THE DISPLAYED VECTOR FIELD
+        (*pstate).vector_path->getproperty,data=old_data
                       
-                      MVN_KP_3D_VECTOR_SCALE, old_data, (*pstate).vector_scale, scale_factor
+        MVN_KP_3D_VECTOR_SCALE, old_data, (*pstate).vector_scale, scale_factor
                       
-                      (*pstate).vector_path->setproperty,data=old_data
-                      (*pstate).vector_scale = scale_factor
-                      (*pstate).window->draw,(*pstate).view   
-                    end
+        (*pstate).vector_path->setproperty,data=old_data
+        (*pstate).vector_scale = scale_factor
+        (*pstate).window->draw,(*pstate).view   
+      end
                         
-       'insitu_vector_return': begin
-                                widget_control, (*pstate).subbaseR10, map=0
-                                widget_control, (*pstate).subbaseR1, map=1
-                               end
+     'insitu_vector_return': begin
+                              widget_control, (*pstate).subbaseR10, map=0
+                              widget_control, (*pstate).subbaseR1, map=1
+                             end
 
-       'iuvs_return': begin
-                    widget_control, (*pstate).subbaseR8, map=0
-                    widget_control, (*pstate).subbaseR1, map=1
-                   end    
+     'iuvs_return': begin
+                      widget_control, (*pstate).subbaseR8, map=0
+                      widget_control, (*pstate).subbaseR1, map=1
+                    end    
 
-       'iuvs': begin
-                  widget_control,(*pstate).subbaseR1, map=0
-                  widget_control,(*pstate).subbaseR8, map=1
-               end
+     'iuvs': begin
+               widget_control,(*pstate).subbaseR1, map=0
+               widget_control,(*pstate).subbaseR8, map=1
+             end
 
-       'help': begin
-                  widget_control,(*pstate).subbaseR1, map=0
-                  widget_control,(*pstate).subbaseR6, map=1
-                  
-                  widget_control,(*pstate).text, set_value='Fear not, help is on the way.'
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='Someday.',/append
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='',/append
-                  widget_control,(*pstate).text, set_value='but not today',/append
-               end
+     'help': $
+      begin
+        widget_control,(*pstate).subbaseR1, map=0
+        widget_control,(*pstate).subbaseR6, map=1
+
+        widget_control,(*pstate).text,set_value='Fear not, help is on the way.'
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='Someday.',/append
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='',/append
+        widget_control,(*pstate).text, set_value='but not today',/append
+      end
         
-       'help_return': begin
-                        widget_control, (*pstate).subbaseR6, map=0
-                        widget_control, (*pstate).subbaseR1, map=1
-                      end      
+     'help_return': begin
+                      widget_control, (*pstate).subbaseR6, map=0
+                      widget_control, (*pstate).subbaseR1, map=1
+                    end      
        
-       'config_save': begin
-                          file = dialog_pickfile(/write, title="Pick a file to save your viz configuration",filter='*.sav')
-                          if file ne '' then begin
-                            (*pstate).model->getproperty,transform=model_trans
-      
-                            config_struct = {config, model_trans:model_trans}
-                            
-                            save,config_struct,filename=file
-                          endif
+     'config_save': $
+      begin
+        file = dialog_pickfile(/write, $
+          title="Pick a file to save your viz configuration",filter='*.sav')
+        if file ne '' then begin
+          (*pstate).model->getproperty,transform=model_trans
+          config_struct = {config, model_trans:model_trans}              
+          save,config_struct,filename=file
+        endif
+      end
                     
-                      end
-                    
-       'config_load': begin
-                          file = dialog_pickfile(/read, title="Restore a vizualization configuration", filter='*.sav')
-                          if file ne '' then begin
-                            restore,file
-                          
-                            (*pstate).model->setproperty,transform = config_struct.model_trans
-                            (*pstate).window->draw,(*pstate).view
-                          
-                          endif
-                      end
+     'config_load': $
+      begin
+        file = dialog_pickfile(/read, $
+          title="Restore a vizualization configuration", filter='*.sav')
+        if file ne '' then begin
+          restore,file              
+          (*pstate).model->setproperty,transform = config_struct.model_trans
+          (*pstate).window->draw,(*pstate).view              
+        endif
+      end
                       
-       'save_view': begin
-                      outfile = dialog_pickfile(default_extension='png',/write)  
-                      if outfile ne '' then begin                                   
-                        buffer = Obj_New('IDLgrBuffer', DIMENSIONS=[800,800])
-                        buffer -> Draw, (*pstate).view
-                        buffer -> GetProperty, Image_Data=snapshot
-                        Obj_Destroy, buffer
-                        write_png, outfile,snapshot
-                      endif
-                    end
+     'save_view': begin
+                    outfile = dialog_pickfile(default_extension='png',/write)  
+                    if outfile ne '' then begin                                   
+                      buffer = Obj_New('IDLgrBuffer', DIMENSIONS=[800,800])
+                      buffer -> Draw, (*pstate).view
+                      buffer -> GetProperty, Image_Data=snapshot
+                      Obj_Destroy, buffer
+                      write_png, outfile,snapshot
+                    endif
+                  end
         
-        'orbit_reset': begin
-                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                          temp_vert[0,*] = 255
-                          (*pstate).orbit_path->setProperty,vert_color=temp_vert
-                          (*pstate).window->draw,(*pstate).view
-                       end
+      'orbit_reset': $
+        begin
+          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
+          temp_vert[0,*] = 255
+          (*pstate).orbit_path->setProperty,vert_color=temp_vert
+          (*pstate).window->draw,(*pstate).view
+        end
         
-        'lpw_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      
-                      parameter = 'LPW.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr       
-                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin           
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                    end           
-        
-        'euv_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      
-                      parameter = 'EUV.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr       
-                         ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin           
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                    end   
-                             
-        'static_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'STATIC.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr                  
-                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                       end    
-                       
-        'swia_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'SWIA.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string((*pstate).colorbar_ticks),2)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr     
-                      ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin             
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                     end
-                     
-        'swea_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'SWEA.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr      
-                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin            
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                     end 
-                     
-        'mag_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'MAG.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr    
-                       ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                      (*pstate).window->draw,(*pstate).view   
-                    end
-                    
-        'sep_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'SEP.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr
-                        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin                  
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                      (*pstate).window->draw,(*pstate).view   
-                    end
-                    
-        'ngims_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'NGIMS.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
+      'lpw_list': begin
+                    mvn_kp_3d_get_insitu_data,event,'LPW.'
+                  end           
 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks,format='(e7.0)')
-                      ;UPDATE THE PARAMETER PLOT 
-                          plot_y = insitu_spec.(level0_index).(level1_index)
-                          if( keyword_set((*pstate).colorbar_stretch) )then begin
-                            temp = where( ~finite(plot_y) or plot_y lt 0, num_nan )
-                            if num_nan gt 0 then plot_y[temp] = (*pstate).colorbar_min
-                          endif else begin
-                            temp = where( ~finite(plot_y), num_nan )
-                            if num_nan gt 0 then plot_y[temp] = -1e-40
-                          endelse
-                          ;-orig(*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          if keyword_set((*pstate).colorbar_stretch) then begin
-                            (*pstate).parameter_plot->setproperty,datay=alog10(plot_y)
-                          endif else begin
-                            (*pstate).parameter_plot->setproperty,datay=plot_y
-                          endelse
-                          ;(*pstate).parameter_plot->setproperty,datay=plot_y
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr 
-                          print,'xr=',xr
-                          print,'yr=',yr                                                
-                          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin              
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            ;-orig yc = mg_linear_function(yr, [-1.9,-1.5])
-                            print,(*pstate).colorbar_stretch
-                            yc = keyword_set((*pstate).colorbar_stretch) $
-                               ? mg_linear_function(alog10(yr), [-1.9,-1.5]) $
-                               : mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          ya = [strtrim(string(min(insitu_spec.(level0_index).(level1_index),/NaN),format='(e7.0)'),2),strtrim(string(max(insitu_spec.(level0_index).(level1_index),/NaN),format='(e7.0)'),2)]
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=ya
-                          ;[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                          (*pstate).window->draw,(*pstate).view   
-                      end
+      'euv_list': begin
+                    mvn_kp_3d_get_insitu_data,event,'EUV.'
+                  end   
+                             
+      'static_list': begin
+                       mvn_kp_3d_get_insitu_data,event,'STATIC.'
+                     end
+                       
+      'swia_list': begin
+                     mvn_kp_3d_get_insitu_data,event,'SWIA.'
+                   end
+                     
+      'swea_list': begin
+                     mvn_kp_3d_get_insitu_data,event,'SWEA.'
+                   end
+                     
+      'mag_list': begin
+                    mvn_kp_3d_get_insitu_data,event,'MAG.'
+                  end
+                    
+      'sep_list': begin
+                    mvn_kp_3d_get_insitu_data,event,'SEP.'
+                  end
+
+      'ngims_list': begin
+                      mvn_kp_3d_get_insitu_data, event, 'NGIMS.'
+                    end
 
         'user_list': begin
-                      mag_index = widget_info(event.id, /droplist_select)
-                      widget_control, event.id, get_value=newval
-                      insitu_spec = (*pstate).insitu
-                      parameter = 'USER.'+strtrim(string(newval[mag_index]))                      
-                      MVN_KP_TAG_PARSER, insitu_spec, base_tag_count, first_level_count, second_level_count, base_tags,  first_level_tags, second_level_tags
-                      MVN_KP_TAG_VERIFY, insitu_spec, parameter,base_tag_count, first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, level1_index, tag_array             
-                      temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2) 
-                      MVN_KP_3D_PATH_COLOR, insitu_spec, level0_index, level1_index, (*pstate).path_color_table, temp_vert,new_ticks,$
-                                            (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                      (*pstate).colorbar_ticks = new_ticks
-                      plotted_parameter_name = tag_array[0]+':'+tag_array[1]
-                      (*pstate).level0_index = level0_index
-                      (*pstate).level1_index = level1_index
-                      (*pstate).plottext1->setproperty,strings=plotted_parameter_name
-                      (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                      ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                      ;UPDATE THE PARAMETER PLOT 
-                          (*pstate).parameter_plot->setproperty,datay=insitu_spec.(level0_index).(level1_index)
-                          (*pstate).parameter_plot->getproperty, xrange=xr, yrange=yr        
-                          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-                            nan_error_check = 0
-                            for i=0,n_elements(insitu_spec.(level0_index).(level1_index))-1 do begin
-                              var1 = finite(insitu_spec[i].(level0_index).(level1_index))
-                              if var1 eq 1 then nan_error_check=1 
-                            endfor
-                          if nan_error_check eq 1 then begin
-                            xc = mg_linear_function(xr, [-1.7,1.4])
-                            yc = mg_linear_function(yr, [-1.9,-1.5])
-                            if finite(yc[0]) and finite(yc[1])  then begin
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                            endif
-                          endif else begin
-                            print,'ALL DATA WITHIN THE REQUESTED KEY PARAMETER IS Nan. No data to display.
-                          endelse
-                          (*pstate).parameter_yaxis_ticktext->setproperty,strings=[strtrim(string(fix(min(insitu_spec.(level0_index).(level1_index)))),2),strtrim(string(fix(max(insitu_spec.(level0_index).(level1_index)))),2)]
-                          (*pstate).window->draw,(*pstate).view   
-                      end
+                       mvn_kp_3d_get_insitu_data,event,'USER.'
+                     end
                    
         'colortable': begin
                         xloadct,/silent,/use_current,group=(*pstate).base ,/modal

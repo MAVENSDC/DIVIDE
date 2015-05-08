@@ -379,7 +379,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       ;if no parameter selected, default to spacecraft altitude
       plotted_parameter_name = 'altitude'
       current_plotted_value = insitu1[time_index].spacecraft.altitude
-      level0_index = 12
+      level0_index = n_tags(insitu1)-2; 12
       level1_index = 10
     endelse
 
