@@ -122,16 +122,16 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
-  ;CHECK THE insitu1 DATA STRUCTURE FOR RELEVANT FIELDS
-  MVN_KP_TAG_PARSER, insitu, base_tag_count, first_level_count, $
-    second_level_count, base_tags,  first_level_tags, $
-    second_level_tags
-
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_3d'
     return
-  endif 
+  endif
+
+  ;CHECK THE insitu1 DATA STRUCTURE FOR RELEVANT FIELDS
+  MVN_KP_TAG_PARSER, insitu, base_tag_count, first_level_count, $
+    second_level_count, base_tags,  first_level_tags, $
+    second_level_tags
   
   ;variables to be added to command line at some points
   apoapse_image_choice = 'Ozone Depth' ; ????
