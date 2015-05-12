@@ -1,4 +1,5 @@
-pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, instruments
+pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
+                                       end_time, instruments
 
 
   ;;
@@ -23,16 +24,22 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
     endfor
   endif
   
+help,instruments
   ;; Check Echelle Observation Modes
   if instruments.c_e_limb then begin
     if (iuvs_record_temp.corona_e_limb.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_limb.time_start, begin_time, end_time)
-      if check then iuvs_record_time_temp.corona_e_limb = iuvs_record_temp.corona_e_limb
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_limb.time_start, $
+                                 begin_time, end_time)
+      print,'c-e-limb: ',check
+      if check then $
+         iuvs_record_time_temp.corona_e_limb = iuvs_record_temp.corona_e_limb
     endif
   endif
   if instruments.c_e_disk then begin
     if (iuvs_record_temp.corona_e_disk.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_disk.time_start, begin_time, end_time)
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_disk.time_start, $
+                                 begin_time, end_time)
+      print,'c-e-disk: ',check
       if check then begin 
         iuvs_record_time_temp.corona_e_disk = iuvs_record_temp.corona_e_disk
         any_within_bounds = 1
@@ -41,7 +48,9 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
   endif
   if instruments.c_e_high then begin
     if (iuvs_record_temp.corona_e_high.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_high.time_start, begin_time, end_time)
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_high.time_start, $
+                                 begin_time, end_time)
+      print,'c-e-high: ',check
       if check then begin
         iuvs_record_time_temp.corona_e_high = iuvs_record_temp.corona_e_high
         any_within_bounds = 1
@@ -52,7 +61,9 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
   ;; Check LORES Observation modes
   if instruments.c_l_limb then begin
     if (iuvs_record_temp.corona_lo_limb.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_limb.time_start, begin_time, end_time)
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_limb.time_start, $
+                                 begin_time, end_time)
+      print,'c-l-limb: ',check
       if check then begin 
         iuvs_record_time_temp.corona_lo_limb = iuvs_record_temp.corona_lo_limb
         any_within_bounds = 1
@@ -61,7 +72,9 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
   endif
   if instruments.c_l_disk then begin
     if (iuvs_record_temp.corona_lo_disk.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_disk.time_start, begin_time, end_time)
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_disk.time_start, $
+                                 begin_time, end_time)
+      print,'c-l-disk: ',check
       if check then begin 
         iuvs_record_time_temp.corona_lo_disk = iuvs_record_temp.corona_lo_disk
         any_within_bounds = 1
@@ -70,18 +83,26 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
   endif
   if instruments.c_l_high then begin
     if (iuvs_record_temp.corona_lo_high.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_high.time_start, begin_time, end_time)
-      if check then begin
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_high.time_start, $
+                                 begin_time, end_time)
+      print,'c-l-high: ',check
+      print,iuvs_record_temp.corona_lo_high.time_start
+      print,begin_time
+      print,end_time
+;-hack      if check then begin
         iuvs_record_time_temp.corona_lo_high = iuvs_record_temp.corona_lo_high
         any_within_bounds = 1
-      endif
+;-hack      endif
     endif
   endif
   
   ;; Check apoapse observation mode
   if instruments.apoapse then begin
     if (iuvs_record_temp.apoapse.time_start ne '') then begin
-      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.apoapse.time_start, begin_time, end_time)
+      check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.apoapse.time_start, $
+                                 begin_time, end_time)
+      print,'apoapse: ',check
+
       if check then begin
         iuvs_record_time_temp.apoapse = iuvs_record_temp.apoapse
         any_within_bounds = 1
@@ -89,21 +110,24 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, end_time, i
     endif
   endif
   
-  ;; If any observations within time bounds, return structure. Otherwise, set to -1
+  ;; If any observations within time bounds, return structure. 
+  ;; Otherwise, set to -1
+print,'any_within-bound = ',any_within_bounds
   if any_within_bounds then begin
     iuvs_record_time_temp.orbit = iuvs_record_temp.orbit
     iuvs_record_temp = iuvs_record_time_temp
   endif else begin
     iuvs_record_temp = -1
   endelse
-  
+;  stop
   return
 end
 
 
 
-pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_time=end_time, $
-                           save_files=save_files, text_files=text_files, instruments=instruments
+pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
+                           end_time=end_time, save_files=save_files, $
+                           text_files=text_files, instruments=instruments
   
   
   ;; Check ENV variable to see if we are in debug mode
@@ -143,25 +167,28 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
     restore,filename
     
     
-    if instruments.periapse then begin                                    ;READ AND PARSE PERIAPSE DATA
+    if instruments.periapse then begin ;READ AND PARSE PERIAPSE DATA
       if size(periapse,/type) eq 8 then begin
         for peri_index = 0,n_elements(periapse.time_start)-1 do begin
           if time_bounds eq 1 then begin
-            check = MVN_KP_TIME_BOUNDS(periapse[peri_index].time_start, begin_time, end_time)
+            check = MVN_KP_TIME_BOUNDS(periapse[peri_index].time_start, $
+                                       begin_time, end_time)
           endif else begin
             check=1
           endelse
           
           if check eq 1 then begin
-            MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, periapse[peri_index], 'PERIAPSE',index=peri_index
+            MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, periapse[peri_index], $
+                                       'PERIAPSE',index=peri_index
             any_within_bounds = 1
           endif
         endfor
       endif
     endif
     
-    if instruments.apoapse then begin                                      ;READ AND PARSE APOAPSE DATA
-      if size(apoapse,/type) eq 8 then begin                                    ;ONLY EXECUTE IF THIS DATA TYPE IS AVAILABLE IN THE READ FILE
+    if instruments.apoapse then begin ;READ AND PARSE APOAPSE DATA
+      if size(apoapse,/type) eq 8 then begin
+        ;ONLY EXECUTE IF THIS DATA TYPE IS AVAILABLE IN THE READ FILE
         if time_bounds eq 1 then begin
           check = MVN_KP_TIME_BOUNDS(apoapse.time_start, begin_time, end_time)
         endif else begin
@@ -175,30 +202,36 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       endif
     endif
     
-    if instruments.c_e_high then begin                                    ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
+    if instruments.c_e_high then begin 
+      ;READ AND PARSE CORONA ECHELLE HIGH ALTITUDE DATA
       if size(corona_echelle_high,/type) eq 8 then begin
         if time_bounds eq 1 then begin
-          check = MVN_KP_TIME_BOUNDS(corona_echelle_high.time_start, begin_time, end_time)
+          check = MVN_KP_TIME_BOUNDS(corona_echelle_high.time_start, $
+                                     begin_time, end_time)
         endif else begin
           check=1
         endelse
         
         if check eq 1 then begin
-          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_high, 'CORONA_ECHELLE_HIGH'
+          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_high, $
+                                     'CORONA_ECHELLE_HIGH'
           any_within_bounds = 1
         endif
       endif
     endif
-    if instruments.c_e_limb then begin                                    ;READ AND PARSE CORONA ECHELLE LIMB DATA
+    if instruments.c_e_limb then begin 
+      ;READ AND PARSE CORONA ECHELLE LIMB DATA
       if size(corona_echelle_limb,/type) eq 8 then begin
         if time_bounds eq 1 then begin
-          check = MVN_KP_TIME_BOUNDS(corona_echelle_limb.time_start, begin_time, end_time)
+          check = MVN_KP_TIME_BOUNDS(corona_echelle_limb.time_start, $
+                                     begin_time, end_time)
         endif else begin
           check=1
         endelse
         
         if check eq 1 then begin
-          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_limb, 'CORONA_ECHELLE_LIMB'
+          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_limb, $
+                                     'CORONA_ECHELLE_LIMB'
           any_within_bounds = 1
         endif
       endif
@@ -220,44 +253,51 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
         endif
       endif
     endif
-    if instruments.c_l_limb then begin                                    ;READ AND PARSE CORONA LORES LIMB DATA
+    if instruments.c_l_limb then begin ;READ AND PARSE CORONA LORES LIMB DATA
       if size(corona_lores_limb,/type) eq 8 then begin
         if time_bounds eq 1 then begin
-          check = MVN_KP_TIME_BOUNDS(corona_lores_limb.time_start, begin_time, end_time)
+          check = MVN_KP_TIME_BOUNDS(corona_lores_limb.time_start, $
+                                     begin_time, end_time)
         endif else begin
           check=1
         endelse
         
         if check eq 1 then begin
-          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_limb, 'CORONA_LORES_LIMB'
+          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_limb, $
+                                     'CORONA_LORES_LIMB'
           any_within_bounds = 1
         endif
       endif
     endif
-    if instruments.c_l_disk then begin                                    ;READ AND PARSE CORONA LORES DISK DATA
+    if instruments.c_l_disk then begin ;READ AND PARSE CORONA LORES DISK DATA
       if size(corona_lores_disk,/type) eq 8 then begin
         if time_bounds eq 1 then begin
-          check = MVN_KP_TIME_BOUNDS(corona_lores_disk.time_start, begin_time, end_time)
+          check = MVN_KP_TIME_BOUNDS(corona_lores_disk.time_start, $
+                                     begin_time, end_time)
         endif else begin
           check=1
         endelse
         
         if check eq 1 then begin
-          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_disk, 'CORONA_LORES_DISK'
+          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_lores_disk, $
+                                     'CORONA_LORES_DISK'
           any_within_bounds = 1
         endif
       endif
     endif
-    if instruments.c_e_disk then begin                                    ;READ AND PARSE CORONA Echelle DISK DATA
+    if instruments.c_e_disk then begin 
+      ;READ AND PARSE CORONA Echelle DISK DATA
       if size(corona_echelle_disk,/type) eq 8 then begin
         if time_bounds eq 1 then begin
-          check = MVN_KP_TIME_BOUNDS(corona_echelle_disk.time_start, begin_time, end_time)
+          check = MVN_KP_TIME_BOUNDS(corona_echelle_disk.time_start, $
+                                     begin_time, end_time)
         endif else begin
           check=1
         endelse
         
         if check eq 1 then begin
-          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_disk, 'CORONA_ECHELLE_DISK'
+          MVN_KP_IUVS_BINARY_ASSIGN, iuvs_record, corona_echelle_disk, $
+                                     'CORONA_ECHELLE_DISK'
           any_within_bounds = 1
         endif
       endif
@@ -271,15 +311,20 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
       iuvs_record = -1
     endif
     
+  ; End of if save_files block
+  
   endif else if keyword_set(text_files) then begin  
     ;READ IUVS DATA FROM ASCII FILES
 
     ;; Call IUVS ASCII reader to read one iuvs file in ascii format
     MVN_KP_READ_IUVS_ASCII, filename, iuvs_record
-      
+print,filename
+;help,iuvs_record ; this has demonstrated that the record exists
+print,time_bounds
     ;; If timebounds or instrument array - FIXME 
     if time_bounds then begin
-      mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, end_time, instruments
+      mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, $
+                                         end_time, instruments
     endif
     
   
@@ -291,9 +336,10 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, end_tim
    
     ;; If checking time bounds or instrument array - FIXME
     if time_bounds then begin
-      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, end_time, instruments
+      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, $
+                                         end_time, instruments
     endif
 
   endelse
-  
+;  stop
 end

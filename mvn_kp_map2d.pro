@@ -626,161 +626,165 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
           total_colorbars = total_colorbars + 1
         endif
       endif
-        
+    endif ; end of IUVS plots
+
     ;DISPLAY THE RELEVANT COLORBARS
-      if total_colorbars gt 0 then begin
-        if version_check eq 1 then begin
-          MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
-          color_bar_index = 0
-          if keyword_set(nopath) eq 0 then begin
-          ; We are plotting S/C path; for now skip the NaN check
-            if( parameter_minimum ne parameter_maximum )then begin
-              c_range = [parameter_minimum, parameter_maximum]
-              c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
-              c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
-                            orientation=0, $
-                            position=positions[color_bar_index,*], $
-                            textpos=0, /border, range=c_range )
-            endif
-            color_bar_index++ ; increment the plotted color bar count
+    if total_colorbars gt 0 then begin
+      if version_check eq 1 then begin
+        MVN_KP_MAP2D_COLORBAR_POS, total_colorbars, positions
+        color_bar_index = 0
+        if keyword_set(nopath) eq 0 then begin
+        ; We are plotting S/C path; for now skip the NaN check
+          if( parameter_minimum ne parameter_maximum )then begin
+            c_range = [parameter_minimum, parameter_maximum]
+            c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
+            c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
+                          orientation=0, $
+                          position=positions[color_bar_index,*], $
+                          textpos=0, /border, range=c_range )
           endif
+          color_bar_index++ ; increment the plotted color bar count
+        endif
 
-        ; Next, we plot the parameter
+      ; Next, we plot the parameter
 
-          ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
-          if keyword_set(parameter) then begin
-            nan_error_check = 0
-            for i=0,n_elements(kp_data1.(level0_index).(level1_index))-1 do begin
-              var1 = finite(kp_data1[i].(level0_index).(level1_index))
-              if var1 eq 1 then nan_error_check=1 
-            endfor
-            if nan_error_check eq 1 then begin
-              var1 = finite(kp_data1.(level0_index).(level1_index))
-              if( min(kp_data.(level0_index).(level1_index),/NaN) ne $
-                  max(kp_data.(level0_index).(level1_index),/NaN) )then begin
+        ;CHECK FOR ALL NAN VALUE DEGENERATE CASE
+        if keyword_set(parameter) then begin
+          nan_error_check = 0
+          for i=0,n_elements(kp_data1.(level0_index).(level1_index))-1 do begin
+            var1 = finite(kp_data1[i].(level0_index).(level1_index))
+            if var1 eq 1 then nan_error_check=1 
+          endfor
+          if nan_error_check eq 1 then begin
+            var1 = finite(kp_data1.(level0_index).(level1_index))
+            if( min(kp_data.(level0_index).(level1_index),/NaN) ne $
+                max(kp_data.(level0_index).(level1_index),/NaN) )then begin
 ;
 ;  Define the range and title depending upon value of the log keyword:
 ;
-                c_range = keyword_set(log) $
-                        ? alog10([parameter_minimum,parameter_maximum]) $
-                        : [parameter_minimum,parameter_maximum]
-                c_title = keyword_set(log) $
-                        ? 'Log$_{10}$(' $
-                          + strupcase(string(tag_array[0]+tag_array[1]))+')' $
-                        : strupcase(string(tag_array[0]+'.'+tag_array[1]))
+              c_range = keyword_set(log) $
+                      ? alog10([parameter_minimum,parameter_maximum]) $
+                      : [parameter_minimum,parameter_maximum]
+              c_title = keyword_set(log) $
+                      ? 'Log$_{10}$(' $
+                        + strupcase(string(tag_array[0]+tag_array[1]))+')' $
+                      : strupcase(string(tag_array[0]+'.'+tag_array[1]))
 ;
 ; Create or add to the colorbar(s)
 ;
-                c = COLORBAR(TITLE=c_title, $
-                             rgb_table=11,ORIENTATION=0, $
-                             position=positions[color_bar_index,*],TEXTPOS=0,$
-                             /border, range=c_range)
-              endif
-            endif  ; NaN error check
+              c = COLORBAR(TITLE=c_title, $
+                           rgb_table=11,ORIENTATION=0, $
+                           position=positions[color_bar_index,*],TEXTPOS=0,$
+                           /border, range=c_range)
+            endif
+          endif  ; NaN error check
+          color_bar_index++
+        endif ; keyword_set parameter
+
+; Should not need IUVS checkj here since subsequent keywords
+;  will be set only if IUVS is as well...
+;
+        if keyword_set(periapse_temp) then begin
+          if p_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',$
+                         rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[t_min,t_max],$
+                         position=positions[color_bar_index,*])
             color_bar_index++
-          endif ; keyword_set parameter
-          if keyword_set(periapse_temp) then begin
-            if p_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='IUVS Periapse Limb Scan Temperature',$
-                           rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[t_min,t_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
           endif
-          if keyword_set(corona_lo_ozone) then begin
-            if o_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',$
-                           rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[o_min,o_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_ozone) then begin
+          if o_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Ozone Depth',$
+                         rgb_table=o_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[o_min,o_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_dust) then begin
-            if d_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',$
-                           rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[d_min,d_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_dust) then begin
+          if d_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Dust Depth',$
+                         rgb_table=d_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[d_min,d_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_aurora) then begin
-            if a_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',$
-                           rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[a_min,a_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_aurora) then begin
+          if a_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Auroral Index',$
+                         rgb_table=a_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[a_min,a_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_e_h_rad) then begin
-            if eh_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: H',$
-                           rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[eh_min,eh_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_e_h_rad) then begin
+          if eh_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Echelle Radiance: H',$
+                         rgb_table=eh_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[eh_min,eh_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_e_d_rad) then begin
-            if ed_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: D',$
-                           rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[ed_min,ed_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_e_d_rad) then begin
+          if ed_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Echelle Radiance: D',$
+                         rgb_table=ed_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[ed_min,ed_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_e_o_rad) then begin
-            if eo_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',$
-                           rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[eo_min,eo_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_e_o_rad) then begin
+          if eo_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Echelle Radiance: O-1304',$
+                         rgb_table=eo_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[eo_min,eo_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_h_rad) then begin
-            if lh_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',$
-                           rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[lh_min,lh_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_h_rad) then begin
+          if lh_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Radiance: H',$
+                         rgb_table=t_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[lh_min,lh_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_co_rad) then begin
-            if lco_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',$
-                           rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[lco_min,lco_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_co_rad) then begin
+          if lco_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Radiance: CO',$
+                         rgb_table=lco_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[lco_min,lco_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_no_rad) then begin
-            if lno_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',$
-                           rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[lno_min,lno_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
+        endif
+        if keyword_set(corona_lo_no_rad) then begin
+          if lno_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Radiance: NO',$
+                         rgb_table=lno_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[lno_min,lno_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
           endif
-          if keyword_set(corona_lo_o_rad) then begin
-            if lo_data_exist eq 1 then begin
-              c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',$
-                           rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, $
-                           /border,range=[lo_min,lo_max],$
-                           position=positions[color_bar_index,*])
-              color_bar_index++
-            endif
-          endif   
-        endif ; version check
-      endif   ; total colorbars
-    endif     ; Check whether IUVS dta exist
+        endif
+        if keyword_set(corona_lo_o_rad) then begin
+          if lo_data_exist eq 1 then begin
+            c = COLORBAR(TITLE='Corona Lo-Res Radiance: O-1304',$
+                         rgb_table=lo_colorbar, ORIENTATION=0, TEXTPOS=0, $
+                         /border,range=[lo_min,lo_max],$
+                         position=positions[color_bar_index,*])
+            color_bar_index++
+          endif
+        endif   
+      endif ; version check
+    endif   ; total colorbars
   endif else begin   ;DIRECT GRAPHICS VERSION 
     
      DEVICE, DECOMPOSED=1

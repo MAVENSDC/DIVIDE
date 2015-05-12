@@ -1073,126 +1073,151 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         end
         
       'lpw_list': begin
-                    mvn_kp_3d_get_insitu_data,event,'LPW.'
+                    mvn_kp_3d_event_insitu_scalar_data,event,'LPW.'
                   end           
 
       'euv_list': begin
-                    mvn_kp_3d_get_insitu_data,event,'EUV.'
+                    mvn_kp_3d_event_insitu_scalar_data,event,'EUV.'
                   end   
                              
       'static_list': begin
-                       mvn_kp_3d_get_insitu_data,event,'STATIC.'
+                       mvn_kp_3d_event_insitu_scalar_data,event,'STATIC.'
                      end
                        
       'swia_list': begin
-                     mvn_kp_3d_get_insitu_data,event,'SWIA.'
+                     mvn_kp_3d_event_insitu_scalar_data,event,'SWIA.'
                    end
                      
       'swea_list': begin
-                     mvn_kp_3d_get_insitu_data,event,'SWEA.'
+                     mvn_kp_3d_event_insitu_scalar_data,event,'SWEA.'
                    end
                      
       'mag_list': begin
-                    mvn_kp_3d_get_insitu_data,event,'MAG.'
+                    mvn_kp_3d_event_insitu_scalar_data,event,'MAG.'
                   end
                     
       'sep_list': begin
-                    mvn_kp_3d_get_insitu_data,event,'SEP.'
+                    mvn_kp_3d_event_insitu_scalar_data,event,'SEP.'
                   end
 
       'ngims_list': begin
-                      mvn_kp_3d_get_insitu_data, event, 'NGIMS.'
+                      mvn_kp_3d_event_insitu_scalar_data, event, 'NGIMS.'
                     end
 
-        'user_list': begin
-                       mvn_kp_3d_get_insitu_data,event,'USER.'
-                     end
+      'user_list': begin
+                     mvn_kp_3d_event_insitu_scalar_data,event,'USER.'
+                   end
                    
-        'colortable': begin
-                        xloadct,/silent,/use_current,group=(*pstate).base ,/modal
-                        (*pstate).orbit_path->getproperty,vert_color=temp_vert
-                        insitu_spec = (*pstate).insitu
-                        MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
-                                              (*pstate).colorbar_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                        (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                        ;CHANGE THE COLOR BAR SETTINGS
-                          (*pstate).colorbar1->setproperty,red_Values=r_curr
-                          (*pstate).colorbar1->setproperty,green_Values=g_curr
-                          (*pstate).colorbar1->setproperty,blue_Values=b_curr
-                          (*pstate).colorbar_ticktext->setproperty,strings=string((*pstate).colorbar_ticks)
-                        (*pstate).window ->draw,(*pstate).view
-                      end   
+      'colortable': $
+        begin
+          xloadct,/silent,/use_current,group=(*pstate).base ,/modal
+          (*pstate).orbit_path->getproperty,vert_color=temp_vert
+          insitu_spec = (*pstate).insitu
+          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, $
+                                (*pstate).level1_index, $
+                                (*pstate).path_color_table, temp_vert,$
+                                (*pstate).colorbar_ticks, $
+                                (*pstate).colorbar_min, $
+                                (*pstate).colorbar_max, $
+                                (*pstate).colorbar_stretch
+          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+          ;CHANGE THE COLOR BAR SETTINGS
+          (*pstate).colorbar1->setproperty,red_Values=r_curr
+          (*pstate).colorbar1->setproperty,green_Values=g_curr
+          (*pstate).colorbar1->setproperty,blue_Values=b_curr
+          (*pstate).colorbar_ticktext->setproperty,$
+                strings=string((*pstate).colorbar_ticks)
+          (*pstate).window ->draw,(*pstate).view
+        end   
                       
-        'ColorBarPlot': begin
-                           (*pstate).colorbarmodel.getProperty, HIDE=result
-                           if result eq 1 then (*pstate).colorbarmodel->setProperty,hide=0
-                           if result eq 0 then (*pstate).colorbarmodel->setProperty,hide=1
-                           (*pstate).window ->draw,(*pstate).view
-                        end
+      'ColorBarPlot': $
+          begin
+            (*pstate).colorbarmodel.getProperty, HIDE=result
+            if result eq 1 then (*pstate).colorbarmodel->setProperty,hide=0
+            if result eq 0 then (*pstate).colorbarmodel->setProperty,hide=1
+            (*pstate).window ->draw,(*pstate).view
+          end
              
-        'orbitPlotName': begin
-                           (*pstate).plottednamemodel.getProperty, HIDE=result
-                           if result eq 1 then (*pstate).plottednamemodel->setProperty,hide=0
-                           if result eq 0 then (*pstate).plottednamemodel->setProperty,hide=1
-                           (*pstate).window ->draw,(*pstate).view
-                         end
+      'orbitPlotName': $
+        begin
+          (*pstate).plottednamemodel.getProperty, HIDE=result
+          if result eq 1 then (*pstate).plottednamemodel->setProperty,hide=0
+          if result eq 0 then (*pstate).plottednamemodel->setProperty,hide=1
+          (*pstate).window ->draw,(*pstate).view
+        end
                          
-        'vector_field': begin
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
+      'vector_field': $
+        begin
+          index = widget_info(event.id, /droplist_select)
+          widget_control, event.id, get_value=newval
                           
-                          ;; Make idl 8.2.2 happy - We found that dereferencing the pointer to the struct in each
-                          ;; iteration of the for loop was very slow in 8.2.2
-                          insitu_spec = (*pstate).insitu
+          ;; Make idl 8.2.2 happy - 
+          ;; We found that dereferencing the pointer to the struct in each
+          ;; iteration of the for loop was very slow in 8.2.2
+          insitu_spec = (*pstate).insitu
                           
-                          case newval(index) of
-                            'Magnetic Field': begin
-                                                 (*pstate).vector_path->getproperty,data=old_data
-                                                 if (*pstate).coord_sys eq 0 then begin
-                                                  for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                    old_data[0,(i*2)+1] = insitu_spec[i].mag.geo_x
-                                                    old_data[1,(i*2)+1] = insitu_spec[i].mag.geo_y
-                                                    old_data[2,(i*2)+1] = insitu_spec[i].mag.geo_z
-                                                   endfor
-                                                 endif
-                                                 if (*pstate).coord_sys eq 1 then begin
-                                                   for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                    old_data[0,(i*2)+1] = insitu_spec[i].mag.mso_x
-                                                    old_data[1,(i*2)+1] = insitu_spec[i].mag.mso_y
-                                                    old_data[2,(i*2)+1] = insitu_spec[i].mag.mso_z
-                                                   endfor
-                                                 endif
-                                                 MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
-                                                 (*pstate).vector_path->setproperty,data=old_data
-                                                 (*pstate).window->draw,(*pstate).view
-                                              end
-                            'SWIA H+ Flow Velocity': begin
-                                                      (*pstate).vector_path->getproperty,data=old_data
-                                                      if (*pstate).coord_sys eq 0 then begin
-                                       
-                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu_spec[i].swia.hplus_flow_v_msox*insitu_spec[i].spacecraft.t11)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoy*insitu_spec[i].spacecraft.t12)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoz*insitu_spec[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu_spec[i].swia.hplus_flow_v_msox*insitu_spec[i].spacecraft.t21)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoy*insitu_spec[i].spacecraft.t22)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoz*insitu_spec[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu_spec[i].swia.hplus_flow_v_msox*insitu_spec[i].spacecraft.t31)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoy*insitu_spec[i].spacecraft.t32)+$
-                                                                                (insitu_spec[i].swia.hplus_flow_v_msoz*insitu_spec[i].spacecraft.t33)
-                                                        endfor
-                                                      endif
-                                                      if (*pstate).coord_sys eq 1 then begin
-                                                        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msox
-                                                          old_data[1,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msoy
-                                                          old_data[2,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msoz
-                                                        endfor
-                                                      endif
-                                                      MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
-                                                      (*pstate).vector_path->setproperty,data=old_data
-                                                      (*pstate).window->draw,(*pstate).view
-                                                     end
+          case newval(index) of
+            'Magnetic Field': $
+              begin
+                (*pstate).vector_path->getproperty,data=old_data
+                if (*pstate).coord_sys eq 0 then begin
+                  for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                    old_data[0,(i*2)+1] = insitu_spec[i].mag.geo_x
+                    old_data[1,(i*2)+1] = insitu_spec[i].mag.geo_y
+                    old_data[2,(i*2)+1] = insitu_spec[i].mag.geo_z
+                  endfor
+                endif
+                if (*pstate).coord_sys eq 1 then begin
+                  for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                    old_data[0,(i*2)+1] = insitu_spec[i].mag.mso_x
+                    old_data[1,(i*2)+1] = insitu_spec[i].mag.mso_y
+                    old_data[2,(i*2)+1] = insitu_spec[i].mag.mso_z
+                  endfor
+                endif
+                MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
+                (*pstate).vector_path->setproperty,data=old_data
+                (*pstate).window->draw,(*pstate).view
+              end
+              
+            'SWIA H+ Flow Velocity': $
+             begin
+               (*pstate).vector_path->getproperty,data=old_data
+               if (*pstate).coord_sys eq 0 then begin
+                 for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                   old_data[0,(i*2)+1] $
+                     = ( insitu_spec[i].swia.hplus_flow_v_msox $
+                       * insitu_spec[i].spacecraft.t11 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoy $
+                       * insitu_spec[i].spacecraft.t12 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoz $
+                       * insitu_spec[i].spacecraft.t13 )
+                   old_data[1,(i*2)+1] $
+                     = ( insitu_spec[i].swia.hplus_flow_v_msox $
+                       * insitu_spec[i].spacecraft.t21 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoy $
+                       * insitu_spec[i].spacecraft.t22 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoz $
+                       * insitu_spec[i].spacecraft.t23 )
+                   old_data[2,(i*2)+1] $
+                     = ( insitu_spec[i].swia.hplus_flow_v_msox $
+                       * insitu_spec[i].spacecraft.t31 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoy $
+                       * insitu_spec[i].spacecraft.t32 ) $
+                     + ( insitu_spec[i].swia.hplus_flow_v_msoz $
+                       * insitu_spec[i].spacecraft.t33 )
+                 endfor
+               endif
+               if (*pstate).coord_sys eq 1 then begin
+                 for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+                   old_data[0,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msox
+                   old_data[1,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msoy
+                   old_data[2,(i*2)+1] = insitu_spec[i].swia.hplus_flow_v_msoz
+                 endfor
+               endif
+               MVN_KP_3D_VECTOR_NORM, old_data, (*pstate).vector_scale
+               (*pstate).vector_path->setproperty,data=old_data
+               (*pstate).window->draw,(*pstate).view
+             end
                           ;  'STATIC H+ Flow Velocity': begin
                           ;                              (*pstate).vector_path->getproperty,data=old_data
                           ;                              if (*pstate).coord_sys eq 0 then begin
@@ -1219,7 +1244,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                           ;                              (*pstate).vector_path->setproperty,data=old_data
                           ;                              (*pstate).window->draw,(*pstate).view
                           ;                             end
-                            'STATIC O+ Flow Velocity': begin
+            'STATIC O+ Flow Velocity': $
+              begin
                                                         (*pstate).vector_path->getproperty,data=old_data
                                                         if (*pstate).coord_sys eq 0 then begin
                                                           for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
@@ -1432,247 +1458,228 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 
                         end
         
-        'vector_display': begin
-                           (*pstate).vector_model.getProperty, HIDE=result
-                           if result eq 1 then begin
-                            (*pstate).vector_model->setProperty,hide=0
-                            widget_control,(*pstate).subbaseR10a, sensitive=1
-                            widget_control,(*pstate).subbaseR10c, sensitive=1
-                            widget_control,(*pstate).subbaseR10d, sensitive=1
-                            widget_control,(*pstate).button10, set_value='Hide Vector Data'
-                           endif
-                           if result eq 0 then begin
-                            (*pstate).vector_model->setProperty,hide=1
-                            widget_control,(*pstate).subbaseR10a, sensitive=0
-                            widget_control,(*pstate).subbaseR10c, sensitive=0
-                            widget_control,(*pstate).subbaseR10d, sensitive=0
-                            widget_control,(*pstate).button10, set_value='Display Vector Data'
-                           endif
-                           (*pstate).window ->draw,(*pstate).view
-                          end
+        'vector_display': $
+          begin
+            (*pstate).vector_model.getProperty, HIDE=result
+            if result eq 1 then begin
+              (*pstate).vector_model->setProperty,hide=0
+              widget_control,(*pstate).subbaseR10a, sensitive=1
+              widget_control,(*pstate).subbaseR10c, sensitive=1
+              widget_control,(*pstate).subbaseR10d, sensitive=1
+              widget_control,(*pstate).button10, set_value='Hide Vector Data'
+            endif
+            if result eq 0 then begin
+              (*pstate).vector_model->setProperty,hide=1
+              widget_control,(*pstate).subbaseR10a, sensitive=0
+              widget_control,(*pstate).subbaseR10c, sensitive=0
+              widget_control,(*pstate).subbaseR10d, sensitive=0
+              widget_control,(*pstate).button10, set_value='Display Vector Data'
+            endif
+            (*pstate).window ->draw,(*pstate).view
+          end
           
-        'vector_color_method': begin
-                                  widget_control, event.id, get_value = newval
-                                  case newval of 
-                                    'Proximity':begin
-                                                  (*pstate).vector_color_method = 0
-                                                end
+        'vector_color_method': $
+          begin
+            widget_control, event.id, get_value = newval
+            case newval of 
+              'Proximity':begin
+                            (*pstate).vector_color_method = 0
+                          end
                                     
-                                    'All': begin
-                                            (*pstate).vector_color_method = 1
-                                           end
-                                  endcase
-                               end
+              'All': begin
+                       (*pstate).vector_color_method = 1
+                     end
+            endcase
+          end
+
         'lpw_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'LPW'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
+                          mvn_kp_3d_event_insitu_vec_list,event,'LPW'
                         end
                         
         'euv_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'EUV'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
+                          mvn_kp_3d_event_insitu_vec_list,event,'EUV'
                         end
                         
         'static_list_vec': begin
-                            (*pstate).vector_color_source[0] = 'STATIC'
-                            index = widget_info(event.id, /droplist_select)
-                            widget_control, event.id, get_value=newval
-                            (*pstate).vector_color_source[1] = newval(index)
-                            (*pstate).vector_path->getproperty,vert_color=vert_color
-                            insitu_spec = (*pstate).insitu
-                            MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                            (*pstate).vector_path->setproperty,vert_color=vert_color
-                            (*pstate).window ->draw,(*pstate).view
+                             mvn_kp_3d_event_insitu_vec_list,event,'STATIC'
                            end
         
         'swia_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'SWIA'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
+                           mvn_kp_3d_event_insitu_vec_list,event,'SWIA'
                          end
                         
         'swea_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'SWEA'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
-                        end
+                           mvn_kp_3d_event_insitu_vec_list,event,'SWEA'
+                         end
                         
         'mag_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'MAG'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
+                          mvn_kp_3d_event_insitu_vec_list,event,'MAG'
                         end                               
         
         'sep_list_vec': begin
-                          (*pstate).vector_color_source[0] = 'SEP'
-                          index = widget_info(event.id, /droplist_select)
-                          widget_control, event.id, get_value=newval
-                          (*pstate).vector_color_source[1] = newval(index)
-                          (*pstate).vector_path->getproperty,vert_color=vert_color
-                          insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                          (*pstate).vector_path->setproperty,vert_color=vert_color
-                          (*pstate).window ->draw,(*pstate).view
+                          mvn_kp_3d_event_insitu_vec_list,event,'SEP'
                         end
                         
         'ngims_list_vec': begin
-                            (*pstate).vector_color_source[0] = 'NGIMS'
-                            index = widget_info(event.id, /droplist_select)
-                            widget_control, event.id, get_value=newval
-                            (*pstate).vector_color_source[1] = newval(index)
-                            (*pstate).vector_path->getproperty,vert_color=vert_color
-                            insitu_spec = (*pstate).insitu
-                            MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, (*pstate).colorbar_stretch
-                            (*pstate).vector_path->setproperty,vert_color=vert_color
-                            (*pstate).window ->draw,(*pstate).view
-                        end               
+                            mvn_kp_3d_event_insitu_vec_list,event,'NGIMS'
+                          end               
                         
                                         
-        'overplots': begin
-                       (*pstate).plot_model.getProperty, HIDE=result
-                       if result eq 1 then (*pstate).plot_model->setProperty,hide=0
-                       if result eq 0 then (*pstate).plot_model->setProperty,hide=1
-                       (*pstate).window ->draw,(*pstate).view
-                     end
+        'overplots': $
+          begin
+            (*pstate).plot_model.getProperty, HIDE=result
+            if result eq 1 then (*pstate).plot_model->setProperty,hide=0
+            if result eq 0 then (*pstate).plot_model->setProperty,hide=1
+            (*pstate).window ->draw,(*pstate).view
+          end
                      
-        'colorbar_stretch': begin
-                              widget_control,event.id,get_value=newval
-                              if newval eq 'Linear' then temp_stretch = 0
-                              if newval eq 'Log' then temp_stretch = 1
-                              (*pstate).colorbar_stretch = temp_stretch
-                              insitu_spec = (*pstate).insitu
-                              temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2)
-                              MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
-                                                    temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, temp_stretch
-                              (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                              ;CHANGE THE COLOR BAR SETTINGS
-                               (*pstate).colorbar1->setproperty,red_Values=r_curr
-                               (*pstate).colorbar1->setproperty,green_Values=g_curr
-                               (*pstate).colorbar1->setproperty,blue_Values=b_curr
-                               (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
-                               (*pstate).window ->draw,(*pstate).view
-                              ; UPDATE THE PARAMETER PLOT
-                              plot_y = insitu_spec.((*pstate).level0_index).((*pstate).level1_index)
-                              if( keyword_set(temp_stretch) )then begin
-                                temp = where( ~finite(plot_y) or plot_y lt 0, num_nan )
-                                if( num_nan gt 0 )then plot_y[temp] = (*pstate).colorbar_min
-                                (*pstate).parameter_plot->setproperty,datay=alog10(plot_y)
-                              endif else begin
-                                temp = where( ~finite(plot_y), num_nan )
-                                if( num_nan gt 0 )then plot_y[temp] = -1e-40 ; (*pstate).colorbar_min
-                                (*pstate).parameter_plot->setproperty,datay=plot_y
-                              endelse
-                              ; UPDATE THE PARAMETER PLOT AXES
-                              (*pstate).parameter_plot->getproperty,yrange=yr,xrange=xr
-                              yc=mg_linear_function(yr,[-1.9,-1.5])
-                              (*pstate).parameter_plot->setproperty,xcoord_conv=xc,ycoord_conv=yc
-                              (*pstate).window->draw,(*pstate).view
-                            end
+        'colorbar_stretch': $
+          begin
+            widget_control,event.id,get_value=newval
+            if newval eq 'Linear' then temp_stretch = 0
+            if newval eq 'Log' then temp_stretch = 1
+            (*pstate).colorbar_stretch = temp_stretch
+            insitu_spec = (*pstate).insitu
+            temp_vert = intarr(3,n_elements(insitu_spec.spacecraft.geo_x)*2)
+
+            MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, $
+                                  (*pstate).level1_index, $
+                                  (*pstate).path_color_table, temp_vert,$
+                                  temp_ticks, (*pstate).colorbar_min, $
+                                  (*pstate).colorbar_max, temp_stretch
+
+            (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+            ;CHANGE THE COLOR BAR SETTINGS
+            (*pstate).colorbar1->setproperty,red_Values=r_curr
+            (*pstate).colorbar1->setproperty,green_Values=g_curr
+            (*pstate).colorbar1->setproperty,blue_Values=b_curr
+            (*pstate).colorbar_ticktext->setproperty,$
+                      strings=strtrim(string(temp_ticks),2)
+            (*pstate).window ->draw,(*pstate).view
+            ; UPDATE THE PARAMETER PLOT
+            plot_y $
+              = insitu_spec.((*pstate).level0_index).((*pstate).level1_index)
+
+            if( keyword_set(temp_stretch) )then begin
+              temp = where( ~finite(plot_y) or plot_y lt 0, num_nan )
+              if( num_nan gt 0 )then plot_y[temp] = (*pstate).colorbar_min
+              (*pstate).parameter_plot->setproperty,datay=alog10(plot_y)
+            endif else begin
+              temp = where( ~finite(plot_y), num_nan )
+              ; Is there a better min value to use here?
+              if( num_nan gt 0 )then plot_y[temp] = -1e-40
+              (*pstate).parameter_plot->setproperty,datay=plot_y
+            endelse
+
+            ; UPDATE THE PARAMETER PLOT AXES
+            (*pstate).parameter_plot->getproperty,yrange=yr,xrange=xr
+            yc=mg_linear_function(yr,[-1.9,-1.5])
+            (*pstate).parameter_plot->setproperty,xcoord_conv=xc,ycoord_conv=yc
+            (*pstate).window->draw,(*pstate).view
+          end
                           
-        'colorbar_min': begin
-                          widget_control,event.id,get_value=newval
-                          (*pstate).colorbar_min = newval[0]
-                          insitu_spec = (*pstate).insitu
-                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
-                                                temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                          ;CHANGE THE COLOR BAR SETTINGS
-                           (*pstate).colorbar1->setproperty,red_Values=r_curr
-                           (*pstate).colorbar1->setproperty,green_Values=g_curr
-                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
-                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
-                           (*pstate).window ->draw,(*pstate).view
-                        end
+        'colorbar_min': $
+          begin
+            widget_control,event.id,get_value=newval
+            (*pstate).colorbar_min = newval[0]
+            insitu_spec = (*pstate).insitu
+            temp_vert $
+              = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
+
+            MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, $
+                                  (*pstate).level1_index, $
+                                  (*pstate).path_color_table, temp_vert,$
+                                  temp_ticks, (*pstate).colorbar_min, $
+                                  (*pstate).colorbar_max, $
+                                  (*pstate).colorbar_stretch
+
+            (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+            ;CHANGE THE COLOR BAR SETTINGS
+            (*pstate).colorbar1->setproperty,red_Values=r_curr
+            (*pstate).colorbar1->setproperty,green_Values=g_curr
+            (*pstate).colorbar1->setproperty,blue_Values=b_curr
+            (*pstate).colorbar_ticktext->setproperty,$
+                      strings=strtrim(string(temp_ticks),2)
+            (*pstate).window ->draw,(*pstate).view
+          end
                         
-        'colorbar_max': begin
-                          widget_control,event.id,get_value=newval
-                          (*pstate).colorbar_max = newval[0]
-                          insitu_spec = (*pstate).insitu
-                          temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
-                                                temp_ticks, (*pstate).colorbar_min, (*pstate).colorbar_max, (*pstate).colorbar_stretch
-                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                          ;CHANGE THE COLOR BAR SETTINGS
-                           (*pstate).colorbar1->setproperty,red_Values=r_curr
-                           (*pstate).colorbar1->setproperty,green_Values=g_curr
-                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
-                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
-                           (*pstate).window ->draw,(*pstate).view
-                        end
+        'colorbar_max': $
+          begin
+            widget_control,event.id,get_value=newval
+            (*pstate).colorbar_max = newval[0]
+            insitu_spec = (*pstate).insitu
+            temp_vert $
+              = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
+
+            MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, $
+                                  (*pstate).level1_index, $
+                                  (*pstate).path_color_table, temp_vert,$
+                                  temp_ticks, (*pstate).colorbar_min, $
+                                  (*pstate).colorbar_max, $
+                                  (*pstate).colorbar_stretch
+
+            (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+            ;CHANGE THE COLOR BAR SETTINGS
+            (*pstate).colorbar1->setproperty,red_Values=r_curr
+            (*pstate).colorbar1->setproperty,green_Values=g_curr
+            (*pstate).colorbar1->setproperty,blue_Values=b_curr
+            (*pstate).colorbar_ticktext->setproperty,$
+                      strings=strtrim(string(temp_ticks),2)
+            (*pstate).window ->draw,(*pstate).view
+          end
                         
-        'colorbar_reset': begin
-                            temp_vert = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
-                            colorbar_min = (*pstate).colorbar_min
-                            colorbar_max = (*pstate).colorbar_max
-                            insitu_spec = (*pstate).insitu
-                          MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, (*pstate).level1_index, (*pstate).path_color_table, temp_vert,$
-                                                temp_ticks, colorbar_min, colorbar_max, (*pstate).colorbar_stretch, /reset
-                          (*pstate).colorbar_min = colorbar_min
-                          (*pstate).colorbar_max = colorbar_max                       
-                          (*pstate).orbit_path->SetProperty,vert_color=temp_vert
-                          ;CHANGE THE COLOR BAR SETTINGS
-                           (*pstate).colorbar1->setproperty,red_Values=r_curr
-                           (*pstate).colorbar1->setproperty,green_Values=g_curr
-                           (*pstate).colorbar1->setproperty,blue_Values=b_curr
-                           (*pstate).colorbar_ticktext->setproperty,strings=strtrim(string(temp_ticks),2)
-                           (*pstate).window ->draw,(*pstate).view
-                          end
+        'colorbar_reset': $
+          begin
+            temp_vert $
+              = intarr(3,n_elements((*pstate).insitu.spacecraft.geo_x)*2)
+            colorbar_min = (*pstate).colorbar_min
+            colorbar_max = (*pstate).colorbar_max
+            insitu_spec = (*pstate).insitu
+
+            MVN_KP_3D_PATH_COLOR, insitu_spec, (*pstate).level0_index, $
+                                  (*pstate).level1_index, $
+                                  (*pstate).path_color_table, temp_vert,$
+                                  temp_ticks, colorbar_min, colorbar_max, $
+                                  (*pstate).colorbar_stretch, /reset
+
+            (*pstate).colorbar_min = colorbar_min
+            (*pstate).colorbar_max = colorbar_max                       
+            (*pstate).orbit_path->SetProperty,vert_color=temp_vert
+            ;CHANGE THE COLOR BAR SETTINGS
+            (*pstate).colorbar1->setproperty,red_Values=r_curr
+            (*pstate).colorbar1->setproperty,green_Values=g_curr
+            (*pstate).colorbar1->setproperty,blue_Values=b_curr
+            (*pstate).colorbar_ticktext->setproperty,$
+                      strings=strtrim(string(temp_ticks),2)
+            (*pstate).window ->draw,(*pstate).view
+          end
                          
-        'orbit_onoff': begin
-                        (*pstate).orbit_model.getProperty, HIDE=result
-                        if result eq 1 then (*pstate).orbit_model->setProperty,hide=0
-                        if result eq 0 then (*pstate).orbit_model->setProperty,hide=1
-                        (*pstate).window ->draw,(*pstate).view
-                       end
+        'orbit_onoff': $
+          begin
+            (*pstate).orbit_model.getProperty, HIDE=result
+            if result eq 1 then (*pstate).orbit_model->setProperty,hide=0
+            if result eq 0 then (*pstate).orbit_model->setProperty,hide=1
+            (*pstate).window ->draw,(*pstate).view
+          end
                          
-        'periapse_all': begin
-                          (*pstate).periapse_limb_model.getProperty, HIDE=result
-                          if result eq 1 then begin
-                            (*pstate).periapse_limb_model->setProperty,hide=0
-                            widget_control,(*pstate).subbaseR8b, sensitive=1
-                            widget_control,(*pstate).button8b, set_value='Hide All Profiles'
-                          endif
-                          if result eq 0 then begin
-                             (*pstate).periapse_limb_model->setProperty,hide=1
-                             widget_control,(*pstate).subbaseR8b, sensitive=0
-                             widget_control,(*pstate).button8b, set_value='Display All Profiles'
-                          endif
+        'periapse_all': $
+          begin
+            (*pstate).periapse_limb_model.getProperty, HIDE=result
+            if result eq 1 then begin
+              (*pstate).periapse_limb_model->setProperty,hide=0
+              widget_control,(*pstate).subbaseR8b, sensitive=1
+              widget_control,(*pstate).button8b, $
+                             set_value='Hide All Profiles'
+            endif
+            if result eq 0 then begin
+              (*pstate).periapse_limb_model->setProperty,hide=1
+              widget_control,(*pstate).subbaseR8b, sensitive=0
+              widget_control,(*pstate).button8b, $
+                             set_value='Display All Profiles'
+            endif
                           
-                          (*pstate).window ->draw,(*pstate).view
-                        end
+            (*pstate).window ->draw,(*pstate).view
+          end
                         
         'periapse_some': begin
             

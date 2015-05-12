@@ -5,10 +5,12 @@
 ;
 ;
 ; :Description:
-;     Read local Maven KP data files into memory. Capable of reading both in situ KP data files
-;     and IUVS KP data files. Capable of reading in either CDF or ASCII formated data files. 
-;     By default, CDF files are read. There are also hooks in place, using /download_new keyword, 
-;     to query the SDC web server and download missing or updated KP data files.  
+;     Read local Maven KP data files into memory. Capable of reading both 
+;     in situ KP data files and IUVS KP data files. Capable of reading in 
+;     either CDF or ASCII formated data files. 
+;     By default, CDF files are read. There are also hooks in place, 
+;     using /download_new keyword, to query the SDC web server and 
+;     download missing or updated KP data files.  
 ;
 ; :Params:
 ;    time: in, required, can be a scalar or a two item array of type:
@@ -17,43 +19,50 @@
 ;       A start or start & stop time (or orbit #) range for reading kp data. 
 ;       
 ;    insitu_output: output, required, type=array of structures
-;       This paramater will contain the in situ KP data that is read into memory. It will
-;       be structured as an array of structures. Each array entry corresponds to each time. 
+;       This paramater will contain the in situ KP data that is read into 
+;       memory. It will be structured as an array of structures. Each 
+;       array entry corresponds to each time. 
 ;       
 ;    iuvs_output: output, optional, type=array of structures
-;       This parameter will contain the IUVS KP data that is read into memory. It will be
-;       structured as an array of structures. Each array entry corresponds to one orbit of data. 
+;       This parameter will contain the IUVS KP data that is read into 
+;       memory. It will be structured as an array of structures. Each array 
+;       entry corresponds to one orbit of data. 
 ;
 ; :Keywords:
 ;    download_new: in, optional, type=boolean
-;       optional keyword to instruct IDL to query the SDC server to look for any new or missing
-;       files to download over the input timerange.
+;       optional keyword to instruct IDL to query the SDC server to look 
+;       for any new or missing files to download over the input timerange.
 ;    update_prefs: in, optional, type=boolean
-;       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
-;       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
-;       search or download of data files will continue.
+;       Before searching or downloading data, allow user to update 
+;       mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR. 
+;       After selecting new path to data folders, search or download of 
+;       data files will continue.
 ;    only_update_prefs: in, optional, type=boolean
-;       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
+;       Allow user to update mvn_toolkit_prefs.txt - which contains 
+;       location of ROOT_DATA_DIR.
 ;       After selecting new paths to data folders, procedure will return - not
 ;       downloading any data.
 ;    debug:  in, optional, type=boolean
-;       On error, - "Stop immediately at the statement that caused the error and print 
-;       the current program stack." If not specified, error message will be printed and 
-;       IDL with return to main program level and stop.
-;    duration: in, optional, type=integer
-;       Length of time range for data read, only used if input time parameter is a single value.
-;       If input time is a string, duration is interpreted as seconds. If input time is an integer
-;       (orbit), duration is interpreted as orbits. 
+;       On error, - "Stop immediately at the statement that caused the 
+;       error and print the current program stack." If not specified, 
+;       error message will be printed and IDL with return to main program 
+;       level and stop.
+;    duration: in, optional, type=integer, string
+;       Length of time range for data read, only used if input time 
+;       parameter is a single value.
+;       If input time is a string, duration is interpreted as seconds. 
+;       If input time is integer (orbit), duration is interpreted as orbits. 
 ;    text_files: in optional, type=boolean
 ;       Read in ASCII files instead of the default of reading CDF files. 
 ;    save_files: in optional, type=boolean
-;       Read in .sav files instead of the default of reading CDF files. This option exists primarily
-;       for the developers and debugging. 
+;       Read in .sav files instead of the default of reading CDF files. 
+;       This option exists primarily for the developers and debugging. 
 ;    insitu_only: in optional, type=boolean
-;       Read in only in situ data. If this is supplied, the iuvs_output paramater will be ignored if 
-;       input. Because insitu spacecraft time series ephemeris data is necessary for the visulization
-;       procedures to work, there is no iuvs_only option. 
-
+;       Read in only in situ data. If this is supplied, the iuvs_output 
+;       paramater will be ignored if input. Because insitu spacecraft time 
+;       series ephemeris data is necessary for the visulization procedures 
+;       to work, there is no iuvs_only option. 
+;
 ;    lpw: in, optional, type=boolean
 ;       return all of the LPW data
 ;    euv: in, optional, type=boolean
@@ -106,7 +115,8 @@
 ;-
 
 
-pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
+pro MVN_KP_READ, time, insitu_output, iuvs_output, $
+                 download_new=download_new, $
                  update_prefs=update_prefs, debug=debug, duration=duration, $
                  text_files=text_files, save_files=save_files, $
                  insitu_only=insitu_only, insitu_all=insitu_all, $
@@ -165,8 +175,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
     out = mvn_kp_config_file(/update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
-    if keyword_set(time) or keyword_set(insitu) or keyword_set(iuvs) then begin
-      print, "Warning. /ONLY_UPDATE_PREFS option supplied, not reading any data." 
+    if keyword_set(time) or keyword_set(insitu) or $
+       keyword_set(iuvs) then begin
+      print, "Warning. /ONLY_UPDATE_PREFS option supplied, " $
+            + "not reading any data." 
       print, "If you want to update the preferences file & read data, "$
             + "use /UPDATE_PREFS instead"
     endif
@@ -260,7 +272,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
     endif
     if keyword_set(iuvs_coronaEchellehigh) then begin
       instruments.c_e_high   = 1
-      print,'Returning All IUVS Instrument Corona Echelle High Altitude KP Data.'
+      print,'Returning All IUVS Instrument Corona Echelle High Altitude '$
+           +'KP Data.'
     endif
     if keyword_set(iuvs_coronaEchellelimb) then begin
       instruments.c_e_limb   = 1
@@ -272,7 +285,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
     endif
     if keyword_set(iuvs_coronaLoreshigh)   then begin
       instruments.c_l_high   = 1
-      print,'Returning All IUVS Instrument Corona Lores High Altitude KP Data.'
+      print,'Returning All IUVS Instrument Corona Lores High Altitude ' $
+          + 'KP Data.'
     endif
     if keyword_set(iuvs_coronaLoreslimb)   then begin
       instruments.c_l_limb   = 1
@@ -418,7 +432,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
       end_time_string = MVN_KP_TIME_CREATE_STRING(end_time_jul)
       
     endif else begin
-      ;IF THE USER SUPPLIES A 2-VALUE ARRAY OF TIMES, USE THESE AS TIME STRINGS   - FIXME VALIDATE TIMES HERE?
+      ;IF THE USER SUPPLIES A 2-VALUE ARRAY OF TIMES, 
+      ;USE THESE AS TIME STRINGS   - FIXME VALIDATE TIMES HERE?
       begin_time_string = time[0]
       end_time_string   = time[1]
       
@@ -452,7 +467,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
     endelse
   endif
   
-  ;IF LONG INTEGER TIME SUPPLIED CONVERT FROM UNIX TIME TO TIME STRING (FIXME: SECONDS?)
+  ;IF LONG INTEGER TIME SUPPLIED CONVERT FROM UNIX TIME TO TIME STRING 
+  ;(FIXME: SECONDS?)
   ;;============================
   if size(time,/type) eq 3 then begin
     if n_elements(time) eq 1 then begin
@@ -621,7 +637,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, download_new=download_new, $
         endif
         
       endfor
-
+;stop
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED and 
       ; any observation modes found within time range.
       if iuvs_index gt 0 then begin
