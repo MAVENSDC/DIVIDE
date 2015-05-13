@@ -41,6 +41,11 @@ REQUIRED FIELDS
 
 OPTIONAL FIELDS
 ***************
+  insitu_only: Read in only in situ data.
+               If this is supplied, the iuvs_output parameter will be ignored.
+               Because the visualization procedures require the insitu 
+               spacecraft time series ephemeris data, a iuvs_only option
+               is *not* provided.
   download_new: optional keyword to instruct IDL to query the SDC server 
                 to look for any new or missing files to download over the 
                 input timerange.
@@ -48,10 +53,10 @@ OPTIONAL FIELDS
                 update mvn_toolkit_prefs.txt - which contains paths to the root 
                 data directory.  After selecting new path to data folders,
                 search or download of data files will continue.
-  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains 
-                     paths to the root data directory.  After selecting new path 
-                     to data folders, procedure will return - not downloading 
-                     any data.
+  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt -- which 
+                     contains paths to the root data directory.  After 
+                     selecting the new path to the data folders, the 
+                     procedure will return -- having not downloaded any data.
   debug:  On error, - "Stop immediately at the statement that caused the error 
                        and print the current program stack." 
           If not specified, error message will be printed and 
@@ -59,15 +64,10 @@ OPTIONAL FIELDS
   duration: Length of time range for data read, only used if input time 
             parameter is a single value.
             If input time is string, duration is interpreted as seconds. 
-            If input time is integer (orbit), duration is interpreted as orbits. 
+            If input time is integer, duration is interpreted as orbits. 
   text_files: Read in ASCII files instead of the default of reading CDF files. 
   save_files: Read in .sav files instead of the default of reading CDF files. 
               This option exists primarily for the developers and debugging. 
-  insitu_only: Read in only in situ data.  
-               If this is supplied, the iuvs_output parameter will be ignored.
-               Because insitu spacecraft time series ephemeris data is necessary 
-               for the visulization procedures to work, 
-               there is no iuvs_only option. 
 
   lpw: return all of the LPW data
   euv: return all of the EUV data
