@@ -621,7 +621,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
         ;; Construct path to file
         date_path = mvn_kp_date_subdir(iuvs_filenames[file])
         fileAndPath = kp_iuvs_data_directory+date_path+iuvs_filenames[file]
-        
+print,fileAndPath        
         MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
                                begin_time=begin_time_struct, $
                                end_time=end_time_struct, $
@@ -637,7 +637,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
         endif
         
       endfor
-;stop
+
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED and 
       ; any observation modes found within time range.
       if iuvs_index gt 0 then begin

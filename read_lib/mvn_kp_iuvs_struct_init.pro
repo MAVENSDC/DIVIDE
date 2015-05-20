@@ -79,7 +79,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   ;INCLUDE IUVS APOAPSE DATA STRUCTURE
   if instruments.apoapse then begin
     i2 = create_struct(                                                     $
-;      NAME               ='apoapse',                                        $
+      NAME               ='apoapse',                                        $
       iuvs_record_common ,                                                  $
       'ozone_depth'      ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $
       'ozone_depth_err'  ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -106,7 +106,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
                ; In future, either make code abel to check for this and adjust
                ; or get this info from the label.
     i6 = create_struct(                                                      $
-;      NAME                   ='c_l_high',                                   $
+      NAME                   ='c_l_high',                                   $
 ; I should not have to comment these names out
 ;  SOmewhere this has been previously named and defined
       iuvs_record_common     ,                                               $
@@ -131,7 +131,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 ;
   if instruments.c_l_limb then begin
     i7 = create_struct(                                                   $
- ;     NAME               ='c_l_limb',                                     $
+      NAME               ='c_l_limb',                                     $
       iuvs_record_common ,                                                $
       'scale_height_id'  ,strarr(7),                                      $
       'scale_height'     ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $

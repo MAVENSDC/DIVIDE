@@ -2,7 +2,7 @@
 * MVN_KP_ADD_DATA *
 *******************
 
-   A simple routine for adding up to 9 user defined data arrays 
+   A simple routine for adding user defined data arrays 
    to the insitu KP data structure
 
    ** RESTRICTIONS **: 
@@ -18,12 +18,11 @@ mvn_kp_add_data, kp_data, data_name, output, _extra = e, help=help
 REQUIRED FIELDS
 **************
   kp_data: In-situ Key Parameter Data Structure
-  data_name : the name of the new data to be added onto the USER substructure, 
+  data_name : the name(s) of the new data to be added onto the USER substructure, 
               either a single string or an array of strings equal in length 
               to the number of new data fields.
-  output : the name of the newly created data structure
-  data: the data array(s) to be added to the kp data structure.
-        The number of listed arrays MUST equal the number of data_name
+  output: the data array(s) to be added to the kp data structure.
+          The number of listed arrays MUST equal the number of data_name
 
 OPTIONAL FIELDS
 ***************

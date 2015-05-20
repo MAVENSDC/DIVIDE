@@ -78,6 +78,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     second_level_count, base_tags,  first_level_tags, second_level_tags
 
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
+;    mvn_kp_get_list,kp_data,list=list; not working yet
     if arg_present(list)  then begin  
       list = strarr(250)
       index2=0
@@ -102,7 +103,6 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
         return
       endif
     endelse
-  
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS 
   ;IF REQUESTED.
   if keyword_set(range) then begin
@@ -116,9 +116,6 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
    if n_elements(parameter) ne 1 then title=strarr(n_elements(parameter))
   endif
   
-;  if keyword_set(thick) eq 0 then thick=1     ;SET DEFAULT PLOT LINE THICKNESS
-;  if keyword_set(linestyle) eq 0 then linestyle=0 ;SET DEFAULT PLOT LINE STYLE
-;  if keyword_set(symbol) eq 0 then symbol="None"  ;SET DEFAULT PLOT SYMBOL
   if keyword_set(directgraphic) eq 0 then begin
    if Float(!Version.Release) lt 8.0 THEN $
       directgraphic = 1  ;FORCE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL
@@ -146,15 +143,24 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
    kp_start_index = 0
    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
-  
-  
+;
+;  Copy the overplot check from mvn_kp_plot rather than the one used here
+;
+  overplot_check = 0
+  for i = 0,n_elements(parameter)-1 do begin
+    pos = strpos(parameter[i],',')
+    if pos ne -1 then overplot_check = 1
+  endfor
+
   ;CREATE THE PLOT VECTORS
- 
+  
+ if overplot_check ne 1 then begin
   if n_elements(parameter) eq 1 then begin 
   ;only going to plot a single altitude plot
-      pos = strpos(parameter,',')  ; check if there's more than one 
-                                   ; parameter being overplot
-      if pos ne -1 then overplots=byte(1)      
+;      pos = strpos(parameter,',')  ; check if there's more than one 
+;                                   ; parameter being overplot
+;      if pos ne -1 then overplots=byte(1)      
+
     if size(parameter,/type) eq 2 then begin      ;INTEGER PARAMETER INDEX
           MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
             first_level_count, base_tags, first_level_tags, check, $
@@ -188,11 +194,10 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
        endelse  
     endif ;end of string parameter loop
   endif ;end of single altitude plot loop
-  
-  ;CREATE SINGLE ALTITUDE PLOT
 
+  ;CREATE SINGLE ALTITUDE PLOT
   
-  if directgraphic eq 0 then begin 
+  if keyword_set(directgraphic) eq 0 then begin 
     ; PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
     if n_elements(parameter) eq 1 then begin
       w = window(window_title='Maven KP Data Altitude Plots')
@@ -207,7 +212,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       endelse
     endif
   endif
-  if directgraphic ne 0 then begin
+  if keyword_set(directgraphic) ne 0 then begin
     ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
     if n_elements(parameter) eq 1 then begin
       device,decomposed=0
@@ -229,84 +234,39 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;CREATE MULTIPLE ALITIUDE PLOT VECTORS
 
   if n_elements(parameter) gt 1 then begin
-    if size(parameter,/type) eq 2 then begin ;INTEGER ARRAY PARAMETER LOOP
-      x = fltarr(n_elements(parameter),$
-                 n_elements(kp_data[kp_start_index:kp_end_index].$
-                 spacecraft.altitude))
-      y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
-      x_axis_title = strarr(n_elements(parameter))
-      for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, $
-                             first_level_count, base_tags,  $
-                             first_level_tags, check, level0_index, $
-                             level1_index, tag_array
-       if check eq 0 then begin
-         x[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).$
-                                                       (level1_index)
-         x_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-       endif else begin
-         print,'Requested plot parameter is not included in the data.'
-         print,'Try /LIST to confirm your parameter choice.'
-         return
-       endelse
-      endfor
-    endif                ;END OF THE INTEGER ARRAY PARAMETER LOOP
-    if size(parameter,/type) eq 7 then begin
-     for i=0, n_elements(parameter) -1 do begin
-      pos = strpos(parameter[i],',')
-      if pos ne -1 then overplots=byte(1)
-     endfor
-      x = fltarr(n_elements(parameter),$
-                 n_elements(kp_data[kp_start_index:kp_end_index].$
-                 spacecraft.altitude))
-      y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
-      x_axis_title = strarr(n_elements(parameter))
-      for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, $
-                             first_level_count, base_tags, first_level_tags, $
-                             check, level0_index, level1_index, tag_array
-       if check eq 1 then begin
-           print,'Whoops, ',strupcase(parameter[i]),$
-                 ' is not part of the KP data structure.'
-           print,'Check the spelling, or the structure tags with ' $
-                 + 'the /LIST keyword.'
-           return
-         endif else begin            
-           
-           x[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).$
-                                                         (level1_index)
-           y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude   
-           x_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-         endelse  
-       endfor   
-    endif
-  endif 
-
-
-          ;CREATE DUMMY YRANGE IF NOT DEFINED
-          temp_yrange = dblarr(2,n_elements(parameter))
-          if n_elements(yrange) ne 0 then begin
-            temp_yrange = yrange
-          endif else begin
-            for i=0,n_elements(parameter)-1 do begin
-              temp_yrange[0,i] = min(y[*])
-              temp_yrange[1,i] = max(y[*])
-            endfor
-          endelse
-          ;CREATE DUMMY XRANGE IF NOT DEFINED
-          temp_xrange = dblarr(2,n_elements(parameter))
-          if n_elements(xrange) ne 0 then begin
-            temp_xrange = xrange
-          endif else begin
-            for i=0,n_elements(parameter)-1 do begin
-              temp_xrange[0,i] = min(x[i,*])
-              temp_xrange[1,i] = max(x[i,*])
-            endfor
-          endelse
-         
+;
+;  Now, insert the create multi vectors code
+;
+    mvn_kp_create_multi_vectors, kp_data[kp_start_index:kp_end_index], $
+                                 parameter, x, x_error, x_axis_title, $
+                                 error=error, y_labels=y_labels, $
+                                 err_check=err_check
+    y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
+  endif
+  
+  ;CREATE DUMMY YRANGE IF NOT DEFINED
+  temp_yrange = dblarr(2,n_elements(parameter))
+  if n_elements(yrange) ne 0 then begin
+    temp_yrange = yrange
+  endif else begin
+    for i=0,n_elements(parameter)-1 do begin
+      temp_yrange[0,i] = min(y[*],/NaN)
+      temp_yrange[1,i] = max(y[*],/NaN)
+    endfor
+  endelse
+  ;CREATE DUMMY XRANGE IF NOT DEFINED
+  temp_xrange = dblarr(2,n_elements(parameter))
+  if n_elements(xrange) ne 0 then begin
+    temp_xrange = xrange
+  endif else begin
+    for i=0,n_elements(parameter)-1 do begin
+      temp_xrange[0,i] = min(x[i,*],/NaN)
+      temp_xrange[1,i] = max(x[i,*],/NaN)
+    endfor
+  endelse     
           
   ;CREATE THE MULTPLE ALTITUDE PLOT  
-  if directgraphic eq 0 then begin  
+  if keyword_set(directgraphic) eq 0 then begin  
     ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
     if n_elements(parameter) gt 1 then begin
       w = window(window_title='Maven KP Data Altitude Plots')
@@ -326,10 +286,11 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                       xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
                       xrange=temp_xrange[*,i], _extra = e)
         endelse
-      endfor
-    endif
-  endif
-  if directgraphic ne 0 then begin 
+      endfor ; loop over all parameters
+    endif    ; if there is more than on parameter
+  endif      ; if object oriented graphics
+  
+  if keyword_set(directgraphic) ne 0 then begin 
     ;PLOT USING THE OLD IDL DIRECT GRAPHICS
           device,decomposed=0
           loadct,0,/silent
@@ -358,19 +319,18 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
               title=title[i], color=0,charsize=2,font=-1,$
               yrange=temp_yrange[*,i],xrange=temp_xrange[*,i], _extra = e
         endfor 
-      endelse
-    endif
-  endif  
-  
-  if( keyword_set(overplots) )then begin
+      endelse ; if davin then else
+    endif     ; if there is more tha one parameter
+  endif       ; if using direct graphics
+ endif else begin ; Finished with no over plots; now do overplots
+
     ;BEGIN SEPARATE ROUTINES IF ANY OVERPLOTTING IS REQUIRED.
 
-  ;ANALYZE TEH INPUT STRINGS TO DETERMINE PARAMETERS AND SIZES
+  ;ANALYZE THE INPUT STRINGS TO DETERMINE PARAMETERS AND SIZES
     
     plot_count =intarr(n_elements(parameter))
     total_lines = 0
-    true_index = intarr(50)
-    
+    true_index = intarr(50)    
     
     for i=0, n_elements(parameter)-1 do begin
       check = strmatch(parameter[i],'*,*')
@@ -411,57 +371,40 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 
   ;CHECK PARAMETER VALIDITY AND EXTRACT DATA
   
-      x = fltarr(n_elements(true_index),$
-                 n_elements(kp_data[kp_start_index:kp_end_index].$
-                 spacecraft.altitude))
-      y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
-      x_axis_title = strarr(n_elements(true_index))
-      for i=0,n_elements(true_index)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, $
-                             first_level_count, base_tags, first_level_tags, $
-                             check, level0_index, level1_index, tag_array
-       if check eq 1 then begin
-           print,'Whoops, ',strupcase(true_index[i]),$
-                 ' is not part of the KP data structure.'
-           print,'Check the spelling, or the structure tags with the' $
-                 + ' /LIST keyword.'
-           return
-         endif else begin            
-           
-           x[i,*] = kp_data[kp_start_index:kp_end_index].(level0_index).$
-                                                         (level1_index)
-           y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude   
-           x_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-         endelse  
-       endfor   
-  
+  ;
+  ; Now, use the create_multi_vector code with true_index in place
+  ;  of parameter to fill the data, error, and label vectors
+  ;
+  y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
+  mvn_kp_create_multi_vectors, kp_data[kp_start_index:kp_end_index], $
+                               true_index, x, x_error, x_axis_title, $
+                               error=error, y_labels=y_labels, $
+                               err_check=err_check
 
-       ;CREATE DUMMY YRANGE IF NOT DEFINED
-          temp_yrange = dblarr(2,n_elements(true_index))
-          if n_elements(yrange) ne 0 then begin
-            temp_yrange = yrange
-          endif else begin
-            for i=0,n_elements(true_index)-1 do begin
-              temp_yrange[0,i] = min(y)
-              temp_yrange[1,i] = max(y)
-            endfor
-          endelse
-       ;CREATE DUMMY XRANGE IF NOT DEFINED
-          temp_xrange = dblarr(2,n_elements(true_index))
-          if n_elements(xrange) ne 0 then begin
-            temp_xrange = xrange
-          endif else begin
-            for i=0,n_elements(true_index)-1 do begin
-              temp_xrange[0,i] = min(x[i,*])
-              temp_xrange[1,i] = max(x[i,*])
-            endfor
-          endelse  
-  
-
+  ;CREATE DUMMY YRANGE IF NOT DEFINED
+  temp_yrange = dblarr(2,n_elements(true_index))
+  if n_elements(yrange) ne 0 then begin
+    temp_yrange = yrange
+  endif else begin
+    for i=0,n_elements(true_index)-1 do begin
+      temp_yrange[0,i] = min(y,/NaN)
+      temp_yrange[1,i] = max(y,/NaN)
+    endfor
+  endelse
+  ;CREATE DUMMY XRANGE IF NOT DEFINED
+  temp_xrange = dblarr(2,n_elements(true_index))
+  if n_elements(xrange) ne 0 then begin
+    temp_xrange = xrange
+  endif else begin
+    for i=0,n_elements(true_index)-1 do begin
+      temp_xrange[0,i] = min(x[i,*],/NaN)
+      temp_xrange[1,i] = max(x[i,*],/NaN)
+    endfor
+  endelse  
 
   ;CREATE THE PLOTS
   
-  if directgraphic eq 0 then begin
+  if keyword_set(directgraphic) eq 0 then begin
   ;   if n_elements(parameter) gt 1 then begin
       oplot_index = 0
        w = window(window_title='Maven KP Data Altitude Plots')
@@ -551,7 +494,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
         endelse 
       endfor
   endif 
-  if directgraphic eq 1 then begin
+  if keyword_set(directgraphic) eq 1 then begin
     device,decomposed=1
   ;  if n_elements(parameter) gt 1 then begin
       !P.MULTI = [0, n_elements(parameter), 1]
@@ -637,7 +580,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
          endfor 
       endelse
     endif
-  endif
+  endelse ; end overplots if..then..else
 ;
 ;  If using oo graphics and a variable was provided, return plot to that var
 ;

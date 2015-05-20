@@ -35,8 +35,15 @@ function mvn_kp_interpol_model, kp_data, model_meta, model_dims, model_data, $
                                 grid3=grid3, nearest_neighbor=nearest_neighbor, $
                                 help=help
 ;
-; Place an argument check here,  Should provide 4 args (unless IUVS will be needed)
+; Place an argument check here,  Should provide 4 args 
+; (unless IUVS will be needed)
 ;
+
+;
+;  Place a check on passed parameters here.  I.e., this is a verification
+;  that the required elements (model_{meta,dims,data}) have been provided
+;  It will be needed to catch typos gracefully.
+;  This may be internal use only, so maybe unnecessary...
 
 ;
 ; Provide help if requested

@@ -6,7 +6,6 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
   ;;;    FIXME - Clean up this whole time checking stuff
   ;;
 
-
   ;; Init new structure with only instruments in instruments struct
   MVN_KP_IUVS_STRUCT_INIT, iuvs_record_time_temp, instruments=instruments
   any_within_bounds = 0
@@ -24,7 +23,6 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     endfor
   endif
   
-help,instruments
   ;; Check Echelle Observation Modes
   if instruments.c_e_limb then begin
     if (iuvs_record_temp.corona_e_limb.time_start ne '') then begin
@@ -86,13 +84,10 @@ help,instruments
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_high.time_start, $
                                  begin_time, end_time)
       print,'c-l-high: ',check
-      print,iuvs_record_temp.corona_lo_high.time_start
-      print,begin_time
-      print,end_time
-;-hack      if check then begin
+      if check then begin
         iuvs_record_time_temp.corona_lo_high = iuvs_record_temp.corona_lo_high
         any_within_bounds = 1
-;-hack      endif
+      endif
     endif
   endif
   
@@ -109,7 +104,7 @@ help,instruments
       endif
     endif
   endif
-  
+
   ;; If any observations within time bounds, return structure. 
   ;; Otherwise, set to -1
 print,'any_within-bound = ',any_within_bounds
@@ -119,7 +114,7 @@ print,'any_within-bound = ',any_within_bounds
   endif else begin
     iuvs_record_temp = -1
   endelse
-;  stop
+
   return
 end
 
@@ -318,15 +313,12 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
 
     ;; Call IUVS ASCII reader to read one iuvs file in ascii format
     MVN_KP_READ_IUVS_ASCII, filename, iuvs_record
-print,filename
-;help,iuvs_record ; this has demonstrated that the record exists
-print,time_bounds
+
     ;; If timebounds or instrument array - FIXME 
     if time_bounds then begin
       mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, $
                                          end_time, instruments
     endif
-    
   
   endif else begin
     ;; Default is to read CDF files

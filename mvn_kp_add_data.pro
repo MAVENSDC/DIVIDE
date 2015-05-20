@@ -1,7 +1,7 @@
 ;+
-; :Name: mvn_kp_add_data_obsolete
+; :Name: mvn_kp_add_data
 ; 
-; :Author: Kristopher Larsen
+; :Author: Kevin McGouldrick
 ; 
 ; :Description: 
 ;    A simple routine for adding up to 9 user defined data arrays to the 
@@ -23,23 +23,23 @@
 ;       the number of new data fields.
 ;    output : out, required, type="structure"
 ;       the name of the newly created data structure
-;    data1: in, required, type=dblarr
-;       the first new data array to be added to the kp data structure
-;    data2-data9: in, optional, type=dblarr
-;       optional additional data arrays to be added to the new strucutre.
+;    data : in, required, type=array
+;       The variable(s) to be appended to the input data structure.
+;       Number of added variables MUST equal the number of elements
+;       in data_name
+;
+; :Keywords:
+;     help: in, optional, type=byte
+;       Invoke the help listing
 ;       
-;       
-; :Version: 1.0     July 8, 2014
+; :Version: 1.0     April 30, 2015
 ;-
 
 
-pro mvn_kp_add_data_obsolete, kp_data, data_name, output, data1=data1, data2=data2, $
-                     data3=data3, data4=data4, data5=data5, $
-                     data6=data6, data7=data7, data8=data8, $
-                     data9=data9, help=help
+pro mvn_kp_add_data, kp_data, data_name, output, _extra = e, help=help
 
   if keyword_set(help) then begin
-    mvn_kp_get_help,'mvn_kp_add_data_obsolete'
+    mvn_kp_get_help,'mvn_kp_add_data'
     return
   endif
 
@@ -56,73 +56,111 @@ pro mvn_kp_add_data_obsolete, kp_data, data_name, output, data1=data1, data2=dat
             +'do not contain the USER substructure, sorry.'
     return
   endif
-
-
-  if n_elements(data_name) eq 1 then begin
-
-    input_size = size(kp_data)
-    data_size = size(data1)
-        
-print,data_size(1)
-print,input_size(1)
-    if data_size(1) ne input_size(1) then begin
-      print,'Whoops, the data to be added to the INSITU KP structure '$
-             +'must have the same number of elements.'
+;
+;  Verify that the number of tags names equals the number of variables
+;  to be added to the data structure
+;
+  if( size(e.(0),/type) eq 8 )then begin
+  ;
+  ;  The passed data is in the form of a structure
+  ;  Compare the numebr of level2 tags to the number of names
+  ;  
+    if( n_elements(data_name) ne n_tags(e.(0)) )then begin
+      print,'*****ERROR*****'
+      print,'Number of names provided in <data_name>'
+      print,'does not match number of tags in given model structure.'
+      print,'Number of tag names provided (2nd argument): '$
+        + strtrim(n_elements(data_name),1)
+      print,'Number of tags in the structure provided: '$
+        + strtrim(n_tags(e.(0)),1)
+      print,'Unable to proceed.  Exiting....'
       return
     endif
-    
-    ;BASIC CHECKS ARE PASSED, SO ADD THE NEW DATA FIELD 
-    ;TO THE INPUT DATA STRUCTURE
-
-    a1 = create_struct(name='USER',data_name,0.0d)
-    a1_temp = create_struct(['user'],a1)
-    s = size(kp_data)
-    a1a = replicate(a1_temp, s(1))
-        
-    mvn_combine_structs, kp_data, a1a, output
-  
-    ;POPULATE THE NEW STRUCTURE FIELD WITH THE INPUT DATA
-    
-    output.user.(0) = data1
-  
   endif else begin
-      
-    case n_elements(data_name) of 
-      2: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d)
-      3: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d)
-      4: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d)
-      5: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d)
-      6: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d, data_name[5], 0.0d)
-      7: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d, data_name[5], 0.0d, $
-                                  data_name[6], 0.0d)
-      8: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d, data_name[5], 0.0d, $
-                                  data_name[6], 0.0d, data_name[7], 0.0d)
-      9: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d, data_name[5], 0.0d, $
-                                  data_name[6], 0.0d, data_name[7], 0.0d, data_name[8], 0.0d)
-     10: a1 = create_struct(name='USER', data_name[0], 0.0d, data_name[1], 0.0d, data_name[2], 0.0d, data_name[3], 0.0d, data_name[4], 0.0d, data_name[5], 0.0d, $
-                                  data_name[6], 0.0d, data_name[7], 0.0d, data_name[8], 0.0d, data_name[9], 0.0d)
-    endcase
-          
-    a1_temp = create_struct(['user'], a1)
-    s = size(kp_data)
-    a1a = replicate(a1_temp, s(1))
-         
-    mvn_combine_structs, kp_data, a1a, output
-        
-    ;POPULATE THE USER SUBSTRUCTURE WITH THE INPUT DATA  
-    if keyword_set(data1) then output.user.(0) = data1
-    if keyword_set(data2) then output.user.(1) = data2
-    if keyword_set(data3) then output.user.(2) = data3
-    if keyword_set(data4) then output.user.(3) = data4
-    if keyword_set(data5) then output.user.(4) = data5
-    if keyword_set(data6) then output.user.(5) = data6
-    if keyword_set(data7) then output.user.(6) = data7
-    if keyword_set(data8) then output.user.(7) = data8
-    if keyword_set(data9) then output.user.(8) = data9
-    if keyword_set(data10) then output.user.(9) = data10
-        
+  ;
+  ;  The passed data are captured in the extra keyword and were provided
+  ;  as a finite list of variables.
+  ;
+    if( n_elements(data_name) ne n_tags(e) )then begin
+      print,'*****ERROR*****'
+      print,'Mismatch between tag_names and input variables.'
+      print,'Number of tag names provided (2nd argument): '$
+            + strtrim(string(n_elements(data_name)),1)
+      print,'Number of variables provided (4th through Nth arguments): '$
+            + strtrim(string(n_tags(e)),1)
+      print,'Unable to proceed.  Exiting....'
+      return
+    endif
   endelse
+;
+;  Verify that the sizes of the provided variables match that of the 
+;  input data structure.
+;  NB, this does not consider multi-dimensional variables
+;
+goto,skip_time_check
+  if( size(e.(0),/type) eq 8 )then begin
+    ;
+    ;  Verify that each attribute of the passed structure has right
+    ;  size of the time dimension
+    ;
+    for i = 0,n_tags(e.(0))-1 do begin
+      if( (size(kp_data))[1] ne (size(e.(0).(i)))[1] )then begin
+        print,'*****ERROR*****'
+        print,'Size mismatch'
+        print,'Input variable: '+(tag_names(e.(0)))[i]$
+          +' has dimensions: '+strtrim(string(size(e.(0).(i),/dim)),1)
+        print,'Input KP structure has time dimension: '$
+              +strtrim(string((size(kp_data))[1]),1)
+        print,'Exiting....
+        return
+      endif
+    endfor
+  endif else begin
+    ;
+    ;  Verify that each passed variable has the right size of the
+    ;  time dimension
+    ;
+    for i = 0,n_tags(e)-1 do begin
+      if( (size(kp_data))[1] ne (size(e.(i)))[1] )then begin
+        print,'*****ERROR*****'
+        print,'Size mismatch'
+        print,'Input variable: '+(tag_names(e))[i]$
+            +' has dimensions: '+size(e.(i),/dim)
+        print,'Input KP structure has time dimension: '+(size(kp_data))[1]
+        print,'Exiting....
+        return
+      endif
+    endfor
+  endelse
+skip_time_check: wait,1e-6
+;  First, build a dummy structure with the appropriate names and 
+;  number of tags.  Temporarily fill with scalar zeros to save memory.
+  a1 = create_struct( data_name[0], 0.d0 )
+  for i = 1,n_elements(data_name)-1 do begin
+    a1 = create_struct( a1, data_name[i], 0.d0 )
+  endfor
 
+;  Next, make an array of structures in parallel shape to that of the 
+;  input KP data, and with a head tag name of USER
+  a1_temp = create_struct(['user'],a1)
+  a1a = replicate( a1_temp, (size(kp_data))[1] )
+
+;  Combine the new USER data structure with the existing kp_data structure
+;  and produce a new structure called OUTPUT
+  mvn_combine_structs, kp_data, a1a, output
+  
+;  Now, cycle through the tags and variables, filling them one by one
+;  If we wish to keep the metadata here, we'll need some datatype checks
+  if( size(e.(0),/type) eq 8 )then begin
+    for i = 0,n_tags(e.(0))-1 do begin
+      output.user.(i) = e.(0).(i)
+    endfor
+  endif else begin
+    for i = 0,n_tags(e)-1 do begin
+      output.user.(i) = e.(i)
+    endfor
+  endelse
+;  And that should be that...
 end
 
 

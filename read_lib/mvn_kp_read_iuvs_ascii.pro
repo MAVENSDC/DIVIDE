@@ -85,7 +85,7 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   ;; Assume next line with data will contain 
   ;; a single specicies and temperature
   temp = ''
- 
+
   ;; Temperature_id, temperature, and temperature_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   in_struct.temperature_id = string(line[0])
@@ -94,7 +94,6 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
   in_struct.temperature_err = float(line[1])
     
-
   ;; Scale Height ID, Scale Height, and Scale Height Err
   line =   mvn_kp_iuvs_ascii_read_blanks(lun)
   in_struct.scale_height_id = line

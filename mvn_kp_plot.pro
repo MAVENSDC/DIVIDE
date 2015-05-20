@@ -65,7 +65,6 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
                      second_level_count, base_tags,  first_level_tags, $
                      second_level_tags
-
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
     if arg_present(list)  then begin  
       list = strarr(250)
@@ -267,125 +266,21 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     ;CREATE MULTIPLE  PLOT VECTORS
     
     if n_elements(parameter) gt 1 then begin
-      if size(parameter,/type) eq 2 then begin ;INTEGER ARRAY PARAMETER LOOP
-        y = fltarr(n_elements(parameter),$
-                   n_elements(kp_data[kp_start_index:kp_end_index].time))
-        x = kp_data[kp_start_index:kp_end_index].time
-        y_axis_title = strarr(n_elements(parameter))
-        if keyword_set(error) then begin
-          y_error $
-            = dblarr(2,n_elements(parameter),$
-                     n_elements(kp_data[kp_start_index:kp_end_index].time)) 
-        endif
-        err_check = intarr(n_elements(parameter))
-        for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, $
-                             first_level_count, base_tags, first_level_tags, $
-                             check, level0_index, level1_index, tag_array
-          if check eq 0 then begin
-            y[i,*] = kp_data[kp_start_index:kp_end_index]$
-                     .(level0_index).(level1_index)
-            if keyword_set(y_labels) then begin
-              y_axis_title[i] = y_labels[i]
-            endif else begin
-              y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-            endelse
-            if keyword_set(error) then begin
-              mvn_kp_tag_verify, kp_data, error[i], base_tag_count, $
-                                 first_level_count, base_tags, $
-                                 first_level_tags, err_check[i], err_level0, $
-                                 err_level1, temp_tag
-              if err_check[i] eq 0 then begin                
-                y_error[0,i,*] = kp_data[kp_start_index:kp_end_index]$
-                                 .(level0_index).(level1_index)$
-                               - kp_data[kp_start_index:kp_end_index]$
-                                 .(err_level0).(err_level1)               
-                y_error[1,i,*] = kp_data[kp_start_index:kp_end_index]$
-                                 .(level0_index).(level1_index)$
-                               + kp_data[kp_start_index:kp_end_index]$
-                                 .(err_level0).(err_level1)  
-              endif else begin
-                print,'Requested error parameter is not included in the data'
-                print,'Try /LIST to check for it.'
-                print,'Creating requested plot WITHOUT error bars'
-              endelse
-            endif else begin
-              err_check[i]=1
-            endelse
-          endif else begin
-            print,'Requested plot parameter is not included in the data.'
-            print,'Try /LIST to confirm your parameter choice.'
-            return
-          endelse
-        endfor ; loop over provided parameters
-      endif    ;END OF THE INTEGER ARRAY PARAMETER LOOP
-
-      if size(parameter,/type) eq 7 then begin ; parameters provided as strings
-
-        y = fltarr(n_elements(parameter),$
-                   n_elements(kp_data[kp_start_index:kp_end_index].time))
-        x = kp_data[kp_start_index:kp_end_index].time
-        y_axis_title = strarr(n_elements(parameter))
-        if keyword_set(error) then begin
-          y_error $
-            = dblarr(2,n_elements(parameter),$
-                       n_elements(kp_data[kp_start_index:kp_end_index].time)) 
-        endif
-        err_check = intarr(n_elements(parameter))
-        for i=0,n_elements(parameter)-1 do begin
-          MVN_KP_TAG_VERIFY, kp_data, parameter[i],base_tag_count, $
-            first_level_count, base_tags, first_level_tags, check, $
-            level0_index, level1_index, tag_array
-          if check eq 1 then begin
-            print,'Whoops, ',strupcase(parameter[i]), $
-                  ' is not part of the KP data structure.'
-            print,'Check the spelling, or the structure tags'
-            print,' with the /LIST keyword.'
-            return
-          endif else begin
-            y[i,*] = kp_data[kp_start_index:kp_end_index]$
-                     .(level0_index).(level1_index)
-          endelse
-          x = kp_data[kp_start_index:kp_end_index].time  
-          if keyword_set(y_labels) then begin
-            y_axis_title[i] = y_labels[i]
-          endif else begin
-            y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))   
-          endelse
-          if keyword_set(error) then begin
-            mvn_kp_tag_verify, kp_data, error[i], base_tag_count, $
-                               first_level_count, base_tags, $
-                               first_level_tags, err_check[i], err_level0, $
-                               err_level1, temp_tag
-            if err_check[i] eq 0 then begin                
-              y_error[0,i,*] = kp_data[kp_start_index:kp_end_index]$
-                               .(level0_index).(level1_index)$
-                             - kp_data[kp_start_index:kp_end_index]$
-                               .(err_level0).(err_level1)               
-              y_error[1,i,*] = kp_data[kp_start_index:kp_end_index]$
-                               .(level0_index).(level1_index)$
-                             + kp_data[kp_start_index:kp_end_index]$
-                               .(err_level0).(err_level1)  
-            endif else begin
-              print,'Requested error parameter is not included in the data.'
-              print,'Try /LIST to check for it.'
-              print,'Creating requested plot WITHOUT error bars'
-            endelse
-          endif else begin
-            err_check[i] = 1
-          endelse  
-        endfor; loop over the provided parameters
-      endif   ; parameter type provided are strings
-    endif     ; if more than one parameter is provided
-      
+      mvn_kp_create_multi_vectors, kp_data[kp_start_index:kp_end_index], $
+                                   parameter, y, y_error, y_axis_title, $
+                                   error=error, y_labels=y_labels, $
+                                   err_check=err_check
+      x = kp_data[kp_start_index:kp_end_index].time
+    endif
+  
     ;CREATE DUMMY YRANGE IF NOT DEFINED
     temp_yrange = dblarr(2,n_elements(parameter))
     if n_elements(yrange) ne 0 then begin
       temp_yrange = yrange
     endif else begin
       for i=0,n_elements(parameter)-1 do begin
-        temp_yrange[0,i] = min(y[i,*])
-        temp_yrange[1,i] = max(y[i,*])
+        temp_yrange[0,i] = min(y[i,*],/NaN)
+        temp_yrange[1,i] = max(y[i,*],/NaN)
       endfor
     endelse
         
@@ -398,28 +293,57 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                   time_string(x[(n_elements(x)-1)*.75]),$
                   time_string(x[n_elements(x)-1])]
       if n_elements(parameter) gt 1 then begin
-        plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], $
-                     layout=[1,n_elements(parameter),1],nodata=1,$
-                     color='black',title=title[0],xmajor=5,$
-                     axis_style=0,xtickname=x_labels,xstyle=1,$
-                     margin=0.1,_extra=e)
-        for i = 0, n_elements(parameter) -1 do begin
+;
+; use of nodata keyword is causing problems.  Trying this instead.
+; Define current as keyword of i.  Therefore, if i=0, we make a new
+;  window; but if i ge 1, we draw next plot in same window
+;
+        for i = 0,n_elements(parameter)-1 do begin
           if err_check[i] ne 0 then begin
-            plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
-                         layout=[1,n_elements(parameter),i+1],/current,$
-                         yrange=temp_yrange[*,i],color='black',$
-                         title=title[i],xmajor=5,$
-                         xtickname=x_labels,xstyle=1,margin=0.1,_extra=e)
+            plot1=plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
+                       layout=[1,n_elements(parameter),i+1], $
+                       yrange=temp_yrange[*,i], color='black', $
+                       title=title[i], xmajor=5, $
+                       xtickname=x_labels, xstyle=1, margin=0.1, $
+                       current=keyword_set(i),_extra=e )
           endif else begin
-            plot1 = errorplot(x, y[i,*],reform(y_error[*,i,*]), $
-                              xtitle='Time', ytitle=y_axis_title[i], $
-                              layout=[1,n_elements(parameter),i+1],/current,$
-                              color='black',title=title[i],xmajor=5,$
-                              xtickname=x_labels,$
-                              xstyle=1,yrange=temp_yrange[*,i],$
-                              margin=0.1,_extra=e)
-          endelse 
+            plot1=errorplot(x, y[i,*], reform(y_error[*,i,*]), $
+                            xtitle='Time', ytitle=y_axis_title[i], $
+                            layout=[1,n_elements(parameter),i+1], $
+                            yrange=temp_yrange[*,i], color='black', $
+                            title=title[i], xmajor=5, $
+                            xtickname=x_labels, xstyle=1, margin=0.1, $
+                            current=keyword_set(i),_extra=e )
+          endelse
         endfor
+;
+; Until I am satisfied I did not break anything.  I will keep old code here
+;
+;        plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], $
+;                     layout=[1,n_elements(parameter),1],nodata=1,$
+;                     color='black',title=title[0],xmajor=5,$
+;                     axis_style=0,xtickname=x_labels,xstyle=1,$
+;                     margin=0.1,_extra=e)
+;        for i = 0, n_elements(parameter) -1 do begin
+;          if err_check[i] ne 0 then begin
+;            plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
+;                         layout=[1,n_elements(parameter),i+1],/current,$
+;                         yrange=temp_yrange[*,i],color='black',$
+;                         title=title[i],xmajor=5,$
+;                         xtickname=x_labels,xstyle=1,margin=0.1,_extra=e)
+;          endif else begin
+;            plot1 = errorplot(x, y[i,*],reform(y_error[*,i,*]), $
+;                              xtitle='Time', ytitle=y_axis_title[i], $
+;                              layout=[1,n_elements(parameter),i+1],/current,$
+;                              color='black',title=title[i],xmajor=5,$
+;                              xtickname=x_labels,$
+;                              xstyle=1,yrange=temp_yrange[*,i],$
+;                              margin=0.1,_extra=e)
+;          endelse 
+;        endfor
+;
+;-end-preserve-old-code
+
       endif ; number of provided parameters exceeds 1
     endif   ; direct graphics eq 0
 
@@ -528,53 +452,18 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     endif
     true_err_index = true_err_index[0:total_lines-1]
             
-    ;CHECK PARAMETER VALIDITY AND EXTRACT DATA
+;
+; Now, use the create_multi_vector code with true_index in place 
+;  of parameter to fill the data, error, and label vectors
+;
     x = kp_data[kp_start_index:kp_end_index].time
-    y = fltarr(n_elements(true_index),$
-               n_elements(kp_data[kp_start_index:kp_end_index].time))
-    y_axis_title = strarr(n_elements(true_index))
-    err_check = intarr(n_elements(true_index))
-    if keyword_set(error) then begin
-      y_error = dblarr(2, n_elements(true_index), n_elements(kp_data.time))
-    endif
-    for i=0,n_elements(true_index)-1 do begin
-      MVN_KP_TAG_VERIFY, kp_data, true_index[i],base_tag_count, $
-                         first_level_count, base_tags, first_level_tags, $
-                         check, level0_index, level1_index, tag_array
-      if check eq 1 then begin
-        print,'Whoops, ',strupcase(true_index[i]),$
-              ' is not part of the KP data structure.'
-        print,'Check the spelling, or the structure tags with the /LIST keyword.'
-        return
-      endif else begin            
-        y[i,*] = kp_data[kp_start_index:kp_end_index]$
-                 .(level0_index).(level1_index)
-        x = kp_data[kp_start_index:kp_end_index].time 
-        y_axis_title[i] = strupcase(string(tag_array[0]+'.'+tag_array[1]))
-        if keyword_set(error) then begin
-          mvn_kp_tag_verify, kp_data, true_err_index[i], base_tag_count, $
-                             first_level_count, base_tags, first_level_tags, $
-                             err_check[i], err_level0, err_level1, temp_tag
-          if err_check[i] eq 0 then begin                
-            y_error[0,i,*] = kp_data[kp_start_index:kp_end_index]$
-                             .(level0_index).(level1_index)$
-                           - kp_data[kp_start_index:kp_end_index]$
-                             .(err_level0).(err_level1)               
-            y_error[1,i,*] = kp_data[kp_start_index:kp_end_index]$
-                             .(level0_index).(level1_index)$
-                           + kp_data[kp_start_index:kp_end_index]$
-                             .(err_level0).(err_level1)  
-          endif else begin
-            print,'Requested error parameter is not included in the data.'
-            print,'Try /LIST to check for it.'
-            print,'Creating requested plot WITHOUT error bars'
-          endelse
-        endif else begin
-          err_check[i] = 1
-        endelse        
-      endelse  ; if check eq 1  
-    endfor     ; loop over true index elements
-
+    mvn_kp_create_multi_vectors, kp_data[kp_start_index:kp_end_index], $
+                                 true_index, y, y_error, y_axis_title, $
+                                 error=error, y_labels=y_labels, $
+                                 err_check=err_check
+;
+;  Still have to define the y_titles
+;
     title_index = 0
     if keyword_set(y_labels) then begin
       y_titles = strarr(n_elements(parameter))
@@ -606,13 +495,20 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                   time_string(x[n_elements(x)-1])]
       oplot_index = 0
       w = window(window_title='MAVEN Plots')
+
       for i = 0, n_elements(parameter) -1 do begin
         if plot_count[i] eq 1 then begin
+;
+;  ToDo: NB if all vals are NaN, this produces warning and useless plot
+;        I.e., should have a quality check for all-Nans
+;
           if keyword_set(yrange) then begin
             temp_yrange = yrange[*,i]
           endif else begin
-            temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
+            temp_yrange = [min(y[oplot_index,*],/NaN),$
+                           max(y[oplot_index,*],/NaN)]
           endelse
+
           if err_check[i] eq 0 then begin
             plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), $
                               xtitle='Time', ytitle=y_titles[oplot_index], $
@@ -630,11 +526,14 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                          color='black',margin=0.1,_extra=e)
           endelse ; err_check          
           oplot_index= oplot_index+1
+
         endif else begin
+
           if keyword_set(yrange) then begin
             temp_yrange = yrange[*,i]
           endif else begin
-            temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
+            temp_yrange = [min(y[oplot_index,*],/NaN),$
+                           max(y[oplot_index,*],/NaN)]
           endelse
           if keyword_set(error) then begin
             plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),$
