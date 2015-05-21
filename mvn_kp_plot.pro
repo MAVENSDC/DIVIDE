@@ -65,31 +65,19 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
                      second_level_count, base_tags,  first_level_tags, $
                      second_level_tags
+
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
-    if arg_present(list)  then begin  
-      list = strarr(250)
-      index2=0
-      for i=0,base_tag_count-1 do begin
-        if first_level_count[i] ne 0 then begin
-          for j=0,first_level_count[i]-1 do begin
-            if first_level_count[i] ne 0 then begin 
-              list[index2] = '#' + strtrim(string(index2+1),2) + ' ' $
-                           + base_tags[i] + '.' $
-                           + strtrim(string(first_level_tags[index2-1]),2)
-              index2 = index2+1
-            endif 
-          endfor
-        endif
-      endfor
-      list = list[0:index2-1]
-      return
+
+  if keyword_set(list) then begin
+    if arg_present(list) then begin
+      ; return the KP list to the provided variable
+      mvn_kp_get_list, kp_data, list=list
     endif else begin
-      if keyword_set(list) then begin
-        MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, $
-                         base_tags,  first_level_tags
-        return
-      endif
+      ; print the KP list to screen
+      mvn_kp_get_list, kp_data, /list
     endelse
+    return
+  endif
   
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND 
   ;ORBITS IF REQUESTED.
@@ -104,11 +92,6 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     if n_elements(parameter) ne 1 then title=strarr(n_elements(parameter))
   endif
   
-;  if keyword_set(thick) eq 0 then thick=1         ;SET DEFAULT PLOT LINE THICK
-;  if keyword_set(linestyle) eq 0 then linestyle=0 ;SET DEFAULT PLOT LINE STYLE
-;  if keyword_set(symbol) eq 0 then symbol="None"  ;SET DEFAULT PLOT SYMBOL
-;  if keyword_set(log) eq 1 then yaxis_log = 1
-;  if keyword_set(log) eq 0 then yaxis_log = 0
   if keyword_set(directgraphic) eq 0 then begin
    if Float(!Version.Release) GE 8.0 THEN directgraphic = 0    
    ;USE DIRECT GRAPHICS IF USER HAS OLD VERSION OF IDL

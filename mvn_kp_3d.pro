@@ -147,30 +147,16 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       
    ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
-   if arg_present(list)  then begin
-     list = strarr(250)
-     index2=0
-     for i=0,base_tag_count-1 do begin
-       if first_level_count[i] ne 0 then begin
-         for j=0,first_level_count[i]-1 do begin
-           if first_level_count[i] ne 0 then begin
-             list[index2] = '#'+strtrim(string(index2+1),2)+' ' $
-               + base_tags[i] + '.' $
-               + strtrim(string(first_level_tags[index2-1]),2)
-             index2 = index2+1
-           endif
-         endfor
-       endif
-     endfor
-     list = list[0:index2-1]
+   if keyword_set(list) then begin
+     if arg_present(list) then begin
+       ; return the KP list to the provided variable
+       mvn_kp_get_list, kp_data, list=list
+     endif else begin
+       ; print the KP list to screen
+       mvn_kp_get_list, kp_data, /list
+     endelse
      return
-   endif else begin
-     if keyword_set(list) then begin
-       MVN_KP_TAG_LIST, insitu, base_tag_count, first_level_count, $
-         base_tags,  first_level_tags
-       return
-     endif
-   endelse
+   endif
 
    ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND ORBITS
    ;IF REQUESTED.

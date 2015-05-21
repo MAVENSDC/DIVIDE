@@ -43,8 +43,6 @@ pro mvn_kp_create_multi_vectors, kp_data, parameter, p_data, p_error, $
                                  p_label, error=error, y_labels=y_labels, $
                                  err_check=err_check
 
-print,'In new multi vector code'
-
 ;DETERMINE ALL THE PARAMETER NAMES THAT MAY BE USED LATER
 MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
   second_level_count, base_tags,  first_level_tags, $

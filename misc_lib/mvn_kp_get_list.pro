@@ -22,8 +22,7 @@
 @mvn_kp_tag_parser
 
 pro mvn_kp_get_list, kp_data, list=list
-help,keyword_Set(list),arg_present(list)
-stop
+
   MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
     second_level_count, base_tags,  first_level_tags, second_level_tags
 
@@ -43,13 +42,13 @@ stop
       endif
     endfor
     list = list[0:index2-1]
-    return
+;    return
   endif else begin
     if keyword_set(list) then begin
       MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, $
                        base_tags,  first_level_tags
-      return
+;      return
     endif
   endelse
-
+return
 end
