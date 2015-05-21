@@ -97,7 +97,7 @@ pro mvn_kp_3d_event_insitu_scalar_data,event,inst_code
     (*pstate).colorbar_max = 10.^yr[1]
   endif else begin
     (*pstate).colorbar_min = yr[0]
-    (*pstate).colorbar_min = yr[1]
+    (*pstate).colorbar_max = yr[1]
   endelse
 ;
 ; UPDATE THE ORBIT PATH

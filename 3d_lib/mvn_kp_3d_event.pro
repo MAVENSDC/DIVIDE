@@ -474,70 +474,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
      'basemap1': $
       begin
         widget_control,event.id,get_value=newval
-              
-        case newval of 
-          'BLANK': $
-            begin
-              ;START WITH A WHITE GLOBE
-              image = bytarr(3,2048,1024)
-              image[*,*,*] = 255
-              oImage = OBJ_NEW('IDLgrImage', image )
-              (*pstate).mars_base_map = 'blank'
-              (*pstate).opolygons -> setproperty, texture_map=oimage
-              (*pstate).gridlines -> setProperty, hide=0
-              (*pstate).window ->draw,(*pstate).view
-            end
-          'MDIM': $
-            begin 
-              read_jpeg,(*pstate).bm_install_directory+'MDIM_2500x1250.jpg',$
-                        image
-              oImage = OBJ_NEW('IDLgrImage', image )
-              (*pstate).mars_base_map = 'mdim'
-              (*pstate).opolygons -> setproperty, texture_map=oimage
-              (*pstate).window->draw, (*pstate).view 
-            end
-          'MOLA': $
-            begin
-              read_jpeg,(*pstate).bm_install_directory $
-                        +'MOLA_color_2500x1250.jpg',image
-              oImage = OBJ_NEW('IDLgrImage', image )
-              (*pstate).mars_base_map = 'mola'
-              (*pstate).opolygons -> setproperty, texture_map=oimage
-              (*pstate).window->draw, (*pstate).view 
-            end
-          'MOLA_BW': $
-            begin
-              read_jpeg,(*pstate).bm_install_directory $
-                        +'MOLA_BW_2500x1250.jpg',image
-              oImage = OBJ_NEW('IDLgrImage', image )
-              (*pstate).mars_base_map = 'mola_bw'
-              (*pstate).opolygons -> setproperty, texture_map=oimage
-              (*pstate).window->draw, (*pstate).view 
-            end
-          'CRUSTAL MAG': $
-            begin
-              read_jpeg,(*pstate).bm_install_directory $
-                        +'MAG_Connerny_2005.jpg',image
-              oImage = OBJ_NEW('IDLgrImage', image )
-              (*pstate).mars_base_map = 'mag'
-              (*pstate).opolygons -> setproperty, texture_map=oimage
-              (*pstate).window->draw, (*pstate).view
-            end
-          'User Defined': $
-            begin
-              input_file = dialog_pickfile(path=(*pstate).install_directory,$
-                                           filter='*.jpg')
-              if input_file ne '' then begin
-                read_jpeg,input_file,image
-                oImage = OBJ_NEW('IDLgrImage', image )
-                (*pstate).mars_base_map = 'user'
-                (*pstate).opolygons -> setproperty, texture_map=oimage
-                (*pstate).window->draw, (*pstate).view
-              endif
-            end
-              
-        endcase
-      end ; 'basemap1' case of uname
+        mvn_kp_3d_event_basemap, event
+      end
 
      'grid': $
       begin
