@@ -324,22 +324,6 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                        map_projection=map_projection, $
                        apoapse_blend=apoapse_blend, time=time
   
-;LOAD THE REQUESTED COLOR TABLE
-  color_default = 11
-  if keyword_set(colors) eq 0 then begin
-    loadct,color_default, /silent
-    i_colortable = color_default
-  endif else begin
-    if size(colors, /type) eq 7 then begin
-      if colors eq 'bw' then i_colortable = 0
-      if colors eq 'red' then i_colortable = 3
-    endif
-    if size(colors, /type) eq 2 then begin
-      i_colortable = colors
-    endif
-    loadct, i_colortable, /silent
-  endelse
-
 ;CREATE EASILY PLOTTED DATA VALUES independent of coordinate frame
   if keyword_set(mso) eq 0 then begin
     latitude = kp_data1.spacecraft.sub_sc_latitude
@@ -373,8 +357,11 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
       ; Show the spacecraft path using color bar for altitude
       ;  Need to calculate the color bars in same way as parameter below
 
-; SHould consider using different color bars for altitude and parameters
+; A bit of a hack but current force S/C track to be plotted using
+;   color table 39 (RAINBOW+WHITE) and let user choose color table for
+;   the instrument parameters data.
 
+      loadct,39,/silent ; load rainbow+white for S/C track
       color_levels = intarr(3,n_elements(latitude))
       tvlct, r, g, b, /get
 
@@ -413,6 +400,22 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
         'circle',/data,sym_color="YELLOW",sym_filled=1)
     endif
   
+    ;LOAD THE REQUESTED COLOR TABLE
+    color_default = 11
+    if keyword_set(colors) eq 0 then begin
+      loadct,color_default, /silent
+      i_colortable = color_default
+    endif else begin
+      if size(colors, /type) eq 7 then begin
+        if colors eq 'bw' then i_colortable = 0
+        if colors eq 'red' then i_colortable = 3
+      endif
+      if size(colors, /type) eq 2 then begin
+        i_colortable = colors
+      endif
+      loadct, i_colortable, /silent
+    endelse
+
 ;  IF THERE ARE PARAMETERS PROVIDED TO BE PLOTTED, 
 ;  THEN DEFINE THE SYMBOL COLOR LEVELS
   if( keyword_set(parameter) )then begin
@@ -655,7 +658,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
             c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
             c_range = [min(kp_data1.spacecraft.altitude), $
                        max(kp_data1.spacecraft.altitude)]
-            c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
+            c = COLORBAR( TITLE=c_title, rgb_table=39, $;i_colortable, $
                           orientation=0, $
                           position=positions[color_bar_index,*], $
                           textpos=0, /border, range=c_range )
@@ -690,7 +693,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 ; Create or add to the colorbar(s)
 ;
               c = COLORBAR(TITLE=c_title, $
-                           rgb_table=11,ORIENTATION=0, $
+                           rgb_table=i_colortable,ORIENTATION=0, $
                            position=positions[color_bar_index,*],TEXTPOS=0,$
                            /border, range=c_range)
             endif
