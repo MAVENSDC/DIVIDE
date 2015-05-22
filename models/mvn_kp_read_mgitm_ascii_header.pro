@@ -28,7 +28,7 @@
 ;   - the full text of the header
 ;
 ;-
-function mvn_kp_read_mgitm_ascii_header, filename, meta=meta, dims=dims
+function mvn_kp_read_mgitm_ascii_header, filename, meta=meta, dims=dims, data=data
 ;
 ; Temp hack: fill meta vars with dummies
 ;
@@ -66,13 +66,14 @@ altitude_from = 'UNK'
   ;
   ;  Now, parse the header for the needed information
   ;
-  for i = 0,nlines-1 do begin
+  for iline = 0,nlines-1 do begin
+    line = header[iline] ; to shorten later lines of code
     ;
     ;  SHould ask for a label/indicator for the date
     ;
-    if strmatch( header[i], '*MGITM Results*' ) then begin
-      date = (strsplit(header[i],' ', /extract))[3]
-      time = (strsplit(header[i],' ', /extract))[5]
+    if strmatch( line, '*MGITM Results*' ) then begin
+      date = (strsplit(line,' ', /extract))[3]
+      time = (strsplit(line,' ', /extract))[5]
       year = fix( (strsplit( date,'-', /extract ))[0] )
       month = fix( (strsplit( date,'-', /extract ))[1] )
       day = fix( (strsplit( date,'-', /extract ))[2] )
@@ -83,37 +84,37 @@ altitude_from = 'UNK'
       ;  Add date/time to meta?
       ;
     endif
-    if strmatch( header[i], '*longitude points*' ) then begin
-      nlons = fix((strsplit( header[i],':', /extract ))[1])
+    if strmatch( line, '*longitude points*' ) then begin
+      nlons = fix((strsplit( line,':', /extract ))[1])
       lon = fltarr(nlons)
     endif
-    if strmatch( header[i], '*latitude points*' ) then begin
-      nlats = fix((strsplit( header[i],':', /extract ))[1])
+    if strmatch( line, '*latitude points*' ) then begin
+      nlats = fix((strsplit( line,':', /extract ))[1])
       lat = fltarr(nlats)
     endif
-    if strmatch( header[i], '*altitude points*' ) then begin
-      nalts = fix((strsplit( header[i],':', /extract ))[1])
+    if strmatch( line, '*altitude points*' ) then begin
+      nalts = fix((strsplit( line,':', /extract ))[1])
       alt = fltarr(nalts)
     endif
-    if strmatch( header[i], '*LS*' ) then $
-      LS = fix((strsplit( header[i],':', /extract ))[1])
-    if strmatch( header[i], '*coord_sys*' ) then $
-      coord_sys = (strsplit( header[i],':', /extract ))[1]
-    if strmatch( header[i], '*altitude_from*' ) then $
-      altitude_from = (strsplit( header[i],':', /extract ))[1]
-    if strmatch( header[i], '*subsolar longitude*' ) then $
-      longsubsol = fix((strsplit( header[i],':', /extract ))[1],type=4) ; float
-    if strmatch( header[i], '*mars_radius*' ) then $
-      mars_radius = fix((strsplit( header[i],':', /extract ))[1],type=4); float
+    if strmatch( line, '*LS*' ) then $
+      LS = fix((strsplit( line,':', /extract ))[1])
+    if strmatch( line, '*coord_sys*' ) then $
+      coord_sys = (strsplit( line,':', /extract ))[1]
+    if strmatch( line, '*altitude_from*' ) then $
+      altitude_from = (strsplit( line,':', /extract ))[1]
+    if strmatch( line, '*subsolar longitude*' ) then $
+      longsubsol = fix((strsplit( line,':', /extract ))[1],type=4) ; float
+    if strmatch( line, '*mars_radius*' ) then $
+      mars_radius = fix((strsplit( line,':', /extract ))[1],type=4); float
     ;
     ; Punt on units for now
     ;
-    if strmatch( header[i], '*Units*' ) then units = header[i]
+    if strmatch( line, '*Units*' ) then units = line
     ;
     ; I do not like the assumption I make here that Longitude is 
     ; first and that there will be no space between the index and name
     ;
-    if strmatch( header[i], '*1.Longitude*' ) then begin
+    if strmatch( line, '*1.Longitude*' ) then begin
       ;
       ;  First, split them according to the spaces
       ;
@@ -122,24 +123,78 @@ altitude_from = 'UNK'
       ;  Now, to be consistent with existing code, I need to work out
       ;  how to deal with pointers in IDL
       ;
-    endif
+      ; Check which elements of temp have dots
+      ;
+      ;data_name = []
+      data = []
+      dim_order = strarr(3)
+      idim = 0
+      for itracer = 0,n_elements(temp)-1 do begin
+        if strmatch( temp[itracer], '*.*' ) then begin
+          ;
+          ; Get the name of the variable
+          ;
+          data_name = (strsplit(temp[itracer],'.',/extract))[1]
+          ;
+          ; Build the array of pointers to the structures
+          ;
+          if strmatch(data_name,'*tude*',/fold_case) then begin
+            ;
+            ;  These are the dimension parameters
+            ;
+            dim_order[idim] = data_name
+            idim++
+          endif else begin
+            ;
+            ;  These are the data parameters
+            ;
+            ;
+            ;  HACK: the definition of the data array dims is hardwired
+            ;
+;            var_ptr = ptr_new( create_struct( $
+;                               'name', data_name, $
+;                               'data', dblarr(nlons,nlats,nalts), $
+;                               'dim_order', 'lon,lat,alt' ) )
+            var_ptr = ptr_new( { name:data_name, $
+                                 data:dblarr(nlons,nlats,nalts), $
+                                 dim_order:dim_order} )
+            data = [data, var_ptr]
+          endelse
+        endif ; an indexed parameter column is found
+      endfor  ; loop over columns in tracer identifier line
+    endif     ; if we are in the tracer idensifier line
     ;
-    ;  ANy other deets go here
+    ;  Any other deets go here
     ;
-  endfor
+  endfor ; loop over lines of header
 ;
-;  May wish to verify some header quantities with filename
+;  Verify selected header quntities against filename
+;  First, parse the file name (to get rid of path)
+;  the shorter filename is called fname
 ;
-
-;
-;  Still need to incorporate units and parameter values
-;
-
-;
-; LS can be gleaned from the filename
-;
+  fname = (strsplit( filename, path_sep(), /extract ))[-1]
+  bits = strsplit( fname, '[._]', /extract, /regex )
   ;
-  ;  Create the metadate structure
+  ; LS can be gleaned from the filename
+  ;
+  temp = bits[where(strmatch(bits,'*ls*',/fold_case))]
+  ls_fname = STRMID(temp, STREGEX(temp, "[0123456789]{1,3}", length=len), len)
+  if( ls_fname ne ls )then begin
+    print,'LS mismatch'
+    print,'LS from filename = ',ls_fname
+    print,'LS from file header = ',LS
+  endif
+  ;
+  ;  Solar activity can be gleaned from filename
+  ;  But not until I have a mapping from Steve
+  ;
+  
+  ;
+  ;  Date/Time can be gleaned from filename
+  ;
+  
+  ;
+  ;  Create the metadata structure
   ;
   meta = {LS:LS, LONGSUBSOL: longsubsol, DECLINATION: dec, $
           MARS_RADIUS:mars_radius, COORD_SYS:coord_sys, $
