@@ -42,12 +42,10 @@ pro mvn_kp_get_list, kp_data, list=list
       endif
     endfor
     list = list[0:index2-1]
-;    return
   endif else begin
     if keyword_set(list) then begin
       MVN_KP_TAG_LIST, kp_data, base_tag_count, first_level_count, $
                        base_tags,  first_level_tags
-;      return
     endif
   endelse
 return

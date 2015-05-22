@@ -358,15 +358,23 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 ;PLOT THE SPACECRAFT PATH
 
   total_colorbars = 0 ; initialize total_colorbars
+  
+  ;-km why are we even trying to plot multiple parameters when they
+  ;-km al just end up getting drawn over and we see only the last?
+  
   if keyword_set(direct) eq 0 then begin
     ;BUILD THE BASE PLOT
     ; This is needed so that we can add the symbols later
+
     p = plot(longitude, latitude, overplot=1, margin=0, linestyle=6, $
              name='track')
 
     if keyword_set(nopath) eq 0 then begin
       ; Show the spacecraft path using color bar for altitude
       ;  Need to calculate the color bars in same way as parameter below
+
+; SHould consider using different color bars for altitude and parameters
+
       color_levels = intarr(3,n_elements(latitude))
       tvlct, r, g, b, /get
 
@@ -408,6 +416,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 ;  IF THERE ARE PARAMETERS PROVIDED TO BE PLOTTED, 
 ;  THEN DEFINE THE SYMBOL COLOR LEVELS
   if( keyword_set(parameter) )then begin
+;-km-hack/test- try limiting plot to only finite values
+
     color_levels = intarr(3,n_elements(latitude))
     tvlct, r, g, b, /get
     if keyword_set(minimum) then begin
@@ -426,7 +436,41 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
         ? 10.d0^(max(alog10(kp_data1.(level0_index).(level1_index) ), /NaN)) $
         : max(kp_data1.(level0_index).(level1_index), /NaN)
     endelse 
-    if keyword_set(log) eq 0 then begin         ;LINEAR COLOR STRETCH
+
+    if keyword_set(log) then begin         ;LINEAR COLOR STRETCH
+      ;
+      ;  Apply color ONLY to valid plottable points
+      ;
+      good = where( finite(kp_data1.(level0_index).(level1_index)) and $
+                    kp_data1.(level0_index).(level1_index) gt 0, ngood )
+      ;
+      ;  And caclculate the color vectors
+      ;  NB: No check yet on case with zero valid points
+      ;
+      color_levels[0,good] $
+        = R[fix( ( alog10(kp_data1[good].(level0_index).(level1_index)) $
+        - alog10(parameter_minimum) ) $
+        / alog10(parameter_maximum/parameter_minimum) $
+        * 255. ) ]
+      color_levels[1,good] $
+        = G[fix( ( alog10(kp_data1[good].(level0_index).(level1_index)) $
+        - alog10(parameter_minimum) ) $
+        / alog10(parameter_maximum/parameter_minimum) $
+        * 255. ) ]
+      color_levels[2,good] $
+        = B[fix( ( alog10(kp_data1[good].(level0_index).(level1_index)) $
+        - alog10(parameter_minimum) ) $
+        / alog10(parameter_maximum/parameter_minimum) $
+        * 255. ) ]
+    endif else begin                            ;log color stretch
+      ;
+      ;  Apply color ONLY to valid plottable points
+      ;
+      good = where( finite(kp_data1.(level0_index).(level1_index)), ngood)
+      ;
+      ;  And caclculate the color vectors
+      ;  NB: No check yet on case with zero valid points
+      ;
       color_levels[0,*] $
         = R[fix( ( ( kp_data1.(level0_index).(level1_index) $
                    - parameter_minimum ) $
@@ -442,25 +486,10 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                    - parameter_minimum ) $
                  / ( parameter_maximum - parameter_minimum ) ) $
                  * 255 ) ]
-    endif else begin                            ;log color stretch
-      color_levels[0,*] $
-        = R[fix( ( alog10(kp_data1.(level0_index).(level1_index)) $
-                 - alog10(parameter_minimum) ) $
-                 / alog10(parameter_maximum/parameter_minimum) $
-                 * 255. ) ]
-      color_levels[1,*] $
-        = G[fix( ( alog10(kp_data1.(level0_index).(level1_index)) $
-                 - alog10(parameter_minimum) ) $
-                 / alog10(parameter_maximum/parameter_minimum) $
-                 * 255. ) ]
-      color_levels[2,*] $
-        = B[fix( ( alog10(kp_data1.(level0_index).(level1_index)) $
-                 - alog10(parameter_minimum) ) $
-                 / alog10(parameter_maximum/parameter_minimum) $
-                 * 255. ) ]
     endelse 
-    p_symbols = symbol(longitude,latitude, "thin_diamond", /data, $
-                       sym_color=color_levels, sym_filled=1,$
+
+    p_symbols = symbol(longitude[good],latitude[good], "thin_diamond", /data, $
+                       sym_color=color_levels[*,good], sym_filled=1,$
                        name='track_colors')
     ;ADD THE COLORBAR
     total_colorbars = total_colorbars + 1
@@ -621,14 +650,16 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
         color_bar_index = 0
         if keyword_set(nopath) eq 0 then begin
         ; We are plotting S/C path; for now skip the NaN check
-          if( parameter_minimum ne parameter_maximum )then begin
-            c_range = [parameter_minimum, parameter_maximum]
+;-orig          if( parameter_minimum ne parameter_maximum )then begin
+;-orig            c_range = [parameter_minimum, parameter_maximum]
             c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
+            c_range = [min(kp_data1.spacecraft.altitude), $
+                       max(kp_data1.spacecraft.altitude)]
             c = COLORBAR( TITLE=c_title, rgb_table=i_colortable, $
                           orientation=0, $
                           position=positions[color_bar_index,*], $
                           textpos=0, /border, range=c_range )
-          endif
+;          endif
           color_bar_index++ ; increment the plotted color bar count
         endif
 
