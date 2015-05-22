@@ -64,7 +64,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                  
      'basemap1': $
       begin
-        widget_control,event.id,get_value=newval
         mvn_kp_3d_event_basemap, event
       end
 
@@ -958,12 +957,9 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                              old_r = 0.33962+((*pstate).peri_scale_factor*0.001)
                              new_r = 0.33962+(newval*0.001)
                              
-                             
                              rescale = new_r/old_r
-                             
-                             
+                                                          
                              (*pstate).periapse_limb_model->scale,rescale,rescale,rescale
-                           
                              
                              (*pstate).peri_scale_factor = newval
                              (*pstate).window->draw,(*pstate).view
@@ -973,8 +969,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         'full_time_anim_begin': begin
                                   widget_control,(*pstate).button9a,sensitive=0
                                   widget_control,(*pstate).button9b,sensitive=1
-                                  
-                                  
                                 end
                                 
         'full_time_anim_end': begin
