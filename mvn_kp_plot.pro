@@ -175,6 +175,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;  Return y_error=fltarr(2,n_elem(kp_data[begin:end]))
 ;
 test=keyword_set(1B)
+print,'Still debugging new error bars...'
 if test then begin
             mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
               level0_index, level1_index, base_tags, err_level0, err_level1, $

@@ -62,7 +62,7 @@
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                     directgraphic=directgraphic, $
                     davin=davin, y_labels=y_labels, oo=oo, $
-                    _extra = e, help=help
+                    error=error, _extra = e, help=help
 
 
   ;provide help for those who don't have IDLDOC installed
@@ -149,7 +149,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 ;      if pos ne -1 then overplots=byte(1)      
 
     if size(parameter,/type) eq 2 then begin      ;INTEGER PARAMETER INDEX
-          MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
+       MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
             first_level_count, base_tags, first_level_tags, check, $
             level0_index, level1_index, tag_array
        if check eq 0 then begin  ;CHECK THAT THE REQUESTED PARAMETER EXISTS
@@ -157,13 +157,34 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
          x = kp_data[kp_start_index:kp_end_index].(level0_index).$
                                                   (level1_index)
          y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
-        
+
+;
+;  New error bar code
+;
+         if keyword_set(error) then begin
+           mvn_kp_tag_verify, kp_data, error, base_tag_count, $
+               first_level_count, base_tags, first_level_tags, err_check, $
+               err_level0, err_level1, temp_tag
+           if err_check eq 0 then begin
+
+             mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
+              level0_index, level1_index, base_tags, err_level0, err_level1, $
+              temp_tag, x_error
+           endif else begin
+             print,'Requested error parameter is not included in the data.'
+             print,'Try /LIST to check for it.'
+             print,'Creating requested plot WITHOUT error bars'
+           endelse
+         endif else err_check = 0
        endif else begin
          print,'Requested plot parameter is not included in the data.'
          print,' Try /LIST to confirm your parameter choice.'
          return
        endelse
     endif ;end of integer parameter loop
+
+;-km- plot does not consider string args.  Error is there or here?
+
     if size(parameter,/type) eq 7 then begin      ;STRING PARAMETER NAME  
           MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
             first_level_count, base_tags, first_level_tags, check, $
@@ -189,13 +210,29 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     if n_elements(parameter) eq 1 then begin
       w = window(window_title='Maven KP Data Altitude Plots')
       if keyword_set(davin) then begin
-        plot1 = plot(y,x,xtitle='Spacecraft Altitude, km',$
-             ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-             /current, xstyle=1, ystyle=1, _extra = e)
+        if err_check eq 0 then begin
+          null_error = fltarr(2,n_elements(x))
+          plot1 = errorplot( y,x,null_error, x_error, $
+                     xtitle='Spacecraft Altitude [km]', $
+                     ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                     /current, xstyle=1, ystyle=1, _extra = e)                             
+        endif else begin
+          plot1 = plot(y,x,xtitle='Spacecraft Altitude, km',$
+               ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+               /current, xstyle=1, ystyle=1, _extra = e)
+        endelse
       endif else begin
-        plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',$
-              xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
-              /current, xstyle=1, ystyle=1, _extra = e)
+        if err_check eq 0 then begin
+          null_error = fltarr(2,n_elements(y))
+          plot1 = errorplot( x,y,x_error,null_error, $
+                  ytitle='Spacecraft Altitude [km]', $
+                  xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                  /current, xstyle=1, ystyle=1, _extra = e)
+        endif else begin
+          plot1 = plot(x,y,ytitle='Spacecraft Altitude, km',$
+                xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
+                /current, xstyle=1, ystyle=1, _extra = e)
+        endelse
       endelse
     endif
   endif
@@ -206,6 +243,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       loadct,0,/silent
       !P.MULTI = [0, n_elements(parameter), 1]
       if keyword_set(davin) then begin
+;-km I need to see how old errplot works before updating this.
         plot,y,x,xtitle='Spacecraft Altitude, km', $
              ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
              background=255, color=0,$
