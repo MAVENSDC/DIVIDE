@@ -1972,27 +1972,6 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 ; I do not like this, but it may be the only way that IDL widget 
 ;  plotting will work properly...
 ;
-; The following works for input values; need to see how to make it work for changes to widget
-
-;        if( keyword_set(minimum) )then begin
-;          yrmin = keyword_set(log) $
-;                ? minimum < 10.^(min(alog10(plot_y),/NaN)) $
-;                : minimum < min( plot_y, /NaN )
-;        endif else begin
-;          yrmin = keyword_set(log) $
-;                ? 10.^(min(alog10(plot_y),/NaN)) $
-;                : min( plot_y, /NaN )
-;        endelse
-;        if( keyword_set(maximum) )then begin
-;          yrmax = keyword_set(log) $
-;            ? maximum < 10.^(max(alog10(plot_y),/NaN)) $
-;            : maximum < max( plot_y, /NaN )
-;        endif else begin
-;          yrmax = keyword_set(log) $
-;            ? 10.^(max(alog10(plot_y),/NaN)) $
-;            : max( plot_y, /NaN )
-;        endelse
-
         if( arg_present( colorbar_min ) )then begin
           yrmin = keyword_set(colorbar_stretch) $
                 ? colorbar_min < 10.^(min(alog10(plot_y),/NaN)) $

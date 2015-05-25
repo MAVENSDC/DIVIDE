@@ -159,6 +159,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
       MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
                          first_level_count, base_tags, first_level_tags, $
                          check, level0_index, level1_index, tag_array
+
       if check eq 0 then begin  ;CHECK THAT THE REQUESTED PARAMETER EXISTS
 
         x = kp_data[kp_start_index:kp_end_index].time
@@ -169,6 +170,16 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                              first_level_count, base_tags, first_level_tags, $
                              err_check, err_level0, err_level1, temp_tag
           if err_check eq 0 then begin
+;
+;  Call new error bar define code, passing kp_data, levl0index, lev1index, err0index, err1index
+;  Return y_error=fltarr(2,n_elem(kp_data[begin:end]))
+;
+test=keyword_set(1B)
+if test then begin
+            mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
+              level0_index, level1_index, base_tags, err_level0, err_level1, $
+              temp_tag, y_error
+endif else begin
             y_error $
               = dblarr(2,$
                        n_elements(kp_data[kp_start_index:kp_end_index].time))
@@ -182,6 +193,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                 .(level0_index).(level1_index)$
               + kp_data[kp_start_index:kp_end_index]$
                 .(err_level0).(err_level1)   
+endelse
           endif else begin
             print,'Requested error parameter is not included in the data.'
             print,'Try /LIST to check for it.'
