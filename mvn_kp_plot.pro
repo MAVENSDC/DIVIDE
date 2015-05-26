@@ -205,24 +205,9 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
       ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
           
       if n_elements(parameter) eq 1 then begin
-        ;define realistic x axis time labels
-        x_labels = [time_string(x[0]),$
-                    time_string(x[(n_elements(x)-1)*.25]), $
-                    time_string(x[(n_elements(x)-1)/2]),$
-                    time_string(x[(n_elements(x)-1)*.75]), $
-                    time_string(x[n_elements(x)-1])]
-;-km-test
-;-km- This works.  But I want to swap the order (date bottom, time top)
-;-km- if total time is less than two days
-;-km- Easiest way is to probably write an xlabel generator code
-;-km- requires x (=kp_data.time) as input, and x_labels as output
 
-        x_labels = [strjoin(strsplit(time_string(x[0]),'[T/]',/regex,/extract),'!C'),$
-                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.25]),'[T/]',/regex,/extract),'!C'),$
-                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.50]),'[T/]',/regex,/extract),'!C'),$
-                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.75]),'[T/]',/regex,/extract),'!C'),$
-                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*1.00]),'[T/]',/regex,/extract),'!C')]
-;-km-/test
+        mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
+
         if err_check eq 0 then begin
           plot1 = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,$
                             color='black',margin=0.1,xmajor=5,$
@@ -238,15 +223,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     if directgraphic ne 0 then begin
       ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
       if n_elements(parameter) eq 1 then begin
-        ;define realistic x axis time labels
-;-km-add code to check for suplicated dates, or see about making two-line 
-;-km- labels (i.e., line1 is hh:mm:ss, line2 is YYYY-MM-DD)
-
-        x_labels = [time_string(x[0]),$
-                    time_string(x[(n_elements(x)-1)*.25]),$
-                    time_string(x[(n_elements(x)-1)/2]),$
-                    time_string(x[(n_elements(x)-1)*.75]),$
-                    time_string(x[n_elements(x)-1])]
+        mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
         device,decomposed=0
         loadct,0,/silent
         !P.MULTI = [0, n_elements(parameter), 1]
@@ -282,11 +259,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     ;CREATE THE MULTIPLE  PLOT    
     if directgraphic eq 0 then begin
       ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
-      x_labels = [time_string(x[0]),$
-                  time_string(x[(n_elements(x)-1)*.25]),$
-                  time_string(x[(n_elements(x)-1)/2]),$
-                  time_string(x[(n_elements(x)-1)*.75]),$
-                  time_string(x[n_elements(x)-1])]
+      mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
       if n_elements(parameter) gt 1 then begin
 ;
 ; use of nodata keyword is causing problems.  Trying this instead.
@@ -463,11 +436,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     ;CREATE THE PLOTS
         
     if directgraphic eq 0 then begin
-      x_labels = [time_string(x[0]),$
-                  time_string(x[(n_elements(x)-1)*.25]),$
-                  time_string(x[(n_elements(x)-1)/2]),$
-                  time_string(x[(n_elements(x)-1)*.75]),$
-                  time_string(x[n_elements(x)-1])]
+      mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
       oplot_index = 0
       w = window(window_title='MAVEN Plots')
 
