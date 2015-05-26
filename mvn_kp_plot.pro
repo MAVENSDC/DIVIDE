@@ -170,37 +170,21 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                              first_level_count, base_tags, first_level_tags, $
                              err_check, err_level0, err_level1, temp_tag
           if err_check eq 0 then begin
-;
-;  Call new error bar define code, passing kp_data, levl0index, lev1index, err0index, err1index
-;  Return y_error=fltarr(2,n_elem(kp_data[begin:end]))
-;
-test=keyword_set(1B)
-print,'Still debugging new error bars...'
-if test then begin
+
             mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
-              level0_index, level1_index, base_tags, err_level0, err_level1, $
-              temp_tag, y_error
-endif else begin
-            y_error $
-              = dblarr(2,$
-                       n_elements(kp_data[kp_start_index:kp_end_index].time))
-            y_error[0,*] $
-              = kp_data[kp_start_index:kp_end_index]$
-                .(level0_index).(level1_index)$ 
-              - kp_data[kp_start_index:kp_end_index]$
-                .(err_level0).(err_level1)               
-            y_error[1,*] $
-              = kp_data[kp_start_index:kp_end_index]$
-                .(level0_index).(level1_index)$
-              + kp_data[kp_start_index:kp_end_index]$
-                .(err_level0).(err_level1)   
-endelse
+                                      level0_index, level1_index, base_tags, $
+                                      err_level0, err_level1, temp_tag, $
+                                      y_error
+
           endif else begin
+
             print,'Requested error parameter is not included in the data.'
             print,'Try /LIST to check for it.'
             print,'Creating requested plot WITHOUT error bars'
+
           endelse            
-        endif else err_check = 1
+
+        endif else err_check = 1 ; if not plotting error bars...
 
         ;SET THE YLABELS
         if keyword_set(y_labels) ne 1 then begin
@@ -227,10 +211,22 @@ endelse
                     time_string(x[(n_elements(x)-1)/2]),$
                     time_string(x[(n_elements(x)-1)*.75]), $
                     time_string(x[n_elements(x)-1])]
+;-km-test
+;-km- This works.  But I want to swap the order (date bottom, time top)
+;-km- if total time is less than two days
+;-km- Easiest way is to probably write an xlabel generator code
+;-km- requires x (=kp_data.time) as input, and x_labels as output
+
+        x_labels = [strjoin(strsplit(time_string(x[0]),'[T/]',/regex,/extract),'!C'),$
+                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.25]),'[T/]',/regex,/extract),'!C'),$
+                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.50]),'[T/]',/regex,/extract),'!C'),$
+                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*0.75]),'[T/]',/regex,/extract),'!C'),$
+                    strjoin(strsplit(time_string(x[(n_elements(x)-1)*1.00]),'[T/]',/regex,/extract),'!C')]
+;-km-/test
         if err_check eq 0 then begin
-          err_plot = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,$
-                               color='black',margin=0.1,xmajor=5,$
-                               xtickname=x_labels,xstyle=1,_extra=e)
+          plot1 = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,$
+                            color='black',margin=0.1,xmajor=5,$
+                            xtickname=x_labels,xstyle=1,_extra=e)
         endif else begin
           plot1 = plot(x,y,xtitle='Time',ytitle=y_labels,color='black',$
                        margin=0.1,xmajor=5,xtickname=x_labels,xstyle=1,$
@@ -243,6 +239,9 @@ endelse
       ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
       if n_elements(parameter) eq 1 then begin
         ;define realistic x axis time labels
+;-km-add code to check for suplicated dates, or see about making two-line 
+;-km- labels (i.e., line1 is hh:mm:ss, line2 is YYYY-MM-DD)
+
         x_labels = [time_string(x[0]),$
                     time_string(x[(n_elements(x)-1)*.25]),$
                     time_string(x[(n_elements(x)-1)/2]),$
@@ -254,7 +253,7 @@ endelse
         plot,x,y,xtitle='Time',ytitle=y_labels,background=255, color=0, $
              yrange=yrange, _extra=e
         if err_check eq 0 then begin
-          errplot,x, y_error[0,*], y_error[1,*],color=0,_extra=e
+          errplot,x, y-y_error[0,*], y+y_error[1,*],color=0,_extra=e
         endif
       endif
     endif
@@ -294,6 +293,11 @@ endelse
 ; Define current as keyword of i.  Therefore, if i=0, we make a new
 ;  window; but if i ge 1, we draw next plot in same window
 ;
+;-km-would like to fold this into single plot section.
+;-km- but may need to be fancy with the array naming, since 
+;-km- y and y_error have diff ndims in the two cases.
+;-km- maybe define y and y_error as structures?
+
         for i = 0,n_elements(parameter)-1 do begin
           if err_check[i] ne 0 then begin
             plot1=plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
@@ -312,33 +316,6 @@ endelse
                             current=keyword_set(i),_extra=e )
           endelse
         endfor
-;
-; Until I am satisfied I did not break anything.  I will keep old code here
-;
-;        plot1 = plot(x,y[0,*], xtitle='Time',ytitle=y_axis_title[0], $
-;                     layout=[1,n_elements(parameter),1],nodata=1,$
-;                     color='black',title=title[0],xmajor=5,$
-;                     axis_style=0,xtickname=x_labels,xstyle=1,$
-;                     margin=0.1,_extra=e)
-;        for i = 0, n_elements(parameter) -1 do begin
-;          if err_check[i] ne 0 then begin
-;            plot1 = plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
-;                         layout=[1,n_elements(parameter),i+1],/current,$
-;                         yrange=temp_yrange[*,i],color='black',$
-;                         title=title[i],xmajor=5,$
-;                         xtickname=x_labels,xstyle=1,margin=0.1,_extra=e)
-;          endif else begin
-;            plot1 = errorplot(x, y[i,*],reform(y_error[*,i,*]), $
-;                              xtitle='Time', ytitle=y_axis_title[i], $
-;                              layout=[1,n_elements(parameter),i+1],/current,$
-;                              color='black',title=title[i],xmajor=5,$
-;                              xtickname=x_labels,$
-;                              xstyle=1,yrange=temp_yrange[*,i],$
-;                              margin=0.1,_extra=e)
-;          endelse 
-;        endfor
-;
-;-end-preserve-old-code
 
       endif ; number of provided parameters exceeds 1
     endif   ; direct graphics eq 0
@@ -353,14 +330,16 @@ endelse
              yrange=temp_yrange[*,0],title=title[0],background=255,color=0,$
              charsize=2,font=-1,_extra=e
         if err_check[0] eq 0 then begin
-          errplot,x, y_error[0,0,*], y_error[1,0,*],color=0,_extra=e
+          errplot,x, y[0,*]-y_error[0,0,*], y[0,*]+y_error[1,0,*],$
+                  color=0,_extra=e
         endif              
         for i=1,n_elements(parameter)-1 do begin
           plot,x,y[i,*],xtitle='Time', ytitle=y_axis_title[i],$
                yrange=temp_yrange[*,i],title=title[i],color=0,charsize=2,$
                font=-1,_extra=e
           if err_check[i] eq 0 then begin
-            errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
+            errplot,x, y[i,*]-y_error[0,i,*], y[i,*]+y_error[1,i,*],$
+                    color=0,_extra=e
           endif
         endfor 
       endif ; number of parameters exceeds 1
@@ -601,7 +580,9 @@ endelse
                yrange=temp_yrange,title=title[i],background='FFFFFF'x,$
                color=0,charsize=2,font=-1,_extra=e
           if err_check[i] eq 0 then begin
-            errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
+            errplot,x, y[oplot_index,*]-y_error[0,i,*], $
+                    y[oplot_index,*]+y_error[1,i,*], $
+                    color=0,_extra=e
           endif
           oplot_index = oplot_index+1
         endif else begin 
@@ -615,7 +596,9 @@ endelse
                title=title[i],background='FFFFFF'x,$
                yrange=temp_yrange,color=0,charsize=2.,_extra=e
           if err_check[i] eq 0 then begin
-            errplot,x, y_error[0,i,*], y_error[1,i,*],color=0,_extra=e
+            errplot,x, y[oplot_index,*]-y_error[0,i,*], $
+                    y[oplot_index,*]+y_error[1,i,*],$
+                    color=0,_extra=e
           endif
           plots,[(i*(1./n_elements(parameter)))+(.25/(n_elements(parameter))),$
                  (i*(1./n_elements(parameter)))+(.48/(n_elements(parameter)))],$

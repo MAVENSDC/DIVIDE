@@ -141,67 +141,54 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 
   ;CREATE THE PLOT VECTORS
   
- if overplot_check ne 1 then begin
-  if n_elements(parameter) eq 1 then begin 
-  ;only going to plot a single altitude plot
-;      pos = strpos(parameter,',')  ; check if there's more than one 
-;                                   ; parameter being overplot
-;      if pos ne -1 then overplots=byte(1)      
-
-    if size(parameter,/type) eq 2 then begin      ;INTEGER PARAMETER INDEX
-       MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
-            first_level_count, base_tags, first_level_tags, check, $
-            level0_index, level1_index, tag_array
-       if check eq 0 then begin  ;CHECK THAT THE REQUESTED PARAMETER EXISTS
-
-         x = kp_data[kp_start_index:kp_end_index].(level0_index).$
-                                                  (level1_index)
-         y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
-
+  if overplot_check ne 1 then begin
 ;
-;  New error bar code
+; Insert code form plot here
 ;
-         if keyword_set(error) then begin
-           mvn_kp_tag_verify, kp_data, error, base_tag_count, $
-               first_level_count, base_tags, first_level_tags, err_check, $
-               err_level0, err_level1, temp_tag
-           if err_check eq 0 then begin
+    if n_elements(parameter) eq 1 then begin
+    ;only going to plot a single altitude plot
 
-             mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
-              level0_index, level1_index, base_tags, err_level0, err_level1, $
-              temp_tag, x_error
-           endif else begin
-             print,'Requested error parameter is not included in the data.'
-             print,'Try /LIST to check for it.'
-             print,'Creating requested plot WITHOUT error bars'
-           endelse
-         endif else err_check = 0
-       endif else begin
-         print,'Requested plot parameter is not included in the data.'
-         print,' Try /LIST to confirm your parameter choice.'
-         return
-       endelse
-    endif ;end of integer parameter loop
+      MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
+        first_level_count, base_tags, first_level_tags, $
+        check, level0_index, level1_index, tag_array
 
-;-km- plot does not consider string args.  Error is there or here?
+      if check eq 0 then begin  ;CHECK THAT THE REQUESTED PARAMETER EXISTS
 
-    if size(parameter,/type) eq 7 then begin      ;STRING PARAMETER NAME  
-          MVN_KP_TAG_VERIFY, kp_data, parameter,base_tag_count, $
-            first_level_count, base_tags, first_level_tags, check, $
-            level0_index, level1_index, tag_array
+        x = kp_data[kp_start_index:kp_end_index].time
+        y = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
 
-       if check eq 1 then begin
-         print,'Whoops, ',strupcase(parameter),$
-          ' is not part of the KP data structure.'
-         print,'Check the spelling, or the structure tags with the ' $
-               + '/LIST keyword.'
-         return
-       endif else begin
-        x = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
-        y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude    
-       endelse  
-    endif ;end of string parameter loop
-  endif ;end of single altitude plot loop
+        if keyword_set(error) then begin
+          mvn_kp_tag_verify, kp_data, error, base_tag_count, $
+            first_level_count, base_tags, first_level_tags, $
+            err_check, err_level0, err_level1, temp_tag
+          if err_check eq 0 then begin
+
+            mvn_kp_define_error_bars, kp_data[kp_start_index:kp_end_index], $
+              level0_index, level1_index, base_tags, $
+              err_level0, err_level1, temp_tag, $
+              x_error
+
+          endif else begin
+
+            print,'Requested error parameter is not included in the data.'
+            print,'Try /LIST to check for it.'
+            print,'Creating requested plot WITHOUT error bars'
+
+          endelse
+
+        endif else err_check = 1 ; if not plotting error bars...
+
+        ;SET THE YLABELS
+        if keyword_set(y_labels) ne 1 then begin
+          y_labels = strupcase(string(tag_array[0]+'.'+tag_array[1]))
+        endif
+
+      endif else begin
+        print,'Requested plot parameter is not included in the data.'
+        print,'Try /LIST to confirm your parameter choice.'
+        return
+      endelse
+    endif ;end of single altitude variable creation loop
 
   ;CREATE SINGLE ALTITUDE PLOT
   
@@ -211,8 +198,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       w = window(window_title='Maven KP Data Altitude Plots')
       if keyword_set(davin) then begin
         if err_check eq 0 then begin
-          null_error = fltarr(2,n_elements(x))
-          plot1 = errorplot( y,x,null_error, x_error, $
+          plot1 = errorplot( y,x,x_error, $
                      xtitle='Spacecraft Altitude [km]', $
                      ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
                      /current, xstyle=1, ystyle=1, _extra = e)                             
@@ -243,15 +229,25 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       loadct,0,/silent
       !P.MULTI = [0, n_elements(parameter), 1]
       if keyword_set(davin) then begin
-;-km I need to see how old errplot works before updating this.
         plot,y,x,xtitle='Spacecraft Altitude, km', $
              ytitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
              background=255, color=0,$
              xrange=yrange,yrange=xrange,xstyle=1,ystyle=1, _extra = e
+        if err_check eq 0 then begin
+          errplot,y,x-x_error[0,*],x+x_error[1,*],color=0,_extra=e
+        endif
       endif else begin
         plot,x,y,ytitle='Spacecraft Altitude, km', $
              xtitle=strupcase(string(tag_array[0]+'.'+tag_array[1])),$
              background=255, color=0,xstyle=1,ystyle=1, _extra = e
+        if err_check eq 0 then begin
+          print,'***WARNING***'
+          print,'mvn_kp_altplot'
+          print,'Old direct graphics errplot cannot make horizontal error bars'
+          print,'Suggest using either /davin keyword to flip x and y.'
+          print,'  or do not use the /directgraphics keyword.'
+          print,'Will continue plotting but will ignore error bars.'
+        endif
       endelse
     endif
   endif
@@ -297,20 +293,41 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
       w = window(window_title='Maven KP Data Altitude Plots')
       for i = 0, n_elements(parameter) -1 do begin
         if keyword_set(davin) then begin
-         plot1 = plot(y,x[i,*], xtitle='Spacecraft Altitude, km', $
-                      ytitle=x_axis_title[i], $
-                      layout=[n_elements(parameter),1,i+1],/current,$
-                      title=title[i],$
-                      xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
-                      yrange=temp_xrange[*,i], _extra = e) 
-        endif else begin
-         plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', $
-                      xtitle=x_axis_title[i], $
-                      layout=[n_elements(parameter),1,i+1],/current,$
-                      title=title[i],$
-                      xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
-                      xrange=temp_xrange[*,i], _extra = e)
-        endelse
+          if err_check[i] ne 0 then begin
+            plot1 = plot(y,x[i,*], xtitle='Spacecraft Altitude, km', $
+                         ytitle=x_axis_title[i], $
+                         layout=[n_elements(parameter),1,i+1],/current,$
+                         title=title[i],$
+                         xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
+                         yrange=temp_xrange[*,i], _extra = e) 
+          endif else begin
+            plot1 = errorplot(y,x[i,*], reform(x_error[*,i,*]), $
+                              xtitle='Spacecraft Altitude, km', $
+                              ytitle=x_axis_title[i], $
+                              layout=[n_elements(parameter),1,i+1],/current,$
+                              title=title[i],$
+                              xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
+                              yrange=temp_xrange[*,i], _extra = e)
+          endelse
+        endif else begin ; do not swap the axis
+          if err_check[i] ne 0 then begin
+            plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', $
+                         xtitle=x_axis_title[i], $
+                         layout=[n_elements(parameter),1,i+1],/current,$
+                         title=title[i],$
+                         xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
+                         xrange=temp_xrange[*,i], _extra = e)
+          endif else begin
+            null_error = fltarr(2,n_elements(y))
+            plot1 = errorplot(x[i,*], y, reform(x_error[*,i,*]), null_error, $
+                              ytitle='Spacecraft Altitude, km', $
+                              xtitle=x_axis_title[i], $
+                              layout=[n_elements(parameter),1,i+1],/current,$
+                              title=title[i],$
+                              xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
+                              xrange=temp_xrange[*,i], _extra = e)
+          endelse ; err_check
+        endelse   ; davin check
       endfor ; loop over all parameters
     endif    ; if there is more than on parameter
   endif      ; if object oriented graphics
@@ -322,27 +339,55 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     if n_elements(parameter) gt 1 then begin
       !P.MULTI = [0, n_elements(parameter), 1]
       if keyword_set(davin) then begin
-         plot,y,x[0,*],xtitle='Spacecraft Altitude, km', $
-              ytitle=x_axis_title[0],xstyle=1,ystyle=1,$
-              title=title[0],background=255,color=0,$
-              charsize=2,font=-1,$
-              xrange=temp_yrange[*,0],yrange=temp_xrange[*,0], _extra = e
+        plot,y,x[0,*],xtitle='Spacecraft Altitude, km', $
+             ytitle=x_axis_title[0],xstyle=1,ystyle=1,$
+             title=title[0],background=255,color=0,$
+             charsize=2,font=-1,$
+             xrange=temp_yrange[*,0],yrange=temp_xrange[*,0], _extra = e
+        ;
+        ;  If requested, plot the error bars
+        ;
+        if err_check[0] eq 0 then begin
+          errplot,y,x[0,*]-x_error[0,0,*],x[0,*]+x_error[1,0,*], $
+                  color=0, _extra=e
+        endif
         for i=1,n_elements(parameter)-1 do begin
-         plot,y,x[i,*],xtitle='Spacecraft Altitude, km', $
-              ytitle=x_axis_title[i],xstyle=1,ystyle=1,$
-              title=title[i],color=0,charsize=2,font=-1,$
-              xrange=temp_yrange[*,i],yrange=temp_xrange[*,i], _extra = e
+          plot,y,x[i,*],xtitle='Spacecraft Altitude, km', $
+               ytitle=x_axis_title[i],xstyle=1,ystyle=1,$
+               title=title[i],color=0,charsize=2,font=-1,$
+               xrange=temp_yrange[*,i],yrange=temp_xrange[*,i], _extra = e
+          ;
+          ;  If requested, plot the error bars
+          ;
+          if err_check[i] eq 0 then begin
+            errplot,y,x[i,*]-x_error[0,i,*],x[i,*]+x_error[1,i,*], $
+                    color=0, _extra=e
+          endif
         endfor 
       endif else begin
+        if( where(err_check eq 1) lt 0 )then begin
+          ;
+          ;  Then at least one error bars has been requested
+          ;
+          print,'***WARNING***'
+          print,'mvn_kp_altplot'
+          print,'Old direct graphics errplot cannot make horizontal error bars'
+          print,'Suggest using either /davin keyword to flip x and y.'
+          print,'  or do not use the /directgraphics keyword.'
+          print,'Will continue plotting but will ignore error bars.'
+        endif
+        ;
+        ;  Now, plot the relevant parameters
+        ;
         plot,x[0,*],y,ytitle='Spacecraft Altitude, km', $
              xtitle=x_axis_title[0],xstyle=1,ystyle=1,$
              title=title[0],background=255,color=0,charsize=2,font=-1,$
              yrange=temp_yrange[*,0],xrange=temp_xrange[*,0], _extra = e
         for i=1,n_elements(parameter)-1 do begin
-         plot,x[i,*],y,ytitle='Spacecraft Altitude, km', $
-              xtitle=x_axis_title[i],xstyle=1,ystyle=1,$
-              title=title[i], color=0,charsize=2,font=-1,$
-              yrange=temp_yrange[*,i],xrange=temp_xrange[*,i], _extra = e
+          plot,x[i,*],y,ytitle='Spacecraft Altitude, km', $
+               xtitle=x_axis_title[i],xstyle=1,ystyle=1,$
+               title=title[i], color=0,charsize=2,font=-1,$
+               yrange=temp_yrange[*,i],xrange=temp_xrange[*,i], _extra = e
         endfor 
       endelse ; if davin then else
     endif     ; if there is more tha one parameter
