@@ -44,6 +44,12 @@ pro mvn_kp_make_time_labels, time, time_labels
     ;
     date_str = date_time_str[i,0] & time_str = date_time_str[i,1]
     ;
+    ;  Only update date string when it changes
+    ;
+    if i gt 0 then begin
+      if date_str eq date_time_str[i-1,0] then date_str = ''
+    endif
+    ;
     ; Later: perform checks on when to include date and when not
     ;
 
