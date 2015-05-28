@@ -104,7 +104,6 @@
 ;    speckle: Undetermined and unused keyword or parameter
 ;-
 
-
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
 ;               field=field, minimum=minimum, maximum=maximum, $
