@@ -58,18 +58,18 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
 
   
  
-  ; ===========================================================================
+  ; ==========================================================================
   ; Create NetCDF file for writing output
-  ; ===========================================================================
+  ; ==========================================================================
 
 ; ToDo: Maybe add a check on file existence?
   id = (keyword_set(overwrite)) $
      ? NCDF_CREATE( out_file, /clobber, /netCDF4_format ) $
      : NCDF_CREATE( out_file, /noclobber, /netCDF4_format )  
   
-  ; ===========================================================================
+  ; ==========================================================================
   ; Global Attributes
-  ; ===========================================================================
+  ; ==========================================================================
   
   NCDF_ATTPUT, id, /GLOBAL, "file_format", "NetCDF"
   NCDF_ATTPUT, id, /GLOBAL, "title", "FIXME"
@@ -82,13 +82,13 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   NCDF_ATTPUT, id, /GLOBAL, "Crustal Fields", "OFF"
   NCDF_ATTPUT, id, /GLOBAL, "Dynamical Ionosphere", "OFF"
   NCDF_ATTPUT, id, /GLOBAL, "Linkage to other models", "N/A"
-  ref = ["Bougher et al. (2015), JGR 120:311-342, doi:10.1002/2014JE004715", $
-         "Bougher et al. (2014), SSR, doi:10.1007/s11214-014-0053-7"]
-  NCDF_ATTPUT, id, /GLOBAL, "References", ref
+  refs=["Bougher et al. (2015), JGR 120:311-342, doi:10.1002/2014JE004715", $
+        "Bougher et al. (2014), SSR, doi:10.1007/s11214-014-0053-7"]
+  NCDF_ATTPUT, id, /GLOBAL, "References", refs
 
-  ; ===========================================================================
+  ; ==========================================================================
   ; Define Dimensions
-  ; ===========================================================================
+  ; ==========================================================================
   lon_id = NCDF_DIMDEF(id, 'longitude', meta.nlons)
   lat_id = NCDF_DIMDEF(id, 'latitude', meta.nlats)
   alt_id = NCDF_DIMDEF(id, 'altitude', meta.nalts)
@@ -105,9 +105,9 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   endcase
   meta = create_struct( meta, 'dec', dec )
   
-  ; ===========================================================================
+  ; ==========================================================================
   ; Variable Declaration & Attributes
-  ; ===========================================================================
+  ; ==========================================================================
 
   ;; -------------------------------
   ;  ;; meta data
@@ -177,11 +177,13 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   
   ;; ------------------------------
   ;; Neutral Winds
-  zonal_vel_var = NCDF_VARDEF(id, 'Zonal_vel', [lon_id, lat_id, alt_id], /FLOAT)
+  zonal_vel_var = NCDF_VARDEF(id, 'Zonal_vel', [lon_id, lat_id, alt_id], $
+                              /FLOAT)
   NCDF_ATTPUT, id, zonal_vel_var, 'title', 'Un Zonal Velocity neutral'
   NCDF_ATTPUT, id, zonal_vel_var, 'units', 'm/s'
   
-  merid_vel_var = NCDF_VARDEF(id, 'Medrid_vel', [lon_id, lat_id, alt_id], /FLOAT)
+  merid_vel_var = NCDF_VARDEF(id, 'Merid_vel', [lon_id, lat_id, alt_id], $
+                              /FLOAT)
   NCDF_ATTPUT, id, merid_vel_var, 'title', 'Vn Meridional Velocity neutral'
   NCDF_ATTPUT, id, merid_vel_var, 'units', 'm/s'
   
@@ -207,9 +209,9 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   NCDF_CONTROL, id, /ENDEF
   
   
-  ; ===========================================================================
+  ; ==========================================================================
   ; Input data into the netcdf variables declared above
-  ; ===========================================================================
+  ; ==========================================================================
   
 ;
 ; placing the meta information first
@@ -226,13 +228,12 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   NCDF_VARPUT, id, alt_var, meta.altitude
 ;
 ; placing the model parameters last
-;  NCDF_VARPUT, id, o2plus_var, rebin(idensitys.o2p,36,72,2)
 
   NCDF_VARPUT, id, o2plus_var, idensitys.o2p
   NCDF_VARPUT, id, oplus_var, idensitys.op
   NCDF_VARPUT, id, co2plus_var, idensitys.co2p 
   NCDF_VARPUT, id, ne_var, idensitys.n_e    ;; FIXME - why underscore?
-                                            ;; poss bc ne is forbidden as 
+                                            ;; bc ne is forbidden as 
                                             ;; an attribute name
   
   NCDF_VARPUT, id, co2_var, ndensitys.co2

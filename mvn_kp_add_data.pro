@@ -97,6 +97,9 @@ pro mvn_kp_add_data, kp_data, data_name, output, _extra = e, help=help
 ;  input data structure.
 ;  NB, this does not consider multi-dimensional variables
 ;
+;  For now, skip the time check because we are currently passing
+;   some meta data that is not dimensional to the data structure
+;
 goto,skip_time_check
   if( size(e.(0),/type) eq 8 )then begin
     ;

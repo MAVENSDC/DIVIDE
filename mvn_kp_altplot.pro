@@ -130,6 +130,36 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
    kp_start_index = 0
    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
+  ;
+  ;  Check for invalid time ranges
+  ;
+  if kp_start_index eq -1 or kp_end_index eq -1 then begin
+    print,'Sorry, the times you requested are not contained within the data.'
+    print,'Check your time range and try again.'
+    return
+  endif
+  if kp_start_index eq kp_end_index then begin
+    print,'Sorry, start and end times are the same. Nothing to plot!'
+    return
+  endif
+  if( kp_start_index gt kp_end_index )then begin
+    print,'WARNING: Start time provided is later than end time.'
+    print,'         Start time = ',time[0]
+    print,'           End time = ',time[1]
+    do_swap = ''
+    while( do_swap ne 's' and do_swap ne 'S' and $
+      do_swap ne 'q' and do_swap ne 'Q' )do begin
+      read,prompt="Please press 's' to swap, or 'q' to exit and try again: ",$
+           do_swap
+    endwhile
+    if( do_swap eq 's' or do_swap eq 'q' )then begin
+      temp = kp_start_index
+      kp_start_index = kp_end_index
+      kp_end_index = temp
+    endif
+    if( do_swap eq 'q' or do_swap eq 'Q' )then $
+      message,'Exiting as per user request to re-enter time range'
+  endif
 ;
 ;  Copy the overplot check from mvn_kp_plot rather than the one used here
 ;

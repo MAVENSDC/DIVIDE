@@ -114,7 +114,9 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
    kp_start_index = 0
    kp_end_index = n_elements(kp_data.orbit)-1
   endelse
-  
+  ;
+  ;  Check for invalid time ranges
+  ;
   if kp_start_index eq -1 or kp_end_index eq -1 then begin
     print,'Sorry, the times you requested are not contained within the data.'
     print,'Check your time range and try again.'

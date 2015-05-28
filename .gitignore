@@ -1,0 +1,10 @@
+*.txt
+*.nc
+*.sav
+*.orb
+*.docx
+testing_lib/*.sav
+models/sample_models/*.dat
+models/sample_models/*.nc
+models/sample_models/*.sav
+
