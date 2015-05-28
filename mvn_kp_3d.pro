@@ -103,7 +103,6 @@
 ;    drawid: Undetermined and unused keyword or parameter
 ;    speckle: Undetermined and unused keyword or parameter
 ;-
-;-This is a temporary line by Bryan Harter
 
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
