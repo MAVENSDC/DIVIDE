@@ -1,2 +1,0 @@
-; IDL Toolkit Data Preferences File
-mvn_root_data_dir: /home/mcgouldrick/
