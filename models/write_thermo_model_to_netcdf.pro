@@ -232,9 +232,8 @@ function write_thermo_model_to_netcdf, input_savefile, overwrite=overwrite
   NCDF_VARPUT, id, o2plus_var, idensitys.o2p
   NCDF_VARPUT, id, oplus_var, idensitys.op
   NCDF_VARPUT, id, co2plus_var, idensitys.co2p 
-  NCDF_VARPUT, id, ne_var, idensitys.n_e    ;; FIXME - why underscore?
-                                            ;; bc ne is forbidden as 
-                                            ;; an attribute name
+  NCDF_VARPUT, id, ne_var, idensitys.n_e    ;; underscore bc ne is forbidden 
+                                            ;; as an attribute name
   
   NCDF_VARPUT, id, co2_var, ndensitys.co2
   NCDF_VARPUT, id, co_var, ndensitys.co

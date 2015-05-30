@@ -1,4 +1,4 @@
-pro mvn_kp_temp_cdf_reader, filename, iuvs_final
+pro mvn_kp_temp_cdf_reader, filename, iuvs
 ;+
 ; :Name:
 ;   mvn_kp_temp_cdf_reader
@@ -93,6 +93,8 @@ for itag = 0,nv-1 do begin
     if( i2 eq 0 )then begin
       ; First level 2 tag so create the structure
       s = create_struct( lev2_name, var )
+;      s = create_struct( name = lev1_name, lev2_name, var )
+;      s = struct_assign( name = lev1_name, lev2_name, var )
     endif else begin
       ; Otherwise, append the next variable to the existing structure
       s = create_struct( s, lev2_name, var )
@@ -127,22 +129,6 @@ endfor ; loop over all tags
 ;  And close the CDF file
 ;
 cdf_close,luni
-;
-;  Go back to make arrays of the indexed attributes
-;
-itemp = where(stregex(tag_names(iuvs),'[0123456789]+') gt 0, count)
-if count gt 0 then begin
-  ;
-  ;  Hack this for now; improve it later
-  ;  Current version uses foreknowledge of iuvs structure
-  ;
-  temp = [iuvs.(itemp[0])]
-  for i=1,count-1 do begin
-    temp = [temp,iuvs.(itemp[i])]
-  endfor
-endif
-iuvs_final = create_struct( 'periapse', temp)
-for i = 1,9 do iuvs_final = create_struct( iuvs_final, (tag_names(iuvs))[i+2], iuvs.(i+2) )
 ;
 ;  And finish
 ;
