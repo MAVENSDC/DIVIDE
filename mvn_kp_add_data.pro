@@ -100,42 +100,42 @@ pro mvn_kp_add_data, kp_data, data_name, output, _extra = e, help=help
 ;  For now, skip the time check because we are currently passing
 ;   some meta data that is not dimensional to the data structure
 ;
-goto,skip_time_check
-  if( size(e.(0),/type) eq 8 )then begin
-    ;
-    ;  Verify that each attribute of the passed structure has right
-    ;  size of the time dimension
-    ;
-    for i = 0,n_tags(e.(0))-1 do begin
-      if( (size(kp_data))[1] ne (size(e.(0).(i)))[1] )then begin
-        print,'*****ERROR*****'
-        print,'Size mismatch'
-        print,'Input variable: '+(tag_names(e.(0)))[i]$
-          +' has dimensions: '+strtrim(string(size(e.(0).(i),/dim)),1)
-        print,'Input KP structure has time dimension: '$
-              +strtrim(string((size(kp_data))[1]),1)
-        print,'Exiting....
-        return
-      endif
-    endfor
-  endif else begin
-    ;
-    ;  Verify that each passed variable has the right size of the
-    ;  time dimension
-    ;
-    for i = 0,n_tags(e)-1 do begin
-      if( (size(kp_data))[1] ne (size(e.(i)))[1] )then begin
-        print,'*****ERROR*****'
-        print,'Size mismatch'
-        print,'Input variable: '+(tag_names(e))[i]$
-            +' has dimensions: '+size(e.(i),/dim)
-        print,'Input KP structure has time dimension: '+(size(kp_data))[1]
-        print,'Exiting....
-        return
-      endif
-    endfor
-  endelse
-skip_time_check: wait,1e-6
+;goto,skip_time_check
+;  if( size(e.(0),/type) eq 8 )then begin
+;    ;
+;    ;  Verify that each attribute of the passed structure has right
+;    ;  size of the time dimension
+;    ;
+;    for i = 0,n_tags(e.(0))-1 do begin
+;      if( (size(kp_data))[1] ne (size(e.(0).(i)))[1] )then begin
+;        print,'*****ERROR*****'
+;        print,'Size mismatch'
+;        print,'Input variable: '+(tag_names(e.(0)))[i]$
+;          +' has dimensions: '+strtrim(string(size(e.(0).(i),/dim)),1)
+;        print,'Input KP structure has time dimension: '$
+;              +strtrim(string((size(kp_data))[1]),1)
+;        print,'Exiting....
+;        return
+;      endif
+;    endfor
+;  endif else begin
+;    ;
+;    ;  Verify that each passed variable has the right size of the
+;    ;  time dimension
+;    ;
+;    for i = 0,n_tags(e)-1 do begin
+;      if( (size(kp_data))[1] ne (size(e.(i)))[1] )then begin
+;        print,'*****ERROR*****'
+;        print,'Size mismatch'
+;        print,'Input variable: '+(tag_names(e))[i]$
+;            +' has dimensions: '+size(e.(i),/dim)
+;        print,'Input KP structure has time dimension: '+(size(kp_data))[1]
+;        print,'Exiting....
+;        return
+;      endif
+;    endfor
+;  endelse
+;skip_time_check: wait,1e-6
 ;  First, build a dummy structure with the appropriate names and 
 ;  number of tags.  Temporarily fill with scalar zeros to save memory.
   a1 = create_struct( data_name[0], 0.d0 )
