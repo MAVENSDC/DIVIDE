@@ -1,10 +1,16 @@
-pro mvn_kp_temp_cdf_reader, filename, iuvs_final
+pro mvn_kp_temp_cdf_reader, filename, iuvs
 ;+
 ; :Name:
 ;   mvn_kp_temp_cdf_reader
 ;
 ; :Description:
 ;   Temporary code to read a CDF IUVS KP file
+;
+; :Params:
+;  filename: in, required, string
+;   - the name of the CDF file to be read
+;  iuvs: out, required, structure
+;   - the data structure to contain the contents of the CDF file
 ;
 ; :Author:
 ;   McGouldrick (2015-May-15)
@@ -117,9 +123,9 @@ for itag = 0,nv-1 do begin
 ;  And, append the substructure to the level 0 structure
 ;
     if( i1 eq 0 )then begin
-      iuvs = create_struct( lev1_name, s )
+      iuvs_temp = create_struct( lev1_name, s )
     endif else begin
-      iuvs = create_struct( iuvs, lev1_name, s )
+      iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
     endelse
   endif
 endfor ; loop over all tags
@@ -130,20 +136,57 @@ cdf_close,luni
 ;
 ;  Go back to make arrays of the indexed attributes
 ;
-itemp = where(stregex(tag_names(iuvs),'[0123456789]+') gt 0, count)
-if count gt 0 then begin
+temp_name = tag_names(iuvs_temp)
+base_name = strsplit( temp_name, '[0123456789]+', /regex, /extract )
+;
+;  Cycle through the level 1 tags in the structure
+;
+i1=0
+while i1 lt n_tags(iuvs_temp) do begin
   ;
-  ;  Hack this for now; improve it later
-  ;  Current version uses foreknowledge of iuvs structure
+  ;  Find out how many level1 tags are present for each mode
   ;
-  temp = [iuvs.(itemp[0])]
-  for i=1,count-1 do begin
-    temp = [temp,iuvs.(itemp[i])]
-  endfor
-endif
-iuvs_final = create_struct( 'periapse', temp)
-for i = 1,9 do iuvs_final = create_struct( iuvs_final, (tag_names(iuvs))[i+2], iuvs.(i+2) )
+  sub = where( base_name eq base_name[i1], nsub )
+  if nsub gt 1 then begin
+    ;
+    ;  If there is more than one observational structure associated 
+    ;  with the current observing mode, then first create an array
+    ;
+    temp = [iuvs_temp.(i1)]
+    i1++ ; increment the index of the original structure
+    ;
+    ;  Now, cycle through the remaining observations for the current mode
+    ;
+    for isub = 1,nsub-1 do begin
+      temp = [temp,iuvs_temp.(i1)] ; Then append structures to the array
+      i1++                         ; increment index of original structure
+    endfor
+  endif else begin
+    ;
+    ;  There is only one instance of currnet observing mode
+    ;
+    temp = iuvs_temp.(i1) ; identify the sub-structure
+    i1++                  ; increment the orig structure index
+  endelse
+  ;
+  ;  Now, create the final structure of IUVS KP data for output
+  ;
+  if min(sub) eq 0 then begin
+    ;
+    ;  We are in the first observational mode so we must create the
+    ;  output structure from scratch
+    ;
+    iuvs = create_struct( base_name[i1-1], temp )
+  endif else begin
+    ;
+    ;  We already have started the output structure, so append the
+    ;  current observational mode/structure to that one.
+    ;
+    iuvs = create_struct( iuvs, base_name[i1-1], temp )
+  endelse
+endwhile ; keep going until we run out of level 1 tags
 ;
 ;  And finish
 ;
+return
 end
