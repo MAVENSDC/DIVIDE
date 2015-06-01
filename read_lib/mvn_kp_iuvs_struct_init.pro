@@ -107,18 +107,16 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
                ; or get this info from the label.
     i6 = create_struct(                                                      $
       NAME                   ='c_l_high',                                   $
-; I should not have to comment these names out
-;  SOmewhere this has been previously named and defined
       iuvs_record_common     ,                                               $
       'half_int_distance_id' ,strarr(6),                                     $
       'half_int_distance'    ,make_array(6,    /FLOAT, VALUE=!VALUES.F_NAN), $
-      'half_int_distance_err',make_array(6,    /FLOAT, VALUE=!VALUES.F_NAN), $
+      'half_int_distance_unc',make_array(6,    /FLOAT, VALUE=!VALUES.F_NAN), $
       'density_id'           ,strarr(4),                                     $
       'density'            ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_err'        ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_unc'        ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
       'radiance_id'        ,strarr(6),                                       $
       'radiance'           ,make_array(6,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_err'       ,make_array(6,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'       ,make_array(6,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
       'alt'                ,make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN)  $
       )
       
@@ -130,22 +128,23 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 ;WHY are these hard wired?!?!?!?
 ;
   if instruments.c_l_limb then begin
+    nalt = 32 
     i7 = create_struct(                                                   $
       NAME               ='c_l_limb',                                     $
       iuvs_record_common ,                                                $
       'scale_height_id'  ,strarr(7),                                      $
       'scale_height'     ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
-      'scale_height_err' ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
+      'scale_height_unc' ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
       'density_id'       ,strarr(7),                                      $
-      'density'          ,make_array(7,32,  /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_err'      ,make_array(7,32,  /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density'          ,make_array(7,nalt,  /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_unc'      ,make_array(7,nalt,  /FLOAT, VALUE=!VALUES.F_NAN), $
       'radiance_id'      ,strarr(11),                                     $
-      'radiance'         ,make_array(11,32, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_err'     ,make_array(11,32, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance'         ,make_array(11,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'     ,make_array(11,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
       'temperature_id'   ,'',                                             $
       'temperature'      ,!VALUES.F_NAN,                                  $
-      'temperature_err'  ,!VALUES.F_NAN,                                  $
-      'alt'              ,make_array(32,    /FLOAT, VALUE=!VALUES.F_NAN))
+      'temperature_unc'  ,!VALUES.F_NAN,                                  $
+      'alt'              ,make_array(nalt,    /FLOAT, VALUE=!VALUES.F_NAN))
       
     iuvs_record_temp4 = create_struct(['corona_lo_limb'],i7,iuvs_record_temp3)
   endif else  iuvs_record_temp4 = create_struct(iuvs_record_temp3)
@@ -171,21 +170,22 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS ECHELLE HIGH ALTITUDE CORONA DATA STRUCTURE 
   if instruments.c_e_high then begin    
+    nalt = 77
     i3 = create_struct(                                                      $
           NAME                     ='c_e_high',                              $
           iuvs_record_common ,                                               $
           'half_int_distance_id'   ,strarr(3),                               $ 
           'half_int_distance',      $
             make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $ 
-          'half_int_distance_err', $
+          'half_int_distance_unc', $
             make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $
           'radiance_id'            ,strarr(3),                               $ 
           'radiance', $
-            make_array(3,77, /FLOAT, VALUE=!VALUES.F_NAN), $ 
-          'radiance_err',$
-            make_array(3,77, /FLOAT, VALUE=!VALUES.F_NAN), $ 
+            make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $ 
+          'radiance_unc',$
+            make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $ 
           'alt',$
-            make_array(77,   /FLOAT, VALUE=!VALUES.F_NAN))
+            make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN))
     
              iuvs_record_temp6 = create_struct(['corona_e_high'],i3,$
                                                iuvs_record_temp5)
@@ -194,16 +194,17 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS ECHELLE LIMB CORONA DATA STRUCTURE
   if instruments.c_e_limb then begin
+    nalt = 32
     i4 = create_struct(                                                      $
-;      NAME                     ='c_e_limb',                                  $
+      NAME                     ='c_e_limb',                                  $
       iuvs_record_common ,                                                   $
       'half_int_distance_id' ,strarr(3),                                     $
       'half_int_distance'    ,make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $
-      'half_int_distance_err',make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $
+      'half_int_distance_unc',make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $
       'radiance_id'          ,strarr(3),                                     $
-      'radiance'             ,make_array(3,32, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_err'         ,make_array(3,32, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'alt'                  ,make_array(32,   /FLOAT, VALUE=!VALUES.F_NAN))
+      'radiance'             ,make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'         ,make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'alt'                  ,make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN))
       
     iuvs_record_temp7 = create_struct(['corona_e_limb'],i4,iuvs_record_temp6)
   endif else  iuvs_record_temp7 = create_struct(iuvs_record_temp6)
@@ -212,11 +213,11 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   ;INCLUDE IUVS ECHELLE DISK CORONA DATA STRUCTURE
   if instruments.c_e_disk then begin
     i9 = create_struct(                                            $
-  ;    NAME            ='c_e_disk',                                 $
+      NAME            ='c_e_disk',                                 $
       iuvs_record_common ,                                         $
       'radiance_id'   ,strarr(3),                                  $
       'radiance'      ,make_array(3, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_err'  ,make_array(3, /FLOAT, VALUE=!VALUES.F_NAN))
+      'radiance_unc'  ,make_array(3, /FLOAT, VALUE=!VALUES.F_NAN))
       
     iuvs_record_temp8 = create_struct(['corona_e_disk'],i9,iuvs_record_temp7)
   endif else  iuvs_record_temp8 = create_struct(iuvs_record_temp7)
@@ -224,22 +225,25 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
   if instruments.periapse then begin
+    nalt = 32
     i1 = create_struct(                                                    $
- ;     NAME                ='periapse',                                     $
+      NAME                ='periapse',                                     $
       iuvs_record_common,                                                  $
-      'scale_height_id'   ,strarr(7),                                      $
-      'scale_height'      ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
-      'scale_height_err'  ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_id'        ,strarr(7),                                      $
-      'density'           ,make_array(7,32,  /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_err'       ,make_array(7,32,  /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_id'       ,strarr(11),                                     $
-      'radiance'          ,make_array(11,32, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_err'      ,make_array(11,32, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'temperature_id'    ,'',                                             $
-      'temperature'       ,!VALUES.F_NAN,                                  $
-      'temperature_err'   ,!VALUES.F_NAN,                                  $
-      'alt'               ,make_array(32, /FLOAT, VALUE=!VALUES.F_NAN))
+      'scale_height_id'  ,strarr(7),                                       $
+      'scale_height'     ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
+      'scale_height_unc' ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_id'       ,strarr(7),                                       $
+      'density'          ,make_array(7,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_unc'      ,make_array(7,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_sys_unc'  ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_id'      ,strarr(11),                                      $
+      'radiance'         ,make_array(11,nalt,/FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'     ,make_array(11,nalt,/FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_sys_unc' ,make_array(11,     /FLOAT, VALUE=!VALUES.F_NAN), $
+      'temperature_id'   ,'',                                              $
+      'temperature'      ,!VALUES.F_NAN,                                   $
+      'temperature_unc'  ,!VALUES.F_NAN,                                   $
+      'alt'              ,make_array(nalt, /FLOAT, VALUE=!VALUES.F_NAN))
       
     iuvs_record_temp9 = create_struct(['periapse'],[i1,i1,i1],iuvs_record_temp8)
   endif else  iuvs_record_temp9 = create_struct(iuvs_record_temp8)
