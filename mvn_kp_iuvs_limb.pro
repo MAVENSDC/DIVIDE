@@ -34,6 +34,8 @@
 ;    linear : in, optional, type=byte
 ;       optional keyword to make plots on a linear scale, instead of the 
 ;       logarithmic default
+;    oo: out, optional, object
+;       Variable to which plot object may be passed to $MAIN$.
 ;    species_expand: in, optional, byte
 ;       if this keyword is selected, then all the species for a given orbit 
 ;       will be plotted on a single graph
@@ -58,7 +60,7 @@
 pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                       profiles=profiles, den_species=den_species, $
                       rad_species=rad_species, nolegend=nolegend, $
-                      linear=linear, $
+                      linear=linear, oo=oo, directgraphics=directgraphics, $
                       species_expand=species_expand, $
                       profile_expand=profile_expand,$
                       range=range,colortable=colortable,window=window, $
@@ -129,12 +131,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         return
   endif
     
-  ;DEFINE THE SPECIES NAME STRINGS FOR DENSITY AND RADIANCE
-    density_names = ['CO2/CO2+','CO','H','O','C','N','N2']
-    radiance_names = ['CO2/CO2+','CO','H','O_1304','O_1306',$
-                      '0_2972','C','N','N2','NO']
-
-
   ;CHECK FIRST THAT THE SUPPLIED DATA STRUCTURE INCLUDES PERIAPSE DATA
     base_tags = tag_names(kp_data)
     data_check = where(base_tags eq 'PERIAPSE')
@@ -144,6 +140,13 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       return
     endif
     
+    ;DEFINE THE SPECIES NAME STRINGS FOR DENSITY AND RADIANCE
+    ;old    density_names = ['CO2/CO2+','CO','H','O','C','N','N2']
+    ;old    radiance_names = ['CO2/CO2+','CO','H','O_1304','O_1306',$
+    ;old                      '0_2972','C','N','N2','NO']
+    density_names = kp_data[0].periapse[0].density_id
+    radiance_names = kp_data[0].periapse[0].radiance_id
+
   ;INFORM THE USER THAT ALL ORBITS MAY BE PLOTTED
     if keyword_set(profile_expand) eq 1 then begin
       print,'By default, all periapse data will be plotted.'
@@ -197,13 +200,14 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   
     if keyword_set(den_species) then begin
       density_dimensions = n_elements(den_species)
-      density_labels = density_names(den_species-1)
+      density_labels = density_names(den_species-1) ;-km hack to go from 
+                                                    ; 1-start to 0-start
       density = keyword_set(1B)
     endif else begin
       if( keyword_Set(density) )then begin
-        density_dimensions = 7
+        density_dimensions = n_elements(density_names)
         density_labels = density_names
-        den_species = [1,2,3,4,5,6,7]
+        den_species = indgen(density_dimensions)+1 ; same hack as above
       endif else begin
         density_dimensions = 0
       endelse
@@ -214,9 +218,9 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       radiance = keyword_set(1B)
     endif else begin
       if( keyword_set(radiance) )then begin
-        radiance_dimensions = 10
+        radiance_dimensions = n_elements(radiance_names)
         radiance_labels = radiance_names
-        rad_species = [1,2,3,4,5,6,7,8,9,10]
+        rad_species = indgen(radiance_dimensions)+1
       endif else begin
         radiance_dimensions = 0
       endelse
@@ -234,22 +238,27 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     endelse
 
   ;DEFINE THE ALTITUDE RANGE FOR THE KP DATA
-    altitude = intarr(30)
-    for i=0,29 do begin
-      altitude[i] = 100 + (4*i)
-    endfor
-  
+;-km need to get rid of this hard-coding.  Never mind that it is wrong....
+;    altitude = intarr(30)
+;    for i=0,29 do begin
+;      altitude[i] = 100 + (4*i)
+;    endfor
+  altitude = kp_data[0].periapse[0].alt
+  nalt = n_elements(altitude) 
   ;EXTRACT THE DATA FROM THE STRUCTURE INTO TEMPORARY ARRAYS
-  
+    
   if( keyword_set(radiance) )then begin
-    radiance_data = fltarr((n_elements(kp_data)),3,radiance_dimensions,31)
-    radiance_error = fltarr((n_elements(kp_data)),3,radiance_dimensions,31)
+    radiance_data = fltarr((n_elements(kp_data)),3,radiance_dimensions,nalt)
+    radiance_error = fltarr((n_elements(kp_data)),3,radiance_dimensions,nalt)
   endif
   if( keyword_set(density) )then begin
-    density_data = fltarr((n_elements(kp_data)),3,density_dimensions,31)
-    density_error = fltarr((n_elements(kp_data)),3,density_dimensions,31)
+    density_data = fltarr((n_elements(kp_data)),3,density_dimensions,nalt)
+    density_error = fltarr((n_elements(kp_data)),3,density_dimensions,nalt)
   endif
 
+;
+;  NB, this code does not yet take into account systematic uncertainty
+;
   index=0
   for i=0,n_elements(kp_data) -1 do begin
     for j=0,2 do begin
@@ -258,13 +267,13 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
           radiance_data[i,j,*,*] = kp_data[i].periapse[j]$
                                    .radiance[(rad_species-1),*]
           radiance_error[i,j,*,*] = kp_data[i].periapse[j]$
-                                    .radiance_err[(rad_species-1),*]
+                                    .radiance_unc[(rad_species-1),*]
         endif
         if( keyword_set(density) )then begin
           density_data[i,j,*,*] = kp_data[i].periapse[j]$
                                   .density[(den_species-1),*]
           density_error[i,j,*,*] = kp_data[i].periapse[j]$
-                                   .density_err[(den_species-1),*]
+                                   .density_unc[(den_species-1),*]
         endif
         profile_labels[index] = 'Orbit '+strtrim(string(kp_data[i].orbit),2)$
                               + ', Profile '+strtrim(string(j+1),2)
@@ -374,6 +383,7 @@ help,columns,rows,species_expand
         ;DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES, AND PROFILES ON ONE PLOT
         if (keyword_set(species_expand) eq 0) and $
            (keyword_set(profile_expand) eq 0) then begin
+         if keyword_set(direct_graphics) then begin
           plot,radiance_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
                charsize=2,yrange=[100,220],$
                ytitle='Altitude, km',/nodata,ymargin=y_label_margin
@@ -392,8 +402,31 @@ help,columns,rows,species_expand
                 endif
               endfor
             endfor
-        endif
-       
+         endif else begin ; object oriented graphics
+;-km-testing no expand version
+; some hacks in plot command but otherwise works
+          check_index = 0
+          for i = 0,n_elements(kp_data)-1 do begin
+            for j = 0,2 do begin ; periapse records
+              if kp_data[i].periapse[j].time_start ne '' then begin
+                if profile_inclusion[check_index] then begin
+                  for k = 0,n_elements(rad_species)-1 do begin
+                    plot1 = plot( radiance_data[i,j,k,*], altitude, $
+                                  xlog=log_option, ytitle='Altitude[km]', $
+                                  title='Radiance', $
+                                  linestyle=rad_linestyle[k], thick=2, $
+                                  rgb_table=40, vert_colors=profile_colors[j], $
+                                  layout=[rows,columns,1], $
+                                  overplot=keyword_set(i+j+k) )
+                  endfor
+                endif ; profile_inclusion
+              endif   ; time_start string not NULL
+            endfor    ; periapse records
+          endfor      ; time records
+;-km-/end-test
+         endelse      ; graphics type
+        endif         ; expand species AND profiles
+
         ;RADIANCE PLOT EXPANDING TO INDIVIDUALLY PLOT ALL SPECIES
          if keyword_set(species_expand) and $
             (keyword_set(profile_expand) eq 0) then begin
@@ -704,7 +737,10 @@ help,columns,rows,species_expand
    endfor
   
    endif
-  
-  
-finish: 
+
+;
+;  Pass the plot object out, if requested
+;
+if( arg_present(oo) )then oo=plot1
+ 
 end
