@@ -270,10 +270,21 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                                     .radiance_unc[(rad_species-1),*]
         endif
         if( keyword_set(density) )then begin
+;
+;  HACK HACK HACK To test density plotting
+;  Just fill the arrays with radiance info
+;  This only works because Nden lt Nrad
+;
           density_data[i,j,*,*] = kp_data[i].periapse[j]$
-                                  .density[(den_species-1),*]
+                                  .radiance[(den_species-1),*]
           density_error[i,j,*,*] = kp_data[i].periapse[j]$
-                                   .density_unc[(den_species-1),*]
+                                   .radiance_unc[(den_species-1),*]
+;-orig
+;          density_data[i,j,*,*] = kp_data[i].periapse[j]$
+;                                  .density[(den_species-1),*]
+;          density_error[i,j,*,*] = kp_data[i].periapse[j]$
+;                                   .density_unc[(den_species-1),*]
+;-/orig
         endif
         profile_labels[index] = 'Orbit '+strtrim(string(kp_data[i].orbit),2)$
                               + ', Profile '+strtrim(string(j+1),2)
@@ -395,7 +406,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
               if kp_data[i].periapse[j].time_start ne '' then begin
                 if profile_inclusion[check_index] eq 1 then begin
                   for k=0,n_elements(rad_species)-1 do begin
-                    oplot,radiance_data[i,j,k,*],altitude,thick=2,$
+                    oplot,radiance_data[i,j,k,*],altitude,$
+                          thick=rad_thick[k],$
                           linestyle=rad_linestyle[k],$
                           color=profile_colors[(i*3)+j]
                   endfor
@@ -447,7 +459,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin        
-                      oplot,radiance_data[j,k,i,*],altitude,thick=2,$
+                      oplot,radiance_data[j,k,i,*],altitude,$
+                            thick=rad_thick[i],$
                             color=profile_colors[(j*3)+k]
                     endif
                     check_index = check_index+1
@@ -464,7 +477,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
               for j=0,n_elements(kp_data)-1 do begin
                 for k=0,2 do begin ; profiles
                   if( profile_inclusion[check_index] )then begin
-                    plot1 = plot( radiance_data[j,k,i,*], altitude, thick=2, $
+                    plot1 = plot( radiance_data[j,k,i,*], altitude, $
+                                  thick=rad_thick[i], $
                                   title=radiance_labels[i], xlog=log_option, $
                                   font_size=12, rgb_table=40, $
                                   vert_colors=profile_colors[(j*3)+k], $
@@ -499,7 +513,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                     ; profile_labels[check_index],/normal,charsize=1.5
                     label_index = label_index + 1
                     for k=0,n_elements(rad_species)-1 do begin
-                      oplot,radiance_data[i,j,k,*],altitude,thick=2,$
+                      oplot,radiance_data[i,j,k,*],altitude, $
+                            thick=rad_thick[k], $
                             linestyle=rad_linestyle[k]
                     endfor
                   endif ; profile_inclusion check
@@ -519,13 +534,16 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                 if kp_data[i].periapse[j].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
                     for k =0,n_elements(rad_species)-1 do begin
-                      plot1 = plot( radiance_data[i,j,k,*], altitude, thick=2, $
+                      layout_vector = [columns,rows,$
+                                       (i+j)*(rad_plot+den_plot)+1]
+                      plot1 = plot( radiance_data[i,j,k,*], altitude, $
+                                    thick=rad_thick[k], $
                                     title=profile_labels[check_index], $
                                     xlog=log_option, $
                                     font_size=12, rgb_table=40, $
                                     ;vert_colors=profile_colors[(j*3)+k], $
                                     ytitle='Altitude [km]', $
-                                    layout=[columns,rows,i+j+1], $
+                                    layout=layout_vector, $
                                     overplot = keyword_set(k), $
                                     current = keyword_set(i+j+k) )
                       label_index = label_index + 1
@@ -551,7 +569,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin
-                       plot,radiance_data[j,k,i,*],altitude,thick=2,$
+                       plot,radiance_data[j,k,i,*],altitude,$
+                            thick=rad_thick[i],$
                             xlog=log_option,charsize=1.5,yrange=[100,220],$
                             ytitle='Altitude, km',ymargin=y_label_margin,$
                             title=radiance_labels[i] + ':  '$
@@ -577,7 +596,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                     if profile_inclusion[check_index] eq 1 then begin
                       layout_vector = [columns, rows, i+(j+k)*columns+1]
                       plot1 = plot( radiance_data[j,k,i,*], altitude, $
-                                    thick=2, xlog=log_option, $
+                                    thick=rad_thick[i], xlog=log_option, $
                                     title=radiance_labels[i]+': ' $
                                          +profile_labels[check_index], $
                                     font_size=12, rgb_table=40, $
@@ -600,6 +619,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED, 
       ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
       
+;-km This line currently is not being drawn...
+;    Will be ignored entirely by OO plots
+;    Not sure why not showing up in direct graphics plots
+;
         ;MID-PLOT LINE IF BOTH RADIANCE AND DENSITY IS INCLUDED
           if keyword_set(species_expand) then begin
             line_marker = float(n_elements(rad_species))$
@@ -612,107 +635,252 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
           endif
       
       if den_plot eq 1 then begin
-        ;DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES, 
-        ;AND PROFILES ON ONE PLOT
+        ;
+        ;  Density plot(s) requested
+        ;
+
          if (keyword_set(species_expand) eq 0) and $
             (keyword_set(profile_expand) eq 0) then begin
-          plot,density_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
-               charsize=2,yrange=[100,200],$
-               ytitle='Altitude,km',/nodata,ymargin =y_label_margin
-          check_index = 0
-          for i=0,n_elements(kp_data)-1 do begin
-            for j=0,2 do begin
-              if kp_data[i].periapse[j].time_start ne '' then begin
-                if profile_inclusion[check_index] eq 1 then begin
-                  for k=0,n_elements(den_species)-1 do begin
-                    oplot,density_data[i,j,k,*],altitude,thick=2,$
-                          linestyle=den_linestyle[k],$
-                          color=profile_colors[(i*3)+j]
-                  endfor
-                endif
-                check_index = check_index+1
-              endif
-            endfor
-          endfor
-         endif
-        ;DENSITY PLOT EXPANDING TO INVIDUALLY PLOT ALL SPECIES
+           ;DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES,
+           ;AND PROFILES ON ONE PLOT
+           if keyword_set(directgraphics) then begin
+             plot,density_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
+                  charsize=2,yrange=[100,200],$
+                  ytitle='Altitude,km',/nodata,ymargin =y_label_margin
+             check_index = 0
+             for i=0,n_elements(kp_data)-1 do begin
+               for j=0,2 do begin
+                 if kp_data[i].periapse[j].time_start ne '' then begin
+                   if profile_inclusion[check_index] eq 1 then begin
+                     for k=0,n_elements(den_species)-1 do begin
+                       oplot,density_data[i,j,k,*],altitude,thick=2,$
+                             linestyle=den_linestyle[k],$
+                             color=profile_colors[(i*3)+j]
+                     endfor
+                   endif
+                   check_index = check_index+1
+                 endif ; existence of data check
+               endfor  ; loop over profiles
+             endfor    ; loop over orbits
+           endif else begin
+             ;
+             ; Produce the plot in OO grpahics
+             ;
+             check_index = 0
+             ;
+             ;  If both rad_plot and den_plot were requested, this will
+             ;  place density plot in position 2; if no rad_plot was
+             ;  requested, then density plot takes position 1.
+             ;
+             layout_vector = [columns,rows,rad_plot+den_plot]
+             for i=0,n_elements(kp_data)-1 do begin
+               for j=0,2 do begin
+                 if kp_data[i].periapse[j].time_start ne '' then begin
+                   if profile_inclusion[check_index] eq 1 then begin
+                     for k=0,n_elements(den_species)-1 do begin
+                       ;
+                       ;  NB if rad_plot = 1 then window already open, 
+                       ;  so plot this in current window; if rad_plot = 0
+                       ;  then no window open, so draw first plot in a
+                       ;  new window.
+                       ;
+                       plot1 = plot(density_data[i,j,k,*],altitude,thick=2,$
+                                    linestyle=den_linestyle[k],$
+                                    ytitle='Altitude[km]', xlog=log_option, $
+                                    font_size=12, rgb_table=40, $
+                                    layout=layout_vector, $
+                                    vert_colors=profile_colors[(i*3)+j], $
+                                    overplot=keyword_set(i+j+k), $
+                                    current=keyword_set(rad_plot) )
+                     endfor
+                   endif
+                   check_index = check_index+1
+                 endif ; existence of data check
+               endfor  ; loop over profiles
+             endfor    ; loop over orbits
+           endelse     ; graphics type
+         endif ; do not expand on species nor profiles
+
          if keyword_set(species_expand) and $
            (keyword_set(profile_expand) eq 0) then begin
-          for i=0,n_elements(den_species)-1 do begin
-            check_index = 0
-            plot,density_data[0,0,i,*],altitude,title=density_labels[i],$
+           ;
+           ; DENSITY PLOT EXPANDING TO INVIDUALLY PLOT ALL SPECIES
+           ;
+           if keyword_set(directgraphics) then begin
+             for i=0,n_elements(den_species)-1 do begin
+               check_index = 0
+               plot,density_data[0,0,i,*],altitude,title=density_labels[i],$
                  thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
                  ytitle='Altitude, km',/nodata,ymargin=y_label_margin
-            for j=0,n_elements(kp_data)-1 do begin
-              for k=0,2 do begin
-                if kp_data[j].periapse[k].time_start ne '' then begin
-                  if profile_inclusion[check_index] eq 1 then begin                  
-                    oplot,density_data[j,k,i,*],altitude,thick=2,$
-                          color=profile_colors[(j*3)+k]
-                  endif
-                  check_index = check_index + 1
-                endif
-              endfor
-            endfor
-          endfor        
-         endif        
+               for j=0,n_elements(kp_data)-1 do begin
+                 for k=0,2 do begin
+                   if kp_data[j].periapse[k].time_start ne '' then begin
+                     if profile_inclusion[check_index] eq 1 then begin
+                       oplot,density_data[j,k,i,*],altitude,thick=2,$
+                         color=profile_colors[(j*3)+k]
+                     endif
+                     check_index = check_index + 1
+                   endif
+                 endfor  ; loop profiles
+               endfor    ; loop times
+             endfor      ; loop den_species
+           endif else begin
+             ;
+             ;  Generate plot using OO grpahics
+             ;
+             for i=0,n_elements(den_species)-1 do begin
+               check_index = 0
+               for j=0,n_elements(kp_data)-1 do begin
+                 for k=0,2 do begin
+                   if kp_data[j].periapse[k].time_start ne '' then begin
+                     if profile_inclusion[check_index] eq 1 then begin
+                       ;
+                       ;  NB if rad_plot = 1 then window already open,
+                       ;  so plot this in current window; if rad_plot = 0
+                       ;  then no window open, so draw first plot in a
+                       ;  new window.
+                       ;
+                       layout_vector = [columns,rows,radiance_dimensions+i+1]
+                       plot1 = plot(density_data[j,k,i,*],altitude,$
+                         thick=2, title=density_labels[i], $
+                         linestyle=den_linestyle[k],$
+                         ytitle='Altitude[km]', xlog=log_option, $
+                         font_size=12, rgb_table=40, $
+                         layout=layout_vector, $
+                         vert_colors=profile_colors[(j*3)+k], $
+                         overplot=keyword_set(j+k), $
+                         current=keyword_set(rad_plot+i+j+k) )
+                     endif
+                     check_index = check_index + 1
+                   endif ; data existence check
+                 endfor  ; loop profiles
+               endfor    ; loop times
+             endfor      ; loop den_species
+           endelse       ; graphics type
+         endif           ; if only expand species
          
-        ;DENSITY PLOT EXPANDING TO INDIVIDUALLY PLOT EACH PROFILE
         if keyword_set(profile_expand) and $
            (keyword_set(species_expand) eq 0) then begin
-          check_index = 0
-          label_index = 0
-          for i=0,n_elements(kp_data)-1 do begin
-            for j=0,2 do begin
-              if kp_data[i].periapse[j].time_start ne '' then begin
-                if profile_inclusion[check_index] eq 1 then begin
-                  plot,density_data[i,j,0,*],altitude,thick=2,$
-                       xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
-                       title=profile_labels[check_index]
-                  label_index = label_index + 1
-                  for k=0,n_elements(den_species)-1 do begin
-                    oplot,density_data[i,j,k,*],altitude,thick=2,$
-                          linestyle=den_linestyle[k]
-                  endfor
-                endif
-             ;   xyouts,.48,0.9-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
-                check_index = check_index + 1
-              endif
-            endfor
-          endfor
-        endif        
-        
-        
-        ;DENSITY PLOTS THAT EXPAND BOTH SPECIES AND PROFILES
-        if keyword_set(profile_expand) and $
-           keyword_set(species_expand) then begin
-          for i=0,n_elements(den_species)-1 do begin
+          ;
+          ; DENSITY PLOT EXPANDING TO INDIVIDUALLY PLOT EACH PROFILE
+          ;
+          if keyword_set(directgraphics) then begin
             check_index = 0
             label_index = 0
-            for j=0,n_elements(kp_data)-1 do begin
-              for k=0,2 do begin
-                if kp_data[j].periapse[k].time_start ne '' then begin
+            for i=0,n_elements(kp_data)-1 do begin
+              for j=0,2 do begin
+                if kp_data[i].periapse[j].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
-                     plot,density_data[j,k,i,*],altitude,thick=2,$
-                          xlog=log_option,charsize=1.5,yrange=[100,220],$
-                          ytitle='Altitude, km',ymargin=y_label_margin,$
-                          title= density_labels[i] +':  '$
-                               + profile_labels[check_index]
-                     label_index = label_index+1
+                    plot,density_data[i,j,0,*],altitude,thick=2,$
+                         xlog=log_option,charsize=1.5,yrange=[100,220],$
+                         ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
+                         title=profile_labels[check_index]
+                    label_index = label_index + 1
+                    for k=0,n_elements(den_species)-1 do begin
+                      oplot,density_data[i,j,k,*],altitude,thick=2,$
+                            linestyle=den_linestyle[k]
+                    endfor
                   endif
-                    ; xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+               ;   xyouts,.48,0.9-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+                  check_index = check_index + 1
+                endif ; data verification check
+              endfor  ; profiles loop
+            endfor    ; time loop
+          endif else begin
+            ;
+            ;  Generate plot using OO grpahics
+            ;
+            check_index = 0
+            label_index = 0
+            for i=0,n_elements(kp_data)-1 do begin
+              for j=0,2 do begin
+                if kp_data[i].periapse[j].time_start ne '' then begin
+                  if profile_inclusion[check_index] eq 1 then begin
+                    label_index = label_index + 1
+                    for k=0,n_elements(den_species)-1 do begin
+                       layout_vector = [columns,rows,(i+j+1)*(rad_plot+1)]
+                       plot1 = plot(density_data[i,j,k,*],altitude,$
+                         thick=2, title=profile_labels[check_index]+'Den', $
+                         linestyle=den_linestyle[k],$
+                         ytitle='Altitude[km]', xlog=log_option, $
+                         font_size=12, rgb_table=40, $
+                         layout=layout_vector, $
+                         ;vert_colors=profile_colors[(j*3)+k], $
+                         overplot=keyword_set(k), $
+                         current=keyword_set(rad_plot+i+j+k) )
+                    endfor
+                  endif
+                  check_index = check_index + 1
+                endif ; data verification check
+              endfor  ; profiles loop
+            endfor    ; time loop
+          endelse     ; grpahics type
+        endif         ; expand profiles but not species
+        
+        
+        if keyword_set(profile_expand) and $
+           keyword_set(species_expand) then begin
+          ;
+          ; DENSITY PLOTS THAT EXPAND BOTH SPECIES AND PROFILES
+          ;
+          if keyword_set(directgraphics) then begin
+            for i=0,n_elements(den_species)-1 do begin
+              check_index = 0
+              label_index = 0
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin
+                  if kp_data[j].periapse[k].time_start ne '' then begin
+                    if profile_inclusion[check_index] eq 1 then begin
+                       plot,density_data[j,k,i,*],altitude,thick=2,$
+                            xlog=log_option,charsize=1.5,yrange=[100,220],$
+                            ytitle='Altitude, km',ymargin=y_label_margin,$
+                            title= density_labels[i] +':  '$
+                                 + profile_labels[check_index]
+                       label_index = label_index+1
+                    endif
+                      ; xyouts,.48,0.94-((1./rows)*label_index),$
+                      ; profile_labels[check_index],/normal,charsize=1.5
+                    check_index = check_index+1                
+                  endif ; data existence check
+                endfor  ; profile loop
+              endfor    ; time loop
+            endfor      ; den_species loop
+          endif else begin
+            ;
+            ; Generate plot using OO graphics
+            ;
+            for i=0,n_elements(den_species)-1 do begin
+              check_index = 0
+              label_index = 0
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin
+                  if kp_data[j].periapse[k].time_start ne '' then begin
+                    if profile_inclusion[check_index] eq 1 then begin
+                      layout_index = radiance_dimensions + i + 1 $
+                                   + (j+k) * ( radiance_dimensions $
+                                             + density_dimensions )
+                      layout_vector = [columns,rows,layout_index]
+                      plot1 = plot(density_data[j,k,i,*],altitude,$
+                                   thick=2,xlog=log_option,$
+                                   font_size=12, ytitle='Altitude, km',$
+                                   title= density_labels[i] +':  '$
+                                        + profile_labels[check_index], $
+                                   layout=layout_vector, $
+                                   overplot=0, $
+                                   current=keyword_set(rad_plot))
+                      label_index = label_index+1
+                    endif
+                    ; xyouts,.48,0.94-((1./rows)*label_index),$
+                    ; profile_labels[check_index],/normal,charsize=1.5
+                    check_index = check_index+1
+                  endif ; data existence check
+                endfor  ; profile loop
+              endfor    ; time loop
+            endfor      ; den_species loop
+          endelse       ; graphics options
+        endif           ; expand all
 
-                  check_index = check_index+1                
-                endif
-              endfor
-            endfor
-          endfor  
-  
-        endif  
-        
-        
-      endif
+      endif  ; end of den_plot block
     
     ;ADD OVERALL LABELS 
     
