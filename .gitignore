@@ -1,4 +1,4 @@
-*.txt
+mvn_toolkit_prefs.txt
 *.nc
 *.sav
 *.orb

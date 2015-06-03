@@ -61,7 +61,6 @@ pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
 
 ;TODO: MAKE SURE ALL MAPS HAVE THE LONGITUDES IN THE CORRECT PLACE
 
-
 ;CHECK ALL PARAMETERS BEFORE CONTINUING
 ;Check altitude
 if (~(size(altitude, /type) gt 1) and ~(size(altitude, /type) lt 6)) then begin
@@ -228,6 +227,9 @@ if (keyword_set(basemap)) then begin
 endif
 
 ;CREATE THE CONTOUR PLOT
+;Note: Background color is almost white, but not quite.
+;      otherwise, when saving the image as a png, the function cuts out
+;      an all white border
 contour1=contour(modeldata, simdim.lon, simdim.lat, $
                  RGB_TABLE=ct, N_LEVELS=numContourLines, $
                  XRANGE = lonrange, $
@@ -252,7 +254,8 @@ if !version.os_family eq 'unix' then begin
 endif else begin
   save_string = save_string+"\"
 endelse
-save_string = save_string+"ModelData_"+(*simdata[dataindex]).name+"_"+strtrim(string(altitude),1)+"km"
+save_string = save_string+"ModelData_"+(*simdata[dataindex]).name + $
+              "_"+strtrim(string(altitude),1)+"km"
 if (keyword_set(fill)) then begin
   save_string = save_string+"_filled"
 endif
