@@ -123,9 +123,17 @@ for itag = 0,nv-1 do begin
 ;  And, append the substructure to the level 0 structure
 ;
     if( i1 eq 0 )then begin
-      iuvs_temp = create_struct( lev1_name, s )
+      if n_elements(name_list[itag]) eq 1 then begin
+        iuvs_temp = create_struct( lev1_name, s.(0) )
+      endif else begin
+        iuvs_temp = create_struct( lev1_name, s )
+      endelse
     endif else begin
-      iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
+      if n_elements(name_list[itag]) eq 1 then begin
+        iuvs_temp = create_struct( iuvs_temp, lev1_name, s.(0) )
+      endif else begin
+        iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
+      endelse
     endelse
   endif
 endfor ; loop over all tags
@@ -163,7 +171,7 @@ while i1 lt n_tags(iuvs_temp) do begin
     endfor
   endif else begin
     ;
-    ;  There is only one instance of currnet observing mode
+    ;  There is only one instance of current observing mode
     ;
     temp = iuvs_temp.(i1) ; identify the sub-structure
     i1++                  ; increment the orig structure index
