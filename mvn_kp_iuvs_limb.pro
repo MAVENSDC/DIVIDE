@@ -293,31 +293,18 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       if keyword_set(profile_expand) then begin
         rows = index
         if keyword_set(profiles) then rows = n_elements(profiles)
-        if keyword_set(radiance) or keyword_set(density) then columns = 1
-        if keyword_set(radiance) and keyword_set(density) then columns = 2
       endif
-;        rows = 1
       
-        if keyword_set(species_expand) then begin
-          if keyword_set(density) then columns = 7
-          if keyword_set(radiance) then columns = 10
-          if keyword_set(radiance) and keyword_set(density) then $
-            columns = 17
-          if keyword_set(radiance) eq 0 and keyword_set(density) eq 0 then $
-            columns = 17      
-          if keyword_Set(den_species) or keyword_set(rad_species) then $
-            columns = n_elements(den_species) + n_elements(rad_species)
-        endif else begin
-          if keyword_set(radiance) or keyword_set(density) then columns = 1
-          if keyword_set(radiance) and keyword_set(density) then columns = 2
-        endelse
-      
+      columns = 0
+      if keyword_set(species_expand) then begin
+        if keyword_set(density) then columns = columns + density_dimensions
+        if keyword_set(radiance) then columns = columns + radiance_dimensions
+      endif else begin
+        columns = keyword_set(density) + keyword_set(radiance)
+      endelse
+
       if keyword_set(radiance) then rad_plot = 1
       if keyword_set(density) then den_plot = 1
-      if keyword_set(radiance) eq 0 and keyword_set(density) eq 0 then begin
-        rad_plot = 1
-        den_plot = 1
-      endif
 
 ;-km-debugging help
 ;help,keyword_Set(radiance),keyword_set(density)
@@ -325,7 +312,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
 ;help,keyword_set(radiance) and keyword_set(density)
 ;help,n_elements(den_species),n_elements(rad_species)
 ;help,radiance_data,density_data
-;help,columns,rows,species_expand
+;help,columns,rows,rad_plot,den_plot
 ;stop
 ;-/km-debugging help
 
@@ -380,6 +367,14 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         endelse
       endelse
 
+;-km In below, should move direct graphics check *into* the plotting 
+;-km   loop.  I.e., only have *one* loop over plot, and that contains
+;-km   an if..then..else for direct graphics.
+
+;-km *Might* also be possible to flatten thee four cases into a single
+;-km   iteration with approatiately chosen keywords and conditionals
+;-km   but the changing indexing orders make this difficult to impossible
+
       if rad_plot eq 1 then begin
         ;
         ;  Generate the radiance plot(s)
@@ -411,7 +406,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
           endfor
          endif else begin ; object oriented graphics
           ;
-          ;  Gneerate the plot in OO graphics
+          ;  Generate the plot in OO graphics
           ;   (some hacks in plot command but otherwise works)
           ;
           check_index = 0
@@ -423,8 +418,10 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                     plot1 = plot( radiance_data[i,j,k,*], altitude, $
                                   xlog=log_option, ytitle='Altitude[km]', $
                                   title='Radiance', $
-                                  linestyle=rad_linestyle[k], thick=2, $
-                                  rgb_table=40, vert_colors=profile_colors[j], $
+                                  linestyle=rad_linestyle[k], $
+                                  thick=rad_thick[k], $
+                                  rgb_table=40, $
+                                  vert_colors=profile_colors[j], $
                                   layout=[columns,rows,1], $
                                   overplot=keyword_set(i+j+k) )
                   endfor
@@ -578,15 +575,16 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin
-                      plot1 = plot( radiance_data[j,k,i,*], altitude, thick=2, $
+                      layout_vector = [columns, rows, i+(j+k)*columns+1]
+                      plot1 = plot( radiance_data[j,k,i,*], altitude, $
+                                    thick=2, xlog=log_option, $
                                     title=radiance_labels[i]+': ' $
                                          +profile_labels[check_index], $
-                                    xlog=log_option, $
                                     font_size=12, rgb_table=40, $
                                     ;vert_colors=profile_colors[(j*3)+k], $
                                     ytitle='Altitude [km]', $
-                                    layout=[columns,rows,i+(j+k)*n_elements(rad_species)+1], $
-                                    overplot = 0, $ ;current = 0keyword_set(k), $
+                                    layout=layout_vector, $
+                                    overplot = 0, $ 
                                     current = keyword_set(i+j+k) )
                     endif
                     check_index = check_index+1
