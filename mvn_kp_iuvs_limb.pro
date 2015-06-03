@@ -295,8 +295,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         if keyword_set(profiles) then rows = n_elements(profiles)
         if keyword_set(radiance) or keyword_set(density) then columns = 1
         if keyword_set(radiance) and keyword_set(density) then columns = 2
-      endif else begin
-        rows = 1
+      endif
+;        rows = 1
       
         if keyword_set(species_expand) then begin
           if keyword_set(density) then columns = 7
@@ -311,7 +311,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
           if keyword_set(radiance) or keyword_set(density) then columns = 1
           if keyword_set(radiance) and keyword_set(density) then columns = 2
         endelse
-      endelse
       
       if keyword_set(radiance) then rad_plot = 1
       if keyword_set(density) then den_plot = 1
@@ -319,13 +318,14 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         rad_plot = 1
         den_plot = 1
       endif
+
 ;-km-debugging help
-help,keyword_Set(radiance),keyword_set(density)
-help,keyword_set(radiance) eq 0 and keyword_set(density) eq 0
-help,keyword_set(radiance) and keyword_set(density)
-help,n_elements(den_species),n_elements(rad_species)
-help,radiance_data,density_data
-help,columns,rows,species_expand
+;help,keyword_Set(radiance),keyword_set(density)
+;help,keyword_set(radiance) eq 0 and keyword_set(density) eq 0
+;help,keyword_set(radiance) and keyword_set(density)
+;help,n_elements(den_species),n_elements(rad_species)
+;help,radiance_data,density_data
+;help,columns,rows,species_expand
 ;stop
 ;-/km-debugging help
 
@@ -358,7 +358,8 @@ help,columns,rows,species_expand
      ;PLOT
      ; is there a more eloquent way of doing this instead of all the 
      ; possible different options?
-     
+     ;-km no, but there is a more elegant way.
+     ;
      ;DETERMINE APPROPRIATE MARGINS    
          ;MARGINS 
           if keyword_set(species_expand) then begin
@@ -380,31 +381,39 @@ help,columns,rows,species_expand
       endelse
 
       if rad_plot eq 1 then begin
-        ;DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES, AND PROFILES ON ONE PLOT
+        ;
+        ;  Generate the radiance plot(s)
+        ;
         if (keyword_set(species_expand) eq 0) and $
            (keyword_set(profile_expand) eq 0) then begin
-         if keyword_set(direct_graphics) then begin
+         ;
+         ; DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES,
+         ; AND PROFILES ON A SINGLE PLOT
+         ;
+         if keyword_set(directgraphics) then begin
           plot,radiance_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
                charsize=2,yrange=[100,220],$
                ytitle='Altitude, km',/nodata,ymargin=y_label_margin
           check_index = 0
-            for i=0, n_elements(kp_data)-1 do begin
-              for j=0,2 do begin
-                if kp_data[i].periapse[j].time_start ne '' then begin
-                  if profile_inclusion[check_index] eq 1 then begin
+          for i=0, n_elements(kp_data)-1 do begin
+            for j=0,2 do begin
+              if kp_data[i].periapse[j].time_start ne '' then begin
+                if profile_inclusion[check_index] eq 1 then begin
                   for k=0,n_elements(rad_species)-1 do begin
                     oplot,radiance_data[i,j,k,*],altitude,thick=2,$
                           linestyle=rad_linestyle[k],$
                           color=profile_colors[(i*3)+j]
                   endfor
-                 endif
-                  check_index = check_index + 1
                 endif
-              endfor
+                check_index = check_index + 1
+              endif
             endfor
+          endfor
          endif else begin ; object oriented graphics
-;-km-testing no expand version
-; some hacks in plot command but otherwise works
+          ;
+          ;  Gneerate the plot in OO graphics
+          ;   (some hacks in plot command but otherwise works)
+          ;
           check_index = 0
           for i = 0,n_elements(kp_data)-1 do begin
             for j = 0,2 do begin ; periapse records
@@ -416,112 +425,179 @@ help,columns,rows,species_expand
                                   title='Radiance', $
                                   linestyle=rad_linestyle[k], thick=2, $
                                   rgb_table=40, vert_colors=profile_colors[j], $
-                                  layout=[rows,columns,1], $
+                                  layout=[columns,rows,1], $
                                   overplot=keyword_set(i+j+k) )
                   endfor
                 endif ; profile_inclusion
               endif   ; time_start string not NULL
             endfor    ; periapse records
           endfor      ; time records
-;-km-/end-test
          endelse      ; graphics type
         endif         ; expand species AND profiles
 
-        ;RADIANCE PLOT EXPANDING TO INDIVIDUALLY PLOT ALL SPECIES
-         if keyword_set(species_expand) and $
-            (keyword_set(profile_expand) eq 0) then begin
-          for i=0,n_elements(rad_species)-1 do begin
-            check_index = 0
-            plot,radiance_data[0,0,i,*],altitude,title=radiance_labels[i],$
-                 thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
-                 ytitle='Altitude, km',/nodata,ymargin=y_label_margin
-            for j=0,n_elements(kp_data)-1 do begin
-              for k=0,2 do begin
-                if kp_data[j].periapse[k].time_start ne '' then begin
-                  if profile_inclusion[check_index] eq 1 then begin        
-                    oplot,radiance_data[j,k,i,*],altitude,thick=2,$
-                          color=profile_colors[(j*3)+k]
+        if keyword_set(species_expand) and $
+           (keyword_set(profile_expand) eq 0) then begin
+          ;
+          ; RADIANCE PLOT EXPANDING TO INDIVIDUALLY PLOT ALL SPECIES
+          ;
+          if keyword_set(directgraphics) then begin
+            for i=0,n_elements(rad_species)-1 do begin
+              check_index = 0
+              plot,radiance_data[0,0,i,*],altitude,title=radiance_labels[i],$
+                   thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
+                   ytitle='Altitude, km',/nodata,ymargin=y_label_margin
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin
+                  if kp_data[j].periapse[k].time_start ne '' then begin
+                    if profile_inclusion[check_index] eq 1 then begin        
+                      oplot,radiance_data[j,k,i,*],altitude,thick=2,$
+                            color=profile_colors[(j*3)+k]
+                    endif
+                    check_index = check_index+1
                   endif
-                  check_index = check_index+1
-                endif
-              endfor ; k=0,2
-            endfor   ; j=0,nelem(kp_data)
-          endfor     ; i=0,nelem(rad_species)
-;-km
-; following is first attempt at moving to oo graphics
-;  Still needs quite a bit of work...
-;
-;          for i = 0,n_elements(rad_species)-1 do begin
-;            check_index=0
-;            for j=0,n_elements(kp_data)-1 do begin
-;              for k=0,2 do begin ; what is the second index?
-;                if( profile_inclusion[check_index] )then begin
-;                  p1 = plot( radiance_data[j,k,i,*], altitude, thick=2, $
-;                             title=radiance_labels[i], xlog=log_option, $
-;                             font_size=12, yrange=[100,220], $
-;                             ytitle='Altitude [km]', $
-;                             color=profile_colors[(k*3)+k], $
-;                             overplot = keyword_set(j+k) )
-;                endif
-;              endfor ; k=0,2
-;            endfor   ; j=0,nelem(kp_data)
-;          endfor     ; i=0,nelem(rad_species)
-;
-;-/km
-         endif
+                endfor ; k=0,2
+              endfor   ; j=0,nelem(kp_data)
+            endfor     ; i=0,nelem(rad_species)
+          endif else begin
+            ; 
+            ; Produce the plot in OO graphics
+            ;
+            for i = 0,n_elements(rad_species)-1 do begin
+              check_index=0
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin ; profiles
+                  if( profile_inclusion[check_index] )then begin
+                    plot1 = plot( radiance_data[j,k,i,*], altitude, thick=2, $
+                                  title=radiance_labels[i], xlog=log_option, $
+                                  font_size=12, rgb_table=40, $
+                                  vert_colors=profile_colors[(j*3)+k], $
+                                  ytitle='Altitude [km]', $
+                                  layout=[columns,rows,i+1], $
+                                  overplot = keyword_set(j+k), $
+                                  current = keyword_set(i+j+k) )
+                  endif
+                endfor ; k=0,2
+              endfor   ; j=0,nelem(kp_data)
+            endfor     ; i=0,nelem(rad_species)
+          endelse      ; graphics type
+         endif         ; expand species only
          
-        ;RADIANCE PLOT EXPANDING TO INDIVIDUALLY PLOT EACH PROFILE
         if keyword_set(profile_expand) and $
            (keyword_set(species_expand) eq 0) then begin
-          check_index = 0
-          label_index = 0
-          for i=0,n_elements(kp_data)-1 do begin
-            for j=0,2 do begin
-              if kp_data[i].periapse[j].time_start ne '' then begin
-                if profile_inclusion[check_index] eq 1 then begin
-                  plot,radiance_data[i,j,0,*],altitude,thick=2,$
-                       xlog=log_option,charsize=1.5,yrange=[100,220],$
-                       ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
-                       title=profile_labels[check_index]
-                ;  xyouts,.48,0.98-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
-                  label_index = label_index + 1
-                  for k=0,n_elements(rad_species)-1 do begin
-                    oplot,radiance_data[i,j,k,*],altitude,thick=2,$
-                          linestyle=rad_linestyle[k]
-                  endfor
-                endif
-                check_index = check_index + 1
-              endif
-            endfor
-          endfor
-        endif
-        
-        ;RADIANCE PLOTS THAT EXPAND BOTH SPECIES AND PROFILES
-        if keyword_set(profile_expand) and $
-           keyword_set(species_expand) then begin         
-          for i=0,n_elements(rad_species)-1 do begin
+          ;
+          ; RADIANCE PLOT EXPANDING TO INDIVIDUALLY PLOT EACH PROFILE
+          ;
+          if keyword_set(directgraphics) then begin
             check_index = 0
             label_index = 0
-            for j=0,n_elements(kp_data)-1 do begin
-              for k=0,2 do begin
-                if kp_data[j].periapse[k].time_start ne '' then begin
+            for i=0,n_elements(kp_data)-1 do begin
+              for j=0,2 do begin
+                if kp_data[i].periapse[j].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
-                     plot,radiance_data[j,k,i,*],altitude,thick=2,$
-                          xlog=log_option,charsize=1.5,yrange=[100,220],$
-                          ytitle='Altitude, km',ymargin=y_label_margin,$
-                          title=radiance_labels[i] + ':  '$
-                               +profile_labels[check_index]
-                     label_index = label_index+1
-                  endif
-               ;   xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
-                  check_index = check_index+1                
-                endif
-              endfor
-            endfor
-          endfor
-        endif
+                    plot,radiance_data[i,j,0,*],altitude,thick=2,$
+                         xlog=log_option,charsize=1.5,yrange=[100,220],$
+                         ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
+                         title=profile_labels[check_index]
+                    ; xyouts,.48,0.98-((1./rows)*label_index),$
+                    ; profile_labels[check_index],/normal,charsize=1.5
+                    label_index = label_index + 1
+                    for k=0,n_elements(rad_species)-1 do begin
+                      oplot,radiance_data[i,j,k,*],altitude,thick=2,$
+                            linestyle=rad_linestyle[k]
+                    endfor
+                  endif ; profile_inclusion check
+                  check_index = check_index + 1
+                endif ; existence of data check
+              endfor  ; j=0,2 profiles
+            endfor    ; time index
+          endif else begin
+            ;
+            ;  Generate plot using OO graphics
+            ;
+            check_index = 0
+            label_index = 0
+; This still lacks a 'Radiance' title
+            for i=0,n_elements(kp_data)-1 do begin
+              for j=0,2 do begin
+                if kp_data[i].periapse[j].time_start ne '' then begin
+                  if profile_inclusion[check_index] eq 1 then begin
+                    for k =0,n_elements(rad_species)-1 do begin
+                      plot1 = plot( radiance_data[i,j,k,*], altitude, thick=2, $
+                                    title=profile_labels[check_index], $
+                                    xlog=log_option, $
+                                    font_size=12, rgb_table=40, $
+                                    ;vert_colors=profile_colors[(j*3)+k], $
+                                    ytitle='Altitude [km]', $
+                                    layout=[columns,rows,i+j+1], $
+                                    overplot = keyword_set(k), $
+                                    current = keyword_set(i+j+k) )
+                      label_index = label_index + 1
+                    endfor
+                  endif ; profile_inclusion check
+                  check_index = check_index + 1
+                endif ; existence of data check
+              endfor  ; j=0,2 profiles
+            endfor    ; time index
+          endelse     ; graphics type
+        endif ; expand profiles only
         
-      endif
+        if keyword_set(profile_expand) and $
+           keyword_set(species_expand) then begin         
+          ;
+          ; RADIANCE PLOTS THAT EXPAND BOTH SPECIES AND PROFILES
+          ;
+          if keyword_set(directgraphics) then begin
+            for i=0,n_elements(rad_species)-1 do begin
+              check_index = 0
+              label_index = 0
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin
+                  if kp_data[j].periapse[k].time_start ne '' then begin
+                    if profile_inclusion[check_index] eq 1 then begin
+                       plot,radiance_data[j,k,i,*],altitude,thick=2,$
+                            xlog=log_option,charsize=1.5,yrange=[100,220],$
+                            ytitle='Altitude, km',ymargin=y_label_margin,$
+                            title=radiance_labels[i] + ':  '$
+                                 +profile_labels[check_index]
+                       label_index = label_index+1
+                    endif
+                 ;   xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+                    check_index = check_index+1                
+                  endif ; existence of data check
+                endfor  ; k=0,2 profiles
+              endfor    ; time index
+            endfor      ; rad_species
+          endif else begin
+            ;
+            ;  Generate plot using OO graphics
+            ;
+            for i=0,n_elements(rad_species)-1 do begin
+              check_index = 0
+              label_index = 0
+              for j=0,n_elements(kp_data)-1 do begin
+                for k=0,2 do begin
+                  if kp_data[j].periapse[k].time_start ne '' then begin
+                    if profile_inclusion[check_index] eq 1 then begin
+                      plot1 = plot( radiance_data[j,k,i,*], altitude, thick=2, $
+                                    title=radiance_labels[i]+': ' $
+                                         +profile_labels[check_index], $
+                                    xlog=log_option, $
+                                    font_size=12, rgb_table=40, $
+                                    ;vert_colors=profile_colors[(j*3)+k], $
+                                    ytitle='Altitude [km]', $
+                                    layout=[columns,rows,i+(j+k)*n_elements(rad_species)+1], $
+                                    overplot = 0, $ ;current = 0keyword_set(k), $
+                                    current = keyword_set(i+j+k) )
+                    endif
+                    check_index = check_index+1
+                  endif ; existence of data check
+                endfor  ; k=0,2 profiles
+              endfor    ; time index
+            endfor      ; rad_species
+          endelse
+        endif ; expand all
+        
+      endif ; end of plot_rad block
      
       ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED, 
       ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
@@ -741,6 +817,6 @@ help,columns,rows,species_expand
 ;
 ;  Pass the plot object out, if requested
 ;
-if( arg_present(oo) )then oo=plot1
+if( arg_present(oo) and ~keyword_set(directgraphics) )then oo=plot1
  
 end
