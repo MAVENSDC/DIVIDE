@@ -619,18 +619,20 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED, 
       ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
       
-;-km This line currently is not being drawn...
-;    Will be ignored entirely by OO plots
-;    Not sure why not showing up in direct graphics plots
-;
         ;MID-PLOT LINE IF BOTH RADIANCE AND DENSITY IS INCLUDED
           if keyword_set(species_expand) then begin
             line_marker = float(n_elements(rad_species))$
                         / float((n_elements(rad_species)$
                                 +n_elements(den_species)))
             if rad_plot eq 1 and den_plot eq 1 then begin
-              plots,[line_marker,line_marker],[0.,1.],/normal,$
-                    thick=3,linestyle=1
+              if keyword_set(directgraphics) then begin
+                plots,[line_marker,line_marker],[0.,1.],/normal,$
+                      thick=3,linestyle=1
+              endif else begin
+                line1 = polyline( [line_marker,line_marker], [0,1], $
+                                  /normal, thick=3, linestyle=1, $
+                                  target=plot1 )
+              endelse
             endif
           endif
       
