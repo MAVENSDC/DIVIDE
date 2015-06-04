@@ -293,10 +293,13 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
       endif
     endif
     if basemap eq 'user' then begin
-      input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
-      if input_file ne '' then read_jpeg,input_file,mapimage
+      input_file = dialog_pickfile(path=install_directory)
+      if input_file ne '' then begin
+        if (STRMID(input_file,3,4, /REVERSE_OFFSET) eq '.jpg') then read_jpeg,input_file,mapimage
+        if (STRMID(input_file,3,4, /REVERSE_OFFSET) eq '.png') then mapimage=input_file
+      endif
       if keyword_set(map_limit) eq 0 then begin
-        map_limit = [-90,-180,90,180]
+        map_limit = [-90,0,90,360]
       endif
       if keyword_set(map_location) eq 0 then begin
         map_location = [-180,-90]
@@ -336,7 +339,7 @@ endif else begin      ;blank canvas for the MSO plot
       input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
       read_jpeg,input_file,mapimage
       if keyword_set(map_limit) eq 0 then begin
-        map_limit = [-90,-180,90,180]
+        map_limit = [-90,0,90,360]
       endif
       if keyword_set(map_location) eq 0 then begin
         map_location = [-180,-90]

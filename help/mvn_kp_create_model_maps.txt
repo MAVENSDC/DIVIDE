@@ -1,0 +1,38 @@
+****************************
+* MVN_KP_CREATE_MODEL_MAPS *
+****************************
+
+  This routine will take models of the martian atmosphere and create 
+  a png contour plot of a modeled atmsopheric property at a specific 
+  altitude.  
+
+pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
+                              file=file, $
+                              interp=interp, $
+                              numContourLines = numContourLines, $
+                              fill=fill, $
+                              ct=ct, $
+                              basemap=basemap, $
+                              contourtransparency=contourtransparency
+
+REQUIRED FIELDS
+**************
+  altitude: The altitude for which the contour plot will be generated
+
+OPTIONAL FIELDS
+***************
+    file: File name of the netCDF file containing atmosphere data.
+	  If this is not specified, a window will pop-up where the 
+	  file can be manually selected
+    interp:  If this is set, the model will provide interpolated data 
+             at the nearest altitudes.  Otherwise, it will just use the
+	     data of the closest altitude
+    numContourLines: Sets the number of contour lines on the plot
+    fill: If this is set, the contour layers will be colored in
+    ct: This value sets the colortable to use in the contour plots.
+    basemap: Can be 'mdim', 'mola', 'mola_bw', or 'mag'.  The contour plot
+	     of the model data will be plotted over an image of Mars with 
+	     50% transparency
+    contourtransparency:  Specifies the transparency of the contour plot
+
+
