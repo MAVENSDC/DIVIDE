@@ -18,12 +18,14 @@
 pro mvn_kp_get_help, proc_name
   
   ;Error handler
-  CATCH, Error_status
-  IF Error_status EQ -94 THEN BEGIN
-    PRINT, 'Procedure not found, please check procedure name'
-    RETURN
-    CATCH, /CANCEL
-  endif
+  catch, Error_status
+  if Error_status EQ -94 then begin
+    print, 'Procedure not found, please check procedure name'
+    return
+    catch, /cancel
+  endif else if (Error_status ne 0) then begin
+    catch, /cancel
+  endif 
   
   
 ;DETERMINE THE INSTALL DIRECTORY SO THE HELPFILE CAN BE FOUND
