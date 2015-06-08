@@ -348,25 +348,54 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         endelse
      endif
      
-     profile_colors = intarr(n_elements(kp_data.orbit)*3)
+     if keyword_set(directgraphics) then begin
+       profile_colors = intarr(n_elements(kp_data.orbit)*3) ; direct
+     endif else begin
+       color_vector = bytarr(3,n_elements(kp_data.orbit)*3) ; OO
+       if arg_present(color_table) then begin
+         loadct,color_table,/silent
+       endif else begin
+         loadct,40,/silent
+       endelse
+       tvlct,r,g,b,/get
+     endelse
+     
      for i=0, (n_elements(kp_data.orbit)*3)-1 do begin
-       profile_colors[i] = i*(255/(n_elements(kp_data.orbit)*3))
+       color_index = i*(255/(n_elements(kp_data.orbit)*3))
+       if keyword_set(directgraphics) then begin
+         profile_colors[i] = color_index ; direct
+       endif else begin
+         color_vector[*,i] = [r[color_index], $
+                              g[color_index], $
+                              b[color_index]]
+       endelse
      endfor
 
      ;PLOT
      ; is there a more eloquent way of doing this instead of all the 
      ; possible different options?
-     ;-km no, but there is a more elegant way.
+     ;-km no, but there may be a more elegant way.
      ;
      ;DETERMINE APPROPRIATE MARGINS    
          ;MARGINS 
+         p_margin = replicate(0.1,4) ; Set Default for OO graphics
           if keyword_set(species_expand) then begin
-            y_label_margin = [5,10]
+            if keyword_set(directgraphics) then begin
+              y_label_margin = [5,10]
+            endif else begin
+              p_margin[3] = 0.125 ; top margin
+;              p_margin[1] = 0.1 ; bot margin
+            endelse
           endif
           if keyword_set(profile_expand) then begin
-            x_label_margin = [15,5]
+            if keyword_set(directgraphics) then begin
+              x_label_margin = [15,5]
+            endif else begin
+;              p_margin[0] = 0.1; left margin
+;              p_margin[2] = 0.1; right margin
+            endelse
           endif
-
+          
      ;CREATE THE PLOT WINDOW, SAVING THE OLD ONE IF REQUESTED
       if keyword_set(window) then begin
         window, plot_window, xsize=winX, ysize=winY
@@ -432,15 +461,16 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                                   title='Radiance', $
                                   linestyle=rad_linestyle[k], $
                                   thick=rad_thick[k], $
-                                  rgb_table=40, $
-                                  vert_colors=profile_colors[j], $
+                                  color=color_vector[*,j], $
                                   layout=[columns,rows,1], $
-                                  overplot=keyword_set(i+j+k) )
+                                  overplot=keyword_set(i+j+k), $
+                                  name=radiance_labels[k] )
                   endfor
                 endif ; profile_inclusion
               endif   ; time_start string not NULL
             endfor    ; periapse records
           endfor      ; time records
+          leg1 = legend(thick=2) ; makes one big legend no color
          endelse      ; graphics type
         endif         ; expand species AND profiles
 
@@ -474,6 +504,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
             ;
             for i = 0,n_elements(rad_species)-1 do begin
               check_index=0
+temp = keyword_set(i) ? '' : 'Altitude'
               for j=0,n_elements(kp_data)-1 do begin
                 for k=0,2 do begin ; profiles
                   if( profile_inclusion[check_index] )then begin
@@ -481,9 +512,12 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                                   thick=rad_thick[i], $
                                   title=radiance_labels[i], xlog=log_option, $
                                   font_size=12, rgb_table=40, $
-                                  vert_colors=profile_colors[(j*3)+k], $
+;                                  vert_colors=profile_colors[(j*3)+k], $
+                                  color=color_vector[*,(j*3)+k], $
                                   ytitle='Altitude [km]', $
+;                                  ytitle=temp, $;(keyword_set(i)?'':'Altitude [km]'), $
                                   layout=[columns,rows,i+1], $
+                                  margin=p_margin, $
                                   overplot = keyword_set(j+k), $
                                   current = keyword_set(i+j+k) )
                   endif
@@ -577,7 +611,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                                  +profile_labels[check_index]
                        label_index = label_index+1
                     endif
-                 ;   xyouts,.48,0.94-((1./rows)*label_index),profile_labels[check_index],/normal,charsize=1.5
+                 ;   xyouts,.48,0.94-((1./rows)*label_index),$
+                 ;   profile_labels[check_index],/normal,charsize=1.5
                     check_index = check_index+1                
                   endif ; existence of data check
                 endfor  ; k=0,2 profiles
@@ -616,26 +651,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         
       endif ; end of plot_rad block
      
-      ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED, 
-      ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
-      
-        ;MID-PLOT LINE IF BOTH RADIANCE AND DENSITY IS INCLUDED
-          if keyword_set(species_expand) then begin
-            line_marker = float(n_elements(rad_species))$
-                        / float((n_elements(rad_species)$
-                                +n_elements(den_species)))
-            if rad_plot eq 1 and den_plot eq 1 then begin
-              if keyword_set(directgraphics) then begin
-                plots,[line_marker,line_marker],[0.,1.],/normal,$
-                      thick=3,linestyle=1
-              endif else begin
-                line1 = polyline( [line_marker,line_marker], [0,1], $
-                                  /normal, thick=3, linestyle=1, $
-                                  target=plot1 )
-              endelse
-            endif
-          endif
-      
       if den_plot eq 1 then begin
         ;
         ;  Density plot(s) requested
@@ -746,9 +761,11 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                        plot1 = plot(density_data[j,k,i,*],altitude,$
                          thick=2, title=density_labels[i], $
                          linestyle=den_linestyle[k],$
-                         ytitle='Altitude[km]', xlog=log_option, $
+                         ytitle='Altitude[km]', $
+                         xlog=log_option, $
                          font_size=12, rgb_table=40, $
                          layout=layout_vector, $
+                         margin=p_margin, $
                          vert_colors=profile_colors[(j*3)+k], $
                          overplot=keyword_set(j+k), $
                          current=keyword_set(rad_plot+i+j+k) )
@@ -884,6 +901,26 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
 
       endif  ; end of den_plot block
     
+      ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED,
+      ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
+
+      ;MID-PLOT LINE IF BOTH RADIANCE AND DENSITY IS INCLUDED
+      if keyword_set(species_expand) then begin
+        line_marker = float(n_elements(rad_species))$
+          / float((n_elements(rad_species)$
+          +n_elements(den_species)))
+        if rad_plot eq 1 and den_plot eq 1 then begin
+          if keyword_set(directgraphics) then begin
+            plots,[line_marker,line_marker],[0.,1.],/normal,$
+              thick=3,linestyle=1
+          endif else begin
+            line1 = polyline( [line_marker,line_marker], [0,1], $
+              /normal, thick=3, linestyle=1, $
+              target=plot1 )
+          endelse
+        endif
+      endif
+
     ;ADD OVERALL LABELS 
     
       rad_label = 0.2
@@ -906,11 +943,19 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                            +n_elements(den_species))))*1.25
       endif
     endif
+
+    if keyword_set(directgraphics) then begin
       if (rad_plot eq 1) then $
         xyouts, rad_label,.965,'Radiance',/normal,charsize=3
       if (den_plot eq 1) then $
         xyouts, den_label,.965,'Density',/normal,charsize=3
-    
+    endif else begin
+      if keyword_set(rad_plot) then $
+        text1 = text( 0.1, 0.965, 'Radiance', /normal, target = plot1 )
+      if keyword_set(den_plot) then $
+        text1 = text( line_marker+0.1, 0.965, 'Density', $
+                      /normal, target = plot1 )
+    endelse
    
    ;START A SECOND WINDOW FOR THE PLOT LEGENDS
    if keyword_set(nolegend) eq 0  then begin
@@ -928,6 +973,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       rad_lab = 0.1
     endif
 
+;-km Need to make a lengend for OO graphics here
 
     window,plot_window+1, xsize=legend_xsize,ysize=400,title='Limb Plot Legend'
     device, decompose=0
