@@ -78,18 +78,26 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   ;; Get location to safe file locally
   install_result = routine_info('mvn_kp_download_orbit_file',/source)
   install_directory = strsplit(install_result.path,'mvn_kp_download_orbit_file.pro',/extract,/regex)
-  
+  install_directory = install_directory+'orbitfiles\'
   file_and_path = install_directory[0] + spec.orbit_filename
 
   ;; Get connection & execute GET query for orbit file  
   netURL = mvn_kp_get_temp_connection(spec.host, spec.port, spec.username, spec.password, spec.url_scheme, spec.authentication)
-  return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path, '', filename=file_and_path, /not_sdc_connection)
+  for i = 0,n_elements(spec.orbit_filename)-1 do begin
+    return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path[i], '', filename=file_and_path[i], /not_sdc_connection)
+  endfor
   
   if size(return_value, /TYPE) ne 7 then begin
     print, "Problem downloading orbit file."
     print, "If not connected to the internet, then this is to be expected"
   endif else begin
-    print, "Downloaded updated version of orbit number file: "+string(return_value)
+    print, "Downloaded updated version of orbit number files: "
+    for i=0,n_elements(file_and_path)-1 do begin
+      print, file_and_path[i]
+    endfor
   endelse
+
+  ;; Merge the orbit files into a master file
+  mvn_kp_merge_orbit_files, file_and_path
 
 end

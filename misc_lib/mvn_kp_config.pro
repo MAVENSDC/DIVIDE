@@ -71,6 +71,14 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     
   ;; Information for where to download orbit file from
   if keyword_set(orbit_file_location) then begin
+    
+    ;UPDATE FILES IN TIME ORDER HERE AS NEEDED
+    base_url_path = '/pub/naif/MAVEN/kernels/spk/'
+    orbit_files_rec = ['maven_orb_rec_140922_150101_v1.orb',$
+                      'maven_orb_rec_150101_150401_v1.orb',$
+                      'maven_orb_rec.orb']
+    
+    
     orbit_file_server_spec = create_struct($
       'host', 'naif.jpl.nasa.gov/', $
       'port', 80, $
@@ -78,8 +86,8 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
       'password', '', $
       'url_scheme', 'http', $
       'authentication', 0, $
-      'url_path', '/pub/naif/MAVEN/kernels/spk/maven_orb_rec.orb', $
-      'orbit_filename', 'maven_orb_rec.orb')
+      'url_path', base_url_path+orbit_files_rec,$
+      'orbit_filename', orbit_files_rec)
     
     return, orbit_file_server_spec
   endif
