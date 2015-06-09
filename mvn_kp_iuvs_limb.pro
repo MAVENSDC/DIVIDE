@@ -61,7 +61,7 @@
 ; :History:   1.0   June 8, 2015
 ; 
 ;-
-pro MVN_KP_IUVS_LIMB_NEW, kp_data, density=density, radiance=radiance, $
+pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                       profiles=profiles, den_species=den_species, $
                       rad_species=rad_species, nolegend=nolegend, $
                       linear=linear, log=log, $
