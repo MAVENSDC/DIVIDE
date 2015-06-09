@@ -78,7 +78,11 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   ;; Get location to safe file locally
   install_result = routine_info('mvn_kp_download_orbit_file',/source)
   install_directory = strsplit(install_result.path,'mvn_kp_download_orbit_file.pro',/extract,/regex)
-  install_directory = install_directory+'orbitfiles\'
+  if !version.os_family eq 'unix' then begin
+  install_directory = install_directory+'orbitfiles/'
+  endif else begin
+    install_directory = install_directory+'orbitfiles\'
+  endelse
   file_and_path = install_directory[0] + spec.orbit_filename
 
   ;; Get connection & execute GET query for orbit file  

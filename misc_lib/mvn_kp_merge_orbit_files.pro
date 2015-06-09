@@ -34,9 +34,15 @@ for i = 0, n_elements(filenames)-1 do begin
   free_lun, lun
 endfor
 
+;Find base directory of the toolkit
+install_result = routine_info('mvn_kp_merge_orbit_files',/source)
+install_directory = strsplit(install_result.path,'mvn_kp_merge_orbit_files.pro',/extract,/regex)
+install_directory = STRMID(install_directory, strlen(install_directory), strlen(install_directory)-1, /REVERSE_OFFSET)
+install_directory = strsplit(install_directory,'misc_lib',/extract,/regex)
+
 ;Open the master file, clear it, and write all of the
 ;elements of orbit_array to it
-openw, lun, 'C:\DIVIDE Repo\maven_orb_rec.orb'
+openw, lun, install_directory+'maven_orb_rec.orb'
 printf, lun, header0
 printf, lun, header1
 for i=0,n_elements(orbit_array)-1 do begin
