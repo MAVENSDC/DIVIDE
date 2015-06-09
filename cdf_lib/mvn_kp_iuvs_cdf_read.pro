@@ -1,4 +1,4 @@
-pro mvn_kp_iuvs_cdf_read, infiles, iuvs, debug=debug
+pro mvn_kp_iuvs_cdf_read, infiles, iuvs, instruments=instruments, debug=debug
 ;+
 ; :Name:
 ;   mvn_kp_iuvs_cdf_read
@@ -110,112 +110,138 @@ pro mvn_kp_iuvs_cdf_read, infiles, iuvs, debug=debug
       i1 = where( lev1 eq (name_list[itag])[0] )
       lev1_name = lev1[i1]
       ;
-      ;  Determine if current structure is one level or two
+      ; Apply the conditional instrument check.  This is unfortunately 
+      ; a bit hard wired, but it will work for now.  If the current tag 
+      ; name relates to a particular instrument that has been selected 
+      ; to be read in, then get it, otherwise, move along
       ;
-      if( n_elements( name_list[itag]) gt 1 )then begin
+      if ( strmatch( lev1_name, 'PERIAPSE*' ) and $
+           instruments.periapse eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_E_DISK' ) and $
+           instruments.c_e_disk eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_E_LIMB' ) and $
+           instruments.c_e_limb eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_E_HIGH' ) and $
+           instruments.c_e_high eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_LO_DISK' ) and $
+           instruments.c_l_disk eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_LO_LIMB' ) and $
+           instruments.c_l_limb eq 1 ) or $
+         ( strmatch( lev1_name, 'CORONA_LO_HIGH' ) and $
+           instruments.c_l_high eq 1 ) or $
+         ( strmatch( lev1_name, 'APOAPSE' ) and $
+           instruments.apoapse eq 1 ) or $
+         ( strmatch( lev1_name, 'STELLAR_OCC*' ) and $
+           instruments.stellarocc eq 1 ) or $
+         ( strmatch( lev1_name, 'ORBIT' ) ) then begin
+        ;
+        ;  Determine if current structure is one level or two
+        ;
+        if( n_elements( name_list[itag]) gt 1 )then begin
+          ;
+          ;  Get the name of the level 2 index
+          ;
+          lev2_name = name_list[itag,1]
+          if( i2 eq 0 )then begin
+            ; First level 2 tag so create the structure
+            s = create_struct( lev2_name, var )
+          endif else begin
+            ; Otherwise, append the next variable to the existing structure
+            s = create_struct( s, lev2_name, var )
+          endelse
+          ;
+          ;  Increment the level 2 tag index
+          ;
+          i2 = i2 + 1
+        endif else begin
+          ;
+          ;  If one level, just add the attribute
+          ;
+          s = create_struct( name = lev1_name, lev1_name, var )
+          i2 = i2 + 1
+        endelse
+        ;
+        ;  If the level 2 index is at the end of the list, reset it to zero
+        ;
+        if( i2 eq nlev2[i1] )then begin
+          i2 = 0
+          ;
+          ;  And, append the substructure to the level 0 structure
+          ;
+          if( i1 eq 0 )then begin
+            if n_elements(name_list[itag]) eq 1 then begin
+              iuvs_temp = create_struct( lev1_name, s.(0) )
+            endif else begin
+              iuvs_temp = create_struct( lev1_name, s )
+            endelse
+          endif else begin
+            if n_elements(name_list[itag]) eq 1 then begin
+              iuvs_temp = create_struct( iuvs_temp, lev1_name, s.(0) )
+            endif else begin
+              iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
+            endelse
+          endelse
+        endif
+      endif ; big instrument check conditional
+    endfor ; loop over all tags
+    ;
+    ;  And close the CDF file 
+    ;
+    cdf_close,luni
+    ;
+    ;  Go back to make arrays of the indexed attributes
+    ;
+    temp_name = tag_names(iuvs_temp)
+    base_name = strsplit( temp_name, '[0123456789]+', /regex, /extract )
+    ;
+    ;  Cycle through the level 1 tags in the structure
+    ;
+    i1=0
+    while i1 lt n_tags(iuvs_temp) do begin
       ;
-      ;  Get the name of the level 2 index
+      ;  Find out how many level1 tags are present for each mode
       ;
-      lev2_name = name_list[itag,1]
-      if( i2 eq 0 )then begin
-        ; First level 2 tag so create the structure
-        s = create_struct( lev2_name, var )
+      sub = where( base_name eq base_name[i1], nsub )
+      if nsub gt 1 then begin
+        ;
+        ;  If there is more than one observational structure associated 
+        ;  with the current observing mode, then first create an array
+        ;
+        temp = [iuvs_temp.(i1)]
+        i1++ ; increment the index of the original structure
+        ;
+        ;  Now, cycle through the remaining observations for the current mode
+        ;
+        for isub = 1,nsub-1 do begin
+          temp = [temp,iuvs_temp.(i1)] ; Then append structures to the array
+          i1++                         ; increment index of original structure
+        endfor
       endif else begin
-        ; Otherwise, append the next variable to the existing structure
-        s = create_struct( s, lev2_name, var )
+        ;
+        ;  There is only one instance of current observing mode
+        ;
+        temp = iuvs_temp.(i1) ; identify the sub-structure
+        i1++                  ; increment the orig structure index
       endelse
       ;
-      ;  Increment the level 2 tag index
+      ;  Now, create the final structure of IUVS KP data for output
       ;
-      i2 = i2 + 1
-    endif else begin
-      ;
-      ;  If one level, just add the attribute
-      ;
-      s = create_struct( name = lev1_name, lev1_name, var )
-      i2 = i2 + 1
-    endelse
-    ;
-    ;  If the level 2 index is at the end of the list, reset it to zero
-    ;
-    if( i2 eq nlev2[i1] )then begin
-      i2 = 0
-      ;
-      ;  And, append the substructure to the level 0 structure
-      ;
-      if( i1 eq 0 )then begin
-        if n_elements(name_list[itag]) eq 1 then begin
-          iuvs_temp = create_struct( lev1_name, s.(0) )
-        endif else begin
-          iuvs_temp = create_struct( lev1_name, s )
-        endelse
+      if min(sub) eq 0 then begin
+        ;
+        ;  We are in the first observational mode so we must create the
+        ;  output structure from scratch
+        ;
+        iuvs_record = create_struct( base_name[i1-1], temp )
       endif else begin
-        if n_elements(name_list[itag]) eq 1 then begin
-          iuvs_temp = create_struct( iuvs_temp, lev1_name, s.(0) )
-        endif else begin
-          iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
-        endelse
+        ;
+        ;  We already have started the output structure, so append the
+        ;  current observational mode/structure to that one.
+        ;
+        iuvs_record = create_struct( iuvs_record, base_name[i1-1], temp )
       endelse
-    endif
-  endfor ; loop over all tags
-  ;
-  ;  And close the CDF file 
-  ;
-  cdf_close,luni
-  ;
-  ;  Go back to make arrays of the indexed attributes
-  ;
-  temp_name = tag_names(iuvs_temp)
-  base_name = strsplit( temp_name, '[0123456789]+', /regex, /extract )
-  ;
-  ;  Cycle through the level 1 tags in the structure
-  ;
-  i1=0
-  while i1 lt n_tags(iuvs_temp) do begin
-    ;
-    ;  Find out how many level1 tags are present for each mode
-    ;
-    sub = where( base_name eq base_name[i1], nsub )
-    if nsub gt 1 then begin
-      ;
-      ;  If there is more than one observational structure associated 
-      ;  with the current observing mode, then first create an array
-      ;
-      temp = [iuvs_temp.(i1)]
-      i1++ ; increment the index of the original structure
-      ;
-      ;  Now, cycle through the remaining observations for the current mode
-      ;
-      for isub = 1,nsub-1 do begin
-        temp = [temp,iuvs_temp.(i1)] ; Then append structures to the array
-        i1++                         ; increment index of original structure
-      endfor
-    endif else begin
-      ;
-      ;  There is only one instance of current observing mode
-      ;
-      temp = iuvs_temp.(i1) ; identify the sub-structure
-      i1++                  ; increment the orig structure index
-    endelse
-    ;
-    ;  Now, create the final structure of IUVS KP data for output
-    ;
-    if min(sub) eq 0 then begin
-      ;
-      ;  We are in the first observational mode so we must create the
-      ;  output structure from scratch
-      ;
-      iuvs_record = create_struct( base_name[i1-1], temp )
-    endif else begin
-      ;
-      ;  We already have started the output structure, so append the
-      ;  current observational mode/structure to that one.
-      ;
-      iuvs_record = create_struct( iuvs_record, base_name[i1-1], temp )
-    endelse
-  endwhile ; keep going until we run out of level 1 tags
-  iuvs = [iuvs, iuvs_record]
-endforeach ; end of cycle through all input files
+    endwhile ; keep going until we run out of level 1 tags
+    iuvs = [iuvs, iuvs_record]
+  endforeach ; end of cycle through all input files
 ;
 ;  And finish
 ;
