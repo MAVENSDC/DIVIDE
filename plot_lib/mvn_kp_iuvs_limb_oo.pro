@@ -67,22 +67,23 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
                          species_thick=species_thick, hide_vector=hide_vector, $
                          species_dimensions=species_dimensions, $
                          profile_dimensions=profile_dimensions, $
-                         oo=oo, leg=leg, _extra=e
+                         profile_inclusion=profile_inclusion, $
+                         oo=oo, leg=leg, winx=winx, winy=winy, $
+                         nolegend=nolegend, _extra=e
 
   tot_species = profile_dimensions * species_dimensions
-;
-;  Possibly now set in driver, kept here until confirmed
-;  ;SET DEFAULT WINDOW SIZES
-;  if keyword_set(winX) ne 1 then begin
-;    winX=1000
-;  endif
-;  if keyword_set(winY) ne 1 then begin
-;    winY=800
-;  endif
+
+  ;SET DEFAULT WINDOW SIZES
+  if keyword_set(winX) ne 1 then begin
+    winX=640
+  endif
+  if keyword_set(winY) ne 1 then begin
+    winY=512
+  endif
 
 ;
 ; Margins *may* come from driver routine; TBD
-;
+;  Currently ignored
   ;DETERMINE APPROPRIATE MARGINS    
   ;MARGINS 
   p_margin = replicate(0.1,4)   ; Set Default for OO graphics
@@ -106,13 +107,19 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
   ;
   ; Here is my new plotting loop 
   ;
-help,xlog,_extra,e
+  print,profile_inclusion
+  help,profile_inclusion
+  print,profile_dimensions
+  help,plot_name
+  help,color_vector
+;stop
+  include = where(profile_inclusion eq 1)
   plot1=[]
   for ispec = 0,species_dimensions-1 do begin
     k = ispec
     for iprof = 0,profile_dimensions-1 do begin
-      i = (array_indices(intarr(n_elements(kp_data),3),iprof))[0]
-      j = (array_indices(intarr(n_elements(kp_data),3),iprof))[1]
+      i = (array_indices(intarr(n_elements(kp_data),3),include[iprof]))[0]
+      j = (array_indices(intarr(n_elements(kp_data),3),include[iprof]))[1]
       igraph = ispec * profile_dimensions + iprof
 ; postpone xtitle for more pressing issues
 ;      xtitle = ( ispec lt radiance_dimensions ) $
@@ -128,6 +135,7 @@ help,xlog,_extra,e
                  title=plot_name[k,iprof], $
                  current = keyword_set(iprof+k), $
                  name=plot_name[k,iprof], $
+                 dimensions=[winX,winY], $
                  _extra = e )]
       endif else begin
         plot1 = [plot1,plot( species_data[i,j,k,*], altitude, $
@@ -143,7 +151,8 @@ help,xlog,_extra,e
     endfor
   endfor
 
-  if( total(hide_vector) lt tot_species )then begin
+  if( total(hide_vector) lt tot_species and $
+      ~keyword_set(nolegend) )then begin
     ;  Only plot legend if we haven't hidden every item
     leg1 = legend(target=plot1)  ; ADD THE LEGEND
     for i = 0,tot_species-1 do begin
@@ -196,6 +205,7 @@ help,xlog,_extra,e
 ;
 if( arg_present(oo) and ~keyword_set(directgraphics) )then oo=plot1
 if( arg_present(oo) and arg_present(leg) and $
-    total(hide_vector) lt tot_species )then leg=leg1
+    total(hide_vector) lt tot_species and $
+    ~keyword_set(nolegend) )then leg=leg1
 
 end

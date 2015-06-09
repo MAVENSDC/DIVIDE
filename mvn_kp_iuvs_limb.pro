@@ -64,11 +64,11 @@
 pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                       profiles=profiles, den_species=den_species, $
                       rad_species=rad_species, nolegend=nolegend, $
-                      linear=linear, log=log, $
+                      linear=linear, log=log, info=info, $
                       oo=oo, leg=leg, directgraphics=directgraphics, $
                       species_expand=species_expand, $
                       profile_expand=profile_expand,$
-                      range=range,colortable=colortable,window=window, $
+                      range=range,color_table=color_table,window=window, $
                       winX=winX, winY=winY, help=help, _extra=e
 
   ;provide help for those who don't have IDLDOC installed
@@ -145,6 +145,18 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   endif
     
   ;INFORM THE USER ABOUT THE CHOICE OF SPECIES TO PLOT
+  if keyword_set(info) then begin
+    print,'Valid radiance species are:'
+    for i=0,n_elements(radiance_names)-1 do begin
+      print,string(i+1)+':'+radiance_names[i]
+    endfor
+    print,'Valid density species are:'
+    for i=0,n_elements(density_names)-1 do begin
+      print,string(i+1)+':'+density_names[i]
+    endfor
+    return
+  endif
+
   if keyword_set(den_species) ne 1 then begin
     print,'By default, all species will be plotted.'
     print,'Use the SPECIES keyword to select a subset of plotted species.'
@@ -237,6 +249,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   index=0
   for i=0,n_elements(kp_data) -1 do begin
     for j=0,2 do begin
+      iprof = 3*i+j
       if kp_data[i].periapse[j].time_start ne '' then begin
         if( keyword_set(radiance) )then begin
           radiance_data[i,j,*,*] = kp_data[i].periapse[j]$
@@ -245,28 +258,32 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                                     .radiance_unc[(rad_species-1),*]
         endif
         if( keyword_set(density) )then begin
-;
+
+;-hack
 ;  HACK HACK HACK To test density plotting
 ;  Just fill the arrays with radiance info
 ;  This only works because Nden lt Nrad
 ;
-          density_data[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
-                                  .radiance[(den_species-1),*]
-          density_error[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
-                                   .radiance_unc[(den_species-1),*]
-;-orig
-;          density_data[i,j,*,*] = kp_data[i].periapse[j]$
-;                                  .density[(den_species-1),*]
-;          density_error[i,j,*,*] = kp_data[i].periapse[j]$
-;                                   .density_unc[(den_species-1),*]
-;-/orig
+;          density_data[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
+;                                  .radiance[(den_species-1),*]
+;          density_error[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
+;                                   .radiance_unc[(den_species-1),*]
+;-\hack
+          density_data[i,j,*,*] = kp_data[i].periapse[j]$
+                                  .density[(den_species-1),*]
+          density_error[i,j,*,*] = kp_data[i].periapse[j]$
+                                   .density_unc[(den_species-1),*]
         endif
-        profile_labels[index] = 'Orbit '+strtrim(string(kp_data[i].orbit),2)$
-                              + ', Profile '+strtrim(string(j+1),2)
-        index=index+1
-      endif
-    endfor
-  endfor
+        
+        if profile_inclusion[iprof] eq 1 then begin
+          profile_labels[index] = 'Orbit ' $
+                                + strtrim(string(kp_data[i].orbit),2) $
+                                + ', Profile ' + strtrim(string(j+1),2)
+          index=index+1
+        endif
+      endif ; data existence check
+    endfor  ; loop over orbit profiles
+  endfor    ; loop over orbits
   ;
   ;  combine the density and radiance data into a single array
   ;
@@ -342,7 +359,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   ;
   ;  Load supplied color table, or use RAINBOW+BLACK as default
   ;
-  if arg_present(color_table) then begin
+  if keyword_set(color_table) then begin
     loadct, color_table, /silent
   endif else begin
     loadct, 40, /silent
@@ -360,6 +377,8 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     if ~arg_present(winY) then winY=800
     !p.multi=[0,columns, rows, 0, 1]
   endif else begin
+    if ~arg_present(winX) then winX=640
+    if ~arg_present(winY) then winY=512
     color_vector = bytarr(3,profile_dimensions)
     tvlct,r,g,b,/get
   endelse
@@ -368,7 +387,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   ; to be plotted in the same window.  Otherwise, set all to black
   for i=0,profile_dimensions-1 do begin
     color_index = i*(255/profile_dimensions)
-    print,color_index
     if keyword_set(directgraphics) then begin
       profile_colors[i] = keyword_set(profile_expand) ? 0 : color_index
     endif else begin
@@ -407,6 +425,9 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
       plot_name[ispec,iprof] = species_label[ispec] + '!c' $
                              + profile_labels[iprof]
 
+;--------------------------------------------------------------------
+;NEEDS WORK
+;
    ;DETERMINE APPROPRIATE MARGINS    
    ;MARGINS 
    ; Should these go into the appropriate plotting routines?
@@ -428,15 +449,27 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
 ;              p_margin[2] = 0.1; right margin
             endelse
           endif
+;
+;-----------------------------------------------------------------------
 
-  ;
-  ;  If log plotting requested, set the appropriate keyword
-  ;
-  if keyword_set(log) then xlog=keyword_set(1B)
-  ;
-  ; Call the appropriate plotting routine
-  ;
-  if keyword_set(directgraphics) then begin
+   ;
+   ;  Check for linear versus log conflicts
+   ;
+   if keyword_set(log) and keyword_set(linear) then begin
+     print,'*****WARNING*****'
+     print,'Keyword /LINEAR and keyword /LOG both have been provided.'
+     print,'Default will be to choose /LOG plotting.'
+     linear = keyword_set(0B) & log = keyword_set(1B)
+   endif
+   ;
+   ;  If log plotting requested, set the appropriate keyword
+   ;
+   if keyword_set(log) then xlog=keyword_set(1B)
+   if keyword_set(linear) then xlog=keyword_set(0B)
+   ;
+   ; Call the appropriate plotting routine
+   ;
+   if keyword_set(directgraphics) then begin
     ;  Call DG plotting routine
     mvn_kp_iuvs_limb_dg, kp_data, radiance_data=radiance_data, $
                          density_data=density_data, altitude=altitude, $
@@ -449,18 +482,20 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                          rad_thick=rad_thick, den_thick=den_thick, $
                          profile_inclusion=profile_inclusion, $
                          profile_colors=profile_colors, window=window, $
-                         winX=winX, winY=winY, help=help, _extra=e
-  endif else begin
+                         winX=winX, winY=winY, help=help
+   endif else begin
     ; call OO plotting routine
     mvn_kp_iuvs_limb_oo, kp_data=kp_data, species_data=species_data, $
                          altitude=altitude, layout_vector=layout_vector, $
                          plot_name=plot_name, oplot_vector=oplot_vector, $
                          species_linestyle=species_linestyle, $
-                         species_thick=species_thick, $
+                         species_thick=species_thick, xlog=xlog, $
                          hide_vector=hide_vector, color_vector=color_vector, $
                          species_dimensions=species_dimensions, $
                          profile_dimensions=profile_dimensions, $
-                         oo=oo, leg=leg, _extra=e
-  endelse
+                         profile_inclusion=profile_inclusion, $
+                         oo=oo, leg=leg, winx=winx, winy=winy, $
+                         nolegend=nolegend, _extra=e
+   endelse
 
 end

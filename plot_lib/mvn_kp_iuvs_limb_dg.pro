@@ -70,7 +70,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                          rad_thick=rad_thick, den_thick=den_thick, $
                          profile_inclusion=profile_inclusion, $
                          profile_colors=profile_colors, window=window, $
-                         winX=winX, winY=winY, help=help, _extra=e
+                         winX=winX, winY=winY
 
   ;SET WINDOW NUMBERS FOR PLOTS, IF FLAG IS SET
     if keyword_set(window) then begin

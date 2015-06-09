@@ -28,7 +28,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_e_limb.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_limb.time_start, $
                                  begin_time, end_time)
-      print,'c-e-limb: ',check
+;      print,'c-e-limb: ',check
       if check then $
          iuvs_record_time_temp.corona_e_limb = iuvs_record_temp.corona_e_limb
     endif
@@ -37,7 +37,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_e_disk.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_disk.time_start, $
                                  begin_time, end_time)
-      print,'c-e-disk: ',check
+;      print,'c-e-disk: ',check
       if check then begin 
         iuvs_record_time_temp.corona_e_disk = iuvs_record_temp.corona_e_disk
         any_within_bounds = 1
@@ -48,7 +48,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_e_high.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_e_high.time_start, $
                                  begin_time, end_time)
-      print,'c-e-high: ',check
+;      print,'c-e-high: ',check
       if check then begin
         iuvs_record_time_temp.corona_e_high = iuvs_record_temp.corona_e_high
         any_within_bounds = 1
@@ -61,7 +61,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_lo_limb.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_limb.time_start, $
                                  begin_time, end_time)
-      print,'c-l-limb: ',check
+;      print,'c-l-limb: ',check
       if check then begin 
         iuvs_record_time_temp.corona_lo_limb = iuvs_record_temp.corona_lo_limb
         any_within_bounds = 1
@@ -72,7 +72,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_lo_disk.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_disk.time_start, $
                                  begin_time, end_time)
-      print,'c-l-disk: ',check
+;      print,'c-l-disk: ',check
       if check then begin 
         iuvs_record_time_temp.corona_lo_disk = iuvs_record_temp.corona_lo_disk
         any_within_bounds = 1
@@ -83,7 +83,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.corona_lo_high.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.corona_lo_high.time_start, $
                                  begin_time, end_time)
-      print,'c-l-high: ',check
+;      print,'c-l-high: ',check
       if check then begin
         iuvs_record_time_temp.corona_lo_high = iuvs_record_temp.corona_lo_high
         any_within_bounds = 1
@@ -96,7 +96,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     if (iuvs_record_temp.apoapse.time_start ne '') then begin
       check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.apoapse.time_start, $
                                  begin_time, end_time)
-      print,'apoapse: ',check
+;      print,'apoapse: ',check
 
       if check then begin
         iuvs_record_time_temp.apoapse = iuvs_record_temp.apoapse
@@ -107,7 +107,7 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
 
   ;; If any observations within time bounds, return structure. 
   ;; Otherwise, set to -1
-print,'any_within-bound = ',any_within_bounds
+;print,'any_within-bound = ',any_within_bounds
   if any_within_bounds then begin
     iuvs_record_time_temp.orbit = iuvs_record_temp.orbit
     iuvs_record_temp = iuvs_record_time_temp

@@ -49,6 +49,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
     'lon'                      ,!VALUES.F_NAN,                               $
     'lat_mso'                  ,!VALUES.F_NAN,                               $
     'lon_mso'                  ,!VALUES.F_NAN,                               $
+;-km-soon:    'n_alt'                    ,-1L,                                         $
     'orbit_number'             ,-1L,                                         $
     'mars_season_ls'           ,!VALUES.F_NAN,                               $
     'spacecraft_geo'           ,make_array(3, /DOUBLE, VALUE=!VALUES.D_NAN), $
