@@ -88,6 +88,38 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     return
   endif
 
+  ;DEFINE THE SPECIES NAME STRINGS FOR DENSITY AND RADIANCE
+  density_names = kp_data[0].periapse[0].density_id
+  radiance_names = kp_data[0].periapse[0].radiance_id
+
+  ;INFORM THE USER ABOUT THE CHOICE OF SPECIES TO PLOT
+  if keyword_set(info) then begin
+    print,'The following Periapse Limb Scan Profiles are included in ' $
+      +'the loaded data structure.'
+    print,'Use the numerical index to downselect which profiles to display'
+    print,''
+    profile_index = 1
+    for i=0,n_elements(kp_data)-1 do begin
+      for j=0,2 do begin
+        if kp_data[i].periapse[j].time_start ne '' then begin
+          print,strtrim(string(profile_index),2)+': Orbit #'$
+            +strtrim(string(kp_data[i].orbit),2)+', Profile start time '$
+            +strtrim(string(kp_data[i].periapse[j].time_start),2)
+          profile_index = profile_index+1
+        endif
+      endfor
+    endfor
+    print,'Valid radiance species are:'
+    for i=0,n_elements(radiance_names)-1 do begin
+      print,string(i+1)+':'+radiance_names[i]
+    endfor
+    print,'Valid density species are:'
+    for i=0,n_elements(density_names)-1 do begin
+      print,string(i+1)+':'+density_names[i]
+    endfor
+    return
+  endif
+
   ; Check that either radiance, or density, or a list of species 
   ;  has been requested by the user.  If not, exit.
   if( ~keyword_set(radiance) and ~keyword_set(density) and $
@@ -109,10 +141,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     return
   endif
     
-  ;DEFINE THE SPECIES NAME STRINGS FOR DENSITY AND RADIANCE
-  density_names = kp_data[0].periapse[0].density_id
-  radiance_names = kp_data[0].periapse[0].radiance_id
-
   ;INFORM THE USER THAT ALL ORBITS MAY BE PLOTTED
   if keyword_set(profile_expand) eq 1 then begin
     print,'By default, all periapse data will be plotted.'
@@ -144,19 +172,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     endfor
   endif
     
-  ;INFORM THE USER ABOUT THE CHOICE OF SPECIES TO PLOT
-  if keyword_set(info) then begin
-    print,'Valid radiance species are:'
-    for i=0,n_elements(radiance_names)-1 do begin
-      print,string(i+1)+':'+radiance_names[i]
-    endfor
-    print,'Valid density species are:'
-    for i=0,n_elements(density_names)-1 do begin
-      print,string(i+1)+':'+density_names[i]
-    endfor
-    return
-  endif
-
   if keyword_set(den_species) ne 1 then begin
     print,'By default, all species will be plotted.'
     print,'Use the SPECIES keyword to select a subset of plotted species.'

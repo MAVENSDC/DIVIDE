@@ -73,18 +73,26 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, $
   data_choice = intarr(6)
   disp_check = intarr(6)
   ;CHECK WHICH DATA THE INPUT STRUCTURE CONTAINS
-    check = where(base_tags eq 'CORONA_E_DISK')
+    check = where(base_tags eq 'CORONA_E_DISK' and $
+                  kp_data.corona_e_disk.time_start ne '' )
     if check ne -1 then data_choice[0] = 1
-    check = where(base_tags eq 'CORONA_E_LIMB')
+    check = where(base_tags eq 'CORONA_E_LIMB' and $
+                  kp_data.corona_e_limb.time_start ne '')
     if check ne -1 then data_choice[1] = 1
-    check = where(base_tags eq 'CORONA_E_HIGH')
+    check = where(base_tags eq 'CORONA_E_HIGH' and $
+                  kp_data.corona_e_high.time_start ne '')
     if check ne -1 then data_choice[2] = 1
-    check = where(base_tags eq 'CORONA_LO_DISK')
+    check = where(base_tags eq 'CORONA_LO_DISK' and $
+                  kp_data.corona_lo_disk.time_start ne '')
     if check ne -1 then data_choice[3] = 1
-    check = where(base_tags eq 'CORONA_LO_LIMB')
+    check = where(base_tags eq 'CORONA_LO_LIMB' and $
+                  kp_data.corona_lo_limb.time_start ne '')
     if check ne -1 then data_choice[4] = 1
-    check = where(base_tags eq 'CORONA_LO_HIGH')
+    check = where(base_tags eq 'CORONA_LO_HIGH' and $
+                  kp_data.corona_lo_high.time_start ne '')
     if check ne -1 then data_choice[5] = 1
+
+print,data_choice
   ;SET CHOICES BASED ON KEYWORDS
     disp_check = data_choice
     if (keyword_set(echelle) and keyword_set(lores)) then begin
@@ -365,6 +373,8 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, $
         e_limb_total = e_limb_total+1
     endfor
 ; ToDo: What is the deal with the 31's?
+;-km These are hard-wired numbers of altitudes and are now incorrect
+
     e_limb_radiance $
       = fltarr(e_limb_total, $
                n_elements(kp_data[0].corona_e_limb.radiance_id), $
@@ -418,6 +428,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, $
         e_high_total = e_high_total+1
     endfor
     ; ToDo: What is the deal with the 77's?
+    ;-km These are hard-wired numbers of altitudes and are now incorrect
     e_high_radiance $
       = fltarr(e_high_total,$
                n_elements(kp_data[0].corona_e_high.radiance_id), $
