@@ -107,25 +107,40 @@ pro mvn_kp_3d_event_time, event
     data1[1,1] = (*pstate).solar_y_coord(t_index)
     data1[2,1] = (*pstate).solar_z_coord(t_index)
     (*pstate).sun_vector->setProperty,data=data1
+    
+    ;Pretty sure MSO axis will stay the same all the time 
+    ;
     ;UPDATE THE MSO AXES, EVEN THOUGH THEY'RE HIDDEN
-    lon1 = (*pstate).insitu(t_index).spacecraft.$
-      subsolar_point_geo_longitude
-    lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.$
-      subsolar_point_geo_longitude
-    (*pstate).axesModel_mso->rotate, [0,0,1], lon2-lon1
+    ;lon1 = (*pstate).insitu(t_index).spacecraft.$
+    ;  subsolar_point_geo_longitude
+    ;lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.$
+    ;  subsolar_point_geo_longitude
+    ;(*pstate).axesModel_mso->rotate, [0,0,1], lon2-lon1
 
   endif else begin  ;MSO COORDINATE DISPLAY
-    lon1 = (*pstate).insitu(t_index).spacecraft.$
-      subsolar_point_geo_longitude
-    lon2 = (*pstate).insitu((*pstate).time_index).spacecraft.$
-      subsolar_point_geo_longitude
-
+    
+    ;Rotate the mars globe back zero (so that 0 lat/lon is on the x axis)
+    (*pstate).mars_globe -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).mars_globe -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+    
+    ;Rotate the globe so that the subsolar point aligns with the x axis
+    (*pstate).mars_globe -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).mars_globe -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    
+    ;Same logic as above, but with the axes model instead of the globe
+    (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).axesmodel -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).axesmodel -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).axesmodel -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    
+    
+    ;Change submaven point to the mso coordinates
     (*pstate).sub_maven_line_mso->setproperty,$
       data=[(*pstate).submaven_x_coord_mso[t_index],$
       (*pstate).submaven_y_coord_mso[t_index],$
       (*pstate).submaven_z_coord_mso[t_index]]
-    (*pstate).mars_globe -> rotate, [0,0,1], lon2-lon1
-    (*pstate).axesmodel-> rotate, [0,0,1], lon2-lon1
+      
+
   endelse
 
 

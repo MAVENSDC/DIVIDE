@@ -1526,9 +1526,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       xticktitle_mso = obj_new('IDLgrtext','MSO-X')
       yticktitle_mso = obj_new('IDLgrText','MSO-Y')
       zticktitle_mso = obj_new('IDLgrText','MSO-Z')
-      xtemp = [[0,0,0],[(solar_x_coord[time_index]/10000.0),$
-                        (solar_y_coord[time_index]/10000.0),$
-                        (solar_z_coord[time_index]/10000.0)]]
+      xtemp = [[0,0,0],[1.5,0,0]]
       ztemp = [[0,0,0],[0,0,1.5]]
       ytemp = crossp(ztemp[*,1],xtemp[*,1])
       xaxis_mso = obj_new('IDLgrpolyline',1.5*xtemp,color=[255,255,255],$

@@ -1329,8 +1329,36 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 endfor
                                 (*pstate).vector_path->setproperty,data=vec_data
                                endif
+                               
+                               ;Undo the mars globe rotation from MSO coordinate system
+                               (*pstate).mars_globe -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+                               (*pstate).mars_globe -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
                               
-                           endif else begin
+                               ;Undo the axes model rotation from MSO coordinate system
+                               (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+                               (*pstate).axesmodel -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+                               
+                               ;Change the sun vector back to GEO coordinates
+                               (*pstate).sun_vector -> getproperty, data=data1
+                               data1[0,1] = (*pstate).solar_x_coord((*pstate).time_index)
+                               data1[1,1] = (*pstate).solar_y_coord((*pstate).time_index)
+                               data1[2,1] = (*pstate).solar_z_coord((*pstate).time_index)
+                               (*pstate).sun_vector->setProperty,data=data1
+
+                               ;Change light source back to GEO coordinates
+                               (*pstate).dirlight->setProperty, $
+                               location=[(*pstate).solar_x_coord((*pstate).time_index),$
+                                 (*pstate).solar_y_coord((*pstate).time_index),$
+                                 (*pstate).solar_z_coord((*pstate).time_index)]
+
+                               ;Change subsolar point back to GEO coordinatess
+                               (*pstate).sub_solar_line->setProperty, $
+                               data=[(*pstate).subsolar_x_coord[(*pstate).time_index],$
+                               (*pstate).subsolar_y_coord[(*pstate).time_index],$
+                               (*pstate).subsolar_z_coord[(*pstate).time_index]]
+                               
+                               
+                           endif else begin ;MSO Coordinate System
                             ;UPDATE THE ORBITAL PATH 
                               for i=0L,n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
                                 data[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
@@ -1405,6 +1433,28 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                  (*pstate).corona_e_high_model.getProperty, hide=result
                                  if result eq 0 then (*pstate).corona_e_high_model.setproperty, hide=1 
                                endif 
+                               
+                               ;Rotate the planet to be under the sun
+                               (*pstate).mars_globe -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
+                               (*pstate).mars_globe -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude
+                               
+                               ;Rotate the axes to align with the planet's new rotation
+                               (*pstate).axesmodel -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
+                               (*pstate).axesmodel -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude                               
+                               
+                               ;Change the sun vector to the x-axis
+                               (*pstate).sun_vector -> getproperty, data=data1
+                               data1[0,1] = 10000.0
+                               data1[1,1] = 0.0
+                               data1[2,1] = 0.0
+                               (*pstate).sun_vector->setProperty,data=data1
+
+                               ;Change light source to sit on the x-axis
+                              (*pstate).dirlight->setProperty, location=[10000,0,0]
+    
+                              ;Change subsolar point to the x-axis
+                              (*pstate).sub_solar_line->setProperty, data=[10000.0,0,0]
+                               
                            endelse
         
                  
