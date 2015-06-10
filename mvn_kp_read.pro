@@ -538,11 +538,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                            21600L*n_elements(target_KP_filenames))
     
   if not keyword_set(insitu_only) then begin  
-    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
-    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+print,'Removing iuvs_struct_init from mvn_kp_read
+;    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+;    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
   endif
 
- 
+; stop
   
   ;; ---------------------------------------------------------------------- ;;
   ;; ---------------- Main read loop: In situ data    --------------------- ;;
@@ -612,43 +613,81 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
     iuvs_index=0
     if iuvs_filenames[0] ne 'None' then begin
     
-      ;; Loop through each file
-      for file=0,n_elements(iuvs_filenames)-1 do begin
-      
-        MVN_KP_LOOP_PROGRESS,file,0,n_elements(iuvs_filenames)-1,$
-                             message='IUVS KP File Read Progress'
-        
-        ;; Construct path to file
-        date_path = mvn_kp_date_subdir(iuvs_filenames[file])
-        fileAndPath = kp_iuvs_data_directory+date_path+iuvs_filenames[file]
-;print,fileAndPath        
-        MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
+;-km 
+;  OK this is a bit of a hack, but with my new CDF reader code, 
+;  I can pass a list of filenames to the reader; but the existing
+;  ASCII reader can only handle one filename at a time.  So, if
+;  /text_files is provided, do the old way
+;  Might be worthwhile to allow one to read CDF files of one and 
+;  ASCII files of the other....
+;
+      if keyword_set(text_files) then begin
+        if not keyword_set(insitu_only) then begin
+          ;print,'Removing iuvs_struct_init from mvn_kp_read
+          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+          iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+        endif
+        ; Loop over all files
+        for file = 0,n_elements(iuvs_filenames)-1 do begin
+          MVN_KP_LOOP_PROGRESS, file, 0, n_elements(iuvs_filenames)-1, $
+                                message='IUVS KP_FILE Read Progress'
+          ; Construct path to file
+          date_path = mvn_kp_date_subdir(iuvs_filenames[file])
+          fileAndPath = kp_iuvs_data_directory + date_path $
+                      + iuvs_filenames[file]
+          MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
+                                 begin_time=begin_time_struct, $
+                                 end_time=end_time_struct, $
+                                 instruments=instruments, $
+                                 save_files=save_files, text_files=text_files, $
+                                 debug=debug
+          if size(iuvs_record, /type) eq 8 then begin
+            ; Add single IUVS_record to array of IUVS records
+            iuvs_data_temp[iuvs_index] = iuvs_record
+            iuvs_index++
+          endif
+        endfor ; loop over filenames
+       
+        if iuvs_index gt 0 then begin
+          iuvs_output = iuvs_data_temp[0:iuvs_index-1]
+          print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+        endif else begin
+          iuvs_output = 0
+          print, 'including 0 IUVS data records'
+        endelse
+
+      endif else begin
+        ; Now, for something completely different, read CDF files
+      ; construct path to files
+        for i=0,n_elements(iuvs_filenames)-1 do begin
+          date_path = mvn_kp_date_subdir(iuvs_filenames[i])
+          iuvs_filenames[i] = kp_iuvs_data_directory + date_path $
+                            + iuvs_filenames[i]
+        endfor
+        MVN_KP_READ_IUVS_FILE, iuvs_filenames, iuvs_record, $
                                begin_time=begin_time_struct, $
                                end_time=end_time_struct, $
                                instruments=instruments, $
-                               save_files=save_files, text_files=text_files
-          
-        ;; If iuvs_record not eq -1 (Indicating some observation within 
-        ;; time range) add to temp array
-        if size(iuvs_record, /type) eq 8 then begin
-          ;; Add single iuvs_record to array of iuvs records
-          iuvs_data_temp[iuvs_index] = iuvs_record
-          iuvs_index++
-        endif
-        
-      endfor
+                               save_files=save_files, text_files=text_files, $
+                               debug=debug
 
+;stop
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED and 
       ; any observation modes found within time range.
-      if iuvs_index gt 0 then begin
-        iuvs_output = iuvs_data_temp[0:iuvs_index-1]
-        print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
-      endif else begin
-        iuvs_output = 0
-        print, 'including 0 IUVS data records'
-      endelse
+;-orig
+;      if iuvs_index gt 0 then begin
+;        iuvs_output = iuvs_data_temp[0:iuvs_index-1]
+;        print,'including ',strtrim(string(iuvs_index),2),' IUVS data records'
+;      endif else begin
+;        iuvs_output = 0
+;        print, 'including 0 IUVS data records'
+;      endelse
+;-/orig
 
-      
+        iuvs_output = iuvs_record
+        print,'including ',strtrim(string(n_elements(iuvs_record)),2), $
+              ' IUVS data records.'
+      endelse
     endif else begin
       printf, -2, "Warning: No IUVS files found for input timerange"
     endelse

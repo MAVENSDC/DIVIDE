@@ -122,12 +122,13 @@ end
 
 pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
                            end_time=end_time, save_files=save_files, $
-                           text_files=text_files, instruments=instruments
+                           text_files=text_files, instruments=instruments, $
+                           debug=debug
   
   
   ;; Check ENV variable to see if we are in debug mode
-  debug = getenv('MVNTOOLKIT_DEBUG')
-  
+;  debug = getenv('MVNTOOLKIT_DEBUG')
+    
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
@@ -322,15 +323,17 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
   
   endif else begin
     ;; Default is to read CDF files
-
     ;; Read in CDF version of file
     MVN_KP_IUVS_CDF_READ, iuvs_record, filename, instruments=instruments
-   
+
+;stop   
     ;; If checking time bounds or instrument array - FIXME
-    if time_bounds then begin
-      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, $
-                                         end_time, instruments
-    endif
+
+;-km my input filenames already account for time bounds
+;    if time_bounds then begin
+;      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, $
+;                                         end_time, instruments
+;    endif
 
   endelse
 ;  stop
