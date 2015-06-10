@@ -55,7 +55,7 @@ pro mvn_kp_cdf_varwrite, luno, var, varname, l1_name, l2_name
          len = max(strlen(var))
          if( len gt 0 )then begin
            vid = cdf_varcreate( luno, varname, replicate( 'vary', nd ), $
-                                /zvar, /cdf_uchar, numelem=len, dim=dim1  )
+                                /zvar, /cdf_uchar, numelem=len, dim=dims  )
          endif else begin
            vid = cdf_varcreate( luno, varname, replicate( 'vary', nd ), $
                                 /zvar, /cdf_char, numelem=1, dim=dims )

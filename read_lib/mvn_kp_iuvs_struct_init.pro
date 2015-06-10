@@ -13,6 +13,7 @@
 ;-
 pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 
+;return ; hack to eliminate this crap
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
