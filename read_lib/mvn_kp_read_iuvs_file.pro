@@ -324,17 +324,55 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
   endif else begin
     ;; Default is to read CDF files
     ;; Read in CDF version of file
+    
+    ;  Down-select the filenames according to time information
+    ;  I feel like this has laready been don, but it is incomplete
+    ;  because it is currently returning a couple of files that 
+    ;  are slightly outisde the window of allowed times
+    ;
+    ;  Will base the time check on the time stamp *in* the filename
+    ;
+    ;  Define a check array to be used to select files
+    ;
+    check = bytarr(n_elements(filename))
+    ;
+    ; First, strip out the path
+    ;
+    temp = strsplit(filename,'/',/extract,/regex)
+    base = strarr(n_elements(temp))
+    for i = 0,n_elements(temp)-1 do base[i] = temp[i,-1]
+    ;
+    ;  Next, strip down to the date-time-stamp
+    ;
+    temp = strsplit(base,'_',/extract,/regex)
+    date_time = strarr(n_elements(temp))
+    for i = 0,n_elements(temp)-1 do date_time[i] = temp[i,3]
+    ;
+    ;  Now, construct yyyy-mo-ddThh:mi:ss from this string
+    ;
+    for i = 0,n_elements(date_time)-1 do begin
+      yy = string((byte(date_time[i]))[0:3])
+      mo = string((byte(date_time[i]))[4:5])
+      dd = string((byte(date_time[i]))[6:7])
+      hh = string((byte(date_time[i]))[9:10])
+      mi = string((byte(date_time[i]))[11:12])
+      ss = string((byte(date_time[i]))[13:14])
+      date_time[i] = strjoin([yy,mo,dd],'-')+'T'+strjoin([hh,mi,ss],':')
+      ;
+      ;  Check whether date/time string is within bounds
+      ;
+      check[i] = mvn_kp_time_bounds(date_time[i], begin_time, end_time)
+    endfor
+    ;
+    ;  Now, replace filename with the list of files that check out 
+    ;  as being within the requested time bounds
+    ;
+    if total(check) gt 0 then filename=filename[where(check eq 1)]
+    ;
+    ;  And that is the time selction completed to go get the files
+    ;
     MVN_KP_IUVS_CDF_READ, iuvs_record, filename, instruments=instruments
 
-;stop   
-    ;; If checking time bounds or instrument array - FIXME
-
-;-km my input filenames already account for time bounds
-;    if time_bounds then begin
-;      MVN_KP_READ_IUVS_RETURN_SUBSTRUCT, iuvs_record, begin_time, $
-;                                         end_time, instruments
-;    endif
-
   endelse
-;  stop
+
 end
