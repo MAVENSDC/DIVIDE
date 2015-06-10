@@ -1,7 +1,7 @@
-pro mvn_kp_temp_cdf_writer, iuvs, filename, overwrite=overwrite
+pro mvn_kp_iuvs_cdf_write, iuvs, filename, overwrite=overwrite
 ;+
 ; :Name:
-;   mvn_kp_temp_cdf_writer
+;   mvn_kp_iuvs_cdf_write
 ;
 ; :Description:
 ;   Temporary code to write a CDF file so that I can test the CDF reader

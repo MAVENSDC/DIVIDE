@@ -1,4 +1,4 @@
-pro mvn_kp_iuvs_cdf_read, infiles, iuvs, instruments=instruments, debug=debug
+pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, debug=debug
 ;+
 ; :Name:
 ;   mvn_kp_iuvs_cdf_read
@@ -33,10 +33,21 @@ pro mvn_kp_iuvs_cdf_read, infiles, iuvs, instruments=instruments, debug=debug
   ;
   iuvs = []
   ;
+  ;  Initialize counter for progress bar
+  ;
+  ifile=0
+  ;
   ; Cycle through the supplied files using cool new python-like 
-  ;  iteration style
+  ;  iteration style; code not liking this....  Crashed if only a single
+  ;  filename is provided....
   ;
   foreach filename, infiles do begin
+    ;
+    ; Update progress bar
+    ;
+    MVN_KP_LOOP_PROGRESS,ifile,0,n_elements(infiles)-1,$
+                         message='IUVS KP File Read Progress'
+    ifile++
     ;
     ; Open the requested CDF file 
     ;
