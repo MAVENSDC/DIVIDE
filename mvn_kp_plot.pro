@@ -208,16 +208,18 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
           
       if n_elements(parameter) eq 1 then begin
 
-        mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
+        ; generate legible time labels
+        mvn_kp_make_time_labels, x, x_labels, xtickvalue
 
         if err_check eq 0 then begin
           plot1 = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,$
                             color='black',margin=0.1,xmajor=5,$
-                            xtickname=x_labels,xstyle=1,_extra=e)
+                            xtickname=x_labels,xstyle=1,$
+                            xtickvalue=xtickvalue,_extra=e)
         endif else begin
           plot1 = plot(x,y,xtitle='Time',ytitle=y_labels,color='black',$
                        margin=0.1,xmajor=5,xtickname=x_labels,xstyle=1,$
-                       _extra=e)
+                       xtickvalue=xtickvalue,_extra=e)
         endelse 
       endif
     endif
@@ -225,7 +227,8 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     if directgraphic ne 0 then begin
       ;USE THE OLD DIRECT GRAPHICS PLOT PROCEDURES
       if n_elements(parameter) eq 1 then begin
-        mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
+        ; generate legible time labels
+        mvn_kp_make_time_labels, x, x_labels, xtickvalue
         device,decomposed=0
         loadct,0,/silent
         !P.MULTI = [0, n_elements(parameter), 1]
@@ -261,13 +264,12 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     ;CREATE THE MULTIPLE  PLOT    
     if directgraphic eq 0 then begin
       ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
-      mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
+
+      ; generate legible time labels
+      mvn_kp_make_time_labels, x, x_labels, xtickvalue
+
       if n_elements(parameter) gt 1 then begin
-;
-; use of nodata keyword is causing problems.  Trying this instead.
-; Define current as keyword of i.  Therefore, if i=0, we make a new
-;  window; but if i ge 1, we draw next plot in same window
-;
+
 ;-km-would like to fold this into single plot section.
 ;-km- but may need to be fancy with the array naming, since 
 ;-km- y and y_error have diff ndims in the two cases.
@@ -280,6 +282,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                        yrange=temp_yrange[*,i], color='black', $
                        title=title[i], xmajor=5, $
                        xtickname=x_labels, xstyle=1, margin=0.1, $
+                       xtickvalue=xtickvalue, $
                        current=keyword_set(i),_extra=e )
           endif else begin
             plot1=errorplot(x, y[i,*], reform(y_error[*,i,*]), $
@@ -288,6 +291,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                             yrange=temp_yrange[*,i], color='black', $
                             title=title[i], xmajor=5, $
                             xtickname=x_labels, xstyle=1, margin=0.1, $
+                            xtickvalue=xtickvalue, $
                             current=keyword_set(i),_extra=e )
           endelse
         endfor
@@ -438,7 +442,8 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
     ;CREATE THE PLOTS
         
     if directgraphic eq 0 then begin
-      mvn_kp_make_time_labels, x, x_labels ; generate legible time labels
+      ; generate legible time labels
+      mvn_kp_make_time_labels, x, x_labels, xtickvalue
       oplot_index = 0
       w = window(window_title='MAVEN Plots')
 
@@ -460,14 +465,14 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                               xtitle='Time', ytitle=y_titles[oplot_index], $
                               layout=[1,n_elements(parameter),i+1],$
                               /current, title=title[i], xmajor=5,$
-                              xtickname=x_labels,$
+                              xtickname=x_labels,xtickvalue=xtickvalue, $
                               xstyle=1,yrange=temp_yrange,color='black',$
                               margin=0.1,_extra=e)
           endif else begin
             plot1 = plot(x, y[oplot_index,*], xtitle='Time', $
                          ytitle=y_titles[i], $
                          layout=[1,n_elements(parameter),i+1],/current,$
-                         title=title[i],xmajor=5,$
+                         title=title[i],xmajor=5,xtickvalue=xtickvalue, $
                          xtickname=x_labels,xstyle=1,yrange=temp_yrange,$
                          color='black',margin=0.1,_extra=e)
           endelse ; err_check          
@@ -487,6 +492,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                               layout=[1,n_elements(parameter),i+1],$
                               /current,yrange=temp_yrange,title=title[i],$
                               linestyle=0,xmajor=5,xtickname=x_labels,$
+                              xtickvalue=xtickvalue, $
                               xstyle=1,color='black',$
                               name=y_axis_title[oplot_index],$
                               margin=0.1,_extra=e)
@@ -499,6 +505,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                                 layout=[1,n_elements(parameter),i+1],$
                                 /current, yrange=temp_yrange, title=title[i],$
                                 linestyle=j, overplot=1, xmajor=5, $
+                                xtickvalue=xtickvalue, $
                                 xtickname=x_labels,xstyle=1, color='black',$
                                 name=y_axis_title[oplot_index],$
                                 margin=0.1,_extra=e)
@@ -512,7 +519,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                          layout=[1,n_elements(parameter),i+1],$
                          yrange=temp_yrange,/current,color='black',$
                          title=title[i],linestyle=0, xmajor=5, $
-                         xtickname=x_labels,xstyle=1,$
+                         xtickname=x_labels,xstyle=1,xtickvalue=xtickvalue, $
                          name=y_axis_title[oplot_index],margin=0.1,_extra=e)
             l = legend(target=plot1,position=[0.2,0.95],/normal,linestyle=0,$
                        font_size=8)
@@ -522,7 +529,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                            layout=[1,n_elements(parameter),i+1],$
                            yrange=temp_yrange,/current,color='black',$
                            title=title[i],linestyle=j,$
-                           xmajor=5,overplot=1,$
+                           xtickvalue=xtickvalue,xmajor=5,overplot=1,$
                            xstyle=1,name=y_axis_title[oplot_index],$
                            margin=0.1,_extra=e)
               l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],/normal,$
