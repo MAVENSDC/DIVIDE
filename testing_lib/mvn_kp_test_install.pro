@@ -17,10 +17,23 @@ pro mvn_kp_test_install, test_number
   insitu_cdf = test_file_directory+'mvn_kp_insitu_20150403_v01_r01.cdf'
   insitu_txt = test_file_directory+'mvn_kp_insitu_20150406_v01_r01.tab'
   
-  iuvs_cdf   = test_file_directory+'mvn_kp_iuvs_20141029T031433_v00_r00.cdf'
 ;-orig
+;  iuvs_cdf   = test_file_directory+'mvn_kp_iuvs_20141029T031433_v00_r00.cdf'
 ;  iuvs_txt   = test_file_directory+'mvn_kp_iuvs_20141030T021404_v00_r00.tab'
   iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141022T031211_v02_r00.tab' 
+  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141022T031211_v02_r00.cdf'
+  iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141018T160558_v02_r00.tab'
+  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141018T160558_v02_r00.cdf'
+
+  ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE
+  ;FULL STRUCTURE FOR ALL INSTRUMENT DATA
+  instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, $
+    'swia',     1, $
+    'swea',     1, 'mag',      1, 'sep',      1, $
+    'ngims',    1, 'periapse', 1, 'c_e_disk', 1, $
+    'c_e_limb', 1, 'c_e_high', 1, 'c_l_disk', 1, $
+    'c_l_limb', 1, 'c_l_high', 1, 'apoapse' , 1, $
+    'stellarocc', 1)
 
   results = []
   results_txt = []
@@ -76,7 +89,7 @@ pro mvn_kp_test_install, test_number
   endelse
   
   message, /reset
-  cmd = "mvn_kp_read_iuvs_file, '"+iuvs_cdf+"', iuvs"
+  cmd = "mvn_kp_read_iuvs_file, '"+iuvs_cdf+"', iuvs, instruments=instruments"
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured

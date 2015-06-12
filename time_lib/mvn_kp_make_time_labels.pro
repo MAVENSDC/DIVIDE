@@ -21,15 +21,19 @@
 ;  1.0
 ;  
 ;-
-pro mvn_kp_make_time_labels, time, time_labels
+pro mvn_kp_make_time_labels, time, time_labels, tick_locations
   ;
   ;  Create an empty string array for the labels
+  ;  And a zero filled array for the their locations
   ;
   time_labels=replicate('',5)
+  tick_locations = dblarr(5)
   ;
   ; First, identify the five time elements to be used
+  ; Need to assign as long integers in case number of records
+  ; exceeds 32767
   ; 
-  itimes = fix( ( n_elements(time)-1 ) * 0.25 * indgen(5) )
+  itimes = fix( ( n_elements(time)-1 ) * 0.25 * indgen(5), type=3 )
   ;
   ;  Define the string format for these time stamps
   ;
@@ -50,9 +54,10 @@ pro mvn_kp_make_time_labels, time, time_labels
       if date_str eq date_time_str[i-1,0] then date_str = ''
     endif
     ;
-    ; Later: perform checks on when to include date and when not
+    ;  Assign the numerical values to the tick locations so they 
+    ;  are placed in the right position by the plot function
     ;
-
+    tick_locations[i] = time[itimes[i]]
     ;
     ; Re-attach time and date with a carriage return between them
     ;

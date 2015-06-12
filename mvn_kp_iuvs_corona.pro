@@ -414,7 +414,7 @@ print,data_choice
           = kp_data[i].corona_e_limb.half_int_distance_err
         e_limb_half_labels[e_limb_total,*] $
           = kp_data[i].corona_e_limb.half_int_distance_id
-        e_limb_timestamb $
+        e_limb_timestamp $
           = time_double(kp_data[i].corona_e_limb.time_start, $
                         tformat="YYYY-MM-DDThh:mm:ss")
         e_limb_total = e_limb_total + 1
@@ -611,33 +611,37 @@ print,data_choice
       if kp_data[i].corona_lo_high.time_start ne '' then $
         lo_high_total = lo_high_total+1
     endfor
+    ;
+    ;  Hack for now to get nalt from *.alt; later, just grab *.nalt
+    ;
+    nalt = n_elements(kp_data[0].corona_lo_high.alt)
     lo_high_radiance $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.radiance_id),$
-               77)
-    lo_high_radiance_err $
+               nalt)
+    lo_high_radiance_unc $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.radiance_id),$
-               77)
+               nalt)
     lo_high_rad_labels $
       = strarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.radiance_id))
-    lo_high_rad_alt = fltarr(lo_high_total,77)
+    lo_high_rad_alt = fltarr(lo_high_total,nalt)
     lo_high_density $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.density_id),$
-               77)
-    lo_high_density_err $
+               nalt)
+    lo_high_density_unc $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.density_id),$
-               77)
+               nalt)
     lo_high_den_labels $
       = strarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.density_id))
     lo_high_half $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.half_int_distance_id))
-    lo_high_half_err $
+    lo_high_half_unc $
       = fltarr(lo_high_total,$
                n_elements(kp_data[0].corona_lo_high.half_int_distance_id))
     lo_high_half_labels $
@@ -649,22 +653,22 @@ print,data_choice
       if kp_data[i].corona_lo_high.time_start ne '' then begin
         lo_high_radiance[lo_high_total,*,*] $
           = kp_data[i].corona_lo_high.radiance
-        lo_high_radiance_err[lo_high_total,*,*] $
-          = kp_data[i].corona_lo_high.radiance_err
+        lo_high_radiance_unc[lo_high_total,*,*] $
+          = kp_data[i].corona_lo_high.radiance_unc
         lo_high_rad_labels[lo_high_total,*] $
           = kp_data[i].corona_lo_high.radiance_id
         lo_high_rad_alt[lo_high_total,*] $
           = kp_data[i].corona_lo_high.alt
         lo_high_density[lo_high_total,*,*] $
           = kp_data[i].corona_lo_high.density
-        lo_high_density_err[lo_high_total,*,*] $
-          = kp_data[i].corona_lo_high.density_err
+        lo_high_density_unc[lo_high_total,*,*] $
+          = kp_data[i].corona_lo_high.density_unc
         lo_high_den_labels[lo_high_total,*] $
           = kp_data[i].corona_lo_high.density_id
         lo_high_half[lo_high_total,*] $
           = kp_data[i].corona_lo_high.half_int_distance
-        lo_high_half_err[lo_high_total,*] $
-          = kp_data[i].corona_lo_high.half_int_distance_err
+        lo_high_half_unc[lo_high_total,*] $
+          = kp_data[i].corona_lo_high.half_int_distance_unc
         lo_high_half_labels[lo_high_total,*] $
           = kp_data[i].corona_lo_high.half_int_distance_id
         lo_high_timestamp[lo_high_total,*] $

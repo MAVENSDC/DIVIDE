@@ -43,6 +43,10 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, debug=debug
   ;
   foreach filename, infiles do begin
     ;
+    ;  Initialize the index to count substructures to be read
+    ;
+    isub = 0
+    ;
     ; Update progress bar
     ;
     MVN_KP_LOOP_PROGRESS,ifile,0,n_elements(infiles)-1,$
@@ -179,7 +183,7 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, debug=debug
           ;
           ;  And, append the substructure to the level 0 structure
           ;
-          if( i1 eq 0 )then begin
+          if( isub eq 0 )then begin
             if n_elements(name_list[itag]) eq 1 then begin
               iuvs_temp = create_struct( lev1_name, s.(0) )
             endif else begin
@@ -192,7 +196,11 @@ pro mvn_kp_iuvs_cdf_read, iuvs, infiles, instruments=instruments, debug=debug
               iuvs_temp = create_struct( iuvs_temp, lev1_name, s )
             endelse
           endelse
+          isub++
         endif
+        ;
+        ;  Increment read structure index
+        ;
       endif ; big instrument check conditional
     endfor ; loop over all tags
     ;
