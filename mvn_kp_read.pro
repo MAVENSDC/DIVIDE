@@ -538,7 +538,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                            21600L*n_elements(target_KP_filenames))
     
   if not keyword_set(insitu_only) then begin  
-print,'Removing iuvs_struct_init from mvn_kp_read
+    if keyword_set(debug) then $
+      print,'Removing iuvs_struct_init from mvn_kp_read
 ;    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 ;    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
   endif
@@ -639,7 +640,8 @@ print,'Removing iuvs_struct_init from mvn_kp_read
                                  begin_time=begin_time_struct, $
                                  end_time=end_time_struct, $
                                  instruments=instruments, $
-                                 save_files=save_files, text_files=text_files, $
+                                 save_files=save_files, $
+                                 text_files=text_files, $
                                  debug=debug
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
