@@ -175,8 +175,7 @@ function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
   basenames=file_basename(in_files)
   base_trim=strmid(basenames,0,basetrim)
   uniq_base_trim = base_trim[uniq(base_trim)]
-  latest_files = strarr(n_elements(uniq_base_trim))
-  
+  latest_files = strarr(1)
   j=0
   foreach trim, uniq_base_trim do begin
     candidates = basenames[where(strmatch(basenames, trim+"*", /fold_case) eq 1)]
@@ -187,8 +186,15 @@ function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
       message, "Problem with filenames in mvn_kp_latest_version_file"
     endif
     
-    latest_files[j] = final
-    j++
+    ;;Ignore version 0 files
+    if (strmid(final,basetrim+2,2) ne '00') then begin
+      if (j eq 0) then begin
+        latest_files = final
+        j++        
+      endif else begin
+        latest_files = [latest_files, final]
+      endelse
+    endif
     
   endforeach
   

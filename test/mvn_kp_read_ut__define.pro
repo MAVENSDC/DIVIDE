@@ -37,7 +37,7 @@ end
 function mvn_kp_read_ut::test_read_single_string_time
   compile_opt strictarr
   ;; Test single time input - binary
-  mvn_kp_read, '2014-10-18/16:05:58' , insitu, iuvs
+  mvn_kp_read, '2014-10-18/16:05:58' , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 11758, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 5, "Wrong number of iuvs data points read in"
 
@@ -179,19 +179,19 @@ function mvn_kp_read_ut::test_read_ascii_subset
   compile_opt strictarr
   ;; Test reading in a subset of ascii data
   time = '2014-10-'+['18','21']+'T00:00:00'
-  mvn_kp_read, time , insitu, iuvs, /text_files, /swia, /mag, /iuvs_periapse, /iuvs_apoapse
+  mvn_kp_read, time , insitu, iuvs, /text_files, /swia, /mag, /iuvs_periapse, /iuvs_apoapse, /download_new
   assert, size(insitu, /N_ELEMENTS) eq 34968, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
-  mvn_kp_read, time , insitu, iuvs, /text_files
+  mvn_kp_read, time , insitu, iuvs, /text_files, /download_new
   assert, size(insitu, /N_ELEMENTS) eq 34968, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
-  mvn_kp_read, time , insitu, iuvs, /text_files, /insitu_all, /iuvs_all
+  mvn_kp_read, time , insitu, iuvs, /text_files, /insitu_all, /iuvs_all, /download_new
   assert, size(insitu, /N_ELEMENTS) eq 34968, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
   insitu=0
