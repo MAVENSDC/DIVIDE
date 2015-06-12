@@ -338,15 +338,23 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
     ;
     ; First, strip out the path
     ;
-    temp = strsplit(filename,'/',/extract,/regex)
-    base = strarr(n_elements(temp))
-    for i = 0,n_elements(temp)-1 do base[i] = temp[i,-1]
+    if n_elements(filename) gt 1 then begin
+      temp = strsplit(filename,'/',/extract,/regex)
+      base = strarr(n_elements(temp))
+      for i = 0,n_elements(temp)-1 do base[i] = temp[i,-1]
+    endif else begin
+      base = (strsplit(filename,'/',/extract,/regex))[-1]
+    endelse
     ;
     ;  Next, strip down to the date-time-stamp
     ;
-    temp = strsplit(base,'_',/extract,/regex)
-    date_time = strarr(n_elements(temp))
-    for i = 0,n_elements(temp)-1 do date_time[i] = temp[i,3]
+    if n_elements(filename) gt 1 then begin
+      temp = strsplit(base,'_',/extract,/regex)
+      date_time = strarr(n_elements(temp))
+      for i = 0,n_elements(temp)-1 do date_time[i] = temp[i,3]
+    endif else begin
+      date_time = (strsplit(base,'_',/extract,/regex))[3]
+    endelse
     ;
     ;  Now, construct yyyy-mo-ddThh:mi:ss from this string
     ;
@@ -361,7 +369,14 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
       ;
       ;  Check whether date/time string is within bounds
       ;
-      check[i] = mvn_kp_time_bounds(date_time[i], begin_time, end_time)
+      if arg_present(begin_time) and arg_present(end_time) then begin
+        check[i] = mvn_kp_time_bounds(date_time[i], begin_time, end_time)
+      endif else begin
+        ;
+        ;  If no ttime restrictions, get *all* the data
+        ;
+        check[i] = 1
+      endelse
     endfor
     ;
     ;  Now, replace filename with the list of files that check out 
