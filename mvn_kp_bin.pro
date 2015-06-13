@@ -450,15 +450,17 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
     median = medians
    endif 
     
-   if keyword_set(avg_out) then begin
+   if arg_present(avg_out) then begin
           average_out= output/density
+          avg_out = average_out ; hack for now to preserve wonky nomenclature
    endif
   
   ;REDO FOR STANDARD DEVIATION CALCULATION
   
   if keyword_set(std) then begin
-    if keyword_set(avg_out) ne 1 then begin
+    if arg_present(avg_out) ne 1 then begin
       average_out= output/density
+      avg_out = average_out ; hack for now to preserve wonky nomenclature
     endif
     std_out = make_array(total_bins,/double)
     for i=0, n_elements(kp_data) -1 do begin

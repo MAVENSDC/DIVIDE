@@ -17,8 +17,11 @@
 ; :Author:
 ;   McGouldrick (2015-May-28)
 ;
+; :History:
+;  v1.0: (2015-May-28): original code
+;  
 ; :Version:
-;  1.0
+;  1.1 (2015-Jun-12): added tick_locations argument
 ;  
 ;-
 pro mvn_kp_make_time_labels, time, time_labels, tick_locations

@@ -29,7 +29,7 @@
 ;-
 
 
-pro mvn_kp_read_model_results, file, meta, dim, data
+pro mvn_kp_read_model_results, file, output; meta, dim, data
 
   ;; Open netcdf file for reading
   id = ncdf_open(file, /NOWRITE)
@@ -165,5 +165,6 @@ pro mvn_kp_read_model_results, file, meta, dim, data
   ;; output
   meta = meta_struct
   dim = dim_struct
+  output = {meta:meta_struct, dim:dim_struct, data:data}
    
 end
