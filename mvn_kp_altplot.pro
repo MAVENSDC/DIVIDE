@@ -184,8 +184,8 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 
       if check eq 0 then begin  ;CHECK THAT THE REQUESTED PARAMETER EXISTS
 
-        x = kp_data[kp_start_index:kp_end_index].time
-        y = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
+        y = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
+        x = kp_data[kp_start_index:kp_end_index].(level0_index).(level1_index)
 
         if keyword_set(error) then begin
           mvn_kp_tag_verify, kp_data, error, base_tag_count, $
