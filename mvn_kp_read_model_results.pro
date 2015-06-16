@@ -124,6 +124,13 @@ pro mvn_kp_read_model_results, file, output
         ;; input conditions)
         if (size(value, /n_dimensions) eq 3) then begin 
           
+          ;
+          ; If the units of the variable are m-3 (per m^3), then convert
+          ;  the data to cm^-3 to be consistent with MAVEn
+          ;
+          ncdf_attget,id,n,'units',units
+          if strmatch(string(units),'m-3') then value = value / 1e6
+
           ; Create dimension order array
           dim_order = strarr(var_info.ndims)
           for z=0, var_info.ndims-1 do begin
@@ -144,6 +151,13 @@ pro mvn_kp_read_model_results, file, output
         ;; corona of a given species)          
         endif else if (size(value, /n_dimensions) eq 4) then begin
           
+          ;
+          ; If the units of the variable are m-3 (per m^3), then convert
+          ;  the data to cm^-3 to be consistent with MAVEn
+          ;
+          ncdf_attget,id,n,'units',units
+          if strmatch(units,'m-3') then value = value / 1e6
+
           ; Create dimension order array
           dim_order = strarr(var_info.ndims - 1)
           for z=0, var_info.ndims-2 do begin

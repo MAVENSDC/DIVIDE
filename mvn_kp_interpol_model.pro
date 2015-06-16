@@ -195,5 +195,5 @@ model_interpol = model.meta
                                     tracer_interpol )
   endfor ; i=0,n_elements(data)
 
-return, model_interpol
+return
 end
