@@ -62,7 +62,7 @@ nearest_neighbor=keyword_set(nearest_neighbor)
 ;
 case model.meta.coord_sys of
   'MSO': begin
-    mso = keyword_set(1B) & geo = keyword_set(1B)
+    mso = keyword_set(1B) & geo = keyword_set(0B)
          end
   'GEO': begin
     geo = keyword_set(1B) & mso = keyword_set(0B)
@@ -78,53 +78,69 @@ if( mso )then begin
   ; 
   ss_lon = kp_data.spacecraft.subsolar_point_geo_longitude
   ss_lat = kp_data.spacecraft.subsolar_point_geo_latitude
-  ss_x_geo = sin(ss_lat*!dtor) * cos(ss_lon*!dtor) ; actually x/r
-  ss_y_geo = sin(ss_lat*!dtor) * sin(ss_lon*!dtor) ; actually y/r
-  ss_z_geo = cos(ss_lat*!dtor)                     ; actually z/r
+  ss_x_geo = sin((90.-ss_lat)*!dtor) * cos(ss_lon*!dtor) ; actually x/r
+  ss_y_geo = sin((90.-ss_lat)*!dtor) * sin(ss_lon*!dtor) ; actually y/r
+  ss_z_geo = cos((90.-ss_lat)*!dtor)                     ; actually z/r
   ss_geo = [[ss_x_geo],[ss_y_geo],[ss_z_geo]]
   ;
   ; Apply the rotation matrix to make the subsolar vector into MSO coords
   ;
-  ss_x_mso = ss_geo[0] * kp_data.spacecraft.t11 $
-           + ss_geo[1] * kp_data.spacecraft.t12 $
-           + ss_geo[2] * kp_data.spacecraft.t13
-  ss_y_mso = ss_geo[0] * kp_data.spacecraft.t21 $
-           + ss_geo[1] * kp_data.spacecraft.t22 $
-           + ss_geo[2] * kp_data.spacecraft.t23
-  ss_z_mso = ss_geo[0] * kp_data.spacecraft.t31 $
-           + ss_geo[1] * kp_data.spacecraft.t32 $
-           + ss_geo[2] * kp_data.spacecraft.t33
+  ss_x_mso = ss_geo[*,0] * kp_data.spacecraft.t11 $
+           + ss_geo[*,1] * kp_data.spacecraft.t21 $
+           + ss_geo[*,2] * kp_data.spacecraft.t31
+  ss_y_mso = ss_geo[*,0] * kp_data.spacecraft.t12 $
+           + ss_geo[*,1] * kp_data.spacecraft.t22 $
+           + ss_geo[*,2] * kp_data.spacecraft.t32
+  ss_z_mso = ss_geo[*,0] * kp_data.spacecraft.t13 $
+           + ss_geo[*,1] * kp_data.spacecraft.t23 $
+           + ss_geo[*,2] * kp_data.spacecraft.t33
   ;
   ; Now, convert MSO(x,y,z) into MSO(r,lon,lat)
   ;
-  ss_lon_mso = acos( ss_z_mso ) * !radeg
-  ss_lat_mso = atan( ss_y_mso, ss_x_mso ) * !radeg
+  ss_lat_mso = 90. - acos( ss_z_mso ) * !radeg
+  ss_lon_mso = atan( ss_y_mso, ss_x_mso ) * !radeg ; returns on -180..180
   ;
-  ;  And calcaulte the change in subsolar lat and lon from the model
+  ;  Correct longitude to a 0..360 scale
   ;
-  if model.meta.longsubsol lt 0 then begin
-    delta_lon = ss_lon_mso - ( 360 - abs(model.meta.longsubsol) )
-  endif else begin
-    delta_lon = ss_lon_mso - model.meta.longsubsol
-  endelse
+  neg_lon = where( ss_lon_mso lt 0, count )
+  if count gt 0 then ss_lon_mso[neg_lon] = 360 + ss_lon_mso[neg_lon]
+  ;
+  ;  And calculate the change in subsolar lat and lon from the model
+  ;
+  delta_lon = ( model.meta.longsubsol lt 0 ) $
+            ? 360 + model.meta.longsubsol - ss_lon_mso $
+            : model.meta.longsubsol - ss_lon_mso
   delta_lat = ss_lat_mso - model.meta.declination
+  ;
+  ;  Correct for negative delta longitude
+  ;
+  neg_lon = where( delta_lon lt 0, count)
+  if count gt 0 then delta_lon[neg_lon] = delta_lon[neg_lon] + 360
   ;
   ;  calculate maven MSO lat,lon from MSO x,y,z
   ;
   r_mso = sqrt( kp_data.spacecraft.mso_x^2 + kp_data.spacecraft.mso_y^2 $
               + kp_data.spacecraft.mso_z^2 )
-  lon_sc_mso = acos( kp_data.spacecraft.mso_z / r_mso ) * !radeg
-  lat_sc_mso = atan( kp_data.spacecraft.mso_y, $
-                     kp_data.spacecraft.mso_x ) * !radeg
+  lat_sc_mso = 90. - acos( kp_data.spacecraft.mso_z / r_mso ) * !radeg
+  lon_sc_mso = atan( kp_data.spacecraft.mso_y, $
+                     kp_data.spacecraft.mso_x ) * !radeg ; returns on -180..180
+  ;
+  ; convert lon_sc_mso to 0..360 scale
+  ;
+  neg_lon = where( lon_sc_mso lt 0, count )
+  if count gt 0 then lon_sc_mso[neg_lon] = lon_sc_mso[neg_lon] + 360
   ;
   ; Apply the deltas to the sc lon,lat
   ; 
   lon_sc_model = ( lon_sc_mso + delta_lon ) mod 360 
-  lat_sc_model = acos( cos( ( lat_sc_mso + delta_lat ) * !dtor ) )
+;  lat_sc_model = acos( cos( ( 90. - ( lat_sc_mso + delta_lat ) ) * !dtor ) ) * !radeg
+  colat_sc_model = acos( cos( ( 90 - lat_sc_mso + delta_lat ) * !dtor ) ) * !radeg
+  lat_sc_model = 90 - colat_sc_model
   ;
   ;  correct for rotations that take us over the pole
   ;
-  overpole = where( lat_sc_model - lat_sc_mso ne delta_lat, count )
+  overpole = where( abs( colat_sc_model $
+                       - ( 90 - lat_sc_mso + delta_lat ) ) gt 1e-4, count )
   if count gt 0 then $
     lon_sc_model[overpole] = ( lon_sc_model[overpole] + 180 ) mod 360
 endif
@@ -133,22 +149,24 @@ if( geo )then begin
   ;
   ; Calculate deltas
   ;
-  if model.meta.longsubsol lt 0 then begin
-    delta_lon = kp_data.spacecraft.subsolar_point_geo_longitude $
-              - ( 360 - abs(model.meta.longsubsol) )
-  endif else begin
-    delta_lon = kp_data.spacecraft.subsolar_point_geo_longitude $
-              - model.meta.longsubsol
-  endelse
-  delta_lat = kp_data.spacecraft.subsolar_point_geo_latitude $
-            - model.meta.declination
+  delta_lon = model.meta.longsubsol $
+            - kp_data.spacecraft.subsolar_point_geo_longitude
+  delta_lat = model.meta.declination $
+            - kp_data.spacecraft.subsolar_point_geo_latitude
+  ;
+  ;  Correct for negative delta longitude
+  ;
+  neg_lon = where( delta_lon lt 0, count)
+  if count gt 0 then delta_lon[neg_lon] = delta_lon[neg_lon] + 360
   ;
   ; Update the lon,lat in GEO coords
   ;
   lon_sc_model = ( kp_data.spacecraft.sub_sc_longitude + delta_lon ) mod 360
-  lat_sc_model = acos( cos( ( kp_data.spacecraft.sub_sc_latitude $
-                            + delta_lat ) * !dtor ) )
-  overpole = where( lat_sc_model - kp_data.spacecraft.sub_sc_latitude ne delta_lat, count )
+  colat_sc_model = acos( cos( ( 90. - kp_data.spacecraft.sub_sc_latitude $
+                              + delta_lat ) * !dtor ) ) * !radeg
+  lat_sc_model = 90. - colat_sc_model
+  overpole = where( abs( colat_sc_model $
+                       - ( 90 - kp_data.spacecraft.sub_sc_latitude + delta_lat ) ) gt 1e-4, count )
   if count gt 0 then $
     lon_sc_model[overpole] = ( lon_sc_model[overpole] + 180 ) mod 360
 endif
