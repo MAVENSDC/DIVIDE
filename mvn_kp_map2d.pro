@@ -160,6 +160,20 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
     return
   endif
 
+  ; HACK HACK
+  ;  Temporary alert warning user away from a bug in which map_limit
+  ;  is not properly applied if a basemap is not set.  If user supplies
+  ;  map_limit keyword and not basemap keyword, allow graceful escape 
+  ;  to try again
+  if keyword_set(map_limit) and ~keyword_set(basemap) then begin
+    print,'***** UNDER CONSTRUCTION *****'
+    print,'Unfortunately, at present, if a basemap is not supplied,'
+    print,'then map_limit does not behave correctly.  This will be'
+    print,'resolved in a future release.  At present, the best work-'
+    print,'around option is to simply set a basemap if you wish to '
+    print,'use the maplimits keyword.  Exiting.....'
+    return
+  endif
                 
 ;DETERMINE THE INSTALL DIRECTORY SO THE BASEMAPS CAN BE FOUND
      install_result = routine_info('mvn_kp_map2d',/source)
