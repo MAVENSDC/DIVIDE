@@ -161,8 +161,11 @@ endelse
 
 
 ;READ THE MODEL RESULTS SPECIFIED
-mvn_kp_read_model_results, file, simmeta, simdim, simdata
+mvn_kp_read_model_results, file, model
 
+simmeta = model.meta
+simdim = model.dim
+simdata = model.data
 
 ;ASK USER FOR A VARIABLE TO PLOT
 print, "Select a variable to plot"
