@@ -13,23 +13,24 @@
 ;    file: in, required, type=string or strarr
 ;       Scalar of path & filename of NetCDF file
 ;
-;    meta: out, required, type=struct
-;       Output named variable containing a struct with meta information 
-;       about the modeled results.
+;    output: out, required, type=struct
+;       Output named variable containing three substructures: 
+;        - a struct with meta information about the modeled results.
+;        - a struct with dimension information about the modeled results.
+;        - a struct containing an array of pointers where each 
+;          element is one modeled species (stored in a struct with 'name' 
+;          and 'data' tags).
 ;
-;    dim: out, required, type=struct
-;       Output named variable containing a struct with dimension information 
-;       about the modeled results.
-;       
-;    data: out, required, type=array of pointers
-;       Output named variable containing an array of pointers where each 
-;       element is one modeled species (stored in a struct with 'name' and 
-;       'data' tags).
-;
+; :History:
+;   v1.0 (John Martin)
+;   Original version; generates three structures
+;   
+; :Version: 1.1 (McGouldrick) 2015-Jun-12
+; 
 ;-
 
 
-pro mvn_kp_read_model_results, file, output; meta, dim, data
+pro mvn_kp_read_model_results, file, output
 
   ;; Open netcdf file for reading
   id = ncdf_open(file, /NOWRITE)
