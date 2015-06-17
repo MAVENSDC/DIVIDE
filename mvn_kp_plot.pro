@@ -215,11 +215,13 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
           plot1 = errorplot(x,y,y_error,xtitle='Time',ytitle=y_labels,$
                             color='black',margin=0.1,xmajor=5,$
                             xtickname=x_labels,xstyle=1,$
-                            xtickvalue=xtickvalue,_extra=e)
+;                            xtickvalue=xtickvalue,_extra=e)
+                            _extra=e)
         endif else begin
           plot1 = plot(x,y,xtitle='Time',ytitle=y_labels,color='black',$
                        margin=0.1,xmajor=5,xtickname=x_labels,xstyle=1,$
-                       xtickvalue=xtickvalue,_extra=e)
+;                       xtickvalue=xtickvalue,_extra=e)
+                       _extra=e)
         endelse 
       endif
     endif
@@ -275,24 +277,29 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;-km- y and y_error have diff ndims in the two cases.
 ;-km- maybe define y and y_error as structures?
 
+;-km- Also, now making plot1 into an array so that *each* curve
+;-km-  may be adjusted by the user after plot generation
+
         for i = 0,n_elements(parameter)-1 do begin
           if err_check[i] ne 0 then begin
-            plot1=plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
+            plot1=$;[plot1,$
+                   plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
                        layout=[1,n_elements(parameter),i+1], $
                        yrange=temp_yrange[*,i], color='black', $
                        title=title[i], xmajor=5, $
                        xtickname=x_labels, xstyle=1, margin=0.1, $
-                       xtickvalue=xtickvalue, $
-                       current=keyword_set(i),_extra=e )
+;                       xtickvalue=xtickvalue, $
+                       current=keyword_set(i),_extra=e ); ]
           endif else begin
-            plot1=errorplot(x, y[i,*], reform(y_error[*,i,*]), $
+            plot1=[plot1, $
+                   errorplot(x, y[i,*], reform(y_error[*,i,*]), $
                             xtitle='Time', ytitle=y_axis_title[i], $
                             layout=[1,n_elements(parameter),i+1], $
                             yrange=temp_yrange[*,i], color='black', $
                             title=title[i], xmajor=5, $
                             xtickname=x_labels, xstyle=1, margin=0.1, $
-                            xtickvalue=xtickvalue, $
-                            current=keyword_set(i),_extra=e )
+;                            xtickvalue=xtickvalue, $
+                            current=keyword_set(i),_extra=e ) ]
           endelse
         endfor
 
@@ -447,6 +454,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
       oplot_index = 0
       w = window(window_title='MAVEN Plots')
 
+      plot1=[] ; define empty array (valid only for IDL 8+
       for i = 0, n_elements(parameter) -1 do begin
         if plot_count[i] eq 1 then begin
 ;
@@ -461,20 +469,24 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
           endelse
 
           if err_check[i] eq 0 then begin
-            plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), $
+            plot1 = [plot1, $
+                     errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), $
                               xtitle='Time', ytitle=y_titles[oplot_index], $
                               layout=[1,n_elements(parameter),i+1],$
                               /current, title=title[i], xmajor=5,$
-                              xtickname=x_labels,xtickvalue=xtickvalue, $
+                              xtickname=x_labels,$
+;                              xtickvalue=xtickvalue, $
                               xstyle=1,yrange=temp_yrange,color='black',$
-                              margin=0.1,_extra=e)
+                              margin=0.1,_extra=e) ]
           endif else begin
-            plot1 = plot(x, y[oplot_index,*], xtitle='Time', $
+            plot1 = [plot1, $
+                     plot(x, y[oplot_index,*], xtitle='Time', $
                          ytitle=y_titles[i], $
                          layout=[1,n_elements(parameter),i+1],/current,$
-                         title=title[i],xmajor=5,xtickvalue=xtickvalue, $
+                         title=title[i],xmajor=5,$
+;                         xtickvalue=xtickvalue, $
                          xtickname=x_labels,xstyle=1,yrange=temp_yrange,$
-                         color='black',margin=0.1,_extra=e)
+                         color='black',margin=0.1,_extra=e) ]
           endelse ; err_check          
           oplot_index= oplot_index+1
 
@@ -486,52 +498,61 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
             temp_yrange = [min(y[oplot_index,*],/NaN),$
                            max(y[oplot_index,*],/NaN)]
           endelse
+;
+;-km Move legends out to the end?
+;
           if keyword_set(error) then begin
-            plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),$
+            plot1 = [plot1, $
+                     errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]),$
                               xtitle='Time',ytitle=y_titles[oplot_index], $
                               layout=[1,n_elements(parameter),i+1],$
                               /current,yrange=temp_yrange,title=title[i],$
                               linestyle=0,xmajor=5,xtickname=x_labels,$
-                              xtickvalue=xtickvalue, $
+;                              xtickvalue=xtickvalue, $
                               xstyle=1,color='black',$
                               name=y_axis_title[oplot_index],$
-                              margin=0.1,_extra=e)
+                              margin=0.1,_extra=e) ]
             l = legend(target=plot1,position=[0.2,0.95],/normal,linestyle=0,$
                        font_size=8)
             oplot_index = oplot_index+1
             for j=1,plot_count[i]-1 do begin      
-              plot1 = errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), $
+              plot1 = [plot1, $
+                       errorplot(x, y[oplot_index,*], reform(y_error[*,i,*]), $
                                 xtitle='Time', $
                                 layout=[1,n_elements(parameter),i+1],$
                                 /current, yrange=temp_yrange, title=title[i],$
                                 linestyle=j, overplot=1, xmajor=5, $
-                                xtickvalue=xtickvalue, $
+;                                xtickvalue=xtickvalue, $
                                 xtickname=x_labels,xstyle=1, color='black',$
                                 name=y_axis_title[oplot_index],$
-                                margin=0.1,_extra=e)
+                                margin=0.1,_extra=e) ]
               l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
                          /normal,linestyle=j,font_size=8)
               oplot_index=oplot_index+1
             endfor
           endif else begin
-            plot1 = plot(x, y[oplot_index,*], xtitle='Time', $
+            plot1 = [plot1, $
+                     plot(x, y[oplot_index,*], xtitle='Time', $
                          ytitle=y_titles[i], $
                          layout=[1,n_elements(parameter),i+1],$
                          yrange=temp_yrange,/current,color='black',$
                          title=title[i],linestyle=0, xmajor=5, $
-                         xtickname=x_labels,xstyle=1,xtickvalue=xtickvalue, $
-                         name=y_axis_title[oplot_index],margin=0.1,_extra=e)
+                         xtickname=x_labels,xstyle=1,$
+;                         xtickvalue=xtickvalue, $
+                         name=y_axis_title[oplot_index],margin=0.1,_extra=e) ]
             l = legend(target=plot1,position=[0.2,0.95],/normal,linestyle=0,$
                        font_size=8)
             oplot_index = oplot_index+1
             for j=1,plot_count[i]-1 do begin      
-              plot1 = plot(x, y[oplot_index,*], xtitle='Time', $
+              plot1 = [plot1, $
+                       plot(x, y[oplot_index,*], xtitle='Time', $
                            layout=[1,n_elements(parameter),i+1],$
                            yrange=temp_yrange,/current,color='black',$
                            title=title[i],linestyle=j,$
-                           xtickvalue=xtickvalue,xmajor=5,overplot=1,$
+;                           xtickvalue=xtickvalue,$
+                           xmajor=5,overplot=1,$
                            xstyle=1,name=y_axis_title[oplot_index],$
-                           margin=0.1,_extra=e)
+                           margin=0.1,_extra=e) ]
               l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],/normal,$
                          linestyle=j,font_size=8)
               oplot_index=oplot_index+1

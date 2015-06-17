@@ -321,41 +321,46 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
     ;PLOT USING THE NEW IDL GRAPHICS PLOT FUNCTION
     if n_elements(parameter) gt 1 then begin
       w = window(window_title='Maven KP Data Altitude Plots')
+      plot1 = []; define empty vector (IDL *+ only)
       for i = 0, n_elements(parameter) -1 do begin
         if keyword_set(davin) then begin
           if err_check[i] ne 0 then begin
-            plot1 = plot(y,x[i,*], xtitle='Spacecraft Altitude, km', $
+            plot1 = [plot1, $
+                     plot(y,x[i,*], xtitle='Spacecraft Altitude, km', $
                          ytitle=x_axis_title[i], $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],$
                          xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
-                         yrange=temp_xrange[*,i], _extra = e) 
+                         yrange=temp_xrange[*,i], _extra = e) ]
           endif else begin
-            plot1 = errorplot(y,x[i,*], reform(x_error[*,i,*]), $
+            plot1 = [plot1, $
+                     errorplot(y,x[i,*], reform(x_error[*,i,*]), $
                               xtitle='Spacecraft Altitude, km', $
                               ytitle=x_axis_title[i], $
                               layout=[n_elements(parameter),1,i+1],/current,$
                               title=title[i],$
                               xstyle=1,ystyle=1,xrange=temp_yrange[*,i],$
-                              yrange=temp_xrange[*,i], _extra = e)
+                              yrange=temp_xrange[*,i], _extra = e) ]
           endelse
         endif else begin ; do not swap the axis
           if err_check[i] ne 0 then begin
-            plot1 = plot(x[i,*], y, ytitle='Spacecraft Altitude, km', $
+            plot1 = [plot1, $
+                     plot(x[i,*], y, ytitle='Spacecraft Altitude, km', $
                          xtitle=x_axis_title[i], $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],$
                          xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
-                         xrange=temp_xrange[*,i], _extra = e)
+                         xrange=temp_xrange[*,i], _extra = e) ]
           endif else begin
             null_error = fltarr(2,n_elements(y))
-            plot1 = errorplot(x[i,*], y, reform(x_error[*,i,*]), null_error, $
+            plot1 = [plot1, $
+                     errorplot(x[i,*], y, reform(x_error[*,i,*]), null_error, $
                               ytitle='Spacecraft Altitude, km', $
                               xtitle=x_axis_title[i], $
                               layout=[n_elements(parameter),1,i+1],/current,$
                               title=title[i],$
                               xstyle=1,ystyle=1,yrange=temp_yrange[*,i],$
-                              xrange=temp_xrange[*,i], _extra = e)
+                              xrange=temp_xrange[*,i], _extra = e) ]
           endelse ; err_check
         endelse   ; davin check
       endfor ; loop over all parameters
@@ -508,25 +513,28 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
   ;   if n_elements(parameter) gt 1 then begin
       oplot_index = 0
        w = window(window_title='Maven KP Data Altitude Plots')
+      plot1 = [] ; define empty array for plots (IDL 8+ only)
       for i = 0, n_elements(parameter) -1 do begin
         if keyword_set(davin) then begin
           if plot_count[i] eq 1 then begin
-            plot1 = plot(y,x[oplot_index,*], $
+            plot1 = [plot1, $
+                     plot(y,x[oplot_index,*], $
                          xtitle='Spacecraft Altitude [km]', $
                          ytitle=x_axis_title[oplot_index], $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],$
                          xstyle=1,ystyle=1,yrange=temp_xrange[*,oplot_index],$
-                         xrange=temp_yrange[*,oplot_index], _extra = e)
+                         xrange=temp_yrange[*,oplot_index], _extra = e) ]
             oplot_index= oplot_index+1
           endif else begin
-            plot1 = plot(y,x[oplot_index,*], $
+            plot1 = [plot1, $
+                     plot(y,x[oplot_index,*], $
                          xtitle='Spacecraft Altitude [km]', $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],linestyle=0,$
                          yrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
                          xrange=temp_yrange[*,oplot_index],$
-                         name=x_axis_title[oplot_index], _extra = e)
+                         name=x_axis_title[oplot_index], _extra = e) ]
             l = legend(target=plot1,$
                        position=[(i*(1./n_elements(parameter)))$
                                  +(.5/(n_elements(parameter))), .85],$
@@ -534,14 +542,15 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
             oplot_index = oplot_index+1
             hold_index = oplot_index-1
             for j=1,plot_count[i]-1 do begin      
-              plot1 = plot(y,x[oplot_index,*], $
+              plot1 = [plot1, $
+                       plot(y,x[oplot_index,*], $
                            xtitle='Spacecraft Altitude[ km]', $
                            layout=[n_elements(parameter),1,i+1],/current,$
                            title=title[i],linestyle=j,$
                            xstyle=1,ystyle=1,$
                            yrange=temp_xrange[*,hold_index],$
                            name=x_axis_title[oplot_index], $
-                           xrange=temp_yrange[*,hold_index], _extra = e)
+                           xrange=temp_yrange[*,hold_index], _extra = e) ]
               l = legend(target=plot1,$
                          position=[(i*(1./n_elements(parameter))) $
                                    +(.5/(n_elements(parameter))), $
@@ -552,22 +561,24 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
           endelse
         endif else begin
           if plot_count[i] eq 1 then begin
-            plot1 = plot(x[oplot_index,*], y, $
+            plot1 = [plot1, $
+                     plot(x[oplot_index,*], y, $
                          ytitle='Spacecraft Altitude [km]', $
                          xtitle=x_axis_title[oplot_index], $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],$
                          xstyle=1,ystyle=1,xrange=temp_xrange[*,oplot_index],$
-                         yrange=temp_yrange[*,oplot_index], _extra = e)
+                         yrange=temp_yrange[*,oplot_index], _extra = e) ]
             oplot_index= oplot_index+1
           endif else begin
-            plot1 = plot(x[oplot_index,*], y, $
+            plot1 = [plot1, $
+                     plot(x[oplot_index,*], y, $
                          ytitle='Spacecraft Altitude [km]', $
                          layout=[n_elements(parameter),1,i+1],/current,$
                          title=title[i],linestyle=0,$
                          xrange=temp_xrange[*,oplot_index],xstyle=1,ystyle=1,$
                          yrange=temp_yrange[*,oplot_index],$
-                         name=x_axis_title[oplot_index], _extra = e)
+                         name=x_axis_title[oplot_index], _extra = e) ]
             l = legend(target=plot1,$
                        position=[(i*(1./n_elements(parameter))) $
                                  +(.5/(n_elements(parameter))),.85],$
@@ -575,14 +586,15 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
             oplot_index = oplot_index+1
             hold_index = oplot_index-1
             for j=1,plot_count[i]-1 do begin      
-              plot1 = plot(x[oplot_index,*], y, $
+              plot1 = [plot1, $
+                       plot(x[oplot_index,*], y, $
                            ytitle='Spacecraft Altitude [km]', $
                            layout=[n_elements(parameter),1,i+1],/current,$
                            title=title[i],linestyle=j,$
                            xstyle=1,ystyle=1,$
                            xrange=temp_xrange[*,hold_index],$
                            name=x_axis_title[oplot_index], $
-                           yrange=temp_yrange[*,hold_index], _extra = e)
+                           yrange=temp_yrange[*,hold_index], _extra = e) ]
                l = legend(target=plot1,$
                           position=[(i*(1./n_elements(parameter)))$
                                     +(.5/(n_elements(parameter))),$
