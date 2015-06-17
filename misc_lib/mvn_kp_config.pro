@@ -63,7 +63,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     'host', 'lasp.colorado.edu', $
     'port', 443, $,
     'url_scheme', 'https', $
-    'authentication', 1, $
+    'authentication', 0, $
     'check_max_files', 0, $
     'max_files', 200, $
     'expire_duration', 86400)
