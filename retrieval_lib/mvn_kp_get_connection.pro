@@ -32,11 +32,15 @@ end
 
 ;----------------------------------------------------------------
 ; Main Routine
-function mvn_kp_get_connection, host=host, port=port, authentication=authentication
+function mvn_kp_get_connection, host=host, port=port, authentication=authentication, private = private
   common mvn_kp_connection, netUrl, connection_time
   
   ;; Get SDC server configuration information
-  sdc_server_spec = mvn_kp_config(/data_retrieval)
+  if (keyword_set(private)) then begin
+    sdc_server_spec = mvn_kp_config(/data_retrieval, /private)
+  endif else begin
+    sdc_server_spec = mvn_kp_config(/data_retrieval)
+  endelse
 
   ; Define the length of time the login will remain valid, in seconds.
   expire_duration = sdc_server_spec.expire_duration

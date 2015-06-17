@@ -1,7 +1,7 @@
 
 
 function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_file_spec, data_retrieval=data_retrieval, $
-  orbit_number=orbit_number, iuvs_data=iuvs_data, orbit_file_location=orbit_file_location
+  orbit_number=orbit_number, iuvs_data=iuvs_data, orbit_file_location=orbit_file_location, private=private
   
   
   ;; Information describing the in situ filenames and where dates & versions are located
@@ -43,6 +43,8 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   ;; Infomration describing the web services for downloading data files
   if keyword_set(data_retrieval) then begin
   
+  if (keyword_set(private)) then begin
+
   ; Restricted production SDC server
   sdc_server_spec = create_struct($
     'url_path_file_names', '/maven/sdc/service/files/api/v1/search/science/fn_metadata/file_names', $
@@ -54,7 +56,19 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     'check_max_files', 0, $
     'max_files', 200, $
     'expire_duration', 86400)
-      
+   endif else begin
+   sdc_server_spec = create_struct($
+    'url_path_file_names', '/maven/sdc/public/files/api/v1/search/science/fn_metadata/file_names', $
+    'url_path_download', '/maven/sdc/public/files/api/v1/search/science/fn_metadata/download', $
+    'host', 'lasp.colorado.edu', $
+    'port', 443, $,
+    'url_scheme', 'https', $
+    'authentication', 1, $
+    'check_max_files', 0, $
+    'max_files', 200, $
+    'expire_duration', 86400)
+    endelse 
+    
     return, sdc_server_spec
   endif
   

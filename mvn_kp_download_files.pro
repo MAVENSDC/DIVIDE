@@ -80,7 +80,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
     cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
     update_prefs=update_prefs, list_files=list_files, debug=debug, $
     exclude_orbit_file=exclude_orbit_file, $
-    only_update_prefs=only_update_prefs, help=help
+    only_update_prefs=only_update_prefs, team=team, help=help
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -166,7 +166,12 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   endif
  
   ;; Get SDC server specs
-  sdc_server_spec = mvn_kp_config(/data_retrieval)
+  
+  if (keyword_set(team)) then begin
+    sdc_server_spec = mvn_kp_config(/data_retrieval, /private)
+  endif else begin
+    sdc_server_spec = mvn_kp_config(/data_retrieval)
+  endelse
   
   url_path  = sdc_server_spec.url_path_download      ; Define the URL path for the download web service.
   max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow w/o an extra warning.
@@ -236,13 +241,22 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   ;; ------------------------------ Main logic ------------------------------------------ ;;
 
   ; Get the IDLnetURL singleton. May prompt for password.
-  connection = mvn_kp_get_connection()
+  
+  if (keyword_set(team)) then begin
+    connection = mvn_kp_get_connection(/private)
+  endif else begin
+    connection = mvn_kp_get_connection()
+  endelse
   
   ; If no input filename(s), then query the server to find available files for download
   if not keyword_set (filenames) then begin
    
     ; Get the list of files. Names will be full path starting at "mms"? #FIXME - Not MMS
-    filenames = mvn_kp_get_filenames(query=query)
+    if (keyword_set(team)) then begin
+      filenames = mvn_kp_get_filenames(query=query, /private)
+    endif else begin
+      filenames = mvn_kp_get_filenames(query=query)
+    endelse
     ; Warn if no files. Error code or empty.
     if (size(filenames, /type) eq 3 || n_elements(filenames) eq 0) then begin
       print, "No files found for the query: " + query
