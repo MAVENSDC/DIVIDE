@@ -148,8 +148,7 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
   endforeach
   
   ;; Find max version and discard others
-  max_v = where(versions eq max(versions))
-
+  
 ;; HACK HACK HACK
 ;; km
 ;; Due to changes in in-situ KP file stricture in v02, reader code will fail
@@ -160,8 +159,11 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
 ;;  we will re-enable reading of the most recent data.
 ;; Ultimately, this hack will be removed entirely.
 ;;
-  mvn_kp_version,version=version
-  if version le 1.03 then max_v = (max_v < 1) ; choose lesser of 1 or max_v
+  mvn_kp_version,version=divide_version
+  max_v = ( divide_version le 1.03 ) $
+        ? where(versions eq (max(versions)<1)) $
+        : where(versions eq max(versions))
+;-old-code max_v = where( versions eq max(versions) )
 ;; END HACK
 
   revisions = revisions[max_v]
