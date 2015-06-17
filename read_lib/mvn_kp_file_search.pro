@@ -149,6 +149,21 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
   
   ;; Find max version and discard others
   max_v = where(versions eq max(versions))
+
+;; HACK HACK HACK
+;; km
+;; Due to changes in in-situ KP file stricture in v02, reader code will fail
+;;  because the hard-wired default structure will not match the data.
+;;  We are ignoring this until after the workshop.  But since the data have
+;;  been released, we need to accommodate.  Check the version number.
+;;  In version 1.03, we will force reading of the v01 data; in version 1.04
+;;  we will re-enable reading of the most recent data.
+;; Ultimately, this hack will be removed entirely.
+;;
+  mvn_kp_version,version=version
+  if version le 1.03 then max_v = (max_v < 1) ; choose lesser of 1 or max_v
+;; END HACK
+
   revisions = revisions[max_v]
   files = files[max_v]
   
@@ -177,6 +192,7 @@ function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
   uniq_base_trim = base_trim[uniq(base_trim)]
   latest_files = strarr(1)
   j=0
+
   foreach trim, uniq_base_trim do begin
     candidates = basenames[where(strmatch(basenames, trim+"*", /fold_case) eq 1)]
     final = MVN_KP_LATEST_VERSION_FILE(candidates, vpos, rpos)
@@ -195,9 +211,9 @@ function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
         latest_files = [latest_files, final]
       endelse
     endif
-    
+
   endforeach
-  
+
   return, latest_files
 end
 
