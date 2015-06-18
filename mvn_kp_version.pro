@@ -7,8 +7,8 @@
 
 PRO MVN_KP_VERSION,version=version
   if arg_present(version) then begin
-    version = 1.03
+    version = 1.031
   endif else begin
-    print, 'Maven KP Toolkit Version: 1.03'
+    print, 'Maven KP Toolkit Version: 1.031'
   endelse
 end
