@@ -33,13 +33,17 @@ end
 ;----------------------------------------------------------------
 ; Main Routine
 function mvn_kp_get_connection, host=host, port=port, authentication=authentication, private = private
-  common mvn_kp_connection, netUrl, connection_time
+  common mvn_kp_connection, netUrl, connection_time, private_connection
+  
+  ;; Define the variable private_connection if not defined 
+  if (~ISA(private_connection)) then private_connection = 0
   
   ;; Get SDC server configuration information
   if (keyword_set(private)) then begin
     sdc_server_spec = mvn_kp_config(/data_retrieval, /private)
   endif else begin
     sdc_server_spec = mvn_kp_config(/data_retrieval)
+    private_connection = 0
   endelse
 
   ; Define the length of time the login will remain valid, in seconds.
@@ -50,6 +54,14 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
   if (n_elements(connection_time) eq 1) then begin
     duration = systime(/seconds) - connection_time
     if (duration gt expire_duration) then mvn_kp_logout_connection
+  endif
+  
+  ;Check if we're switching from a public or private connection
+  if (keyword_set(private) && (private_connection eq 0)) then begin
+    if ((size(netUrl, /type) eq 11)) then begin
+      mvn_kp_logout_connection
+    endif
+    private_connection = 1
   endif
   
   if n_elements(host) eq 0 then host = sdc_server_spec.host
