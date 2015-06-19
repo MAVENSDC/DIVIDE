@@ -281,15 +281,16 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;-km-  may be adjusted by the user after plot generation
 
         for i = 0,n_elements(parameter)-1 do begin
+          plot1 = []
           if err_check[i] ne 0 then begin
-            plot1=$;[plot1,$
+            plot1=[plot1,$
                    plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
                        layout=[1,n_elements(parameter),i+1], $
                        yrange=temp_yrange[*,i], color='black', $
                        title=title[i], xmajor=5, $
                        xtickname=x_labels, xstyle=1, margin=0.1, $
 ;                       xtickvalue=xtickvalue, $
-                       current=keyword_set(i),_extra=e ); ]
+                       current=keyword_set(i),_extra=e ) ]
           endif else begin
             plot1=[plot1, $
                    errorplot(x, y[i,*], reform(y_error[*,i,*]), $
