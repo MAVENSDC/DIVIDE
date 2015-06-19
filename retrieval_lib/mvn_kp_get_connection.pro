@@ -56,7 +56,6 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
   if n_elements(port) eq 0 then port = sdc_server_spec.port
   if n_elements(authentication) eq 0 then authentication = sdc_server_spec.authentication
 
-
   ;Make sure the singleton instance has been created
   ;TODO: consider error cases, avoid leaving incomplete netURL in common block
   type = size(netUrl, /type) ;will be 11 if object has been created
@@ -65,7 +64,7 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
     netUrl = OBJ_NEW('IDLnetUrl')
     netUrl->SetProperty, URL_HOST = host
     netUrl->SetProperty, URL_PORT = port
-    
+
     ;If authentication is requested, get login from user and add to netURL properties
     if authentication gt 0 then begin
       username = ''

@@ -190,7 +190,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   if n_elements(filenames) le 0 then begin
 
     if keyword_set(insitu) and keyword_set(iuvs) then begin
-      message, "Can't request both INSITU & IUVS data in one query. 
+      message, "Can't request both INSITU & IUVS data in one query." 
     endif
     if not (keyword_set(insitu) or keyword_set(iuvs)) then begin
       message, "If not specifying filename(s) to download, Must specify either /INSITU keyword or /IUVS."
@@ -241,13 +241,13 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   ;; ------------------------------ Main logic ------------------------------------------ ;;
 
   ; Get the IDLnetURL singleton. May prompt for password.
-  
+
   if (keyword_set(team)) then begin
     connection = mvn_kp_get_connection(/private)
   endif else begin
     connection = mvn_kp_get_connection()
   endelse
-  
+
   ; If no input filename(s), then query the server to find available files for download
   if not keyword_set (filenames) then begin
    

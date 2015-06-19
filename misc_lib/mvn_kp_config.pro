@@ -39,7 +39,6 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     return, iuvs_filename_spec
   endif
   
-  
   ;; Infomration describing the web services for downloading data files
   if keyword_set(data_retrieval) then begin
   
