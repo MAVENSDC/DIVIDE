@@ -160,7 +160,7 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
 ;; Ultimately, this hack will be removed entirely.
 ;;
   mvn_kp_version,version=divide_version
-  max_v = ( divide_version le 1.03 ) $
+  max_v = ( divide_version lt 1.04 ) $
         ? where(versions eq (max(versions)<1)) $
         : where(versions eq max(versions))
 ;-old-code max_v = where( versions eq max(versions) )

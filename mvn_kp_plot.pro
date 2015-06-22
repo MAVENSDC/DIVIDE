@@ -280,8 +280,9 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;-km- Also, now making plot1 into an array so that *each* curve
 ;-km-  may be adjusted by the user after plot generation
 
+        plot1=[]
         for i = 0,n_elements(parameter)-1 do begin
-          plot1 = []
+;          plot1 = []
           if err_check[i] ne 0 then begin
             plot1=[plot1,$
                    plot(x, y[i,*], xtitle='Time', ytitle=y_axis_title[i], $
