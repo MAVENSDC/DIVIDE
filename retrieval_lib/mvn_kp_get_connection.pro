@@ -76,7 +76,8 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
     netUrl = OBJ_NEW('IDLnetUrl')
     netUrl->SetProperty, URL_HOST = host
     netUrl->SetProperty, URL_PORT = port
-
+    netUrl->SetProperty, URL_SCHEME = sdc_server_spec.url_scheme
+    
     ;If authentication is requested, get login from user and add to netURL properties
     if authentication gt 0 then begin
       username = ''
@@ -87,7 +88,7 @@ function mvn_kp_get_connection, host=host, port=port, authentication=authenticat
       ;read, password, prompt='password: '
       password = mvn_kp_read_password(prompt='password: ') ;don't echo password
       
-      netUrl->SetProperty, URL_SCHEME = sdc_server_spec.url_scheme
+      
       netUrl->SetProperty, SSL_VERIFY_HOST = 0 ;don't worry about certificate
       netUrl->SetProperty, SSL_VERIFY_PEER = 0
       netUrl->SetProperty, AUTHENTICATION = authentication
