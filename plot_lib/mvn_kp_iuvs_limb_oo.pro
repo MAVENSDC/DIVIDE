@@ -107,11 +107,11 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
   ;
   ; Here is my new plotting loop 
   ;
-  print,profile_inclusion
-  help,profile_inclusion
-  print,profile_dimensions
-  help,plot_name
-  help,color_vector
+;  print,profile_inclusion
+;  help,profile_inclusion
+;  print,profile_dimensions
+;  help,plot_name
+;  help,color_vector
 ;stop
   include = where(profile_inclusion eq 1)
   plot1=[]
