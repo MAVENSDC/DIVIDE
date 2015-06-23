@@ -68,16 +68,17 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 
   ;LIST OF ALL POSSIBLE PLOTABLE PARAMETERS IF /LIST IS SET
 
-  if keyword_set(list) then begin
-    if arg_present(list) then begin
-      ; return the KP list to the provided variable
-      mvn_kp_get_list, kp_data, list=list
-    endif else begin
-      ; print the KP list to screen
-      mvn_kp_get_list, kp_data, /list
-    endelse
+  if arg_present(list) then begin
+    ; return the KP list to the provided variable
+    mvn_kp_get_list, kp_data, list=list
     return
-  endif
+  endif else begin
+      ; print the KP list to screen
+     if keyword_set(list) then begin
+       mvn_kp_get_list, kp_data, /list
+       return
+     endif
+  endelse
   
   ;PROVIDE THE TEMPORAL RANGE OF THE DATA SET IN BOTH DATE/TIME AND 
   ;ORBITS IF REQUESTED.
