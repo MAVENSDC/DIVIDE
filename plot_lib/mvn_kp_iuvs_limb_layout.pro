@@ -55,9 +55,11 @@ pro mvn_kp_iuvs_limb_layout, species_dim=species_dim, $
     ;
     layout_vector = intarr(tot_dim)
     layout_vector[0] = 1 ; radiance plot is in first location (not req'd)
-    layout_vector[profile_dim*radiance_dim] = 2 ; density plot is 2nd
     oplot_vector=indgen(tot_dim)-1
-    oplot_vector[profile_dim*radiance_dim] = -1 ; 1st den plot not overplot
+    if keyword_set(density) and keyword_set(radiance) then begin
+      layout_vector[profile_dim*radiance_dim] = 2 ; density plot is 2nd
+      oplot_vector[profile_dim*radiance_dim] = -1 ; 1st den plot not overplot
+    endif
   endif
 
   if species_expand and ~profile_expand then begin
