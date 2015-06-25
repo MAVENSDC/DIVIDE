@@ -345,11 +345,11 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
     ; First, strip out the path
     ;
     if n_elements(filename) gt 1 then begin
-      temp = strsplit(filename,'/',/extract,/regex)
+      temp = file_basename(filename)
       base = strarr(n_elements(temp))
       for i = 0,n_elements(temp)-1 do base[i] = temp[i,-1]
     endif else begin
-      base = (strsplit(filename,'/',/extract,/regex))[-1]
+      base = file_basename(filename)
     endelse
     ;
     ;  Next, strip down to the date-time-stamp
