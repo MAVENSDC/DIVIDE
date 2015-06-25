@@ -636,6 +636,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
           date_path = mvn_kp_date_subdir(iuvs_filenames[file])
           fileAndPath = kp_iuvs_data_directory + date_path $
                       + iuvs_filenames[file]
+
           MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
                                  begin_time=begin_time_struct, $
                                  end_time=end_time_struct, $
@@ -643,6 +644,9 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                                  save_files=save_files, $
                                  text_files=text_files, $
                                  debug=debug
+
+print,iuvs_index
+;help,iuvs_record
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
             iuvs_data_temp[iuvs_index] = iuvs_record
