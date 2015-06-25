@@ -5,6 +5,11 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
   ;;
   ;;;    FIXME - Clean up this whole time checking stuff
   ;;
+  ;;  NB (km): time checking returns a structure if ANY part of it falls
+  ;;           withing the time bounds given.  E.g., if APOAPSE is in the
+  ;;           window, but PERIPASE is not, then an empty structure 
+  ;;           will be returned for periapse.  But the structure will
+  ;;           be returned....
 
   ;; Init new structure with only instruments in instruments struct
   MVN_KP_IUVS_STRUCT_INIT, iuvs_record_time_temp, instruments=instruments
@@ -14,7 +19,6 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     for peri_index = 0, n_elements(iuvs_record_temp.periapse.time_start)-1 do begin
       if (iuvs_record_temp.periapse[peri_index].time_start ne '') then begin
         check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.periapse[peri_index].time_start, begin_time, end_time)
-        
         if check then begin 
           iuvs_record_time_temp.periapse[peri_index] = iuvs_record_temp.periapse[peri_index]
           any_within_bounds = 1
@@ -306,8 +310,10 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
     if not any_within_bounds then begin
       iuvs_record = -1
     endif
-    
+
+  ;---------------------------------------------------------------------
   ; End of if save_files block
+  ;---------------------------------------------------------------------
   
   endif else if keyword_set(text_files) then begin  
     ;READ IUVS DATA FROM ASCII FILES

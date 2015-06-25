@@ -9,8 +9,9 @@
 
 mvn_kp_iuvs_limb, kp_data, density=density, radiance=radiance, $
                   profiles=profiles, den_species=den_species, $
-                  rad_species=rad_species, legend=legend,$
-                  linear=linear, species_expand=species_expand, $
+                  rad_species=rad_species, info=info, $
+                  oo=oo, leg=leg, linear=linear, log=log, $
+                  species_expand=species_expand, $
                   profile_expand=profile_expand, range=range, $
                   colortable=colortable, window=window, winX=winX, $
                   winY=winY, help=help
@@ -21,6 +22,7 @@ REQUIRED FIELDS
 
 OPTIONAL FIELDS
 ***************
+  info: print a summary of species available, do not plot anything.
   density : if selected, the density KP data will be plotted
   radiance : if selected, the radiance KP data will be plotted
   profiles : an array listing the orbits to be plotted 
@@ -28,8 +30,10 @@ OPTIONAL FIELDS
                 particular species to be plotted 
   rad_species : an array listing the radiance measurements of 
                 particular species to be plotted 
-  legend : either VERTICAL or HORIZONTAL, 
-           defining the orientation of the legend.
+  oo: pass the plot object to $MAIN$ using the provided variable name.
+  leg : pass the legend object to $MAIN$ using the provided variable name
+  linear : optional keyword to make plots on linear scale
+  log : optional keyword to make plots on a log scale
   linear : optional keyword to make plots on a linear scale, 
            instead of the logarithmic default
   species_expand: if this keyword is selected, then all the species for a 
