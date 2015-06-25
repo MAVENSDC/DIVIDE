@@ -77,6 +77,13 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
     return
   endif
 
+  ;  Trim the structure in case one of the end members exists only because 
+  ;  one of the other modes was in use during the provided time window.
+  ;  Array index -1 means 'last'; -2 means 'penultimate'
+  begin_index = kp_data[0].periapse[0].time_start eq '' ? 1 : 0
+  end_index = kp_data[-1].periapse[0].time_start eq ''? -2 : -1
+  kp_data = kp_data[begin_index:end_index]
+
   ;CHECK THE DATA RANGE
   if keyword_set(range) then begin
     print,'The data structure contains data that spans the time range of '$
@@ -122,6 +129,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
 
   ; Check that either radiance, or density, or a list of species 
   ;  has been requested by the user.  If not, exit.
+
   if( ~keyword_set(radiance) and ~keyword_set(density) and $
       ~keyword_set(rad_species) and ~keyword_set(den_species) )then begin
     print,"****ERROR****"
@@ -467,24 +475,25 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
 ;
 ;-----------------------------------------------------------------------
 
-   ;
-   ;  Check for linear versus log conflicts
-   ;
-   if keyword_set(log) and keyword_set(linear) then begin
-     print,'*****WARNING*****'
-     print,'Keyword /LINEAR and keyword /LOG both have been provided.'
-     print,'Default will be to choose /LOG plotting.'
-     linear = keyword_set(0B) & log = keyword_set(1B)
-   endif
-   ;
-   ;  If log plotting requested, set the appropriate keyword
-   ;
-   if keyword_set(log) then xlog=keyword_set(1B)
-   if keyword_set(linear) then xlog=keyword_set(0B)
-   ;
-   ; Call the appropriate plotting routine
-   ;
-   if keyword_set(directgraphics) then begin
+  ;
+  ;  If log plotting requested, set the appropriate keyword
+  ;
+  if keyword_set(log) then xlog=keyword_set(1B)
+  if keyword_set(linear) then xlog=keyword_set(0B)
+  ;
+  ;  Check for linear versus log conflicts
+  ;
+  if keyword_set(log) eq keyword_set(linear) then begin
+    print,'*****WARNING*****'
+    print,'Keyword /LINEAR and keyword /LOG '
+    print,'have either both been provided, or neither was provided.'
+    print,'Default will be to choose /LOG plotting.'
+    linear = keyword_set(0B) & log = keyword_set(1B)
+  endif
+  ;
+  ; Call the appropriate plotting routine
+  ;
+  if keyword_set(directgraphics) then begin
     ;  Call DG plotting routine
     mvn_kp_iuvs_limb_dg, kp_data, radiance_data=radiance_data, $
                          density_data=density_data, altitude=altitude, $
