@@ -13,7 +13,7 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
   
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
-  
+  debug = keyword_set(1B)  
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
@@ -40,9 +40,16 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
  endif
  
   ;; Init array of insitu structures big enough for one file
-  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
-  kp_data_temp = replicate(insitu_record,21600L)
-  
+;-km-rm
+;  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
+;  kp_data_temp = replicate(insitu_record,21600L)
+;-km-/rm
+;-km-add
+print,filename
+  MVN_KP_INSITU_STRUCT_INIT, filename, insitu_record, col_map, formats, $
+                             ncol, nrec, instruments=instruments
+  kp_data_temp = replicate(insitu_record,fix(nrec,type=3))
+;-km-/add
   
   if keyword_set(text_files) then begin
     index=0L
@@ -51,6 +58,10 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
     ;OPEN THE KP DATA FILE
     openr,lun,filename,/get_lun
     ;READ IN A LINE, EXTRACTING THE TIME
+;
+;-km Leave this alone for now; but we can change into for loop now that
+;    we are reading and returning number of records
+;
     while not eof(lun) do begin
       temp = ''
       readf,lun,temp
@@ -63,23 +74,49 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
         if within_time_bounds then begin
         
           ; TEMPLATE STRUCTURE TO READ DATA INTO
+;-km-rm
+;          orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', $
+;                   data:fltarr(211)}
+;-km-/rm
+;-km-add
+;-km: WARNING: this will throw non-fatal errors when the string flags in 
+;              NGIMS version 2+ are read
+
           orbit = {time_string:'', time: 0.0, orbit:0L, IO_bound:'', $
-                   data:fltarr(211)}
-          
+                   data:fltarr(ncol)}
+;-km-/add
           
           ;READ IN AND INIT TEMP STRUCTURE OF DATA
           orbit.time_string = data[0]
           orbit.time = time_double(data[0], tformat='YYYY-MM-DDThh:mm:ss')
-          orbit.orbit = data[194]
-          orbit.IO_bound = data[195]
-          
+;-km-rm
+;          orbit.orbit = data[194]
+;          orbit.IO_bound = data[195]
+;-km-/rm
+;-km-add
+          orbit.orbit = data[col_map.orbit-1]
+          orbit.IO_bound = data[col_map.io_bound-1]
+;-km-/add          
           ;; Disclude data[0], data[194], data[195] - Strings
           ;;   won't go in data arry nicely,
           ;; and we've extracted these three points just above 
           ;; into the top level structure.
-          orbit.data[1:193] = data[1:193]
-          orbit.data[196:210] = data[196:210]
-
+;-km-rm
+;          orbit.data[1:193] = data[1:193]
+;          orbit.data[196:210] = data[196:210]
+;-km-/rm
+;-km-add
+          ;
+          ; Need to convert strings to numbers so they will be stored in data array
+          ;
+          str_flags = where( strmatch( formats, '*A*', /fold_case ), count )
+          if count gt 0 then $
+            data[str_flags] = fix( fix( data[str_flags], type=1 ), type=4 )
+          col_max = col_map.spacecraft.(n_tags(col_map.spacecraft)-2)
+          orbit.data[1:col_map.orbit-2] = data[1:col_map.orbit-2]
+          orbit.data[col_map.io_bound:col_max-1] $
+              = data[col_map.io_bound:col_max-1]
+;-km-/add
           
           ;CHECK time_string FORMAT FOR A SLASH DELIMITER INSTEAD 
           ; OF A "T" AND SWITCH IF NECESSARY
@@ -91,12 +128,14 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
           if (io_flag[0] ne 1) or (io_flag[1] ne 1) then begin
             if ((io_flag[0] eq 1) and (orbit.io_bound eq 'I')) or $
                ((io_flag[1] eq 1) and (orbit.io_bound eq 'O')) then begin
-              MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments
+              MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments, $
+                                    colmap
               kp_data_temp[index] = insitu_record
               index=index+1
             endif
           endif else begin
-            MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments
+            MVN_KP_INSITU_ASSIGN, insitu_record, orbit, instruments, $
+                                  col_map
             kp_data_temp[index] = insitu_record
             index=index+1
           endelse 
