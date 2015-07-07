@@ -79,7 +79,7 @@ pro mvn_kp_test_install, test_number
   cmd = "mvn_kp_read_insitu_file, '"+insitu_cdf+"', insitu"
   
   return = EXECUTE(cmd[0])
-  if !ERROR_STATE.CODE NE 0 then begin
+  if return ne 1 and !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
     results = [results, "[INSTALL TEST] - ERROR with: CDF Test 1"]
     results = [results, "                  ----- "+!ERROR_STATE.MSG]
@@ -91,7 +91,10 @@ pro mvn_kp_test_install, test_number
   message, /reset
   cmd = "mvn_kp_read_iuvs_file, '"+iuvs_cdf+"', iuvs, instruments=instruments"
   return = EXECUTE(cmd[0])
-  if !ERROR_STATE.CODE NE 0 then begin
+
+  print,return
+
+  if return ne 1 and !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
     results = [results,"[INSTALL TEST] - ERROR with: CDF Test 2"]
     results = [results,"                  ----- "+!ERROR_STATE.MSG]
