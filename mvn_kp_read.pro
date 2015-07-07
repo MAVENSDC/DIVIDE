@@ -533,7 +533,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS AND INITIALIZE 
   ;ARRAY OF DATA STRUTURES 
-  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
+;-orig  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
+  fname = kp_insitu_data_directory+mvn_kp_date_subdir(target_KP_filenames[0])+target_KP_filenames[0]
+  MVN_KP_INSITU_STRUCT_INIT, fname, insitu_record, $
+                             col_map, formats, ncol, nrec, $
+                             instruments=instruments
   kp_data_temp = replicate(insitu_record,$
                            21600L*n_elements(target_KP_filenames))
     
@@ -543,8 +547,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 ;    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 ;    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
   endif
-
-; stop
   
   ;; ---------------------------------------------------------------------- ;;
   ;; ---------------- Main read loop: In situ data    --------------------- ;;
@@ -644,9 +646,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                                  save_files=save_files, $
                                  text_files=text_files, $
                                  debug=debug
-
-print,iuvs_index
-;help,iuvs_record
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
             iuvs_data_temp[iuvs_index] = iuvs_record
@@ -677,7 +676,6 @@ print,iuvs_index
                                save_files=save_files, text_files=text_files, $
                                debug=debug
 
-;stop
       ;OUTPUT IUVS DATA STRUCTURE IF ANY IUVS DATA IS REQUESTED and 
       ; any observation modes found within time range.
 ;-orig
