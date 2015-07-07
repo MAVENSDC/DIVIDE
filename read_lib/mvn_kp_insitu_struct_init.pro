@@ -1,5 +1,6 @@
 pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
-                               nparam, nrec, instruments=instruments
+                               nparam, nrec, vnum=vnum, rnum=rnum, $
+                               instruments=instruments
 ;+
 ; :Name:
 ;  mvn_kp_read_insitu_ascii_header
@@ -38,7 +39,6 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
 ;  McGouldrick
 ;
 ;-
-Version = 2 ; HACK until I read it in from the data file
   ;
   ;  Default to filling all instruments if not specified
   ;
@@ -69,7 +69,20 @@ Version = 2 ; HACK until I read it in from the data file
   repeat begin
     readf, luni, line & iline++
     ;
-    ;  Get the number of parmaeter columns
+    ;  Get the version and revision number to make a propoer template
+    ;
+    if strmatch( line, '*Version*' ) then $
+      vnum = fix( strmid( line, $
+                          stregex( line, '[0123456789]{2}', length=len ), $
+                          len ), $
+                  type=2 )
+    if strmatch( line, '*Revision*' ) then $
+      rnum = fix( strmid( line, $
+                          stregex( line, '[0123456789]{2}', length=len ), $
+                          len ), $
+                  type=2 )
+    ;
+    ;  Get the number of parameter columns
     ;  NB, this assumes no more than 999 columns and no fewer than 100
     ;
     if strmatch(line,'*Number of parameter columns*') then $
@@ -84,18 +97,18 @@ Version = 2 ; HACK until I read it in from the data file
     if strmatch(line,'*Line on which data begins*') then $
       nstart = fix( strmid( line, $
       stregex( line,'[0123456789]{3}',length=len ), $
-      len), $
-      type=2)
+               len), $
+               type=2)
     ;
     ;  Get the number of data records.  This should be allowed to vary over
     ;  four orders of magnitude.  Can we assume it is always ~10,000?
     ;  For now, assume at least 10000 lines and fewer than 99999.
     ;
     if strmatch(line,'*Number of lines*') then $
-      nrec = fix( strmid( line, $
-      stregex( line,'[0123456789]{5}',length=len ), $
-      len), $
-      type=2)
+       nrec = fix( strmid( line, $
+                           stregex( line,'[0123456789]{5}',length=len ), $
+                           len), $
+                   type=2)
     ;
     ;  Read any other lines blindly, just counting them
     ;
@@ -329,7 +342,6 @@ Version = 2 ; HACK until I read it in from the data file
     ;
     case inst of
       'LPW' : begin
-;              if instruments.lpw then begin
                 lpw_names = [lpw_names, name]
                 if n_elements(lpw_names) eq 1 then begin
                   lpw = strmatch( format_string, '*A*' ) $
@@ -342,7 +354,6 @@ Version = 2 ; HACK until I read it in from the data file
                       : create_struct( lpw, name, !VALUES.D_NAN )
                   lpw_col = create_struct( lpw_col, name, column )
                 endelse
-;              endif
               end
       'EUV' : begin
               euv_names = [euv_names, name]
