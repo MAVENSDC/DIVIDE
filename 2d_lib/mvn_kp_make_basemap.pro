@@ -323,13 +323,21 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
   endif else begin
     ; BASEMAP keyword NOT SET, use this default(?)
     mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)
+    if (~keyword_set(map_limit)) then map_limit=[-90,0,90,360]
+    if keyword_set(map_projection) eq 0 then begin
+      map_projection  = 'Equirectangular'
+    endif
+    xmin = map_limit[1] & xmax = map_limit[3]
+    ymin = map_limit[0] & ymax = map_limit[2]
     if keyword_set(direct) eq 0 then begin
-      i = image( mapimage, axis_style=2,LIMIT=[-90,-180,90,180], $
+      i = image( mapimage, axis_style=2,LIMIT=map_limit, $
         GRID_UNITS=2, IMAGE_LOCATION=[-180,-90], $
         IMAGE_DIMENSIONS=[360,180],$
         map_projection  = 'Equirectangular', margin=0, $
         window_title="MAVEN Orbital Path", /nodata, $
-        transparency=alpha)
+        transparency=alpha, xrange=[xmin,xmax], yrange=[ymin,ymax])
+      mp = map( map_projection, limit = map_limit, /box_axes, /current )
+      
       plot_color = "Black"
     endif
   endelse
