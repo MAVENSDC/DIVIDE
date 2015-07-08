@@ -537,6 +537,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   fname = kp_insitu_data_directory+mvn_kp_date_subdir(target_KP_filenames[0])+target_KP_filenames[0]
   MVN_KP_INSITU_STRUCT_INIT, fname, insitu_record, $
                              col_map, formats, ncol, nrec, $
+                             vnum=vnum, rnum=rnum, $
                              instruments=instruments
   kp_data_temp = replicate(insitu_record,$
                            21600L*n_elements(target_KP_filenames))

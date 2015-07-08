@@ -15,14 +15,14 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instruments, colmap
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
+  debug=keyword_set(1B)
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
     on_error, 1
   endif
-
   nrec = n_elements(data_array.(0))
-
+;stop
   record[0:nrec-1].time_string = data_array.(colmap.time_string-1)
   record[0:nrec-1].time        = time_double(record.time_string, $
                                              tformat='YYYY-MM-DDThh:mm:ss')

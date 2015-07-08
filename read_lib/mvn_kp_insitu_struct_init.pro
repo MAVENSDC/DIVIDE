@@ -125,7 +125,6 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
   ;
   ;  Next <nparam> lines detail the structure of the data table
   ;
-;  for iparam = 1,5 do begin
   for iparam = 1, nparam-1 do begin
     readf, luni, line & iline++
 ;
@@ -135,15 +134,30 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
     ;
     ;  After character 2 ('# '), break the line at all double-sapces
     ;
-    temp = strsplit(strmid(line,2),'  ',/regex,/extract)
-    name = strtrim(temp[0],2)    ; parameter name
-    inst = strtrim(temp[1],2)    ; instrument name/ID
-    units = strtrim(temp[2],2)   ; units (not saved)
-    column = fix(temp[3],type=2) ; column number (not saved?)
-    format_string = strtrim(temp[4],2) ; data format descriptor (e.g. E16.2)
-    formats = [formats, format_string]
-    notes = temp[5] ; add'l notes on param, needed to break degeneracy on 
-                    ; some of the error parameters
+    if vnum eq 1 and rnum eq 1 and iparam ge 171 then begin
+      ;
+      ; Semi-hack to deal with missing SPICE column in header info in v01_r01
+      ;
+      temp = strsplit(strmid(line,2),'  ',/regex,/extract)
+      name = strtrim(temp[0],2)    ; parameter name
+      inst = 'SPICE'               ; instrument name/ID
+      units = strtrim(temp[1],2)   ; units (not saved)
+      column = fix(temp[2],type=2) ; column number (not saved?)
+      format_string = strtrim(temp[3],2) ; data format descriptor (e.g. E16.2)
+      formats = [formats, format_string]
+      notes = temp[4] ; add'l notes on param, needed to break degeneracy on
+                      ; some of the error parameters
+    endif else begin
+      temp = strsplit(strmid(line,2),'  ',/regex,/extract)
+      name = strtrim(temp[0],2)    ; parameter name
+      inst = strtrim(temp[1],2)    ; instrument name/ID
+      units = strtrim(temp[2],2)   ; units (not saved)
+      column = fix(temp[3],type=2) ; column number (not saved?)
+      format_string = strtrim(temp[4],2) ; data format descriptor (e.g. E16.2)
+      formats = [formats, format_string]
+      notes = temp[5] ; add'l notes on param, needed to break degeneracy on 
+                      ; some of the error parameters
+    endelse
     ;
     ;  Now for the conditionals
     ;  EUV is listed as LPW-EUV, change that
@@ -163,13 +177,17 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
         name = strupcase(strjoin([name,'min'],'_'))
       if strmatch(notes,'*maximum*',/fold_case) then $
         name = strupcase(strjoin([name,'max'],'_'))
+      if strmatch(notes,'*Error*',/fold_case) then $
+        name = strupcase(strjoin([name,'err'],'_'))
+      if strmatch(notes,'*Quality*',/fold_case) then $
+        name = strupcase(strjoin([name,'quality'],'_'))
     endif
     ;
     ;  NGIMS has quality flags and precision estimates
     ;
-    if inst eq 'NGIMS' and name eq 'Quality' and Version ge 2 then $
-      ; Need to read in version number at top
-      format = 'a16'
+;    if inst eq 'NGIMS' and name eq 'Quality' and Version ge 2 then $
+;      ; Need to read in version number at top
+;      format = 'a16'
     ;
     ;  Now, assemble the names of the structure variables
     ;  First, connect words with underscores
@@ -255,6 +273,8 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
         if strmatch( name, '*12+*' ) then name = 'cplus_density'
         if strmatch( name, '*17+*' ) then name = 'ohplus_density'
         if strmatch( name, '*14+*' ) then name = 'nplus_density'
+        ; This is an error in early versions.  Preserved only for testing
+        if strmatch( name, '*38+*' ) then name = 'co2plus_n2plus_density'
       endif else begin
         name = idl_validname(name,/convert_all)
       endelse
@@ -310,11 +330,17 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
               if ~strmatch( name, '*quality*', /fold_case ) then $
                      obs_name = name
               if strmatch( name, '*quality*', /fold_case ) then begin
-                if strmatch( name, '*m[(in)(ax)]*', /fold_case )then begin
+                if strmatch( name, '*m[(in)(ax)]*', /fold_case ) or $
+                   strmatch( name, '*err*', /fold_case ) or $
+                   strmatch( name, '*quality*', /fold_case ) then begin
                   if strmatch( name, '*min*', /fold_case ) then $
                      name = obs_name + '_qual_min'
                   if strmatch( name, '*max*', /fold_case ) then $
                      name = obs_name + '_qual_max'
+                  if strmatch( name, '*err*', /fold_case ) then $
+                     name = obs_name + '_qual_err'
+                  if strmatch( name, '*quality*', /fold_case ) then $
+                     name = obs_name + '_qual_qual'
                 endif else begin
                      name = obs_name + '_qual'
                 endelse
@@ -530,5 +556,17 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
   col_map = create_struct( col_map, 'app', app_col )
   output = create_struct( output, 'spacecraft', sc )
   col_map = create_struct( col_map, 'spacecraft', sc_col )
+  ;
+  if ~keyword_set(nrec) then begin
+    ;
+    ;  If nrec not included in header, figure it out by reading the file
+    ;
+    nrec = 0
+    WHILE ~ EOF(luni) DO BEGIN
+      ; Read a line of text:
+      READF, luni, line
+      if ~strmatch(line,'#*') then nrec++
+    ENDWHILE
+  endif
   free_lun,luni
 end
