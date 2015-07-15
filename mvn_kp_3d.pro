@@ -362,10 +362,14 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       endelse
     endif else begin
       ;if no parameter selected, default to spacecraft altitude
-      plotted_parameter_name = 'altitude'
-      current_plotted_value = insitu1[time_index].spacecraft.altitude
-      level0_index = n_tags(insitu1)-2; 12
-      level1_index = 10
+      field='spacecraft.altitude'
+      MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+        first_level_count, base_tags,  $
+        first_level_tags, check, level0_index, $
+        level1_index, tag_array
+        plotted_parameter_name = tag_array[0]+':'+tag_array[1]
+        current_plotted_value = insitu1[time_index]$
+          .(level0_index).(level1_index)
     endelse
 
     ;default colorbar settings

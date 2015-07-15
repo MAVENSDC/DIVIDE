@@ -312,6 +312,12 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
          name = 't'+strmid(name,50,1)+strmid(name,52,1)
       if strmatch( name, '*Rotation*IAU*', /fold_case ) then $
          sc_include = keyword_set(0B)
+      if strmatch( name, 'GEO Latitude', /fold_case ) then $
+         name = 'sub_sc_latitude'
+      if strmatch( name, 'GEO Longitude', /fold_case ) then begin 
+        name = 'sub_sc_longitude'
+      endif
+         
       if strmatch( name, '*Orbit Number*', /fold_case ) or $
          strmatch( name, '*Inbound/Outbound*', /fold_case ) then begin
          sc_include = keyword_set(0B) & head_include = keyword_set(1B)
