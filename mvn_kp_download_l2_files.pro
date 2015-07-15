@@ -99,7 +99,10 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
                               start_date=start_date, end_date=end_date, new_files=new_files, $
                               update_prefs=update_prefs, only_update_prefs=only_update_prefs, $
                               exclude_orbit_file=exclude_orbit_file, debug=debug, help=help
-                              
+
+
+  ;Set to 0 for public release, 1 for team release                              
+  private = mvn_kp_config_file(/check_access)
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -215,7 +218,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
 
 
   ;; Get SDC server specs
-  sdc_server_spec = mvn_kp_config(/data_retrieval)
+  sdc_server_spec = mvn_kp_config(/data_retrieval, private=private)
   
   url_path  = sdc_server_spec.url_path_download      ; Define the URL path for the download web service.
   max_files = sdc_server_spec.max_files              ; Define the maximum number of files to allow w/o an extra warning.
@@ -279,11 +282,11 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
             
       
       ; Get the IDLnetURL singleton. May prompt for password.
-      connection = mvn_kp_get_connection()
+      connection = mvn_kp_get_connection(private=private)
       
       ;query the server to find available files for download
 
-      filenames = mvn_kp_get_filenames(query=query)
+      filenames = mvn_kp_get_filenames(query=query, private=private)
       ; Warn if no files. Error code or empty.
       if (size(filenames, /type) eq 3 || n_elements(filenames) eq 0) then begin
         print, "For instrument: "+instruments[inst_i]+" - No l2 files found on server for input query"
@@ -363,7 +366,7 @@ pro mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, list
       ;; If connection not set, filenames was specified - need to get connection
       if not keyword_set(connection) then begin
         ; Get the IDLnetURL singleton. May prompt for password.
-        connection = mvn_kp_get_connection()
+        connection = mvn_kp_get_connection(private=private)
       endif
       
       print, "Starting download of l2 file(s)..."

@@ -243,6 +243,9 @@ end
 pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs_filenames, iuvs_dir, $
   save_files=save_files, text_files=text_files, insitu_only=insitu_only, download_new=download_new
   
+  ;Set to 0 for public release, 1 for team release                              
+  private = mvn_kp_config_file(/check_access)
+
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
   
@@ -254,8 +257,8 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   
 
   ;; Globals Describing the filenames and where dates & versions are located
-  insitu_filename_spec = mvn_kp_config(/insitu_file_spec)
-  iuvs_filename_spec   = mvn_kp_config(/iuvs_file_spec)
+  insitu_filename_spec = mvn_kp_config(/insitu_file_spec, private=private)
+  iuvs_filename_spec   = mvn_kp_config(/iuvs_file_spec, private=private)
   
 
   ;; Variables containing just the date, not the time
@@ -267,37 +270,21 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   ;; needed to complete the time range
   if keyword_set(download_new) then begin
   
-  input = ''
-  ;Ask user if they want to go to the team site or the public site
-  READ, input, PROMPT="Are you a MAVEn team member? (y/n): "
-  if (input eq 'y' || input eq 'Y') then begin
-    private = 1
-  endif else begin
-    private = 0
-  endelse
+    ;Set to 0 for public release, 1 for team release                              
+    private = mvn_kp_config_file(/check_access)
   
      ;; If text_files not set, set  cdf_files for call to mvn_kp_download_files
      if not keyword_set(text_files) then cdf_files = 1
   
      ;; Check for insitu files
-     if (private) then begin
-       mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, /new_files, $
-       text_files=text_files, cdf_files=cdf_files, debug=debug, /team  
-     endif else begin
-       mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, /new_files, $
-       text_files=text_files, cdf_files=cdf_files, debug=debug     
-     endelse
+     mvn_kp_download_files, start_date=begin_date, end_date=end_date, /insitu, /new_files, $
+     text_files=text_files, cdf_files=cdf_files, debug=debug  
 
   
     ;; Check for IUVS files
     if not keyword_set(insitu_only) then begin
-      if (private) then begin
         mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, /new_files, $ 
-        text_files=text_files, cdf_files=cdf_files, debug=debug, /team
-      endif else begin
-        mvn_kp_download_files, start_date=begin_date, end_date=end_date, /iuvs, /new_files, $
         text_files=text_files, cdf_files=cdf_files, debug=debug
-      endelse
     endif
   endif
 

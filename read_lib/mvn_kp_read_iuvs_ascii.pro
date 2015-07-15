@@ -13,9 +13,11 @@ end
 
 
 pro mvn_kp_iuvs_ascii_common, lun, in_struct
-  
+
+  ;Set to 0 for public release, 1 for team release
+  private = mvn_kp_config_file(/check_access)
   ;; read in from config info about iuvs data
-  iuvs_data_spec = mvn_kp_config(/iuvs_data)
+  iuvs_data_spec = mvn_kp_config(/iuvs_data, private=private)
   num_common = iuvs_data_spec.num_common
  
  ;; Read in until we hit 'TIME_START'

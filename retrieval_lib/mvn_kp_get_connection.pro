@@ -35,16 +35,17 @@ end
 function mvn_kp_get_connection, host=host, port=port, authentication=authentication, private = private
   common mvn_kp_connection, netUrl, connection_time, private_connection
   
+  ;Set to 0 for public release, 1 for team release
+  private = mvn_kp_config_file(/check_access)
+  
   ;; Define the variable private_connection if not defined 
   if (~ISA(private_connection)) then private_connection = 0
   
+  sdc_server_spec = mvn_kp_config(/data_retrieval, private=private)
   ;; Get SDC server configuration information
-  if (keyword_set(private)) then begin
-    sdc_server_spec = mvn_kp_config(/data_retrieval, /private)
-  endif else begin
-    sdc_server_spec = mvn_kp_config(/data_retrieval)
+  if (~keyword_set(private)) then begin
     private_connection = 0
-  endelse
+  endif 
 
   ; Define the length of time the login will remain valid, in seconds.
   expire_duration = sdc_server_spec.expire_duration

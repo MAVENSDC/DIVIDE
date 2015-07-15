@@ -3,6 +3,9 @@ function mvn_kp_list_sdc_files, filename=filename, sc_id=sc_id, $
   instrument=instrument, $
   data_level=data_level, descriptor=descriptor, start_date=start_date, end_date=end_date
   
+  ;Set to 0 for public release, 1 for team release                              
+  private = mvn_kp_config_file(/check_access)
+  
   ; Web API defined with lower case.
   if n_elements(instrument_id)  gt 0 then instrument_id  = strlowcase(instrument_id)
   if n_elements(data_rate_mode) gt 0 then data_rate_mode = strlowcase(data_rate_mode)
@@ -27,7 +30,7 @@ function mvn_kp_list_sdc_files, filename=filename, sc_id=sc_id, $
   
 
   ; Execute the query.
-  files = mvn_kp_get_filenames(query=query)
+  files = mvn_kp_get_filenames(query=query, private=private)
 
   return, files
 end

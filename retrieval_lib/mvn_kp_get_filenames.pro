@@ -1,22 +1,19 @@
 function mvn_kp_get_filenames, query=query, private=private
   ;type: science, ancillary, sitl_selection
   
-  ;; Get server information
-  if (keyword_set(private)) then begin
-    sdc_server_spec = mvn_kp_config(/data_retrieval, /private)
-  endif else begin
-    sdc_server_spec = mvn_kp_config(/data_retrieval)
-  endelse
+  ;Set to 0 for public release, 1 for team release
+  private = mvn_kp_config_file(/check_access)
+  
+  ;Get server information
+  sdc_server_spec = mvn_kp_config(/data_retrieval, private=private)
+
 
   url_path = sdc_server_spec.url_path_file_names
 
   if n_elements(query) eq 0 then query = ""
 
-  if (keyword_set(private)) then begin
-    connection = mvn_kp_get_connection(/private)
-  endif else begin
-    connection = mvn_kp_get_connection()
-  endelse
+  connection = mvn_kp_get_connection(private=private)
+
 
   result = mvn_kp_execute_neturl_query(connection, url_path, query)
   ; Check for error (long integer code as opposed to array of strings)

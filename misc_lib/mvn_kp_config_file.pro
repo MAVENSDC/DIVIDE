@@ -1,6 +1,6 @@
 
 
-function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2
+function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2, check_access=check_access
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -12,8 +12,35 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2
   endif
   
   ;; ------------------------------------------------------------------------------------ ;;
+  ;; --------------------------- Read the config.txt file ------------------------------- ;;
+  if keyword_set(check_access) then begin
+    ;; Find where preferences file should be
+    install_result = routine_info('mvn_kp_config_file',/source, /function)
+    install_directory = strsplit(install_result.path,'mvn_kp_config_file.pro',/extract,/regex)
+    install_directory = install_directory+path_sep()+'..'+path_sep()
+    mvn_root_data_dir = ''
+    openr,lun,install_directory+'access.txt',/get_lun
+    while not eof(lun) do begin
+      line=''
+      readf,lun,line
+      tokens = strsplit(line,' ',/extract)
+      if tokens[0] ne ';' then begin
+        case tokens[0] of
+          'access_level:':  private = tokens[1:(n_elements(tokens)-1)]
+          else                        :  private=0
+        endcase
+      endif
+    endwhile
+    if (private eq '1' || private eq '0') then begin
+      return, fix(private)    
+    endif else begin
+      return, 0
+    endelse
+  endif
+  
+  ;; ------------------------------------------------------------------------------------ ;;
   ;; ----------------------- Read or create preferences file ---------------------------- ;;
-
+  
   ;; FIRST  -Check for ROOT_DATA_DIR environment varaible
   ;; If present, parse to find first existing directory and return. Otherwise continue on to
   ;; look for and/or create a mvn_toolkit_prefs.txt file.
