@@ -42,22 +42,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                              
                                                       if coord_sys eq 0 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu[i].swia.hplus_flow_v_msox*insitu[i].spacecraft.t11)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoy*insitu[i].spacecraft.t12)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoz*insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu[i].swia.hplus_flow_v_msox*insitu[i].spacecraft.t21)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoy*insitu[i].spacecraft.t22)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoz*insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu[i].swia.hplus_flow_v_msox*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoy*insitu[i].spacecraft.t32)+$
-                                                                                (insitu[i].swia.hplus_flow_v_msoz*insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Z*insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Z*insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Y*insitu[i].spacecraft.t32)+$
+                                                                                (insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Z*insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if coord_sys eq 1 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu[i].swia.hplus_flow_v_msox
-                                                          old_data[1,(i*2)+1] = insitu[i].swia.hplus_flow_v_msoy
-                                                          old_data[2,(i*2)+1] = insitu[i].swia.hplus_flow_v_msoz
+                                                          old_data[0,(i*2)+1] = insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_X
+                                                          old_data[1,(i*2)+1] = insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Y
+                                                          old_data[2,(i*2)+1] = insitu[i].swia.HPLUS_FLOW_VELOCITY_MSO_Z
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, vector_scale
@@ -162,22 +162,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                             'STATIC Pickup Ion Characteristic Direction': begin
                                                                             if coord_sys eq 0 then begin
                                                                               for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                                                old_data[0,(i*2)+1] = (insitu[i].static.dominant_pickup_ion_char_dir_msox*insitu[i].spacecraft.t11)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoy*insitu[i].spacecraft.t12)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoz*insitu[i].spacecraft.t13)
-                                                                                old_data[1,(i*2)+1] = (insitu[i].static.dominant_pickup_ion_char_dir_msox*insitu[i].spacecraft.t21)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoy*insitu[i].spacecraft.t22)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoz*insitu[i].spacecraft.t23)
-                                                                                old_data[2,(i*2)+1] = (insitu[i].static.dominant_pickup_ion_char_dir_msox*insitu[i].spacecraft.t31)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoy*insitu[i].spacecraft.t32)+$
-                                                                                                      (insitu[i].static.dominant_pickup_ion_char_dir_msoz*insitu[i].spacecraft.t33)
+                                                                                old_data[0,(i*2)+1] = (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Z*insitu[i].spacecraft.t13)
+                                                                                old_data[1,(i*2)+1] = (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Z*insitu[i].spacecraft.t23)
+                                                                                old_data[2,(i*2)+1] = (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Y*insitu[i].spacecraft.t32)+$
+                                                                                                      (insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Z*insitu[i].spacecraft.t33)
                                                                               endfor
                                                                             endif
                                                                             if coord_sys eq 1 then begin
                                                                               for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                                                old_data[0,(i*2)+1] = insitu[i].static.dominant_pickup_ion_char_dir_msox
-                                                                                old_data[1,(i*2)+1] = insitu[i].static.dominant_pickup_ion_char_dir_msoy
-                                                                                old_data[2,(i*2)+1] = insitu[i].static.dominant_pickup_ion_char_dir_msoz
+                                                                                old_data[0,(i*2)+1] = insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_X
+                                                                                old_data[1,(i*2)+1] = insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Y
+                                                                                old_data[2,(i*2)+1] = insitu[i].static.DOMINANT_PICKUP_ION_CHARACTERISTIC_DIRECTION_MSO_Z
                                                                               endfor
                                                                             endif
                                                                             MVN_KP_3D_VECTOR_NORM, old_data, vector_scale
@@ -186,22 +186,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                             'SEP Look Direction 1 Front': begin
                                                       if coord_sys eq 0 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu[i].sep.look_direction_1_front_msox*insitu[i].spacecraft.t11)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoy*insitu[i].spacecraft.t12)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoz*insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu[i].sep.look_direction_1_front_msox*insitu[i].spacecraft.t21)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoy*insitu[i].spacecraft.t22)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoz*insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu[i].sep.look_direction_1_front_msox*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoy*insitu[i].spacecraft.t32)+$
-                                                                                (insitu[i].sep.look_direction_1_front_msoz*insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Z*insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Z*insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Y*insitu[i].spacecraft.t32)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Z*insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if coord_sys eq 1 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu[i].sep.look_direction_1_front_msox
-                                                          old_data[1,(i*2)+1] = insitu[i].sep.look_direction_1_front_msoy
-                                                          old_data[2,(i*2)+1] = insitu[i].sep.look_direction_1_front_msoz
+                                                          old_data[0,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_F_MSO_X
+                                                          old_data[1,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Y
+                                                          old_data[2,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_F_MSO_Z
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, vector_scale
@@ -210,22 +210,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                             'SEP Look Direction 1 Back': begin
                                                       if coord_sys eq 0 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu[i].sep.look_direction_1_back_msox*insitu[i].spacecraft.t11)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoy*insitu[i].spacecraft.t12)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoz*insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu[i].sep.look_direction_1_back_msox*insitu[i].spacecraft.t21)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoy*insitu[i].spacecraft.t22)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoz*insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu[i].sep.look_direction_1_back_msox*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoy*insitu[i].spacecraft.t32)+$
-                                                                                (insitu[i].sep.look_direction_1_back_msoz*insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Z*insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Z*insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Y*insitu[i].spacecraft.t32)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Z*insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if coord_sys eq 1 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu[i].sep.look_direction_1_back_msox
-                                                          old_data[1,(i*2)+1] = insitu[i].sep.look_direction_1_back_msoy
-                                                          old_data[2,(i*2)+1] = insitu[i].sep.look_direction_1_back_msoz
+                                                          old_data[0,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_R_MSO_X
+                                                          old_data[1,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Y
+                                                          old_data[2,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_1_R_MSO_Z
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, vector_scale
@@ -234,22 +234,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                             'SEP Look Direction 2 Front': begin
                                                       if coord_sys eq 0 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu[i].sep.look_direction_2_front_msox*insitu[i].spacecraft.t11)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoy*insitu[i].spacecraft.t12)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoz*insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu[i].sep.look_direction_2_front_msox*insitu[i].spacecraft.t21)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoy*insitu[i].spacecraft.t22)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoz*insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu[i].sep.look_direction_2_front_msox*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoy*insitu[i].spacecraft.t32)+$
-                                                                                (insitu[i].sep.look_direction_2_front_msoz*insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Z*insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Z*insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Y*insitu[i].spacecraft.t32)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Z*insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if coord_sys eq 1 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu[i].sep.look_direction_2_front_msox
-                                                          old_data[1,(i*2)+1] = insitu[i].sep.look_direction_2_front_msoy
-                                                          old_data[2,(i*2)+1] = insitu[i].sep.look_direction_2_front_msoz
+                                                          old_data[0,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_F_MSO_X
+                                                          old_data[1,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Y
+                                                          old_data[2,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_F_MSO_Z
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, vector_scale
@@ -258,22 +258,22 @@ pro MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, coord_sys, insit
                             'SEP Look Direction 2 Back': begin
                                                       if coord_sys eq 0 then begin
                                                         for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = (insitu[i].sep.look_direction_2_back_msox*insitu[i].spacecraft.t11)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoy*insitu[i].spacecraft.t12)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoz*insitu[i].spacecraft.t13)
-                                                          old_data[1,(i*2)+1] = (insitu[i].sep.look_direction_2_back_msox*insitu[i].spacecraft.t21)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoy*insitu[i].spacecraft.t22)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoz*insitu[i].spacecraft.t23)
-                                                          old_data[2,(i*2)+1] = (insitu[i].sep.look_direction_2_back_msox*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoy*insitu[i].spacecraft.t31)+$
-                                                                                (insitu[i].sep.look_direction_2_back_msoz*insitu[i].spacecraft.t33)
+                                                          old_data[0,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_X*insitu[i].spacecraft.t11)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Y*insitu[i].spacecraft.t12)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Z*insitu[i].spacecraft.t13)
+                                                          old_data[1,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_X*insitu[i].spacecraft.t21)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Y*insitu[i].spacecraft.t22)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Z*insitu[i].spacecraft.t23)
+                                                          old_data[2,(i*2)+1] = (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_X*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Y*insitu[i].spacecraft.t31)+$
+                                                                                (insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Z*insitu[i].spacecraft.t33)
                                                         endfor
                                                       endif
                                                       if coord_sys eq 1 then begin
                                                        for i=0,n_elements(insitu.spacecraft.geo_x)-1 do begin
-                                                          old_data[0,(i*2)+1] = insitu[i].sep.look_direction_2_back_msox
-                                                          old_data[1,(i*2)+1] = insitu[i].sep.look_direction_2_back_msoy
-                                                          old_data[2,(i*2)+1] = insitu[i].sep.look_direction_2_back_msoz
+                                                          old_data[0,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_R_MSO_X
+                                                          old_data[1,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Y
+                                                          old_data[2,(i*2)+1] = insitu[i].sep.LOOK_DIRECTION_2_R_MSO_Z
                                                         endfor
                                                       endif
                                                       MVN_KP_3D_VECTOR_NORM, old_data, vector_scale

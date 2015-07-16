@@ -50,7 +50,7 @@ pro mvn_kp_define_error_bars, kp_data, level0_index, level1_index, $
 
     'SWEA': $
       begin
-        if temp_tag[1] eq 'electron_spectrum_shape_qual' then begin
+        if temp_tag[1] eq 'electron_spectrum_shape_parameter_qual' then begin
           ; Make this a str match to deal with cases
           ; May wish to make more robust
           print,'Error parameter '+strjoin(temp_tag,'.')+' cannot be plotted.'
