@@ -55,6 +55,11 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
                    + '_v' + string( vnum, format='(i02)') $
                    + '_r' + string( rnum, format='(i02)') + '.sav'
     restore,ascii_template
+    
+    ;The data doesn't start in the same place in every file.
+    ;If you set it to zero, the read_ascii function will automatically
+    ;skip over all the header files and go straight to the data    
+    template.datastart= 0
     orbit = read_ascii( filename, template=template )
 
     ;  Fill the kp_data array with the requested data structures

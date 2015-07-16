@@ -13,28 +13,28 @@ end
 function mvn_kp_read_ut::test_read_insitu_only
   compile_opt strictarr
   ;; Test reading in only INSITU data
-  print,"mvn_kp_read, '2015-04-08/01:00:00' , insitu, /insitu_only"
-  mvn_kp_read, '2015-04-08/01:00:00' , insitu, /insitu_only
-  assert, size(insitu, /N_ELEMENTS) eq 11825, "Wrong number of data points read in"
+  print,"mvn_kp_read, '2015-01-08/01:00:00' , insitu, /insitu_only, /text_files, /unittest"
+  mvn_kp_read, '2015-01-08/01:00:00' , insitu, /insitu_only, /text_files, /unittest
+  assert, size(insitu, /N_ELEMENTS) eq 11671, "Wrong number of data points read in"
    
-  print,"mvn_kp_read, ['2015-04-08/23:58:00', '2015-04-09/00:01:05'] , insitu,  /insitu_only"
-  mvn_kp_read, ['2015-04-08/23:58:00', '2015-04-09/00:01:05'] , insitu,  /insitu_only
-  assert, size(insitu, /N_ELEMENTS) eq 47, "Wrong number of data points read in"
+  print,"mvn_kp_read, ['2015-01-08/23:58:00', '2015-01-09/00:01:05'] , insitu,  /insitu_only, /text_files, /unittest"
+  mvn_kp_read, ['2015-01-08/23:58:00', '2015-01-09/00:01:05'] , insitu,  /insitu_only, /text_files, /unittest
+  assert, size(insitu, /N_ELEMENTS) eq 24, "Wrong number of data points read in"
   insitu=0
   
-  print,"mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only"
-  mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only
-  assert, size(insitu, /N_ELEMENTS) eq 89993, "Wrong number of data points read in"
+  print,"mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /ngims, /static, /insitu_only, /text_files, /unittest"
+  mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /ngims, /static, /insitu_only, /text_files, /unittest
+  assert, size(insitu, /N_ELEMENTS) eq 89773, "Wrong number of data points read in"
   insitu=0
   
-  print,"mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /insitu_all, /insitu_only"
-  mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /insitu_all, /insitu_only
-  assert, size(insitu, /N_ELEMENTS) eq 89993, "Wrong number of data points read in"
+  print,"mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /insitu_all, /insitu_only, /text_files, /unittest"
+  mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /insitu_all, /insitu_only, /text_files, /unittest
+  assert, size(insitu, /N_ELEMENTS) eq 89773, "Wrong number of data points read in"
   insitu=0
   
-  print,"mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only"
-  mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only
-  assert, size(insitu, /N_ELEMENTS) eq 89993, "Wrong number of data points read in"
+  print,"mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /ngims, /static, /insitu_only, /text_files, /unittest"
+  mvn_kp_read, ['2015-01-08/01:00:00', '2015-01-15/17:01:05'] , insitu, /ngims, /static, /insitu_only, /text_files, /unittest
+  assert, size(insitu, /N_ELEMENTS) eq 89773, "Wrong number of data points read in"
 
 return, 1
 end
