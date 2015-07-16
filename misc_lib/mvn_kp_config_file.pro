@@ -31,11 +31,13 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2, check_acce
         endcase
       endif
     endwhile
+    free_lun, lun
     if (private eq '1' || private eq '0') then begin
       return, fix(private)    
     endif else begin
       return, 0
     endelse
+    
   endif
   
   ;; ------------------------------------------------------------------------------------ ;;

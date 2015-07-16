@@ -190,7 +190,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 
     ;; Read or create preferences file 
     
-    if (not unittest) then begin
+    if (not keyword_set(unittest)) then begin
       mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
     endif else begin
       install_result = routine_info('mvn_kp_config_file',/source, /function)
