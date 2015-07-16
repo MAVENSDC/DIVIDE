@@ -132,8 +132,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                  iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, $
                  iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
                  iuvs_stellarocc=iuvs_stellarocc, $
-                 only_update_prefs=only_update_prefs, help=help,$
-                 unittest=unittest
+                 only_update_prefs=only_update_prefs, help=help
                       
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -189,15 +188,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   endif else begin
 
     ;; Read or create preferences file 
-    
-    if (not keyword_set(unittest)) then begin
-      mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)
-    endif else begin
-      install_result = routine_info('mvn_kp_config_file',/source, /function)
-      install_directory = strsplit(install_result.path,'mvn_kp_config_file.pro',/extract,/regex)
-      mvn_root_data_dir = install_directory+path_sep()+'..'+path_sep()+'test'+path_sep()
-    endelse
-    
+    mvn_root_data_dir = mvn_kp_config_file(update_prefs=update_prefs, /kp)    
     kp_insitu_data_directory = mvn_root_data_dir+'maven'+path_sep()$
       +'data'+path_sep()+'sci'+path_sep()$
       +'kp'+path_sep()+'insitu'+path_sep()
