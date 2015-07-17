@@ -35,14 +35,19 @@ function mvn_kp_insitu_search_ut::test_insitu_search_list
   ;; Ignore header
   while not eof(lun2) do begin
     line1 = ''
-    line2 = ''
     readf,lun2,line1
-    readf,lun1,line2
     if line1 eq ';Fields available for searching are as follows' then break
+  endwhile
+  
+  while not eof(lun1) do begin
+    line2 = ''
+    readf,lun1,line2
+    if line2 eq ';Fields available for searching are as follows' then break
   endwhile
   
   ;; Make sure we found the end of the header
   assert, line1 eq ';Fields available for searching are as follows', "Problem parsing header of list output"
+  assert, line2 eq ';Fields available for searching are as follows', "Problem parsing header of list output"
   
   ;; Compare line by line
   while not eof(lun2) do begin
