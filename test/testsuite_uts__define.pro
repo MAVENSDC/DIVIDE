@@ -34,7 +34,7 @@ function testsuite_uts::init, _extra=e
   install_directory = strsplit(install_result.path,'mvn_kp_read_ut__define.pro',/extract,/regex)
   install_directory = install_directory+path_sep()+'..'+path_sep()
   if file_test(install_directory+'mvn_toolkit_prefs.txt') then begin
-    file_move, install_directory+'mvn_toolkit_prefs.txt', install_directory+'mvn_toolkit_prefs.txt.bak'
+    ;file_move, install_directory+'mvn_toolkit_prefs.txt', install_directory+'mvn_toolkit_prefs.txt.bak'
   endif
 
   ;; Create a config file pointing to the root data dir
