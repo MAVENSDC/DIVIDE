@@ -72,24 +72,24 @@ function mvn_kp_insitu_search_ut::test_insitu_search_param_string
   compile_opt strictarr
   
   ;; Read in data to search against
-  mvn_kp_read, ['2015-04-07/01:00:00', '2015-04-09/18:02:00'] , insitu, /insitu_only
+  mvn_kp_read, ['2014-10-07/01:00:00', '2014-10-09/18:02:00'] , insitu, /insitu_only, /text_files
   
   ;; Test searching based on one param string with min, max, min&max
   insitu_out=0
   mvn_kp_insitu_search,insitu,insitu_out,parameter='SPACECRAFT.ALTITUDE', max=200
-  assert, size(insitu_out, /N_ELEMENTS) eq 1676, "Wrong number of records returned from search"
+  assert, size(insitu_out, /N_ELEMENTS) eq 1094, "Wrong number of records returned from search"
   
   insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter='STATIC.CO2PLUS_DENSITY', max=.000001
-  assert, size(insitu_out, /N_ELEMENTS) eq 7213, "Wrong number of records returned from search"
+  mvn_kp_insitu_search,insitu,insitu_out,parameter='STATIC.HPLUS_CHARACTERISTIC_ENERGY', max=800
+  assert, size(insitu_out, /N_ELEMENTS) eq 11679, "Wrong number of records returned from search"
 
   insitu_out=0
   mvn_kp_insitu_search,insitu,insitu_out,parameter='spacecraft.sub_sc_latitude', min=70
-  assert, size(insitu_out, /N_ELEMENTS) eq 1536, "Wrong number of records returned from search"
+  assert, size(insitu_out, /N_ELEMENTS) eq 884, "Wrong number of records returned from search"
   
   insitu_out=0
   mvn_kp_insitu_search,insitu,insitu_out,parameter='spacecraft.sub_sc_latitude', min=50, max=65
-  assert, size(insitu_out, /N_ELEMENTS) eq 2292, "Wrong number of records returned from search"
+  assert, size(insitu_out, /N_ELEMENTS) eq 1833, "Wrong number of records returned from search"
    
   return, 1
 end
@@ -98,20 +98,20 @@ function mvn_kp_insitu_search_ut::test_insitu_search_multiple_param
   compile_opt strictarr
   
   ;; Read in data to search against
-  mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-09/01:00:00'] , insitu, iuvs
+  mvn_kp_read, ['2014-10-05/01:00:00', '2014-10-09/01:00:00'] , insitu, iuvs, /text_files
   
   ;; Test searching multiple paramaters at once
   insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter=[1, 73], max=[4000,6000]
-  assert, size(insitu_out, /N_ELEMENTS) eq 7496, "Wrong number of records returned from search"
+  mvn_kp_insitu_search,insitu,insitu_out,parameter=[202, 78], max=[4000,6000]
+  assert, size(insitu_out, /N_ELEMENTS) eq 6021, "Wrong number of records returned from search"
 
   insitu_out=0
   mvn_kp_insitu_search,insitu,insitu_out,parameter=['NGIMS.NPLUS_DENSITY', 'SPACECRAFT.SZA', 'SEP.ION_ENERGY_FLUX_2_FRONT'] ,min=[-1,5,-1], max=[4000,5000, 1000]
   assert, insitu_out eq 0, "Wrong number of records returned from search"
   
   insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter=[185, 186,190], min=[-1,-1,-4], max=10
-  assert, size(insitu_out, /N_ELEMENTS) eq 1380, "Wrong number of records returned from search"
+  mvn_kp_insitu_search,insitu,insitu_out,parameter=[186,190], min=[-1,-4], max=10
+  assert, size(insitu_out, /N_ELEMENTS) eq 46491, "Wrong number of records returned from search"
   
   return, 1
 end
