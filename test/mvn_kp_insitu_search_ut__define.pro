@@ -17,7 +17,9 @@ function mvn_kp_insitu_search_ut::test_insitu_search_list
   
   ;; Test listing insitu parameters that can be searched on
   ;; Compare output line by line against known good output
-  test_journal = getenv('MVN_TEST_JOURNAL')
+  install_result = routine_info('mvn_kp_insitu_search_ut__define',/source)
+  install_directory = strsplit(install_result.path,'mvn_kp_insitu_search_ut__define.pro',/extract,/regex)
+  test_journal = install_directory+path_sep()+'known_files'+path_sep()+'actual_list.txt'
   journal, test_journal
   mvn_kp_insitu_search,insitu,insitu_out,/list
   journal
@@ -46,7 +48,7 @@ function mvn_kp_insitu_search_ut::test_insitu_search_list
   while not eof(lun2) do begin
     readf, lun1, line1
     readf, lun2, line2
-    assert, line1 eq line2, "Output of /list incorrect"
+    assert, line1 eq line2, "Output of /list incorrect:   LINE 1: " + line1 + "   LINE 2:  " + line2
   endwhile
   
   return, 1
