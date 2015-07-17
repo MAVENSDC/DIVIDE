@@ -13,7 +13,7 @@ function mvn_kp_insitu_search_ut::test_insitu_search_list
   compile_opt strictarr
   
   ;; Read in data to search against
-  mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-05/02:00:00'] , insitu, /insitu_only
+  mvn_kp_read, ['2014-10-05/01:00:00', '2014-10-05/02:00:00'] , insitu, /insitu_only, /text_files
   
   ;; Test listing insitu parameters that can be searched on
   ;; Compare output line by line against known good output
