@@ -58,20 +58,12 @@ function mvn_kp_insitu_search_ut::test_insitu_search_param_num
   compile_opt strictarr
   
   ;; Read in data to search against
-  mvn_kp_read, ['2015-04-05/01:00:00', '2015-04-06/02:00:00'] , insitu, /insitu_only
+  mvn_kp_read, ['2014-10-05/01:00:00', '2014-10-06/02:00:00'] , insitu, /insitu_only, /text_files
 
   ;; Test searching based on one param number with min, max, min&max
   insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter=181,min=1000
-  assert, size(insitu_out, /N_ELEMENTS) eq 9535, "Wrong number of records returned from search"
-  
-  insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter=18,max=5
-  assert, size(insitu_out, /N_ELEMENTS) eq 2042, "Wrong number of records returned from search"
-  
-  insitu_out=0
-  mvn_kp_insitu_search,insitu,insitu_out,parameter=5,min=1,max=10
-  assert, size(insitu_out, /N_ELEMENTS) eq 127, "Wrong number of records returned from search"
+  mvn_kp_insitu_search,insitu,insitu_out,parameter=202,min=1000
+  assert, size(insitu_out, /N_ELEMENTS) eq 9853, "Wrong number of records returned from search"
     
   return, 1
 end

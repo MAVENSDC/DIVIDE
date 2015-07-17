@@ -96,7 +96,7 @@ function mvn_kp_read_ut::test_read_inbound_flag
   ;; Test inbound flag & instruments
   print,"mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound, /text_files"
   mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound, /text_files
-  assert, size(insitu, /N_ELEMENTS) eq 5768, "Wrong number of insitu data points read in"
+  assert, size(insitu, /N_ELEMENTS) eq 5769, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 5, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0

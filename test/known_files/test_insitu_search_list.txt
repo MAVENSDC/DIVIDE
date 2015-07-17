@@ -3,7 +3,6 @@
 ; Working directory: C:\Users\harter
 ; Date: Fri Jul 17 10:20:52 2015
  
-mvn_kp_insitu_search,insitu,insitu_out,/list
 ;Fields available for searching are as follows
 ;*********************************************
 ;INSITU DATA SET VARIABLES
