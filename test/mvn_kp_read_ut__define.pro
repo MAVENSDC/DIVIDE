@@ -241,7 +241,7 @@ function mvn_kp_read_ut::test_read_ascii_orbit_number_input
   print,"mvn_kp_read, [20,150] , insitu, iuvs, /text_files"
   mvn_kp_read, [20,150] , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 294066, "Wrong number of insitu data points read in" 
-  assert, iuvs eq 18, "Wrong number of IUVS data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 18, "Wrong number of IUVS data points read in"
   
   return, 1
 end
