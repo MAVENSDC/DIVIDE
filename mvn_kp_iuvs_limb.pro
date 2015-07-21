@@ -39,6 +39,8 @@
 ;       logarithmic default
 ;    oo: out, optional, object
 ;       Variable to which plot object may be passed to $MAIN$.
+;    leg: out, optional, object
+;       Variable to which legend object may be passed to $MAIN$.
 ;    species_expand: in, optional, byte
 ;       if this keyword is selected, then all the species for a given orbit 
 ;       will be plotted on a single graph
