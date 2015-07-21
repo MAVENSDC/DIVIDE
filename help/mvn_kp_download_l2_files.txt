@@ -1,45 +1,93 @@
-****************************
-* MVN_KP_DOWNLOAD_L2_FILES *
-****************************
+ :Name: mvn_kp_download_l2_files
 
-  Download level 2 data files from the Maven SDC web service for any instrument.
-
-mvn_kp_download_l2_files, instruments=instruments, filenames=filenames, $
-                          list_files=list_files, start_date=start_date, $
-                          end_date=end_date, new_files=new_files, $
-                          update_prefs=update_prefs, $
-                          only_update_prefs=only_update_prefs, $
-                          debug=debug, help=help
-
-OPTIONAL FIELDS
-***************
-  instruments: Scalar or array of instruments (three letter representations) 
-               of l2 data to download/list
-  filenames: Scalar or array of filename strings to download. 
-             If used, /new_files keyword is ignored.
-  list_files: Print to standard output a list of files 
-              instead of actually downloading
-  new_files: Only download files you do not already have saved locally
-  start_date: Beginning of time range to search/download files. 
-              Format="YYYY-MM-DD"   
-  end_date: End of time range to search/download files. 
-            Format="YYYY-MM-DD"
-  update_prefs: Before searching or downloading data, allow user to 
-                update mvn_toolkit_prefs.txt - which contains paths to the 
-                root data directory. After selecting new path to data folders,
-                search or download of data files will continue.
-  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains 
-                     paths to the root data directory.  
-                     After selecting new path to data folders, procedure 
-                     will return - not downloading any data.
-  exclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov
-  debug: On error, - "Stop immediately at the statement that caused the error 
-                      and print the current program stack." 
-         If not specified, error message will be printed and 
-         IDL with return to main program level and stop.
-  help: Invoke this list.
+ :Author: John Martin
 
 
-Note- One can override the preferences file by setting the 
-      environment variable ROOT_DATA_DIR
+ :Description:
+     Download level 2 data files from the Maven SDC web service for any instrument. 
 
+
+ :Keywords:
+    instruments: in, required, type=string or strarr
+       Scalar or array of instruments (three letter representations) of l2 data to download/list
+       
+    filenames: in, optional, type=string or strarr
+       Scalar or array of filename strings to download. If used, /new_files keyword is ignored.
+
+    list_files: in, optional, type=boolean
+       Print to standard output a list of files instead of actually downloading
+
+    new_files: in, optional, type=boolean
+       Only download files you don't already have saved locally. This option is ignored if specific
+       filenames are input via the filenames keyword.
+       
+    start_date: in, optional, type=string
+       Beginning of time range to search/download files. Format='YYYY-MM-DD'
+
+    end_date: in, optional, type=string
+       End of time range to search/download files. Format='YYYY-MM-DD'
+       
+    update_prefs: in, optional, type=boolean
+       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
+       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
+       search or download of data files will continue.
+
+    only_update_prefs: in, optional, type=boolean
+       Allow user to update mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR.
+       After selecting new paths to data folders, procedure will return - not
+       downloading any data.
+
+    exclude_orbit_file: in, optional, type=boolean
+       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
+
+    debug: in, optional, type=boolean
+       On error, - "Stop immediately at the statement that caused the error and print
+       the current program stack." If not specified, error message will be printed and
+       IDL with return to main program level and stop.
+
+
+  Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR
+ 
+ 
+   Directory structure that will be created under <root_data_dir>/ (user chooses top root_data_dir):
+   
+   <root_data_dir>/maven/data/sci/
+   |
+   --sta/
+      |
+      --l2/
+   --sep/
+      |
+      --l2/
+   --swi/
+      |
+      --l2/
+   --swe/
+      |
+      --l2/
+   --lpw/
+      |
+      --l2/
+   --mag/
+      |
+      --l2/
+   --iuv/
+      |
+      --l2/
+   --ngi/
+      |
+      --l2/
+   --euv/
+      |
+      --l2/
+   --acc/
+      |
+      --l2/
+   --kp/
+      |
+      --insitu/
+      --iuvs/
+
+
+   Credit to Doug Lindholm for initial version of this procedure.
+-

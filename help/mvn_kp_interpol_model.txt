@@ -1,24 +1,32 @@
-*************************
-* MVN_KP_INTERPOL_MODEL *
-*************************
+ Function to return the model output interpolated to a given spacecraft 
+ trajectory
 
-This function interpolates a given model result to a spacecraft trajectory
-  contained within a given insitu KP data structure.
+ :Author: Kevin McGouldrick (2015-Apr-15)
 
-mvn_kp_interpol_model, kp_data, model, output, $
-                       grid3=grid3, nearest_neighbor=nearest_neighbor, $
-                       help=help
+ :Description:
+     Parse a NetCDF file with modeled data results and return in three data
+     structures.  In order to work correctly with the toolkit, modeled
+     data must conform to our modeled results file requirements
+     - FIXME say where this is hosted.
 
-REQUIRED FIELDS
-**************
-  kp_data: In-situ Key Parameter Data Structure
-  model: Structure containing model metadata, dimension info, and data
-         for a given model simulation.
-  output: destimation of the interpolated model parameters data structure
+ :Keywords:
+    kp_data: in, required, type=struct
+       Key Parameter data file containing spacecraft trajectory information.
 
-OPTIONAL FIELDS
-***************
-  grid3: flag to interpolate using IDL's grid3 function
-  nearest_neighbor: flag to interpolate using nearest neighbor approximation.
-  help: Invoke this list.
+    model_meta: in, required, type=struct
+       Structure containing relevant model metadata.
 
+    model_dims: in, required, type=struct
+       Structure containing relevant model dimension information.
+
+    model_data: in, required, type=struct
+       Structure containing relevant model data.
+       
+    help: optional: opens a window describing the function
+
+  :Returns:
+    model_interpol: out, type=TBD
+       Object containing the model tracers interpolated to the provided 
+       spacecraft trajectory from the kp_data
+
+-

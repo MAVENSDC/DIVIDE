@@ -1,42 +1,54 @@
-******************
-* MVN_KP_ALTPLOT *
-******************
 
-  This simple routine plots one or more altitude profiles 
-  from the insitu KP data structure.
-  Any data fields may be plotted together, on individual or single plots, 
-  using both direct and function graphics.
+ :Name: mvn_kp_altplot
+ 
+ :Author: Kristopher Larsen
+   
+ :Description:
+   This simple routine plots one or more altitude profiles from the insitu 
+   KP data structure.  Any data fields may be plotted together, on 
+   individual or single plots, using both direct and function graphics. 
 
-mvn_kp_altplot, kp_data, parameter, time=time, list=list, range=range, $
-              title=title,thick=thick,linestyle=linestyle,symbol=symbol,$
-              directgraphic=directgraphic, xlog=xlog, ylog=ylog, $
-              xrange=xrange, yrange=yrange,$
-              davin=davin, y_labels=y_labels, _extra = e, help=help
+ :Params:
+    kp_data: in, required, type=structure
+       the INSITU KP data structure from which to plot data
+    parameter: in, required, type=strarr,intarr
+       the INSITU kp data fields to plot, maybe an integer or string array 
+       for multiple choices
+    time: in, optional, can be a scalar or a two item array of type:
+         long(s)        orbit number
+         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+       A start or start & stop time (or orbit #) range for reading kp data. 
+ 
+ :Keywords:
+    list: in, optional, type=boolean
+       Used to print out the contents of the input data structure.
+           If set as a keyword, /list, this is printed to the screen.
+           If set as a variable, list=list, a string array is returned 
+           containing the structure index and tag names.
+    range: in, optional, type=boolean
+       if selected, will list the beginning and end times of kp_data
+    oo: out, optional
+       if provided, the name of the variable to which the plot created
+       will be assigned.  Ignored if /directgraphic is also set.
+    directgraphic: in, optional, type=boolean
+       if selected, will override teh default Graphics plot procedure and 
+       use direct graphics instead
+    davin: in, optional, type=boolean
+       As requested by Davin Larson, this keyword will flip the X and Y 
+       axis of each plot.
 
-REQUIRED FIELDS
-**************
-  kp_data: In-situ Key Parameter Data Structure
-  parameter: Key Parameter value to be plotted. 
-             Either name or index. Single or multiple. 
-             See User Guide for more details.
+ :Obsolete:
+    The following are kept in case we wish to return this functionality
 
-OPTIONAL FIELDS
-***************
-  time: Range of times to plot.
-  list: Display list of parameters in the data structure.
-  range: Display the beginning and end times of the data structure.
-  title: Optional overall plot title.
-  thick: Set the thickness of the plotted line.
-  linestyle: Use the IDL linestyles for plotting.
-  symbol: Use IDL symbols for plotting.
-  directgraphic: Override the default Function Graphics and use direct graphics.
-  xlog: Plot on a logarthmic axis (X).
-  ylog: Plot on a logarthmix axis (Y).
-  xrange: Set the displayed x-axis range.
-  yrange: Set the displayed y-axis range.
-  davin: Swap the X and Y axes so that altitude is shown as the dependent variable.
-  x_labels: Change the displayed X-axis labels.
-  y_labels: Change the displayed Y-axis labels.
-  _extra: Use any of the other IDL graphics options.
-  help: Invoke this list.
+    xrange: in, optional, type=fltarr
+       Minimum and maximum range for the x-axis. If multiple plots are
+       included, the number of xrange arrays must match.
+    yrange: in, optional, type=fltarr
+       Minimum and maximum range for the y-axis. If multiple plots are
+       included, the number of yrange arrays must match.
 
+ :Version:   1.1 (2015-Apr 28) McGouldrick  
+
+ :History:
+   v1.0 (July 8, 2014)
+-

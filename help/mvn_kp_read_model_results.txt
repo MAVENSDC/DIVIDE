@@ -1,0 +1,29 @@
+ Modeled data netcdf reader for toolkit
+
+ :Author: John Martin
+ 
+ :Description:
+     Parse a NetCDF file with modeled data results and return in three data 
+     structures.  In order to work correctly with the toolkit, modeled 
+     data must conform to our modeled results file requirements 
+     - FIXME say where this is hosted.
+     
+ :Keywords:
+    file: in, required, type=string or strarr
+       Scalar of path & filename of NetCDF file
+
+    output: out, required, type=struct
+       Output named variable containing three substructures: 
+        - a struct with meta information about the modeled results.
+        - a struct with dimension information about the modeled results.
+        - a struct containing an array of pointers where each 
+          element is one modeled species (stored in a struct with 'name' 
+          and 'data' tags).
+
+ :History:
+   v1.0 (John Martin)
+   Original version generates three structures
+   
+ :Version: 1.1 (McGouldrick) 2015-Jun-12
+ 
+-

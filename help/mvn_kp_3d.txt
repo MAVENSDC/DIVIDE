@@ -1,69 +1,98 @@
-*************
-* MVN_KP_3D *
-*************
-
-Interactive 3D visualization of MAVEN spacecraft trajectory and 
-insitu/iuvs KP parameters.'
-
-pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
-               cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
-               field=field, color_table=color_table, bgcolor=bgcolor, $
-               plotname=plotname, color_bar=color_bar,axes=axes,$
-               whiskers=whiskers,parameterplot=parameterplot,$
-               periapse_limb_scan=periapse_limb_scan, direct=direct, $
-               ambient=ambient,view_size=view_size, camera_view=camera_view, $
-               mso=mso, sunmodel=sunmodel, optimize=optimize, $
-               initialview=initialview, drawid=drawid, $
-               scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, $
-               speckle=speckle, help=help
+ :Name: mvn_kp_3d
  
-REQUIRED INPUTS
-***************
-  insitu: MAVEN In-situ KP data structure.
+ :Author: Kristopher Larsen
+ 
+ :Description: 
+   Interactive 3D visualization of MAVEN spacecraft trajectory 
+   and insitu/iuvs KP parameters.
 
-OPTIONAL KEYWORDS
-*****************
-  iuvs: MAVEn IUVS KP data structure
-  time: time range to display in visualization.  If scalar is provided, it
-        is interprested as either an orbit (int), or a date (string).  If
-        a two-element vector is given, they are interpreted as start and 
-        end times of data to ingest.  If a three-element array is given, 
-        the middle time is chosen to be the display when the widget opens.
-  list: if selected, will list the KP data fields included in kp_data.
-  range: if selected, will list the beginning and end times of kp_data.
-  subsolar: if selected, will plot the subsolar location with a yellow disk.
-  sunmodel: if selected, will plot the Mars-Sun vector as a yellow line.
-  submaven: if selected, will plot the sub S/C location with a blue disk.
-  grid: if selected, overplot a lat/lon grid with 30/45 deg res respectively
-  mso: if selected, plot the S/C track and data in MSO coordinates.
-  axes: if selected, plot the XYZ axes in the widget window.  MSO or GEO.
-  optimize: For large data structures, the plotting of the orbital track can 
-            get very slow. This keyword decimates the track to a managable size.
-  direct: Generate visualization in direct graphics; but with no 
-          interactive capabilities.
-  basemap: The name of the basemap to display on which the data will be plotted
-           If not included, a basic lat/lon grid is shown
-           Choices include:
-          'MDIM': The Mars Digital Image Model.
-          'MOLA': Mars Topography in color.
-          'MOLA_BW': Mars topography in black and white.
-          'MAG':  Mars crustal magnetism.
-          'DUST': IUVS Apopase Dust index image.
-          'OZONE': IUVS Apopase Ozone index image.
-          'RAD_H': IUVS Apopase H Radiance image.
-          'RAD_O': IUVS Apopase O Radiance image.
-          'RAD_CO': IUVS Apopase CO Radiance image.
-          'RAD_NO': IUVS Apopase NO Radiance image.
-          'USER': User definied basemap. Will open a file dialog window. 
-  color_table: 1 or 4 element integer to provide color table info.
-  bgcolor: 1 or 3 element byte to provide background color
-  color_bar: 3-element byte to define text color in plotting subwindow
-  ambient: Define the intensity of the flashlight that mimics sunlight.
-  initialview: Define the initial view of the planet.  The fields are:
-               latitude, longitude, radius [,x offset, y offset]
-  scale_factor: Scale down the widget window for smaller screens.  
-  spacecraft_scale: Change the scale size of the MAVEn S/C. 
-                    Default value is 0.03
+ :Params:
+    insitu: in, required, type=structure
+       This is the full or maniuplated MAVEN KP insitu data structure. 
+       At a minimum, it must contain the SPACECRAFT substructure.
+    iuvs: in, optional, type=structure
+    time: in, optional, 
+       can be a scalar or a two or three item array of type:
+         long(s)        orbit number
+         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+       If only one time provided, that defines the initial display point of 
+       the visualization.
+       Two times provided are assumed to be start and stop times.
+       Three times provided are start/display/stop times.
+    
+    basemap: in, optional, type=string
+       the name of the basemap to display. If not included, then lat/lon
+       grid is shown .
+         'MDIM': The Mars Digital Image Model.
+         'MOLA': Mars Topography in color.
+         'MOLA_BW': Mars topography in black and white.
+         'MAG':  Mars crustal magnetism.
+         'DUST': IUVS Apopase Dust index image.
+         'OZONE': IUVS Apopase Ozone index image.
+         'RAD_H': IUVS Apopase H Radiance image.
+         'RAD_O': IUVS Apopase O Radiance image.
+         'RAD_CO': IUVS Apopase CO Radiance image.
+         'RAD_NO': IUVS Apopase NO Radiance image.
+         'USER': User definied basemap. Will open a file dialog window
+                 to select the image.
+    field: in, optional, type=string
+       The name of the field to initiall plot in the widget window
+    minimum: in, optional, type=float
+       THe minimum value to assign to color level 0
+    maximum: in, optional, type=float
+       The maximum value to assign to color level 255
+    bgcolor: in, optional, type=byte or bytarr(3)
+       Define the background color for the widget window.
+       If single byte value, assign a gray between 0(black) and 255(white)
+       If three-element bytarr, it is the RGB color vector
+    color_bar: in, optional, type=bytearr(3) or boolean
+       If provided as a boolean, display color bar upon opening window.
+       Define the text color for the color bar in the plotting subwindow
+       as an RGB vector.
+    parameterplot: in, optional, type=boolean or structure
+       If boolean, display the chosen parameter or S/C altitude at the 
+       bottom of the widget window.
+       If a structure, it provides the information to create the plot
+    ambient: in, optional, type=float
+       Define the intensity of the flashlight that mimics sunlight.
+       Be aware, a setting of 0.0 does NOT create a crisp terminator.
+    initialview: in, optional, type=fltarr(3) or fltarr(5)
+       Define the initial view of the planet.  The fields are:
+       latitude, longitude, radius [,x offset, y offset]
+    scale_factor: in, optional, type=float
+       Scale down the widget window for smaller screens.  As of now, this 
+       also reduces button sizes, so a small enough value could render 
+       the widget unuseable.
+    spacecraft_scale: in, optional, type=float
+       Change the scale size of the MAVEn S/C.  Default value is 0.03
+       
+ :Keywords:
+    list: in, optional, type=boolean
+       if selected, will list the KP data fields included in kp_data.
+    range: in, optional, type=boolean
+       if selected, will list the beginning and end times of kp_data.
+    subsolar: in, optional, type=boolean
+       if selected, will plot the subsolar point with a yellow disk.
+    sunmodel: in, optional, type=boolean
+       if selected, will plot the Mars-Sun vector as a yellow line.
+    submaven: in, optional, type=boolean
+       if selected, will plot the sub S/C point with a blue disk.
+    grid: in, optional, type=boolean
+       if selected overplot lat/lon grid with 30/45 deg res respectively
+    mso: in, optional, type=boolean
+       if selected, plot the S/C track and data in MSO coordinates
+    axes: in, optional, type=boolean
+       if selected, plot the XYZ axes in the widget window.  MSO or GEO.
+    log: in, optional, type=boolean
+       if selected, use log scale for all visualizations
+    optimize: in, optional, type=boolean
+       For large data structures, the plotting of the orbital track can
+       get very slow. This keyword decimates the track to a managable size.
+    direct: in, optional, type=boolean
+       if selected, create direct graphics plots with no widget ability.
+    help: Invoke this list.
 
-  help: Invoke this list.
-
+  :Obsolete:
+    drawid: Undetermined and unused keyword or parameter
+    speckle: Undetermined and unused keyword or parameter
+-

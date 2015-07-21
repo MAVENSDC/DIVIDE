@@ -1,37 +1,43 @@
-***************
-* MVN_KP_PLOT *
-***************
 
-This is a very basic routine to plot time series data from a 
-MAVEN in-situ Key Parameter data structure.
+ :Name: mvn_kp_plot
+ 
+ :Author: Kristopher Larsen
+ 
+ :Description:
+   This is a very basic routine to plot time series data from a MAVEN 
+   in-situ Key Parameter data structure.
 
-mvn_kp_plot, kp_data, parameter, $
-             error=error, time=time, list=list, range=range, title=title, $
-             thick=thick, linestyle=linestyle, symbol=symbol, $
-             directgraphic=directgraphic, log=log, yrange=yrange, $
-             y_labels=y_labels, _extra=e, help=help
+ :Params:
+    kp_data: in, required, type=structure
+       the INSITU KP data structure from which to plot data.
+    parameter: in, required, type=strarr,intarr
+       the INSITU kp data fields to plot, may be an integer or string 
+       array for multiple choices.
+       use ['name1, name2', 'name3, name4] to create two plots with two 
+       data parameters on each.
 
-REQUIRED FIELDS
-**************
-  kp_data: In-situ Key Parameter Data Structure
-  parameter: Key Parameter value to be plotted. Either name or index. Single or multiple. See User Guide for more details.
-
-OPTIONAL FIELDS
-*************** 
-  oo: The name of the variable to which the plot created
-      will be assigned.  Ignored if /directgraphic is also set.
-  error: Associated error bars to plot.
-  time: Range of times to plot.
-  list: Display list of parameters in the data structure.
-  range: Display the beginning and end times of the data structure.
-  title: Optional overall plot title.
-  thick: Set the thickness of the plotted line.
-  linestyle: Use the IDL linestyles for plotting.
-  symbol: Use IDL symbols for plotting.
-  directgraphic: Override the default Function Graphics and use direct graphics.
-  log: Plot on a logarthmic axis (y).
-  yrange: Set teh displayed y-axis range.
-  y_labels: Change the displayed Y-axis label.
-  _extra: Use any of the other IDL graphics options.
-  help: Invoke this list.
-
+ :Keywords:
+    time: in, required, can be a scalar or a two item array of type:
+         long(s)        orbit number
+         string(s)      format:  YYYY-MM-DD/hh:mm:ss
+       A start or start & stop time (or orbit #) range for reading kp data.
+    list: in, optional, type=boolean or variable
+       if selected, will list the KP data fields included in kp_data.
+       If /list, the output will be printed to the screen.
+       If list=list then the structure indices and tag names will be a
+       string array.
+    range: in, optional, type=boolean
+       if selected, will list the beginning and end times of kp_data.
+    directgraphic: in, optional, type=boolean
+       if selected, will override the default Graphics plot procedure and
+       use direct graphics instead.
+    oo: out, optional
+       if provided, the name of the variable to which the plot created
+       will be assigned.  Ignored if /directgraphic is also set.
+    error: in, optional, type=strarr, intarr
+       If included, these are the KP data fields that are the error
+       measurements on each parameter to be plotted.       
+       
+       
+ :Version:   1.0    July 8, 2014
+-

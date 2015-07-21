@@ -1,92 +1,120 @@
-****************
-* MVN_KP_MAP2D *
-****************
 
-    This routine will produce a 2d map of Mars, either in planetocentric or 
-    the MSO coordinate system, with the MAVEN orbital projection and a variety 
-    of basemaps (including IUVS Apoapse images when available). The spacecraft 
-    orbital path may be colored by a given insitu Key Parameter data value. 
-    Additionally, IUVS single point observations may be displayed as well.
+ :Name: mvn_kp_map2d
+ 
+ :Author: Kristopher Larsen
+ 
+ :Description:
+   This routine will produce a 2d map of Mars, either in planetocentric 
+   or the MSO coordinate system, with the MAVEN orbital projection and 
+   a variety of basemaps (including IUVS Apoapse images). The spacecraft's 
+   orbital path may be colored by a given insitu Key Parameter data value. 
+   Additionally, IUVS single point observations may be displayed as well. 
 
-mvn_kp_map2d, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
-              list=list, basemap=basemap, colors=colors, range=range, $
-              subsolar=subsolar,alpha=alpha, mso=mso, nopath=nopath, $
-              periapse_temp=periapse_temp, optimize=optimize, direct=direct, $
-              log=log, i_colortable=i_colortable, $
-              corona_lo_dust=corona_lo_dust, $
-              corona_lo_ozone=corona_lo_ozone, $
-              corona_lo_aurora=corona_lo_aurora, $
-              corona_lo_h_rad=corona_lo_h_rad, $
-              corona_lo_co_rad=corona_lo_co_rad, $
-              corona_lo_no_rad=corona_lo_no_rad, $
-              corona_lo_o_rad=corona_lo_o_rad, $
-              corona_e_h_rad=corona_e_h_rad, corona_e_d_rad=corona_e_d_rad, $
-              corona_e_o_rad=corona_e_o_rad, map_limit=map_limit, $
-              map_location=map_location, apoapse_blend=apoapse_blend, $
-              apoapse_time=apoapse_time, minimum=minimum, maximum=maximum, $
-              help=help
-
-REQUIRED FIELDS
-**************
-  kp_data: In-situ Key Parameter Data Structure
-
-OPTIONAL FIELDS
-***************
-  Parameter: IN-situ Key Parameter by which to color the spacecraft trajectory. 
-             If not provided, only the altitude of the orbital track is shown.
-  minimum: Minimum value of parameter to display
-  maximum: Maximum value of parameter to display
-  iuvs: The IUVS data structure, needed if the user wishes to plot IUVS data.
-  time: Range of times (or orbit(s)) to be plotted.
-  basemap: The name of the basemap to display on which the data will be plotted
-           If not included, a basic lat/lon grid is shown
-           Choices include:
-          'MDIM': The Mars Digital Image Model.
-          'MOLA': Mars Topography in color.
-          'MOLA_BW': Mars topography in black and white.
-          'MAG':  Mars crustal magnetism.
-          'DUST': IUVS Apopase Dust index image.
-          'OZONE': IUVS Apopase Ozone index image.
-          'RAD_H': IUVS Apopase H Radiance image.
-          'RAD_O': IUVS Apopase O Radiance image.
-          'RAD_CO': IUVS Apopase CO Radiance image.
-          'RAD_NO': IUVS Apopase NO Radiance image.
-          'USER': User definied basemap. Will open a file dialog window. 
-  ** The following three fields are accepted at all times, but can result
-  ** in conflicts if using an existing map projection.  Use with caution
-  ** when not using a user-defined basemap.
-  map_limit: Provide bounds on plotted map region [lllat,llon,urlat,urlon]
-  map_location: Define location of basemap [lllat, lllon]
-  map_projection: Define an IDL map projection type by name
-  colors: the name ('bw', 'red') or index of the color table to use when 
-          plotting the selected parameter.
-  alpha: transparency of the basemap between 0(opaque) and 
-         100(transparent), defaults to 0 (opaque).  
-  list: if selected, will list the KP data fields included in kp_data.
-  range: if selected, will list the beginning and end times of kp_data.
-  nopath:  This will suppress the display of the spacecraft orbital 
-           track projection.
-  periapse_temp: If included, the IUVS periapse temperature measurements will 
-                 be plotted on the map along with the spacecraft track.
-  optimize: For large data structures, the plotting of the orbital track can 
-            get very slow. This keyword decimates the track to a managable size.
-  direct: Forces the use of direct graphics instead of function (buggy)
-  log: Colors the spacecraft track with a logarithmic stretch instead of linear.
-  subsolar: in selected, will plot the subsolar track.
-  mso: switch between GEO and MSO map projections. Basemaps are not projected 
-       into MSO coordinate systems so will display only as lat/long grids.
-  corona_lo_dust: Plots the IUVS Lo-Res coronal dust depth measurements. 
-  corona_lo_ozone: Plots the IUVS Lo-Res coronal ozone depth measurements. 
-  corona_lo_aurora: Plots the IUVS Lo-Res coronal auroral index measurements. 
-  corona_lo_h_rad: Plots the IUVS Lo-Res coronal H radiance measurements.   
-  corona_lo_co_rad: Plots the IUVS Lo-Res coronalCO radiance measurements. 
-  corona_lo_no_rad: Plots the IUVS Lo-Res coronal NO radiance measurements. 
-  corona_lo_o_rad: Plots the IUVS Lo-Res coronal O radiance measurements. 
-  corona_e_h_rad: Plots the IUVS Echelle coronal H Radiance measurements. 
-  corona_e_d_rad: Plots the IUVS Echelle coronal D Radiance measurements. 
-  corona_e_o_rad: Plots the IUVS Echelle coronal O Radiance measurements. 
-  apoapse_blend: If an IUVS apaopase image is selected as the basemap, this 
-                 keyword will average all images into a single basemap, 
-                 instead of plotting only a single image. 
-  apoapse_time:  Time of an IUVS Apoapse image to display
-  help: Invoke this list.
+ :Params:
+    kp_data: in, required, type=structure
+       the INSITU KP data structure from which to plot data.
+    iuvs: in, optional, type=structure
+       optional IUVS data structure for overplotting of relevant parameters.
+    parameter: in, optional, type=integer/string
+       the name or index of the insitu parameter to be plotted (if not 
+       selected, only orbital track shown).
+    minimum: in, optional, type=float
+       Minimum value of parameter to display
+    maximum: in, optional, type=float
+       Maximum value of parameter to display
+    time: in, optional, can be a scalar or a two item array of type:
+         int(s)         orbit number
+         string(s)      format:  YYYY-MM-DD/hh:mm:ss
+         long(s)        UNIX time in seconds since 1970-01-01T00:00:00UTC
+       A start or start & stop time (or orbit #) range for reading kp data.
+    basemap: in, optional, type=string
+       the name of the basemap to display. If not included, then lat/lon 
+       grid is shown .
+         'MDIM': The Mars Digital Image Model.
+         'MOLA': Mars Topography in color.
+         'MOLA_BW': Mars topography in black and white.
+         'MAG':  Mars crustal magnetism.
+         'DUST': IUVS Apopase Dust index image.
+         'OZONE': IUVS Apopase Ozone index image.
+         'RAD_H': IUVS Apopase H Radiance image.
+         'RAD_O': IUVS Apopase O Radiance image.
+         'RAD_CO': IUVS Apopase CO Radiance image.
+         'RAD_NO': IUVS Apopase NO Radiance image.
+         'USER': User definied basemap. Will open a file dialog window 
+                 to select the image. 
+    colors: in, optional, type=string/integer
+       the name (bw, red) or index of the color table to use when 
+       plotting the selected parameter.
+    alpha: in, optional, type=integer
+       the transparency of the basemap between 0(opaque) and 
+       100(transparent), defaults to 0 (opaque).  
+    map_limit: in, optional, type=fltarr
+       An array that defines the limits of the user selected basemap. 
+       It is defined as follows:
+         [lower left corner latitude, lower left corner longitude, $
+          upper right corner latitude, upper right corner longitude] 
+    map_location: in, optional, type=fltarr
+       An array that defines the location of the user selected basemap.
+         [lower left corner latitude, lower left corner longitude]
+    map_projection: in, optional, type=string
+       The name of one of IDL's given map projections
+    apoapse_time:  in, optional, either a string or long integer 
+       The time of the aopapse image to display. If not defined, the 
+       middle image is selected (unless apoapse_blend is included)
+       
+       
+       
+ :Keywords:
+    list: in, optional, type=boolean
+       if selected, will list the KP data fields included in kp_data.
+    range: in, optional, type=boolean
+       if selected, will list the beginning and end times of kp_data.
+    nopath:  in, optional, type=boolean
+       This will suppress the display of the spacecraft orbital track 
+       projection.
+    periapse_temp: in, optional, type=boolean
+       If included, the IUVS periapse temperature measurements will be 
+       plotted on the map along with the spacecraft track.
+    optimize: in, optional, type=boolean
+       For large data structures, the plotting of the orbital track can 
+       get very slow. This keyword decimates the track to a managable size.
+    direct: in, optional, type=boolean
+       Forces the use of direct graphics instead of function.
+    log: in, optional, type=boolean
+       Colors the spacecraft track with a logarithmic stretch instead of 
+       linear.
+    subsolar: in, optional, type=boolean
+       in selected, will plot the subsolar track.
+    mso: in, optional, type=boolean 
+       switch between GEO and MSO map projections.
+       Basemaps are not projected into MSO coordinate systems so will display 
+       only as lat/long grids.
+    corona_lo_dust: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronal dust depth measurements. 
+    corona_lo_ozone: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronal ozone depth measurements. 
+    corona_lo_aurora: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronal auroral index measurements. 
+    corona_lo_h_rad: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronal H radiance measurements.   
+    corona_lo_co_rad: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronalCO radiance measurements. 
+    corona_lo_no_rad: in, optional, type=boolean
+       Plots the IUVS Lo-Res coronal NO radiance measurements. 
+    corona_lo_o_rad: in, optional, type=boolean 
+       Plots the IUVS Lo-Res coronal O radiance measurements. 
+    corona_e_h_rad: in, optional, type=boolean 
+       Plots the IUVS Echelle coronal H Radiance measurements. 
+    corona_e_d_rad: in, optional, type=boolean
+       Plots the IUVS Echelle coronal D Radiance measurements. 
+    corona_e_o_rad: in, optional, type=boolean
+       Plots the IUVS Echelle coronal O Radiance measurements. 
+    apoapse_blend: in, optional, type=boolean
+       If an IUVS apaopase image is selected as the basemap, this keyword 
+       will average all images into a single basemap, instead of plotting 
+       only a single image. 
+    help: in, optional, type=byte
+       Invoke the help listing
+    
+  :Version:  1.0   July 8, 2014
+-

@@ -1,38 +1,48 @@
-****************************
-* MVN_KP_CREATE_MODEL_MAPS *
-****************************
+ Creates contour plots from model data
 
-  This routine will take models of the martian atmosphere and create 
-  a png contour plot of a modeled atmsopheric property at a specific 
-  altitude.  
+ :Author: Bryan Harter
 
-pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
-                              file=file, $
-                              interp=interp, $
-                              numContourLines = numContourLines, $
-                              fill=fill, $
-                              ct=ct, $
-                              basemap=basemap, $
-                              contourtransparency=contourtransparency
+ :Description:
+     Takes the 3 data structures from mvn_kp_model_results and takes a slice
+     from them at a certain altitude.  A contour plot is made from the data, 
+     which can then be used in mvn_kp_map2d or mvn_kp_3d.  The contour plot
+     is saved as a png in the same directory as the model data.
 
-REQUIRED FIELDS
-**************
-  altitude: The altitude for which the contour plot will be generated
+ :Keywords:
+    altitude: in, required, type=integer
+       Height, in kilometers, that the user wants the data
 
-OPTIONAL FIELDS
-***************
-    file: File name of the netCDF file containing atmosphere data.
-	  If this is not specified, a window will pop-up where the 
-	  file can be manually selected
-    interp:  If this is set, the model will provide interpolated data 
-             at the nearest altitudes.  Otherwise, it will just use the
-	     data of the closest altitude
-    numContourLines: Sets the number of contour lines on the plot
-    fill: If this is set, the contour layers will be colored in
-    ct: This value sets the colortable to use in the contour plots.
-    basemap: Can be 'mdim', 'mola', 'mola_bw', or 'mag'.  The contour plot
-	     of the model data will be plotted over an image of Mars with 
-	     50% transparency
-    contourtransparency:  Specifies the transparency of the contour plot
+    file: in, optional, type=file path string
+       The path and file name to the model data you want to plot.  If this
+       is not specified, then a window will appear asking the user to select
+       a file
 
+    interp: in, optional, type=boolean
+       If this flag is set, the data will be interpolated if the user
+       specifies an altitude that is between two model layers.  Otherwise,
+       the contour plot will be of the closest altitude layer
 
+    numContourLines: in, optional, type=integer
+       The user can specify the number of contour lines in the output contour
+       Default is 25 contour lines
+       
+    fill: in, optional, type=boolean
+       If this flag is selected, the contour plot fills in the levels
+       with a certain color. 
+
+    ct: in, optional, type=integer array 256x3
+       The user can specify a color table for the contour plot.  The 
+       default is the array given by COLORTABLE(72, /REVERSE)
+       
+    basemap: in, optional, type=string
+       If either 'mdim', 'mola', 'mola_bw', or 'mag is specified, the
+       contour will be overlaid on one of these basemaps with 50%
+       transparency
+       
+    contourtransparency: in, optional, type=integer
+       The user can specify the level of transparency in the contour plot. 
+       Useful when plotting the contour over a basemap.  Must be a number
+       between 0 (no transparency) and 100 (completely transparent)
+       
+
+-
