@@ -81,7 +81,7 @@ pro mvn_kp_create_insitu_save, infiles, outdir, debug=debug
       endif
     endwhile
     
-    save,orbit,filename=outdir+'/'+base+'.sav'
+    save,orbit,filename=outdir+path_sep()+base+'.sav'
     orbit=0
     free_lun,lun
   endfor
