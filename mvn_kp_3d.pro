@@ -42,12 +42,6 @@
 ;       THe minimum value to assign to color level 0
 ;    maximum: in, optional, type=float
 ;       The maximum value to assign to color level 255
-;
-;-obsolete    color_table: in, optional, type=int or intarr(4)
-;       Provide a user-input color table.  
-;       If single integer, load that index table
-;       If a 4-element integer array, it is [index,min,max,stretch]
-;-/obsolete
 ;    bgcolor: in, optional, type=byte or bytarr(3)
 ;       Define the background color for the widget window.
 ;       If single byte value, assign a gray between 0(black) and 255(white)

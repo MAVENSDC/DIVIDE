@@ -1,102 +1,114 @@
-***************
-* MVN_KP_READ *
-***************
+ :Name: mvn_kp_read
 
-  Read local Maven KP data files into memory.  Capable of reading both 
-  in situ KP data files and IUVS KP data files.  Capable of reading in 
-  either CDF or ASCII formated data files.
-  By default, CDF files are read.  There are also hooks in place, 
-  using /download_new keyword, to query the SDC web server and download 
-  missing or updated KP data files.
+ :Author: Kris Larsen & John Martin
 
-mvn_kp_read, time, insitu_output, iuvs_output, download_new=download_new, $
-             update_prefs=update_prefs, debug=debug, duration=duration, $
-             text_files=text_files, save_files=save_files, $
-             insitu_only=insitu_only, insitu_all=insitu_all, $
-             inbound=inbound, outbound=outbound, $
-             lpw=lpw, static=static, swia=swia, swea=swea, mag=mag, $
-             sep=sep, ngims=ngims, $
-             iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, $
-             iuvs_apoapse=iuvs_apoapse, $
-             iuvs_coronaEchellehigh=iuvs_coronaEchellehigh, $
-             iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk, $
-             iuvs_coronaEchelleLimb=iuvs_coronaEchelleLimb, $
-             iuvs_coronaLoresDisk=iuvs_coronaLoresDisk, $
-             iuvs_coronaLoreshigh=iuvs_coronaLoreshigh, $
-             iuvs_coronaLoreslimb=iuvs_coronaLoreslimb, $
-             iuvs_stellarocc=iuvs_stellarocc, $
-             only_update_prefs=only_update_prefs, help=help
 
-REQUIRED FIELDS
-***************
-  time: A start or start & stop time (or orbit #) range for reading kp data.
-        long(s)        orbit number
-        string(s)      format:  YYYY-MM-DD/hh:mm:ss       
-  insitu_output: This paramater will contain the in situ KP data that is read 
-                 into memory. It will be organized as an array of structures. 
-                 Each array entry corresponds to each time. 
-  iuvs_output: This parameter will contain the IUVS KP data that is read 
-               into memory. It will be organized as an array of structures. 
-               Each array entry corresponds to one orbit of data.
+ :Description:
+     Read local Maven KP data files into memory. Capable of reading both 
+     in situ KP data files and IUVS KP data files. Capable of reading in 
+     either CDF or ASCII formated data files. 
+     By default, CDF files are read. There are also hooks in place, 
+     using /download_new keyword, to query the SDC web server and 
+     download missing or updated KP data files.  
 
-OPTIONAL FIELDS
-***************
-  insitu_only: Read in only in situ data.
-               If this is supplied, the iuvs_output parameter will be ignored.
-               Because the visualization procedures require the insitu 
-               spacecraft time series ephemeris data, a iuvs_only option
-               is *not* provided.
-  download_new: optional keyword to instruct IDL to query the SDC server 
-                to look for any new or missing files to download over the 
-                input timerange.
-  update_prefs: Before searching or downloading data, allow user to 
-                update mvn_toolkit_prefs.txt - which contains paths to the root 
-                data directory.  After selecting new path to data folders,
-                search or download of data files will continue.
-  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt -- which 
-                     contains paths to the root data directory.  After 
-                     selecting the new path to the data folders, the 
-                     procedure will return -- having not downloaded any data.
-  debug:  On error, - "Stop immediately at the statement that caused the error 
-                       and print the current program stack." 
-          If not specified, error message will be printed and 
-          IDL with return to main program level and stop.
-  duration: Length of time range for data read, only used if input time 
-            parameter is a single value.
-            If input time is string, duration is interpreted as seconds. 
-            If input time is integer, duration is interpreted as orbits. 
-  text_files: Read in ASCII files instead of the default of reading CDF files. 
-  save_files: Read in .sav files instead of the default of reading CDF files. 
-              This option exists primarily for the developers and debugging. 
+ :Params:
+    time: in, required, can be a scalar or a two item array of type:
+         long(s)        orbit number
+         string(s)      format:  YYYY-MM-DD/hh:mm:ss       
+       A start or start & stop time (or orbit #) range for reading kp data. 
+       
+    insitu_output: output, required, type=array of structures
+       This paramater will contain the in situ KP data that is read into 
+       memory. It will be structured as an array of structures. Each 
+       array entry corresponds to each time. 
+       
+    iuvs_output: output, optional, type=array of structures
+       This parameter will contain the IUVS KP data that is read into 
+       memory. It will be structured as an array of structures. Each array 
+       entry corresponds to one orbit of data. 
 
-  lpw: return all of the LPW data
-  euv: return all of the EUV data
-  static: return all of the STATIC data
-  swia: return all of the SWIA data
-  swea: return all of the SWEA data
-  mag: return all of the MAG data
-  sep: return all of the SEP data
-  ngims: return all of the NGIMS data
-  inbound: return only the data from the inbound leg of an orbit
-  outbound:  return only the data from the outbound leg of an orbit 
-  insitu_all: return all in situ data. This keyword is necessary if an 
-              IUVS observation mode keyword is specified and you want to still 
-              read in all in situ data. If no in situ instrument or IUVS 
-              observation keyword specified, the default behavior is to 
-              read in all in situ data. 
-  iuvs_periapse: return the IUVS PERIAPSE limb scan data 
-  iuvs_apoapse: return the IUVS APOAPSE data 
-  iuvs_coronaEchellehigh: return the IUVS Corona Echelle high altitude data 
-  iuvs_coronaEchelleDisk: return the IUVS Corona Echelle disk data 
-  iuvs_coronaEchelleLimb: return the IUVS Corona Echelle limb data 
-  iuvs_coronaLoresDisk: return the IUVS Corona LoRes disk data
-  iuvs_coronaLoreshigh: return the IUVS Corona LoRes high altitude data
-  iuvs_coronaLoreslimb: return the iuvs corona LoREs on limb data 
-  iuvs_stellarocc: return the IUVS Stellar Occulatation data
-  iuvs_all: return all IUVS observation modes. 
-            This keyword is necessary if an in situ instrument keyword 
-            is specified and you want to still read in all IUVS data. 
-            If no in situ instrument or IUVS observation keyword is specified, 
-            the default behavior is to read in all IUVS data. 
-  help: Invoke this list.
+ :Keywords:
+    download_new: in, optional, type=boolean
+       optional keyword to instruct IDL to query the SDC server to look 
+       for any new or missing files to download over the input timerange.
+    update_prefs: in, optional, type=boolean
+       Before searching or downloading data, allow user to update 
+       mvn_toolkit_prefs.txt - which contains location of ROOT_DATA_DIR. 
+       After selecting new path to data folders, search or download of 
+       data files will continue.
+    only_update_prefs: in, optional, type=boolean
+       Allow user to update mvn_toolkit_prefs.txt - which contains 
+       location of ROOT_DATA_DIR.
+       After selecting new paths to data folders, procedure will return - not
+       downloading any data.
+    debug:  in, optional, type=boolean
+       On error, - "Stop immediately at the statement that caused the 
+       error and print the current program stack." If not specified, 
+       error message will be printed and IDL with return to main program 
+       level and stop.
+    duration: in, optional, type=integer, string
+       Length of time range for data read, only used if input time 
+       parameter is a single value.
+       If input time is a string, duration is interpreted as seconds. 
+       If input time is integer (orbit), duration is interpreted as orbits. 
+    text_files: in optional, type=boolean
+       Read in ASCII files instead of the default of reading CDF files. 
+    save_files: in optional, type=boolean
+       Read in .sav files instead of the default of reading CDF files. 
+       This option exists primarily for the developers and debugging. 
+    insitu_only: in optional, type=boolean
+       Read in only in situ data. If this is supplied, the iuvs_output 
+       paramater will be ignored if input. Because insitu spacecraft time 
+       series ephemeris data is necessary for the visulization procedures 
+       to work, there is no iuvs_only option. 
 
+    lpw: in, optional, type=boolean
+       return all of the LPW data
+    euv: in, optional, type=boolean
+       return all of the EUV data
+    static: in, optional, type=boolean
+       return all of the STATIC data
+    swia: in, optional, type=boolean
+       return all of the SWIA data
+    swea: in, optional, type=boolean
+       return all of the SWEA data
+    mag: in, optional, type=boolean
+       return all of the MAG data
+    sep: in, optional, type=boolean
+       return all of the SEP data
+    ngims: in, optional, type=boolean
+       return all of the NGIMS data
+    inbound: in, optional, type=boolean
+       return only the data from the inbound leg of an orbit
+    outbound: in, optional, type=boolean
+       return only the data from the outbound leg of an orbit 
+    insitu_all: in, optional, type=boolean
+       return all in situ data. This keyword is necessary if an IUVS 
+       observation mode keyword is specified and you want to still read 
+       in all in situ data. If no in situ instrument or IUVS observation 
+       keyword specified, default behavior is to read in all in situ data. 
+    iuvs_periapse: in, optional, type=boolean
+       return all of the IUVS PERIAPSE limb scan data 
+    iuvs_apoapse: in, optional, type=boolean
+       return all of the IUVS APOAPSE data 
+    iuvs_coronaEchellehigh: in, optional, type=boolean
+       return all of the IUVS Corona Echelle high altitude data 
+    iuvs_coronaEchelleDisk: in, optional, type=boolean
+       return all of the IUVS Corona Echelle disk data 
+    iuvs_coronaEchelleLimb: in, optional, type=boolean
+       return all of the IUVS Corona Echelle limb data 
+    iuvs_coronaLoresDisk: in, optional, type=boolean
+       return all of the IUVS Corona LoRes disk data
+    iuvs_coronaLoreshigh: in, optional, type=boolean
+       return all of the IUVS Corona LoRes high altitude data
+    iuvs_coronaLoreslimb: in, optional, type=boolean
+       return all of the iuvs corona LoREs on limb data 
+    iuvs_stellarocc: in, optional, type=boolean
+       return all of the IUVS Stellar Occulatation data
+    iuvs_all: in, optional, type=boolean
+       return all IUVS observation modes. This keyword is necessary if 
+       an in situ instrument keyword is specified and you want to still 
+       read in all IUVS data. If no in situ instrument or IUVS observation 
+       keyword specified, default behavior is to read in all IUVS data. 
+
+-

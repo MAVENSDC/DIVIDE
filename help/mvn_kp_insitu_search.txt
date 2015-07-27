@@ -1,43 +1,44 @@
-************************
-* MVN_KP_INSITU_SEARCH *
-************************
+ :Name: mvn_kp_insitu_search
 
-  Searches input in situ KP data structure based on min and/or max search parameters.
+ :Author: Kristopher Larsen & John Martin
 
-mvn_kp_insitu_search, insitu_in, insitu_out, parameter=parameter, min=min_value, $
-                      max=max_value, list=list, range=range, debug=debug, help=help
 
-REQUIRED FIELDS
-***************
-  insitu_in: in situ KP data structure (data structure output from mvn_kp_read)
-  insitu_out: output KP data structure containing datat that met all search criteria
+ :Description:
+    Searches input in situ KP data structure based on min and/or max search parameters
 
-OPTIONAL FIELDS
-***************
-  list: List out possible parameters names to search (& index identifiers 
-        associated with parameters). No search performed.
-  parameter: Required if /list keyword not supplied. 
-             The name, or names, of the INSITU data parameter (or integer index) to search on. 
-             Use /list keyword to see possible names or index integers to search on.
-        min: the minimum value of the parameter to be searched on (or array of values).
-             One or more minimum values. If multiple parameters input and 
-             multiple min values input, each min value will correspond with each 
-             parameter (by array position). 
-             If multiple parameters and one min value, the min value is used for 
-             all parameters. 
-             Cannot enter more min values than parameters.
-        max: the maximum value of the parameter to be searched on (or array of values)
-             One or more maximum values. If multiple parameters input and multiple 
-             max values input, each max value will correspond with each parameter 
-             (by array position). If multiple parameters and one max value, the max 
-             value is used for all parameters. 
-             Cannot enter more max values than parameters.
+ :Params:
+    insitu_in: in, required, type=array of structures
+       in situ KP data structure (data structure output from mvn_kp_read)
+    insitu_out: out, required, type=array of structures
+       output KP data structure containing datat that met all search criteria
 
-  range: Print out TIME_STRING for first and last element of input data structure. 
-         Also prints corresponding orbit numbers.
-  debug: On error, - "Stop immediately at the statement that caused the 
-                      error and print the current program stack." 
-         If not specified, error message will be printed and
-         IDL with return to main program level and stop.
-  help: Invoke this list.
+ :Keywords:
+    list: in, optional, type=boolean
+       List out possible parameters names to search (& index identifiers associated with parameters). No
+       search performed.
+    parameter: in, optional, type=intarr/strarr
+       Required if /list keyword not supplied. The name, or names, of the INSITU data parameter
+       (or integer index) to search on. Use /list keyword to see possible names or index integers
+       to search on.
+    min: in, optional, type=fltarr
+       the minimum value of the parameter to be searched on (or array of values).
+       One or more minimum values. If multiple parameters input & multiple min values input, each min
+       value will correspond with each parameter (by array position). If multiple parameters & one min value,
+       the min value is used for all parameters. Cannot enter more min values than parameters.
+    max: in, optional, type=fltarr
+       the maximum value of the parameter to be searced on (or array of values)
+       One or more maximum values. If multiple parameters input & multiple max values input, each max
+       value will correspond with each parameter (by array position). If multiple parameters & one max value,
+       the max value is used for all parameters. Cannot enter more max values than parameters.
+    range: in, optional, type=boolean
+       Print out TIME_STRING for first and last element of input data structure. Also prints
+       corresponding orbit numbers.
+    debug:  in, optional, type=boolean
+       On error, - "Stop immediately at the statement that caused the error and print
+       the current program stack." If not specified, error message will be printed and
+       IDL with return to main program level and stop.
+       
+    help: in, optional, type=boolean
+       Prints the keyword descriptions to the screen.
 
+-

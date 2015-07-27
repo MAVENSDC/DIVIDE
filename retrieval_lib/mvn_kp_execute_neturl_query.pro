@@ -60,7 +60,9 @@ function mvn_kp_execute_neturl_query, netURL, url_path, query, filename=filename
   ; Set the path and query for the request.
   netURL->SetProperty, URL_PATH=url_path
   netURL->SetProperty, URL_QUERY=query
-
+  ; Following line deals with bug (?) in Linux certificates
+  ; Was not allowing self-signed certificates
+  netURL->SetProperty, SSL_VERIFY_PEER=0
 
   ; Make the request.
   ; If the 'filename' parameter is set, assume we want to download a file.
