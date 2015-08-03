@@ -89,6 +89,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     base_url_path = '/pub/naif/MAVEN/kernels/spk/'
     orbit_files_rec = ['maven_orb_rec_140922_150101_v1.orb',$
                       'maven_orb_rec_150101_150401_v1.orb',$
+                      'maven_orb_rec_150401_150701_v1.orb',$
                       'maven_orb_rec.orb']
     
     
