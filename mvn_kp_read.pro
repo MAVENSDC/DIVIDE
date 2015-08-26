@@ -197,6 +197,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
       +'kp'+path_sep()+'iuvs'+path_sep()
   endelse
     
+  ;; Unless specified not to, check for & download updated template files
+  if not keyword_set(exclude_template_files) then begin
+    print, "Before reading KP Data, checking for updated KP templates from the SDC"
+    print, ""
+    mvn_kp_download_template_file
+  endif
+
 
   ;SET UP instruments struct WHICH IS USED FOR CREATING DATA STRUCTURE 
   ;AND CONTROLLING WHICH INSTRUMENTS DATA TO READ

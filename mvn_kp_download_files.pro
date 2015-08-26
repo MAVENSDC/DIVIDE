@@ -80,6 +80,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
     cdf_files=cdf_files, start_date=start_date, end_date=end_date, $
     update_prefs=update_prefs, list_files=list_files, debug=debug, $
     exclude_orbit_file=exclude_orbit_file, $
+    exclude_template_files= exclude_template_files, $
     only_update_prefs=only_update_prefs, help=help
 
   ;provide help for those who don't have IDLDOC installed
@@ -340,6 +341,13 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
       return
     endif else print, "Invalid input. Please answer with yes or no."
   endwhile
+  
+  ;; Unless specified not to, check for & download updated template files
+  if not keyword_set(exclude_template_files) then begin
+    print, "Before downloading data files, checking for updated KP templates from the SDC"
+    print, ""
+    mvn_kp_download_template_file
+  endif
   
   ;; Unless specified not to, check for & download updated orbit # file
   if not keyword_set(exclude_orbit_file) then begin

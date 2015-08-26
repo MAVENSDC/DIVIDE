@@ -1,7 +1,8 @@
 
 
 function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_file_spec, data_retrieval=data_retrieval, $
-  orbit_number=orbit_number, iuvs_data=iuvs_data, orbit_file_location=orbit_file_location, private=private
+  orbit_number=orbit_number, iuvs_data=iuvs_data, orbit_file_location=orbit_file_location, private=private, $
+  template_file_location=template_file_location
   
   
   ;; Information describing the in situ filenames and where dates & versions are located
@@ -105,6 +106,25 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
     
     return, orbit_file_server_spec
   endif
+  
+  ;; Information for where to download template files from
+  if keyword_set(template_file_location) then begin
+
+    base_url_path = '/maven/sdc/public/data/sdc/software/idl_toolkit/Templates'
+
+    template_file_server_spec = create_struct($
+      'host', 'lasp.colorado.edu/', $
+      'port', 80, $
+      'username', '', $
+      'password', '', $
+      'url_scheme', 'https', $
+      'authentication', 0, $
+      'url_path', base_url_path)
+
+    return, template_file_server_spec
+  endif
+  
+  
   
   ;; Information regarding the IUVS kp data format
   if keyword_set(iuvs_data) then begin
