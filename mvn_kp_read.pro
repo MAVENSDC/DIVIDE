@@ -163,6 +163,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   ;; -------------------------------------------------------------------- ;;
   ;; -------------------- Check input options --------------------------- ;;
   
+  MVN_KP_CHECK_VERSION
   
   ; IF DEBUG SET, CREATE ENVIRONMENT VARIABLE SO ALL PROCEDURES/FUNCTIONS 
   ; CALLED CAN CHECK FOR IT

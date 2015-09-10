@@ -1,0 +1,6 @@
+Current Version: 9/11/15
+
+9/11/15:
+	-Added version history text file
+	-Added ability to download latest source code from the MAVEN SDC
+

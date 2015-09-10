@@ -124,6 +124,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
     return
   endif
 
+  MVN_KP_CHECK_VERSION
+  
   ;Set to 0 for public release, 1 for team release
   private = mvn_kp_config_file(/check_access)
 
