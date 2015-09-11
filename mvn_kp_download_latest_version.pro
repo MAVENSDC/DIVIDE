@@ -85,7 +85,7 @@ pro mvn_kp_download_latest_version
   
   file ='SourceList'
   file_and_path = install_directory[0] + file
-  return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/'+strmid(new_file_names[i], 2), '', filename=file_and_path, /not_sdc_connection)
+  return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/'+file, '', filename=file_and_path, /not_sdc_connection)
   print, "Downloading " + file
 
   ;; Catch error

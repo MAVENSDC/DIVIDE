@@ -538,6 +538,12 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                       save_files=save_files, text_files=text_files, $
                       insitu_only=insitu_only, download_new=download_new
  
+  ;; User may have forgotten to enter /text_files 
+  if (target_KP_filenames[0] eq 'None') then begin
+    print, "No files found.  Make sure you have the correct time range.  "
+    print, "Use the /text_files flag if you meant to read the .tab data.  "
+    return
+  endif
 
   ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS AND INITIALIZE 
   ;ARRAY OF DATA STRUTURES 
