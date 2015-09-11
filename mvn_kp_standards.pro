@@ -244,17 +244,17 @@ pro MVN_KP_STANDARDS, kp_data, $
     t1 = where(base_tags eq 'EUV')
     if t1 ne -1 then begin
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] $
+                                  (total(first_level_count[0:t1])-1)] $
                  eq 'IRRADIANCE_LOW')
         if t2 ne -1 then euv_data[*,0] = kp_data[kp_start_index:kp_end_index]$
                                          .euv.irradiance_low
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] $
+                                  (total(first_level_count[0:t1])-1)] $
                  eq 'IRRADIANCE_MID')
         if t2 ne -1 then euv_data[*,1] = kp_data[kp_start_index:kp_end_index]$
                                          .euv.irradiance_mid
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] $
+                                  (total(first_level_count[0:t1])-1)] $
                  eq 'IRRADIANCE_LYMAN')
         if t2 ne -1 then euv_data[*,2] = kp_data[kp_start_index:kp_end_index]$
                                          .euv.irradiance_lyman
@@ -279,15 +279,15 @@ pro MVN_KP_STANDARDS, kp_data, $
     t1 = where(base_tags eq 'MAG')
     if t1 ne -1 then begin
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'MSO_X')
+                                  (total(first_level_count[0:t1])-1)] eq 'MSO_X')
         if t2 ne -1 then $
           mag_mso_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.mso_x
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'MSO_Y')
+                                  (total(first_level_count[0:t1])-1)] eq 'MSO_Y')
         if t2 ne -1 then $
           mag_mso_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.mso_y
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'MSO_Z')
+                                  (total(first_level_count[0:t1])-1)] eq 'MSO_Z')
         if t2 ne -1 then $
           mag_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.mso_z
       mag_mso_data[*,3] $
@@ -314,15 +314,15 @@ pro MVN_KP_STANDARDS, kp_data, $
     t1 = where(base_tags eq 'MAG')
     if t1 ne -1 then begin
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'GEO_X')
+                                  (total(first_level_count[0:t1])-1)] eq 'GEO_X')
         if t2 ne -1 then $
           mag_geo_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.geo_x
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'GEO_Y')
+                                  (total(first_level_count[0:t1])-1)] eq 'GEO_Y')
         if t2 ne -1 then $
           mag_geo_data[*,1] = kp_data[kp_start_index:kp_end_index].mag.geo_y
       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):$
-                                  total(first_level_count[0:t1])] eq 'GEO_Z')
+                                  (total(first_level_count[0:t1])-1)] eq 'GEO_Z')
         if t2 ne -1 then $
           mag_geo_data[*,2] = kp_data[kp_start_index:kp_end_index].mag.geo_z
       mag_geo_data[*,3] $
@@ -331,7 +331,7 @@ pro MVN_KP_STANDARDS, kp_data, $
               + (kp_data[kp_start_index:kp_end_index].mag.geo_z^2) )
       store_data,'MAG_GEO',data={x:kp_data[kp_start_index:kp_end_index].time, $
                                  y:mag_geo_data, v:mag_geo_v}, $
-                           mvndlim={labels:mag_geo_labels},verbose=0
+                                 dlim={labels:mag_geo_labels}, verbose=0
       options,'MAG_GEO','labflag',-1
       
       tplot_2plot[plot_count] = 'MAG_GEO'
@@ -347,16 +347,16 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'MAG')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_X')
       if t2 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Y')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Y')
           if t2 ne 01 then mag_cone_data[*,0] = atan(kp_data[kp_start_index:kp_end_index].mag.mso_x, kp_data[kp_start_index:kp_end_index].mag.mso_y) * !radeg
       endif
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_X')
       if t2 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Y')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Y')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Z')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Z')
             if t2 ne -1 then mag_cone_data[*,1] = acos((abs(kp_data[kp_start_index:kp_end_index].mag.mso_x)/(sqrt((kp_data[kp_start_index:kp_end_index].mag.mso_x^2)+$
                                                   (kp_data[kp_start_index:kp_end_index].mag.mso_y^2)+(kp_data[kp_start_index:kp_end_index].mag.mso_z^2))))) * !radeg
         endif
@@ -379,7 +379,7 @@ pro MVN_KP_STANDARDS, kp_data, $
     if t1 ne -1 then begin
  
     ;ROUTINE TO CALCULATE RADIAL, HORIZONTAL, EASTWARD, AND NORTHWARD COMPONENTS ADAPTED FROM DAVE BRAIN
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUB_SC_LONGITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUB_SC_LONGITUDE')
        if t2 ne -1 then begin
          clon = cos( kp_data[kp_start_index:kp_end_index].spacecraft.SUB_SC_LONGITUDE *(!pi/180.))
          slon = sin( kp_data[kp_start_index:kp_end_index].spacecraft.SUB_SC_LONGITUDE *(!pi/180.))
@@ -387,7 +387,7 @@ pro MVN_KP_STANDARDS, kp_data, $
         clon = 0.0
         slon = 0.0
        endelse
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUB_SC_LATITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUB_SC_LATITUDE')
         if t2 ne -1 then begin
          clat = cos( kp_data[kp_start_index:kp_end_index].spacecraft.SUB_SC_LATITUDE *(!pi/180.))
          slat = sin( kp_data[kp_start_index:kp_end_index].spacecraft.SUB_SC_LATITUDE *(!pi/180.))
@@ -407,11 +407,11 @@ pro MVN_KP_STANDARDS, kp_data, $
        ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        t1 = where(base_tags eq 'MAG')
        if t1 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_X')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_X')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Y')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_Y')
           if t2 ne -1 then begin
-            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Z')
+            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_Z')
             if t2 ne -1 then begin
              mag_dir_data[*,0] = kp_data[kp_start_index:kp_end_index].mag.geo_x * clon*clat  +  $
                   kp_data[kp_start_index:kp_end_index].mag.geo_y * slon*clat  +  $
@@ -441,19 +441,19 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'NGIMS')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HE_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HE_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,0] = kp_data[kp_start_index:kp_end_index].ngims.he_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,1] = kp_data[kp_start_index:kp_end_index].ngims.o_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'CO_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'CO_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,2] = kp_data[kp_start_index:kp_end_index].ngims.co_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'N2_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'N2_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,3] = kp_data[kp_start_index:kp_end_index].ngims.n2_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'NO_DENSITY')  
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'NO_DENSITY')  
         if t2 ne -1 then ngims_neutral_data[*,4] = kp_data[kp_start_index:kp_end_index].ngims.no_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'AR_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'AR_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,5] = kp_data[kp_start_index:kp_end_index].ngims.ar_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'CO2_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'CO2_DENSITY')
         if t2 ne -1 then ngims_neutral_data[*,6] = kp_data[kp_start_index:kp_end_index].ngims.co2_density
       store_data,'NGIMS_NEUTRAL',data={x:kp_data[kp_start_index:kp_end_index].time, y:ngims_neutral_data, v:ngims_neutral_v}, dlim={labels:ngims_neutral_labels, ylog:1, ytitle:'Density'},verbose=0
       options,'NGIMS_NEUTRAL','labflag',-1                                  
@@ -471,21 +471,21 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'NGIMS')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,0] = kp_data[kp_start_index:kp_end_index].ngims.o2plus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'CO2PLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'CO2PLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,1] = kp_data[kp_start_index:kp_end_index].ngims.co2plus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'NOPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'NOPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,2] = kp_data[kp_start_index:kp_end_index].ngims.noplus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'OPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'OPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,3] = kp_data[kp_start_index:kp_end_index].ngims.oplus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'CONPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'CONPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,4] = kp_data[kp_start_index:kp_end_index].ngims.conplus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'CPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'CPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,5] = kp_data[kp_start_index:kp_end_index].ngims.cplus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'OHPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'OHPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,6] = kp_data[kp_start_index:kp_end_index].ngims.ohplus_density
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'NPLUS_DENSITY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'NPLUS_DENSITY')
         if t2 ne -1 then ngims_ions_data[*,7] = kp_data[kp_start_index:kp_end_index].ngims.nplus_density
       store_data,'NGIMS_IONS',data={x:kp_data[kp_start_index:kp_end_index].time, y:ngims_ions_data, v:ngims_ions_v}, dlim={labels:ngims_ions_labels, ylog:1, ytitle:'Density'},verbose=0
       options,'NGIMS_IONS','labflag',-1                                 
@@ -503,19 +503,19 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SPACECRAFT')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUB_SC_LONGITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUB_SC_LONGITUDE')
         if t2 ne -1 then eph_angle_data[*,0] = kp_data[kp_start_index:kp_end_index].spacecraft.sub_sc_longitude
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUB_SC_LATITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUB_SC_LATITUDE')
         if t2 ne -1 then eph_angle_data[*,1] = kp_data[kp_start_index:kp_end_index].spacecraft.sub_sc_latitude
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SZA')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SZA')
         if t2 ne -1 then eph_angle_data[*,2] = kp_data[kp_start_index:kp_end_index].spacecraft.sza
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'LOCAL_TIME')  
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'LOCAL_TIME')  
         if t2 ne -1 then eph_angle_data[*,3] = kp_data[kp_start_index:kp_end_index].spacecraft.local_time
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MARS_SEASON')  
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MARS_SEASON')  
         if t2 ne -1 then eph_angle_data[*,4] = kp_data[kp_start_index:kp_end_index].spacecraft.mars_season
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUBSOLAR_POINT_GEO_LONGITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUBSOLAR_POINT_GEO_LONGITUDE')
         if t2 ne -1 then eph_angle_data[*,5] = kp_data[kp_start_index:kp_end_index].spacecraft.subsolar_point_GEO_longitude
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SUBSOLAR_POINT_GEO_LATITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SUBSOLAR_POINT_GEO_LATITUDE')
         if t2 ne -1 then eph_angle_data[*,6] = kp_data[kp_start_index:kp_end_index].spacecraft.subsolar_point_GEO_latitude
       store_data,'EPH_ANGLE',data={x:kp_data[kp_start_index:kp_end_index].time, y:eph_angle_data, v:eph_v}, dlim={labels:eph_labels},verbose=0
       options,'EPH_ANGLE','labflag',-1                                 
@@ -533,13 +533,13 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SPACECRAFT')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_X')
         if t2 ne -1 then eph_geo_data[*,0] = kp_data[kp_start_index:kp_end_index].spacecraft.geo_x
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_Y')
         if t2 ne -1 then eph_geo_data[*,1] = kp_data[kp_start_index:kp_end_index].spacecraft.geo_y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'GEO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'GEO_Z')
         if t2 ne -1 then eph_geo_data[*,2] = kp_data[kp_start_index:kp_end_index].spacecraft.geo_z
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ALTITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ALTITUDE')
         if t2 ne -1 then eph_geo_data[*,3] = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
       store_data,'EPH_GEO',data={x:kp_data[kp_start_index:kp_end_index].time, y:eph_geo_data, v:eph_geo_v}, dlim={labels:eph_geo_labels},verbose=0
       options,'EPH_GEO','labflag',-1                                 
@@ -557,13 +557,13 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SPACECRAFT')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_X')
         if t2 ne -1 then eph_mso_data[*,0] = kp_data[kp_start_index:kp_end_index].spacecraft.mso_x
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Y')
         if t2 ne -1 then eph_mso_data[*,1] = kp_data[kp_start_index:kp_end_index].spacecraft.mso_y  
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Z')
         if t2 ne -1 then eph_mso_data[*,2] = kp_data[kp_start_index:kp_end_index].spacecraft.mso_z
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ALTITUDE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ALTITUDE')
         if t2 ne -1 then eph_mso_data[*,3] = kp_data[kp_start_index:kp_end_index].spacecraft.altitude
       store_data,'EPH_MSO',data={x:kp_data[kp_start_index:kp_end_index].time, y:eph_mso_data, v:eph_mso_v}, dlim={labels:eph_mso_labels},verbose=0
       options,'EPH_MSO','labflag',-1      
@@ -581,19 +581,19 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SWEA')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_PARALLEL_FLUX_LOW')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_PARALLEL_FLUX_LOW')
         if t2 ne -1 then swea_data[*,0] = kp_data[kp_start_index:kp_end_index].swea.electron_parallel_flux_low
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_PARALLEL_FLUX_MID')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_PARALLEL_FLUX_MID')
         if t2 ne -1 then swea_data[*,1] = kp_data[kp_start_index:kp_end_index].swea.electron_parallel_flux_mid
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_PARALLEL_FLUX_HIGH')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_PARALLEL_FLUX_HIGH')
         if t2 ne -1 then swea_data[*,2] = kp_data[kp_start_index:kp_end_index].swea.electron_parallel_flux_high
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ANTI_PARALLEL_FLUX_LOW')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ANTI_PARALLEL_FLUX_LOW')
         if t2 ne -1 then swea_data[*,3] = kp_data[kp_start_index:kp_end_index].swea.electron_anti_parallel_flux_low
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ANTI_PARALLEL_FLUX_MID')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ANTI_PARALLEL_FLUX_MID')
         if t2 ne -1 then swea_data[*,4] = kp_data[kp_start_index:kp_end_index].swea.electron_anti_parallel_flux_mid
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ANTI_PARALLEL_FLUX_HIGH')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ANTI_PARALLEL_FLUX_HIGH')
         if t2 ne -1 then swea_data[*,5] = kp_data[kp_start_index:kp_end_index].swea.electron_anti_parallel_flux_high
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_SPECTRUM_SHAPE_PARAMETER')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_SPECTRUM_SHAPE_PARAMETER')
         if t2 ne -1 then swea_data[*,6] = kp_data[kp_start_index:kp_end_index].swea.ELECTRON_SPECTRUM_SHAPE_PARAMETER
       store_data,'SWEA',data={x:kp_data[kp_start_index:kp_end_index].time, y:swea_data, v:swea_v}, dlim={labels:swea_labels},verbose=0
       options,'SWEA','labflag',-1                                          
@@ -612,13 +612,13 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SEP')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ION_ENERGY_FLUX__FOV_1_F')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ION_ENERGY_FLUX__FOV_1_F')
         if t2 ne -1 then sep_ion_data[*,0] = kp_data[kp_start_index:kp_end_index].sep.ION_ENERGY_FLUX__FOV_1_F
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ION_ENERGY_FLUX__FOV_1_R')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ION_ENERGY_FLUX__FOV_1_R')
         if t2 ne -1 then sep_ion_data[*,1] = kp_data[kp_start_index:kp_end_index].sep.ION_ENERGY_FLUX__FOV_1_R
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ION_ENERGY_FLUX__FOV_2_F')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ION_ENERGY_FLUX__FOV_2_F')
         if t2 ne -1 then sep_ion_data[*,2] = kp_data[kp_start_index:kp_end_index].sep.ION_ENERGY_FLUX__FOV_2_F
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ION_ENERGY_FLUX__FOV_2_R')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ION_ENERGY_FLUX__FOV_2_R')
         if t2 ne -1 then sep_ion_data[*,3] = kp_data[kp_start_index:kp_end_index].sep.ION_ENERGY_FLUX__FOV_2_R
       sep_ion_data[*,4] = total(sep_ion_data[*,0:3])
       store_data,'SEP_ION',data={x:kp_data[kp_start_index:kp_end_index].time, y:sep_ion_data, v:sep_ion_v}, dlim={labels:sep_ion_labels, ytitle:'Ion Energy Flux'},verbose=0
@@ -637,13 +637,13 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SEP')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ENERGY_FLUX___FOV_1_F')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ENERGY_FLUX___FOV_1_F')
         if t2 ne -1 then sep_electron_data[*,0] = kp_data[kp_start_index:kp_end_index].sep.ELECTRON_ENERGY_FLUX___FOV_1_F
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ENERGY_FLUX___FOV_1_R')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ENERGY_FLUX___FOV_1_R')
         if t2 ne -1 then sep_electron_data[*,1] = kp_data[kp_start_index:kp_end_index].sep.ELECTRON_ENERGY_FLUX___FOV_1_R
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ENERGY_FLUX___FOV_2_F')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ENERGY_FLUX___FOV_2_F')
         if t2 ne -1 then sep_electron_data[*,2] = kp_data[kp_start_index:kp_end_index].sep.ELECTRON_ENERGY_FLUX___FOV_2_F
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_ENERGY_FLUX___FOV_2_R')    
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_ENERGY_FLUX___FOV_2_R')    
         if t2 ne -1 then sep_electron_data[*,3] = kp_data[kp_start_index:kp_end_index].sep.ELECTRON_ENERGY_FLUX___FOV_2_R
       sep_electron_data[*,4] = total(sep_electron_data[*,0:3])
       store_data,'SEP_ELECTRON',data={x:kp_data[kp_start_index:kp_end_index].time, y:sep_electron_data, v:sep_electron_v}, dlim={labels:sep_electron_labels, ytitle:'Electron Energy Flux'},verbose=0
@@ -662,15 +662,15 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'LPW')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EWAVE_LOW_FREQ')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'EWAVE_LOW_FREQ')
         if t2 ne -1 then wave_data[*,0] = kp_data[kp_start_index:kp_end_index].lpw.ewave_low_freq
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EWAVE_MID_FREQ')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'EWAVE_MID_FREQ')
         if t2 ne -1 then wave_data[*,1] = kp_data[kp_start_index:kp_end_index].lpw.ewave_mid_freq
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'EWAVE_HIGH_FREQ')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'EWAVE_HIGH_FREQ')
         if t2 ne -1 then wave_data[*,2] = kp_data[kp_start_index:kp_end_index].lpw.ewave_high_freq
       t1 = where(base_tags eq 'MAG')
         if t1 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'RMS_DEVIATION')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'RMS_DEVIATION')
           if t2 ne -1 then wave_data[*,3] = kp_data[kp_start_index:kp_end_index].mag.rms_deviation
         endif
       store_data,'WAVE',data={x:kp_data[kp_start_index:kp_end_index].time, y:wave_data, v:wave_v}, dlim={labels:wave_labels, ylog:1},verbose=0
@@ -689,26 +689,26 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'LPW')
       if t1 ne -1 then begin 
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_DENSITY')
         if t2 ne -1 then plasma_den_data[*,0] = kp_data[kp_start_index:kp_end_index].lpw.electron_density
       endif
     t1 = where(base_tags eq 'SWEA')
       if t1 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SOLAR_WIND_ELECTRON_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SOLAR_WIND_ELECTRON_DENSITY')
         if t2 ne -1 then plasma_den_data[*,1] = kp_data[kp_start_index:kp_end_index].swea.SOLAR_WIND_ELECTRON_DENSITY
       endif
     t1 = where(base_tags eq 'SWIA')
       if t1 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_DENSITY')
         if t2 ne -1 then plasma_den_data[*,2] = kp_data[kp_start_index:kp_end_index].swia.hplus_density
       endif
     t1 = where(base_tags eq 'STATIC')
       if t1 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_DENSITY')
           if t2 ne -1 then plasma_den_data[*,3] = kp_data[kp_start_index:kp_end_index].static.hplus_density
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'OPLUS_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'OPLUS_DENSITY')
           if t2 ne -1 then plasma_den_data[*,4] = kp_data[kp_start_index:kp_end_index].static.oplus_density
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_DENSITY')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_DENSITY')
           if t2 ne -1 then plasma_den_data[*,5] = kp_data[kp_start_index:kp_end_index].static.o2plus_density
        endif
     store_data,'PLASMA_DEN',data={x:kp_data[kp_start_index:kp_end_index].time, y:plasma_den_data, v:plasma_den_v}, dlim={labels:plasma_den_labels, ytitle:'Density', ylog:1},verbose=0
@@ -726,26 +726,26 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'LPW')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'ELECTRON_TEMPERATURE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'ELECTRON_TEMPERATURE')
         if t2 ne -1 then plasma_temp_data[*,0] = kp_data[kp_start_index:kp_end_index].lpw.electron_temperature
     endif
     t1 = where(base_tags eq 'SWEA')
     if t1 ne -1 then begin
-       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SOLAR_WIND_ELECTRON_TEMPERATURE')
+       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SOLAR_WIND_ELECTRON_TEMPERATURE')
        if t2 ne -1 then plasma_temp_data[*,1] = kp_data[kp_start_index:kp_end_index].swea.SOLAR_WIND_ELECTRON_TEMPERATURE
     endif
     t1 = where(base_tags eq 'SWIA')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_TEMPERATURE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_TEMPERATURE')
       if t2 ne -1 then plasma_temp_data[*,2] = kp_data[kp_start_index:kp_end_index].swia.hplus_temperature
     endif
     t1 = where(base_tags eq 'STATIC')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_TEMPERATURE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_TEMPERATURE')
         if t2 ne -1 then plasma_temp_data[*,3] = kp_data[kp_start_index:kp_end_index].static.hplus_temperature
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'OPLUS_TEMPERATURE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'OPLUS_TEMPERATURE')
         if t2 ne -1 then plasma_temp_data[*,4] = kp_data[kp_start_index:kp_end_index].static.oplus_temperature
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_TEMPERATURE')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_TEMPERATURE')
         if t2 ne -1 then plasma_temp_data[*,5] = kp_data[kp_start_index:kp_end_index].static.o2plus_temperature
     endif
     store_data,'PLASMA_TEMP',data={x:kp_data[kp_start_index:kp_end_index].time, y:plasma_temp_data, v:plasma_temp_v}, dlim={labels:plasma_temp_labels, ytitle:'Temperature', ylog:1},verbose=0
@@ -763,17 +763,17 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'SWIA')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_X')
         if t2 ne -1 then swia_h_vel_data[*,0] = kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_X
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_Y')
         if t2 ne -1 then swia_h_vel_data[*,1] = kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_Y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
         if t2 ne -1 then swia_h_vel_data[*,2] = kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_Z
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
       if t2 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_Y')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_Y')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_FLOW_VELOCITY_MSO_Z')
           if t2 ne -1 then swia_h_vel_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_X^2)+(kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_Y^2)+(kp_data[kp_start_index:kp_end_index].swia.HPLUS_FLOW_VELOCITY_MSO_Z^2))
         endif
       endif
@@ -793,17 +793,17 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'STATIC')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_X')
         if t2 ne -1 then static_h_vel_data[*,0] = kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_X
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y')
         if t2 ne 1 then static_h_vel_data[*,1] = kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z')
         if t2 ne -1 then static_h_vel_data[*,2] = kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_X')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y')
           if t2 ne -1 then begin
-            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z')
+            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z')
               if t2 ne -1 then static_h_vel_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_X^2)+(kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_Y^2)+(kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_DIRECTION_MSO_Z^2))
           endif
         endif
@@ -825,17 +825,17 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'STATIC')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_X')
         if t2 ne -1 then static_o2_vel_data[*,0] = kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_X
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
         if t2 ne -1 then static_o2_vel_data[*,1] = kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_Y
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
         if t2 ne -1 then static_o2_vel_data[*,2] = kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_Z
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
           if t2 ne -1 then begin
-            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
+            t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Z')
               if t2 ne -1 then static_o2_vel_data[*,3] = sqrt((kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_X^2)+(kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_Y^2)+(kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_Z^2))
           endif
         endif
@@ -856,9 +856,9 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'STATIC')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_X')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_X')
         if t2 ne -1 then static_flux_data[*,0] = kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_X
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_FLOW_VELOCITY_MSO_Y')
         if t2 ne -1 then static_flux_data[*,1] = kp_data[kp_start_index:kp_end_index].static.O2PLUS_FLOW_VELOCITY_MSO_Y
   
       store_data,'STATIC_FLUX',data={x:kp_data[kp_start_index:kp_end_index].time, y:static_flux_data, v:static_flux_v}, dlim={labels:static_flux_labels, ytitle:'Omni-Directional Flux', ylog:1},verbose=0
@@ -877,13 +877,13 @@ pro MVN_KP_STANDARDS, kp_data, $
     
     t1 = where(base_tags eq 'STATIC')
     if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HPLUS_CHARACTERISTIC_ENERGY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HPLUS_CHARACTERISTIC_ENERGY')
         if t2 ne -1 then static_energy_data[*,0] = kp_data[kp_start_index:kp_end_index].static.HPLUS_CHARACTERISTIC_ENERGY
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'HEPLUS_CHARACTERISTIC_ENERGY')  
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'HEPLUS_CHARACTERISTIC_ENERGY')  
         if t2 ne -1 then static_energy_data[*,1] = kp_data[kp_start_index:kp_end_index].static.heplus_characteristic_energy
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'OPLUS_CHARACTERISTIC_ENERGY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'OPLUS_CHARACTERISTIC_ENERGY')
         if t2 ne -1 then static_energy_data[*,2] = kp_data[kp_start_index:kp_end_index].static.oplus_characteristic_energy
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'O2PLUS_CHARACTERISTIC_ENERGY')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'O2PLUS_CHARACTERISTIC_ENERGY')
         if t2 ne -1 then static_energy_data[*,3] = kp_data[kp_start_index:kp_end_index].static.o2plus_characteristic_energy
   
       store_data,'STATIC_ENERGY',data={x:kp_data[kp_start_index:kp_end_index].time, y:static_energy_data, v:static_energy_v}, dlim={labels:static_energy_labels, ytitle:'Characteristic Energy', ylog:1},verbose=0
@@ -901,11 +901,11 @@ pro MVN_KP_STANDARDS, kp_data, $
 
     t1 = where(base_tags eq 'SPACECRAFT')
      if t1 ne -1 then begin
-       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_X')
+       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_X')
        if t2 ne -1 then begin
-        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Y')
+        t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Y')
         if t2 ne -1 then begin
-          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'MSO_Z')
+          t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'MSO_Z')
           if t2 ne -1 then begin
            r_mars = 3396.0
            for i=kp_start_index, kp_end_index do begin
@@ -936,7 +936,7 @@ pro MVN_KP_STANDARDS, kp_data, $
      t1 = where(base_tags eq 'SWIA')
      if t1 ne -1 then begin
       
-       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SOLAR_WIND_DYNAMIC_PRESSURE')
+       t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SOLAR_WIND_DYNAMIC_PRESSURE')
        if t2 ne -1 then begin
          store_data,'SOLAR_WIND',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].swia.solar_wind_dynamic_pressure}, dlim={labels:solar_wind_labels, ylog:1},verbose=0
          tplot_2plot[plot_count] = 'SOLAR_WIND'
@@ -948,7 +948,7 @@ pro MVN_KP_STANDARDS, kp_data, $
 
   if keyword_set(ionosphere) then begin
      ionosphere_labels =['Electron Shape']
-     store_data,'IONOSPHERE',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].swea.electron_spectrum_shape}, dlim={labels:ionosphere_labels, ylog:1},verbose=0
+     store_data,'IONOSPHERE',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].swea.electron_spectrum_shape_parameter}, dlim={labels:ionosphere_labels, ylog:1},verbose=0
      tplot_2plot[plot_count] = 'IONOSPHERE'
      lin_log[plot_count] = 1
      plot_count = plot_count + 1 
@@ -959,7 +959,7 @@ pro MVN_KP_STANDARDS, kp_data, $
      
      t1 = where(base_tags eq 'LPW')
      if t1 ne -1 then begin
-      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):total(first_level_count[0:t1])] eq 'SPACECRAFT_POTENTIAL')
+      t2 = where(first_level_tags[total(first_level_count[0:t1-1]):(total(first_level_count[0:t1])-1)] eq 'SPACECRAFT_POTENTIAL')
       if t2 ne -1 then begin
        store_data,'SC_POTENTIAL',data={x:kp_data[kp_start_index:kp_end_index].time, y:kp_data[kp_start_index:kp_end_index].lpw.spacecraft_potential}, dlim={labels:sc_pot_labels},verbose=0
        tplot_2plot[plot_count] = 'SC_POTENTIAL'
