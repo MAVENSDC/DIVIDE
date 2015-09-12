@@ -23,7 +23,7 @@ PRO MVN_KP_CHECK_VERSION
   
   ;; Read the current version from the Version History file
   line =''
-  openr,lun,install_directory+'Version History.txt',/get_lun
+  openr,lun,install_directory+'Version_History.txt',/get_lun
   readf,lun,line
   free_lun, lun
   temp = strsplit(line, /EXTRACT) 
@@ -32,7 +32,7 @@ PRO MVN_KP_CHECK_VERSION
   
   ;; Read the version on the website
   netURL = mvn_kp_get_temp_connection(spec.host, spec.port, spec.username, spec.password, spec.url_scheme, spec.authentication)
-  version_history_txt = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/Version History.txt', '', /not_sdc_connection)
+  version_history_txt = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/Version_History.txt', '', /not_sdc_connection)
   if size(version_history_txt, /TYPE) ne 7 then begin
     print, "Problem checking for latest toolkit versions."
     print, "If not connected to the internet, then this is to be expected"
@@ -48,7 +48,7 @@ PRO MVN_KP_CHECK_VERSION
     read, answer, prompt='There is a new version of the software.  Would you like to download it now (y/n)? : '
     if (answer eq 'y' || answer eq 'Y') then begin
       mvn_kp_download_latest_version
-      print, "Latest version downloaded.  A description of recents changes can be found in 'Version History.txt'"
+      print, "Latest version downloaded.  A description of recents changes can be found in 'Version_History.txt'"
     endif else begin
       print, ""
       print, "You can download the latest version at any time by typing 'mvn_kp_download_latest_version'."

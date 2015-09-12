@@ -9,9 +9,9 @@ PRO MVN_KP_VERSION,version=version
 
   install_result = routine_info('mvn_kp_check_version',/source)
   install_directory = strsplit(install_result.path,'mvn_kp_check_version.pro',/extract,/regex)
-  ;; Read the current version from the Version History file
+  ;; Read the current version from the Version_History file
   line =''
-  openr,lun,install_directory+'Version History.txt',/get_lun
+  openr,lun,install_directory+'Version_History.txt',/get_lun
   readf,lun,line
   free_lun, lun
   temp = strsplit(line, /EXTRACT)

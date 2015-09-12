@@ -66,6 +66,10 @@ pro mvn_kp_download_latest_version
     ;; Find where file names match
     matching_index=where(strmatch(file_names, new_file_names[i], /fold_case) eq 1)
     
+    if (file eq 'access.txt') then begin
+      continue
+    endif
+    
     ;; If there is no match, we need to download that file
     if (matching_index eq -1) then begin
       file_and_path = install_directory[0] + file
