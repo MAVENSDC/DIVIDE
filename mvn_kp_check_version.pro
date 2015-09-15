@@ -21,14 +21,24 @@ PRO MVN_KP_CHECK_VERSION
   install_result = routine_info('mvn_kp_check_version',/source)
   install_directory = strsplit(install_result.path,'mvn_kp_check_version.pro',/extract,/regex)
   
-  ;; Read the current version from the Version History file
-  line =''
-  openr,lun,install_directory+'Version_History.txt',/get_lun
-  readf,lun,line
-  free_lun, lun
-  temp = strsplit(line, /EXTRACT) 
+  ;; Check if file exists, if not, say there is a new version
+  file_test_result = FILE_TEST(install_directory+'Version_History.txt')
   
-  current_version = temp[n_elements(temp)-1]
+  if (file_test_result eq 1) then begin
+    ;; Read the current version from the Version History file
+    line =''
+    openr,lun,install_directory+'Version_History.txt',/get_lun
+    readf,lun,line
+    free_lun, lun
+    temp = strsplit(line, /EXTRACT) 
+    
+    current_version = temp[n_elements(temp)-1]
+  
+  endif else begin
+    current_version = 'Version Not Found'
+  endelse
+  
+
   
   ;; Read the version on the website
   netURL = mvn_kp_get_temp_connection(spec.host, spec.port, spec.username, spec.password, spec.url_scheme, spec.authentication)
@@ -53,7 +63,7 @@ PRO MVN_KP_CHECK_VERSION
       print, ""
       print, "You can download the latest version at any time by typing 'mvn_kp_download_latest_version'."
       print, "Patch notes can be found at: "
-      print, "https://lasp.colorado.edu/maven/sdc/public/data/sdc/software/idl_toolkit/Source/Version%20History.txt"
+      print, "https://lasp.colorado.edu/maven/sdc/public/data/sdc/software/idl_toolkit/Source/Version_History.txt"
     endelse
   endif 
   

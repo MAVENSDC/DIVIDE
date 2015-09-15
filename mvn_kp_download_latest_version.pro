@@ -43,17 +43,30 @@ pro mvn_kp_download_latest_version
   file_names=''
   checksums=''
   
-  openr,lun,install_directory+'SourceList',/get_lun
-  while not eof(lun) do begin
-    line=''
-    readf,lun,line
-    tokens = strsplit(line,' ',/extract)
-    if tokens[0] ne '' then begin
-      file_names = [file_names, tokens[1]]
-      checksums = [checksums, tokens[0]]
-    endif
-  endwhile
-  free_lun, lun
+  ;; Check if file exists, if not, say there is a new version
+  file_test_result = FILE_TEST(install_directory+'SourceList')
+
+  if (file_test_result eq 1) then begin
+    
+    openr,lun,install_directory+'SourceList',/get_lun
+    while not eof(lun) do begin
+      line=''
+      readf,lun,line
+      tokens = strsplit(line,' ',/extract)
+      if tokens[0] ne '' then begin
+        file_names = [file_names, tokens[1]]
+        checksums = [checksums, tokens[0]]
+      endif
+    endwhile
+    free_lun, lun
+    
+  endif else begin
+    
+    file_names = ['SourceList Not Found']
+    checksums = ['SourceList Not Found']
+    
+  endelse
+  
   
   ;; Compare the two files, download the new stuff
   return_value=''
