@@ -9,7 +9,7 @@ PRO MVN_KP_CHECK_VERSION
   common mvn_kp_update, last_asked_user_to_update
 
     if (n_elements(last_asked_user_to_update) eq 1) then begin
-      if (systime(/seconds) lt last_asked_user_to_update + 7200) then begin
+      if (systime(/seconds) lt last_asked_user_to_update + 43200) then begin
         return
       endif
     endif

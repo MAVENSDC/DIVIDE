@@ -21,7 +21,6 @@ PRO MVN_KP_VERSION,version=version
   if arg_present(version) then begin
     version = current_version
   endif else begin
-    suf = keyword_set(mvn_kp_config_file(/check_access)) ? 't' : 'p'
-    print, 'Maven KP Toolkit Version: '+current_version+suf
+    print, 'Maven KP Toolkit Version: '+current_version
   endelse
 end
