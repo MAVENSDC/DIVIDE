@@ -12,12 +12,13 @@ Input: access: Team or Public.  Exit with error if other
        include_basemaps: boolean
        Debug: if true, do not overwrite access.txt file
 
-Output: None: generates ZIP file, prints message indicating filename.
+Output: None: generates ZIP file, placed two directories above archive_tools/
+                i.e., one level above maventoolkit/
+              Updates the help files
+              prints message to screen indicating name of generated file.
 
 Author: McGouldrick (2015-Oct-01)
 Version: 1.0
-
-ToDo: Still need to add the make_help script
 '''
 import os
 import re
@@ -39,6 +40,17 @@ def check_args():
     #
     total = len( sys.argv )   # get total number of args passed
     cmdargs = str( sys.argv ) # Get the args list
+    if total <= 1:
+        print '\nUSAGE:'
+        print '%> python make_zip.py access=... ' \
+              + '[IncludeBasemaps=...] [Debug=...]'
+        print '  -- or --'
+        print '%> ./make_zip.py access=... ' \
+              + '[IncludeBasemaps=...] [Debug=...]'
+        print ' '
+        print 'Where values in [] are Optional arguments.\n'
+        print 'Returning having done nothing.....\n'
+        sys.exit(1)        
     #
     #  cycle through args and get info
     #
