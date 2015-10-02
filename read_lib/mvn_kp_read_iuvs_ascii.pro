@@ -19,7 +19,6 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
   ;; read in from config info about iuvs data
   iuvs_data_spec = mvn_kp_config(/iuvs_data, private=private)
   num_common = iuvs_data_spec.num_common
- 
  ;; Read in until we hit 'TIME_START'
   while not eof(lun) do begin
     temp=''
@@ -79,7 +78,7 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
      endelse
      
   endfor
-  
+
   return
 end
 
@@ -267,7 +266,6 @@ end
 
 pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   temp = ''
-  
   ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   in_struct.half_int_distance_id  = string(line)
@@ -563,8 +561,13 @@ end
 ;;
 pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
   
+  ;; First, read the provided file to determine the number of altitude bins
+  ;;  for each observation mode.
+  mvn_kp_iuvs_nalt_struct, filename, nalt_struct
+
   ;; Init IUVS struct
-  MVN_KP_IUVS_STRUCT_INIT, iuvs_record
+
+  MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct
  
   ;; Set for collecting orbit number later
   orbit_number = -1
@@ -586,6 +589,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         temp_periapse = iuvs_record.periapse[periapse_i]
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_periapse
+        readf,lun,temp ; skip over the n_alt_bins info
         ;; Read in Periapse specific values
         mvn_kp_read_iuvs_ascii_periapse, lun, temp_periapse
         iuvs_record.periapse[periapse_i] = temp_periapse
@@ -615,6 +619,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_l_limb
+        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_l_limb specific values
         mvn_kp_read_iuvs_ascii_c_l_limb, lun, temp_c_l_limb
@@ -630,6 +635,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_l_high
+        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_l_high specific values
         mvn_kp_read_iuvs_ascii_c_l_high, lun, temp_c_l_high
@@ -660,6 +666,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_e_limb
+        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_e_limb specific values
         mvn_kp_read_iuvs_ascii_c_e_limb, lun, temp_c_e_limb
@@ -675,6 +682,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_e_high
+        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_e_high specific values
         mvn_kp_read_iuvs_ascii_c_e_high, lun, temp_c_e_high

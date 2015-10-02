@@ -11,7 +11,8 @@
 
 
 ;-
-pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
+                             instruments=instruments
 
 ;return ; hack to eliminate this crap
 
@@ -50,7 +51,6 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
     'lon'                      ,!VALUES.F_NAN,                               $
     'lat_mso'                  ,!VALUES.F_NAN,                               $
     'lon_mso'                  ,!VALUES.F_NAN,                               $
-;-km-soon:    'n_alt'                    ,-1L,                                         $
     'orbit_number'             ,-1L,                                         $
     'mars_season_ls'           ,!VALUES.F_NAN,                               $
     'spacecraft_geo'           ,make_array(3, /DOUBLE, VALUE=!VALUES.D_NAN), $
@@ -65,10 +65,10 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
     'spacecraft_sza'           ,!VALUES.F_NAN,                               $
     'spacecraft_local_time'    ,!VALUES.F_NAN,                               $
     'spacecraft_altitude'      ,!VALUES.F_NAN,                               $
-    'mars_sun_distance'        ,!VALUES.F_NAN)
+    'mars_sun_distance'        ,!VALUES.F_NAN,                               $
+    'n_alt_bins'               ,-1L)                                         
     
   iuvs_record_temp = create_struct(['orbit'],-1L)
-
 
   ;INCLUDE IUVS STELLAR OCCULTATION DATA STRUCTURE
   if instruments.stellarocc then begin
@@ -104,9 +104,11 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
   if instruments.c_l_high then begin
-    nalt = 120 ; this is number of altitude levels. 
-               ; In future, either make code abel to check for this and adjust
-               ; or get this info from the label.
+    if nalt_struct.c_l_high gt 0 then $
+      nalt = nalt_struct.c_l_high
+;    nalt = 120 ; this is number of altitude levels. 
+;               ; In future, either make code abel to check for this and adjust
+;               ; or get this info from the label.
     i6 = create_struct(                                                      $
       NAME                   ='c_l_high',                                   $
       iuvs_record_common     ,                                               $
@@ -130,7 +132,9 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
 ;WHY are these hard wired?!?!?!?
 ;
   if instruments.c_l_limb then begin
-    nalt = 32 
+    if nalt_struct.c_l_limb gt 0 then $
+      nalt = nalt_struct.c_l_limb
+;    nalt = 32 
     i7 = create_struct(                                                   $
       NAME               ='c_l_limb',                                     $
       iuvs_record_common ,                                                $
@@ -172,7 +176,9 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS ECHELLE HIGH ALTITUDE CORONA DATA STRUCTURE 
   if instruments.c_e_high then begin    
-    nalt = 77
+    if nalt_struct.c_e_high gt 0 then $
+      nalt = nalt_struct.c_e_high
+;    nalt = 77
     i3 = create_struct(                                                      $
           NAME                     ='c_e_high',                              $
           iuvs_record_common ,                                               $
@@ -196,7 +202,9 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS ECHELLE LIMB CORONA DATA STRUCTURE
   if instruments.c_e_limb then begin
-    nalt = 32
+    if nalt_struct.c_e_limb gt 0 then $
+      nalt = nalt_struct.c_e_limb
+;    nalt = 32
     i4 = create_struct(                                                      $
       NAME                     ='c_e_limb',                                  $
       iuvs_record_common ,                                                   $
@@ -227,7 +235,9 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
   
   ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
   if instruments.periapse then begin
-    nalt = 32
+    if nalt_struct.periapse gt 0 then $
+      nalt = nalt_struct.periapse
+;    nalt = 32
     i1 = create_struct(                                                    $
       NAME                ='periapse',                                     $
       iuvs_record_common,                                                  $
