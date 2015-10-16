@@ -1,32 +1,24 @@
- Function to return the model output interpolated to a given spacecraft 
- trajectory
+ :Name: mvn_kp_interpol_model
 
  :Author: Kevin McGouldrick (2015-Apr-15)
 
  :Description:
-     Parse a NetCDF file with modeled data results and return in three data
-     structures.  In order to work correctly with the toolkit, modeled
-     data must conform to our modeled results file requirements
-     - FIXME say where this is hosted.
+    Convert a model cube and its metadata into an a structure of arrays 
+    interpolated to the spacecraft trajectory given by kp_data
 
  :Keywords:
     kp_data: in, required, type=struct
        Key Parameter data file containing spacecraft trajectory information.
 
-    model_meta: in, required, type=struct
-       Structure containing relevant model metadata.
+    model: in, required, type=struct
+       Structure containing relevant model metadata, dimensions, and data
 
-    model_dims: in, required, type=struct
-       Structure containing relevant model dimension information.
-
-    model_data: in, required, type=struct
-       Structure containing relevant model data.
-       
+    model_interpol: out, required, type=struct
+       Structure containing the model tracers interpolated to the provided
+       spacecraft trajectory from the kp_data
     help: optional: opens a window describing the function
 
-  :Returns:
-    model_interpol: out, type=TBD
-       Object containing the model tracers interpolated to the provided 
-       spacecraft trajectory from the kp_data
+ :Version:
+   1.1 (2015-Jun-16)
 
 -
