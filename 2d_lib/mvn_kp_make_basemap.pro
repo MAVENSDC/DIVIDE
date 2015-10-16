@@ -344,14 +344,24 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
 endif else begin      ;blank canvas for the MSO plot
   if keyword_set(basemap) then begin
     if basemap eq 'user' then begin
-      input_file = dialog_pickfile(path=install_directory,filter='*.jpg')
-      read_jpeg,input_file,mapimage
+      input_file = dialog_pickfile(path=install_directory)
+      if (strmatch(input_file, '*.jpg')) then begin
+        read_jpeg,input_file,mapimage
+      endif
+      if (strmatch(input_file, '*.png')) then begin
+        read_png,input_file,mapimage
+      endif
       if keyword_set(map_limit) eq 0 then begin
-        map_limit = [-90,0,90,360]
+        map_limit = [-90,-180,90,180]
       endif
       if keyword_set(map_location) eq 0 then begin
-        map_location = [-180,-90]
+        map_location = [0,0]
       endif
+      i = image(mapimage, image_dimensions=[360,180], $
+        window_title="MAVEN Orbital Path",transparency=alpha)
+      mp = map('Equirectangular', limit = map_limit, /box_axes, /current)
+      mp.limit = map_limit
+      plot_color = "Black"
     endif
   endif else begin
     mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)

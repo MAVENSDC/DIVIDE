@@ -309,9 +309,9 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
       if strmatch( name, 'Sub-Mars*Sun*', /fold_case) then $
          name = 'submars_point_solar_'+strmid(name,27)
       if strmatch( name, '*Rotation*SPACECRAFT*', /fold_case ) then $
-         name = 't'+strmid(name,50,1)+strmid(name,52,1)
+         name = 'spacecraft_t'+strmid(name,50,1)+strmid(name,52,1)
       if strmatch( name, '*Rotation*IAU*', /fold_case ) then $
-         sc_include = keyword_set(0B)
+         name = 't'+strmid(name,42,1)+strmid(name,44,1)
       if strmatch( name, 'GEO Latitude', /fold_case ) then $
          name = 'sub_sc_latitude'
       if strmatch( name, 'GEO Longitude', /fold_case ) then begin 
