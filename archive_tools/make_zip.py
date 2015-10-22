@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import zipfile
+import hashlib
 
 def check_args():
     '''
@@ -165,7 +166,6 @@ def create_zip_file(Debug,IncludeBasemaps,access,zipout):
     #
     all_files.append('access.txt')
     all_files.append('Version_History.txt')
-    all_files.append('SourceList')
     #
     #  Define the root dir regex whether getting basemaps or not
     #
@@ -188,11 +188,21 @@ def create_zip_file(Debug,IncludeBasemaps,access,zipout):
     #
     #  Now, cycle through those files, adding them to the ZIP file
     #
+    
+    os.remove('SourceList')
+    f=open('SourceList', 'w')
     if os.path.isfile(zipout): os.remove(zipout)
     with zipfile.ZipFile(zipout,'a',zipfile.ZIP_DEFLATED) as myzip:
         for i in all_files:
             myzip.write(i)
-    myzip.close()
+            m = hashlib.md5(open(i, 'rb').read())
+            f.write(m.hexdigest())
+            f.write(' ')
+            f.write(i)
+            f.write('\n')
+        f.close()
+        myzip.write('SourceList')
+        myzip.close()
     #
     #  Re-write the access.txt file to indicate Team member access
     #
