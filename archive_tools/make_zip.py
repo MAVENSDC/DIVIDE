@@ -170,9 +170,9 @@ def create_zip_file(Debug,IncludeBasemaps,access,zipout):
     #  Define the root dir regex whether getting basemaps or not
     #
     if IncludeBasemaps:
-        root_regex = '.+(basemaps|help|_lib)'
+        root_regex = '.+(basemaps|help|orbitfiles|_lib)'
     else:
-        root_regex = '.+(help|_lib)'
+        root_regex = '.+(help|orbitfiles|_lib)'
     #
     #  Now, get a list of sub-directory files
     #
