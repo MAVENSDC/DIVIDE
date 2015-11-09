@@ -1,4 +1,4 @@
-Current Version: 9/11/15a
+Current Version: 2015-10-16
 
 2015-10-16:
 	-Added ability to use models given in x,y,z coordinates rather than lat/lon/alt
