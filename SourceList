@@ -35,7 +35,7 @@ fc6e2093c9983aef36aec79273efb677 ./misc_lib/mvn_kp_get_list.pro
 72cf30d4e57a9a6e23125524a5387618 ./misc_lib/mvn_copy_struct.pro
 8833a110e0150beda8b099b416926523 ./misc_lib/mvn_kp_range_select.pro
 95cfc19a88cddcf7054ecd8ca727517a ./misc_lib/mvn_kp_structure_index.pro
-8771eac87607c5522395d6d481a1d6e3 ./misc_lib/mvn_kp_config.pro
+4110e779e1911001d01a792c75398d6a ./misc_lib/mvn_kp_config.pro
 930b673806d1fef7c907009b0b9152f0 ./misc_lib/mvn_kp_tag_verify.pro
 f01e6f59131e1aee7a6368be70a546a5 ./misc_lib/mvn_kp_tag_list.pro
 4769dfeee19e3e15e99c18969d260c2d ./misc_lib/mvn_kp_date_subdir.pro
