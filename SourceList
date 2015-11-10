@@ -3,7 +3,7 @@ c2762dfd06f8d201cdea93be91317dc0 mvn_kp_check_version.pro
 8aa407600a238c7b338e7fd97d666851 mvn_kp_iuvs_corona.pro
 b302cedbe1b0146e494e3ce83acdd621 mvn_kp_iuvs_search.pro
 3c8d71a16ae577912fdc63cafaa5bce7 mvn_kp_3d.pro
-770718eaf64aacec81cbcc042ca1de00 mvn_kp_download_latest_version.pro
+ba30caad85c28d0928935d6ab08b7736 mvn_kp_download_latest_version.pro
 df480eb5d527cfd4459b91b28a013471 mvn_kp_download_template_file.pro
 940e837d4424c2c9a224dcbcca4e9158 mvn_kp_resample.pro
 c6951e67074aeadd537a16f6ffa7f906 mvn_kp_insitu_search.pro
@@ -22,8 +22,8 @@ b18d29ed4ba19c1a7c32cb3e3aefe111 mvn_kp_download_files.pro
 b92972fbcefe41426c768626b3dda123 mvn_kp_bin.pro
 204fdb50c91f2652096dd2e6c631388f mvn_kp_map2d.pro
 a7fe71ae1ad0635dc20c33774f3a39c1 mvn_kp_standards.pro
-3f06619f3be493f076adadd54dad0f90 access.txt
-47834f9d97227ae851ce0b30e4044c0a Version_History.txt
+341f17ed72277a007027d79f0d332ebe access.txt
+5d39d7577a995b3c7ebeaa010a80b82e Version_History.txt
 fc6e2093c9983aef36aec79273efb677 ./misc_lib/mvn_kp_get_list.pro
 8b2e7f6e342c152e7379e15f2ab22c81 ./misc_lib/mvn_combine_structs.pro
 57157c314e5651f51a32b01e0c31547b ./misc_lib/mvn_kp_merge_orbit_files.pro
@@ -111,7 +111,7 @@ f9d4c7328434f6851a15179aa0a54d6a ./help/mvn_kp_plot.txt
 de182fa40e5cb40137966aed15773b0a ./help/mvn_kp_download_template_file.txt
 23de0189c450b21ba3d81f2ddb7299cf ./help/mvn_kp_tplot.txt
 a0fb59efa6b5304e5aea873b5ae00a45 ./help/mvn_kp_download_l2_files.txt
-94153fd0b107981c7dd4cdb558dc34bb ./help/mvn_kp_download_latest_version.txt
+8b8059d580b109a15fe96ca20a26bb49 ./help/mvn_kp_download_latest_version.txt
 f8458e29dad88528adb4f7ceb859b1ab ./help/mvn_kp_create_model_maps.txt
 0fbe3141de8d379e272a928715588007 ./help/mvn_kp_bin.txt
 018044feccd379f81eb05c1a3fe99724 ./help/mvn_kp_download_orbit_file.txt
