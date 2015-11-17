@@ -1276,7 +1276,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       mars_globe -> ADD, oPolygons  
      
       ;ADD ADDITIONAL 'GLOBES' WITH TEMPORARY TEXTURE FOR LATER ATM MODELS
-    
+      ;Note: These will always be in MSO coordinates 
       MVN_KP_3D_ATMSHELL, atmModel1, oPolygons1, .34962
       MVN_KP_3D_ATMSHELL, atmModel2, oPolygons2, .35962
       MVN_KP_3D_ATMSHELL, atmModel3, oPolygons3, .36962
@@ -1296,6 +1296,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       atmModel4->setproperty,hide=1
       atmModel5->setproperty,hide=1
       atmModel6->setproperty,hide=1
+      
+      ;Need to rotate 180 degrees
+      atmModel1 -> rotate, [0,0,1], 180
+      atmModel2 -> rotate, [0,0,1], 180
+      atmModel3 -> rotate, [0,0,1], 180
+      atmModel4 -> rotate, [0,0,1], 180
+      atmModel5 -> rotate, [0,0,1], 180
+      atmModel6 -> rotate, [0,0,1], 180
+      
      
       ;ADD LINES   DEFAULT THAT GRIDLINES ARE NOT SHOWN
       ;LATITUDE
@@ -2797,9 +2806,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           widget_control,(*pstate).subbaseR10, map=0
           
       widget_control, base, set_uvalue=pstate
-    
+
       xmanager, 'MVN_KP_3D', base,/no_block, cleanup='MVN_KP_3D_cleanup', $
                 event_handler='MVN_KP_3D_event'
+
+
 
   endif               ;END OF THE /DIRECT KEYWORD CHECK LOOP
 

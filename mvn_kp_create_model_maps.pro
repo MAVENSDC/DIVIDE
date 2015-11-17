@@ -48,18 +48,16 @@
 ;
 ;-
 
-
-
 pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
+                              model=model, $
                               file=file, $
                               interp=interp, $
                               numContourLines = numContourLines, $
                               fill=fill, $
                               ct=ct, $
-                              basemap=basemap, $
                               contourtransparency=contourtransparency
+                              
 
-;TODO: MAKE SURE ALL MAPS HAVE THE LONGITUDES IN THE CORRECT PLACE
 
 ;CHECK ALL PARAMETERS BEFORE CONTINUING
 ;Check altitude
@@ -68,36 +66,27 @@ if (~(size(altitude, /type) gt 1) and ~(size(altitude, /type) lt 6)) then begin
   return
 endif
 
-;Check filename
-if (keyword_set(file)) then begin
-  if (not size(file, /type) eq 7) then begin
-    print, "Please enter a valid file name."
-    return
-  endif
-endif else begin 
-  result = DIALOG_PICKFILE(/READ, FILTER='*.nc')
-  if (result eq '') then begin
-    print, "A simulation file must be selected."
-    return
-  endif
-  file = result
+; Check if filename, model, or nothing is specified
+; These lines of code just return "model" with the model info
+if (keyword_set(model)) then begin
+  model=model
+endif else begin
+  if (keyword_set(file)) then begin
+    if (not size(file, /type) eq 7) then begin
+      print, "Please enter a valid file name."
+      return
+    endif
+  endif else begin
+    result = DIALOG_PICKFILE(/READ, FILTER='*.nc')
+    if (result eq '') then begin
+      print, "A simulation file must be selected."
+      return
+    endif
+    file = result
+  endelse
+  mvn_kp_read_model_results, file, model
 endelse
 
-;Check basemap name
-if (keyword_set(basemap)) then begin
-  if basemap eq 'mdim' then begin
-    mapimage = 'MDIM_2500x1250.jpg'
-  endif else if basemap eq 'mola' then begin
-    mapimage = 'MOLA_color_2500x1250.jpg'
-  endif else if basemap eq 'mola_bw' then begin
-    mapimage = 'MOLA_BW_2500x1250.jpg'
-  endif else if basemap eq 'mag' then begin
-    mapimage = 'MAG_Connerny_2005.jpg'
-  endif else begin
-    print, "Unrecognized basemap type, using mars_2k_color.jpg"
-    mapimage = 'mars_2k_color.jpg'
-  endelse
-endif
 
 ;Check contour transparency value
 if not keyword_set(contourtransparency) then begin
@@ -159,10 +148,6 @@ endif else begin
   basemap_directory = install_directory+'basemaps\'
 endelse
 
-
-;READ THE MODEL RESULTS SPECIFIED
-mvn_kp_read_model_results, file, model
-
 simmeta = model.meta
 simdim = model.dim
 simdata = model.data
@@ -182,16 +167,28 @@ while ((input lt 0) or (input gt n_elements(simdata))) do begin
 endwhile
 dataindex = input - 1
 
+;; Check if we need to convert the model to spherical coordinates 
+if ((*(simdata[0])).dim_order[0] eq 'size_x' || $
+    (*(simdata[0])).dim_order[0] eq 'size_y' || $ 
+    (*(simdata[0])).dim_order[0] eq 'size_z') then begin
+      
+  mvn_kp_model_cube_to_sphere, model, model_spherical_coords, alt=[altitude -10, altitude, altitude + 10]
+  simdim = model_spherical_coords.dim
+  simdata = model_spherical_coords.data
+  
+endif
+
 
 ;CALCULATE RANGE OF LONGITUDE AND LATITUDE
 ;Some models have longitude from 0 to 360, others go from -180 to 180
+;Standardize to -180 to 180 in the center
 if ((min(simdim.lon) gt 0) or (min(simdim.lon) eq 0)) then begin
-  lonrange = [0, 360]
-endif else begin
-  lonrange = [-180, 180]
-endelse
+  for i=0,n_elements(simdim.lon)-1 do begin
+    if (simdim.lon[i] gt 180) then simdim.lon[i] = simdim.lon[i] - 360
+  endfor
+endif 
 latrange=[-90,90]
-
+lonrange = [-180, 180]
 
 ;Find closest altitude without going over
 temp = where(simdim.alt[*] gt altitude)
@@ -219,28 +216,76 @@ endif else begin
   modeldata = (*simdata[dataindex]).data[*,*,altitude_index]
 endelse
 
+;Rotate the modeldata to MSO coordinate system
+;Need to convert to cartestian, multiple by a rotation matrix, and convert back to lat/lon
+if (strupcase(simmeta.coord_sys) eq 'GEO') then begin
 
-;PLOT THE BASEMAP FIRST IF NEEDED
-if (keyword_set(basemap)) then begin
-  myImage1=IMAGE(basemap_directory+mapimage, /CURRENT, $
-                 IMAGE_DIMENSIONS=[360,180], $
-                 IMAGE_LOCATION=[min(lonrange),-90], $
-                 XRANGE=lonrange, YRANGE=latrange, $
-                 DIMENSIONS=[2500,1250])
-endif
+  ; Create some new arrays that will be used (making sure lat, lon and the data are the same length)
+  expanded_lat = []
+  expanded_lon = []
+  expanded_model_data =[]
+  for i=0,n_elements(simdim.lon)-1 do begin
+    for j=0,n_elements(simdim.lat)-1 do begin
+      expanded_lat=[expanded_lat, simdim.lat[j]]
+      expanded_lon = [expanded_lon, simdim.lon[i]]
+      expanded_model_data = [expanded_model_data, modeldata[i,j]]
+    endfor
+  endfor
+ 
+  ; Convert Lat/Lon to x, y and z in GEO
+  temp_x = sin(((90-expanded_lat)*!dtor))*cos(expanded_lon*!dtor)
+  temp_y = sin(((90-expanded_lat)*!dtor))*sin(expanded_lon*!dtor)
+  temp_z = cos(((90-expanded_lat)*!dtor))
+  
+  ; Convert x,y,z in GEO to x,y,z in MSO
+  rot_angle_x = (25.19 * (-sin(simmeta.ls*!dtor)) * !dtor)
+  rot_angle_y = (simmeta.declination * !dtor)
+  rot_angle_z = (simmeta.longsubsol * !dtor)
+  r11 = cos(rot_angle_y) * cos(rot_angle_z)
+  r12 = (cos(rot_angle_z) * sin(rot_angle_x) * sin(rot_angle_y)) - (cos(rot_angle_x) * sin(rot_angle_z))
+  r13 = (cos(rot_angle_x) * cos(rot_angle_z) * sin(rot_angle_y)) + (sin(rot_angle_x) * sin(rot_angle_z))
+  r21 = cos(rot_angle_y) * sin(rot_angle_z)
+  r22 = (cos(rot_angle_x) * cos(rot_angle_z)) + (sin(rot_angle_x) * sin(rot_angle_y) * sin(rot_angle_z))
+  r23 = (cos(rot_angle_x) * sin(rot_angle_y) * sin(rot_angle_z)) - (cos(rot_angle_z) * sin(rot_angle_x))
+  r31 = -sin(rot_angle_y)
+  r32 = cos(rot_angle_y) * sin(rot_angle_x)
+  r33 = cos(rot_angle_x) * cos(rot_angle_y)
+  new_x = temp_x*r11 + temp_y*r12 + temp_z*r13
+  new_y = temp_x*r21 + temp_y*r22 + temp_z*r23
+  new_z = temp_x*r31 + temp_y*r32 + temp_z*r33
+  
+  ; Convert x,y,z back to latitude and longitude
+  longitude_mso = new_x
+  for i=0,n_elements(new_x)-1 do begin
+    if (new_x[i] ge 0 && new_y[i] ge 0) then longitude_mso[i] = (atan(new_y[i]/new_x[i]) * !radeg)
+    if (new_x[i] lt 0 && new_y[i] ge 0) then longitude_mso[i] = (atan(new_y[i]/new_x[i]) * !radeg) + 180
+    if (new_x[i] lt 0 && new_y[i] lt 0) then longitude_mso[i] = (atan(new_y[i]/new_x[i]) * !radeg) - 180
+    if (new_x[i] ge 0 && new_y[i] lt 0) then longitude_mso[i] = (atan(new_y[i]/new_x[i]) * !radeg)
+  endfor
+  
+  colatitude_mso = (acos(new_z) * !radeg)
+  latitude_mso = 90 - colatitude_mso
+  
+endif else begin
+  
+  ; This is just to make the variables consistant in case the if statement is triggered
+  latitude_mso = simdim.lat
+  longitude_mso = simdim.lon
+  expanded_model_data = modeldata
+endelse
 
 ;CREATE THE CONTOUR PLOT
 ;Note: Background color is almost white, but not quite.
 ;      otherwise, when saving the image as a png, the function cuts out
 ;      an all white border
-contour1=contour(modeldata, simdim.lon, simdim.lat, $
+contour1=contour(expanded_model_data, longitude_mso, latitude_mso, $
                  RGB_TABLE=ct, N_LEVELS=numContourLines, $
                  XRANGE = lonrange, $
                  YRANGE = latrange, $
                  ASPECT_RATIO=1.0, BACKGROUND_COLOR = [254,254,254],$
                  FILL=fill, FONT_SIZE=8, DIMENSIONS=[2000,1000], $
                  OVERPLOT=keyword_set(basemap), $
-                 TRANSPARENCY=contourtransparency)
+                 TRANSPARENCY=contourtransparency, grid_units='degrees')
 
 ;HIDE THE AXES
 if (not keyword_set(basemap)) then begin 

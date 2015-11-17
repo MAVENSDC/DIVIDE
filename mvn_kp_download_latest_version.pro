@@ -6,7 +6,7 @@
 ;
 ; :Description:
 ;     Download Latest Files for the Toolkit
-;
+;-
 
 pro mvn_kp_download_latest_version
 
@@ -35,6 +35,7 @@ pro mvn_kp_download_latest_version
       continue
     endif
     new_file_names[i] = (temp[i])[1]
+    if (strmid(new_file_names[i], 0 , 2) ne './') then new_file_names[i] = './' + new_file_names[i]
     new_checksums[i] = (temp[i])[0]
   endfor
   
@@ -46,6 +47,7 @@ pro mvn_kp_download_latest_version
   ;; Check if file exists, if not, say there is a new version
   file_test_result = FILE_TEST(install_directory+'SourceList')
 
+  ;; Get file names and corresponding checksums
   if (file_test_result eq 1) then begin
     
     openr,lun,install_directory+'SourceList',/get_lun
@@ -54,6 +56,7 @@ pro mvn_kp_download_latest_version
       readf,lun,line
       tokens = strsplit(line,' ',/extract)
       if tokens[0] ne '' then begin
+        if (strmid(tokens[1], 0 , 2) ne './') then tokens[1] = './' + tokens[1]        
         file_names = [file_names, tokens[1]]
         checksums = [checksums, tokens[0]]
       endif

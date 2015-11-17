@@ -113,63 +113,75 @@ pro mvn_kp_read_model_results, file, output
       'COORDINATE_SYSTEM' : meta_struct.coord_sys = string(value)
       'LS': begin
           ;Check if the attribute has an attribute named units
-          unitsfound=0
-          for i=0, var_info.natts-1 do begin
-            attname = ncdf_attname(id, n, i)
-            if (attname = 'units') then unitsfound=1
-            endfor
-          ;If found then determine the units
-          ;If the units are radians, convert the value to degrees
-          if (unitsfound) then begin
-            ncdf_attget,id,n,'units',units
-            if strmatch(string(units),'rad') then begin
-              meta_struct.ls = value*(1.0/!dtor)
+          if (abs(value) ge 2*!pi) then begin
+            meta_struct.ls=value
+          endif else begin
+            unitsfound=0
+            for i=0, var_info.natts-1 do begin
+              attname = ncdf_attname(id, n, i)
+              if (attname = 'units') then unitsfound=1
+              endfor
+            ;If found then determine the units
+            ;If the units are radians, convert the value to degrees
+            if (unitsfound) then begin
+              ncdf_attget,id,n,'units',units
+              if strmatch(string(units),'rad') then begin
+                meta_struct.ls = value*(1.0/!dtor)
+              endif else begin
+                meta_struct.ls = value
+              endelse
             endif else begin
               meta_struct.ls = value
             endelse
-          endif else begin
-            meta_struct.ls = value
           endelse
           end
       'LONGSUBSOL': begin
           ;Check if the attribute has an attribute named units
-          unitsfound=0
-          for i=0, var_info.natts-1 do begin
-            attname = ncdf_attname(id, n, i)
-            if (attname = 'units') then unitsfound=1
-            endfor
-          ;If found then determine the units
-          ;If the units are radians, convert the value to degrees
-          if (unitsfound) then begin
-            ncdf_attget,id,n,'units',units
-            if strmatch(string(units),'rad') then begin
-              meta_struct.longsubsol = value*(1.0/!dtor)
+          if (abs(value) ge 2*!pi) then begin
+            meta_struct.longsubsol=value
+          endif else begin
+            unitsfound=0
+            for i=0, var_info.natts-1 do begin
+              attname = ncdf_attname(id, n, i)
+              if (attname = 'units') then unitsfound=1
+              endfor
+            ;If found then determine the units
+            ;If the units are radians, convert the value to degrees
+            if (unitsfound) then begin
+              ncdf_attget,id,n,'units',units
+              if strmatch(string(units),'rad') then begin
+                meta_struct.longsubsol = value*(1.0/!dtor)
+              endif else begin
+                meta_struct.longsubsol = value
+              endelse
             endif else begin
               meta_struct.longsubsol = value
             endelse
-          endif else begin
-            meta_struct.longsubsol = value
           endelse
           end
       'DEC' : begin
           ;Check if the attribute has an attribute named units
-          unitsfound=0
-          for i=0, var_info.natts-1 do begin
-            attname = ncdf_attname(id, n, i)
-            if (attname = 'units') then unitsfound=1
-            endfor
-          ;If found then determine the units
-          ;If the units are radians, convert the value to degrees
-          if (unitsfound) then begin
-            ncdf_attget,id,n,'units',units
-            if strmatch(string(units),'rad') then begin
-              meta_struct.declination = value*(1.0/!dtor)
+          if (abs(value) ge 2*!pi) then begin
+            meta_struct.declination=value
+          endif else begin
+            unitsfound=0
+            for i=0, var_info.natts-1 do begin
+              attname = ncdf_attname(id, n, i)
+              if (attname = 'units') then unitsfound=1
+              endfor
+            ;If found then determine the units
+            ;If the units are radians, convert the value to degrees
+            if (unitsfound) then begin
+              ncdf_attget,id,n,'units',units
+              if strmatch(string(units),'rad') then begin
+                meta_struct.declination = value*(1.0/!dtor)
+              endif else begin
+                meta_struct.declination = value
+              endelse
             endif else begin
               meta_struct.declination = value
             endelse
-          endif else begin
-            meta_struct.declination = value
-          endelse
+          endelse 
           end
       'MARS_RADIUS' : meta_struct.mars_radius = value
       'ALTITUDE_FROM' : meta_struct.altitude_from = string(value)
