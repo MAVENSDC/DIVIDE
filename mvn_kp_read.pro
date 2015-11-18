@@ -9,7 +9,7 @@
 ;     in situ KP data files and IUVS KP data files. Capable of reading in 
 ;     either CDF or ASCII formated data files. 
 ;     By default, CDF files are read. There are also hooks in place, 
-;     using /download_new keyword, to query the SDC web server and 
+;     using /new_files keyword, to query the SDC web server and 
 ;     download missing or updated KP data files.  
 ;
 ; :Params:
@@ -29,7 +29,7 @@
 ;       entry corresponds to one orbit of data. 
 ;
 ; :Keywords:
-;    download_new: in, optional, type=boolean
+;    new_files: in, optional, type=boolean
 ;       optional keyword to instruct IDL to query the SDC server to look 
 ;       for any new or missing files to download over the input timerange.
 ;    update_prefs: in, optional, type=boolean
@@ -116,7 +116,7 @@
 
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, $
-                 download_new=download_new, $
+                 new_files=new_files, $
                  update_prefs=update_prefs, debug=debug, duration=duration, $
                  text_files=text_files, save_files=save_files, $
                  insitu_only=insitu_only, insitu_all=insitu_all, $
@@ -536,7 +536,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                       target_KP_filenames, kp_insitu_data_directory, $
                       iuvs_filenames, kp_iuvs_data_directory, $
                       save_files=save_files, text_files=text_files, $
-                      insitu_only=insitu_only, download_new=download_new
+                      insitu_only=insitu_only, new_files=new_files
  
   ;; User may have forgotten to enter /text_files 
   if (target_KP_filenames[0] eq 'None') then begin
@@ -639,10 +639,15 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 ;  Might be worthwhile to allow one to read CDF files of one and 
 ;  ASCII files of the other....
 ;
+
       if keyword_set(text_files) then begin
         if not keyword_set(insitu_only) then begin
           ;print,'Removing iuvs_struct_init from mvn_kp_read
-          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+;-km- Need to create the structure containing number of altitude levels
+          mvn_kp_iuvs_nalt_struct,kp_iuvs_data_directory+date_path+iuvs_filenames[0], nalt_struct
+;-km- And pass that to the structure initialization routine
+          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments,$
+                                   nalt_struct=nalt_struct
           iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
         endif
         ; Loop over all files

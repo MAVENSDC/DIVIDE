@@ -104,8 +104,12 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   
   ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
   if instruments.c_l_high then begin
-    if nalt_struct.c_l_high gt 0 then $
+;-orig    if nalt_struct.c_l_high gt 0 then $
+  if nalt_struct.c_l_high gt 0 then begin
       nalt = nalt_struct.c_l_high
+  endif else begin
+    nalt = 1
+  endelse
 ;    nalt = 120 ; this is number of altitude levels. 
 ;               ; In future, either make code abel to check for this and adjust
 ;               ; or get this info from the label.
@@ -132,8 +136,12 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
 ;WHY are these hard wired?!?!?!?
 ;
   if instruments.c_l_limb then begin
-    if nalt_struct.c_l_limb gt 0 then $
+;-orig    if nalt_struct.c_l_limb gt 0 then $
+    if nalt_struct.c_l_limb gt 0 then begin
       nalt = nalt_struct.c_l_limb
+    endif else begin
+      nalt = 1
+    endelse
 ;    nalt = 32 
     i7 = create_struct(                                                   $
       NAME               ='c_l_limb',                                     $
@@ -176,8 +184,12 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   
   ;INCLUDE IUVS ECHELLE HIGH ALTITUDE CORONA DATA STRUCTURE 
   if instruments.c_e_high then begin    
-    if nalt_struct.c_e_high gt 0 then $
+;-orig    if nalt_struct.c_e_high gt 0 then $
+    if nalt_struct.c_e_high gt 0 then begin
       nalt = nalt_struct.c_e_high
+    endif else begin
+      nalt = 1
+    endelse
 ;    nalt = 77
     i3 = create_struct(                                                      $
           NAME                     ='c_e_high',                              $
@@ -202,8 +214,12 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   
   ;INCLUDE IUVS ECHELLE LIMB CORONA DATA STRUCTURE
   if instruments.c_e_limb then begin
-    if nalt_struct.c_e_limb gt 0 then $
+;-orig    if nalt_struct.c_e_limb gt 0 then $
+    if nalt_struct.c_e_limb gt 0 then begin
       nalt = nalt_struct.c_e_limb
+    endif else begin
+      nalt = 1
+    endelse
 ;    nalt = 32
     i4 = create_struct(                                                      $
       NAME                     ='c_e_limb',                                  $
@@ -235,8 +251,12 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   
   ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
   if instruments.periapse then begin
-    if nalt_struct.periapse gt 0 then $
-      nalt = nalt_struct.periapse
+;-orig    if nalt_struct.periapse gt 0 then $
+    if nalt_struct.periapse gt 0 then begin
+          nalt = nalt_struct.periapse
+    endif else begin
+      nalt = 1
+    endelse
 ;    nalt = 32
     i1 = create_struct(                                                    $
       NAME                ='periapse',                                     $

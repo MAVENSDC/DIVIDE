@@ -21,11 +21,9 @@ pro mvn_kp_test_install, test_number
 ;-orig
 ;  iuvs_cdf   = test_file_directory+'mvn_kp_iuvs_20141029T031433_v00_r00.cdf'
 ;  iuvs_txt   = test_file_directory+'mvn_kp_iuvs_20141030T021404_v00_r00.tab'
-  iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141022T031211_v02_r00.tab' 
-  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141022T031211_v02_r00.cdf'
-  iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141018T160558_v02_r00.tab'
-  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141018T160558_v02_r00.cdf'
-
+  iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141018T204300_v02_r10.tab'
+  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141018T204300_v02_r10.tab.cdf'
+  iuvs_txt = test_file_directory+'mvn_kp_iuvs_12345_20141018T204300_v02_r10.tab'
   ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE
   ;FULL STRUCTURE FOR ALL INSTRUMENT DATA
   instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, $
@@ -93,7 +91,7 @@ pro mvn_kp_test_install, test_number
   cmd = "mvn_kp_read_iuvs_file, '"+iuvs_cdf+"', iuvs, instruments=instruments"
   return = EXECUTE(cmd[0])
 
-  print,return
+;  print,return
 
   if return ne 1 and !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
