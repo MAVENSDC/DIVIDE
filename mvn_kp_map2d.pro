@@ -43,7 +43,7 @@
 ;         'RAD_NO': IUVS Apopase NO Radiance image.
 ;         'USER': User definied basemap. Will open a file dialog window 
 ;                 to select the image. 
-;    colors: in, optional, type=string/integer
+;    color_table: in, optional, type=string/integer
 ;       the name (bw, red) or index of the color table to use when 
 ;       plotting the selected parameter.
 ;    alpha: in, optional, type=integer
@@ -132,7 +132,7 @@
 @mvn_kp_oplotimage
 
 pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
-                  list=list, basemap=basemap, colors=colors, $
+                  list=list, basemap=basemap, color_table=color_table, $
                   range=range, subsolar=subsolar,alpha = alpha, mso=mso, $
                   nopath=nopath, periapse_temp=periapse_temp, $
                   optimize=optimize, direct=direct, log=log, $
@@ -151,7 +151,7 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
                   apoapse_time=apoapse_time, $
                   minimum=minimum, maximum=maximum, help=help
            
-   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
+   common color_table, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr        
    !p.multi=0             
 
   ;provide help for those who don't have IDLDOC installed
@@ -402,16 +402,16 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
   
     ;LOAD THE REQUESTED COLOR TABLE
     color_default = 11
-    if keyword_set(colors) eq 0 then begin
+    if keyword_set(color_table) eq 0 then begin
       loadct,color_default, /silent
       i_colortable = color_default
     endif else begin
-      if size(colors, /type) eq 7 then begin
-        if colors eq 'bw' then i_colortable = 0
-        if colors eq 'red' then i_colortable = 3
+      if size(color_table, /type) eq 7 then begin
+        if color_table eq 'bw' then i_colortable = 0
+        if color_table eq 'red' then i_colortable = 3
       endif
-      if size(colors, /type) eq 2 then begin
-        i_colortable = colors
+      if size(color_table, /type) eq 2 then begin
+        i_colortable = color_table
       endif
       loadct, i_colortable, /silent
     endelse

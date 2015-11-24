@@ -32,7 +32,7 @@
 ;    directgraphic: in, optional, type=boolean
 ;       if selected, will override the default Graphics plot procedure and
 ;       use direct graphics instead.
-;    oo: out, optional
+;    plot_object: out, optional
 ;       if provided, the name of the variable to which the plot created
 ;       will be assigned.  Ignored if /directgraphic is also set.
 ;    error: in, optional, type=strarr, intarr
@@ -50,7 +50,8 @@
 
 pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                  range=range, directgraphic=directgraphic, $
-                 oo=oo, y_labels=y_labels, _extra = e, help=help
+                 plot_object=plot_object, y_labels=y_labels, $
+                 _extra = e, help=help
 
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
@@ -626,6 +627,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;
 ;  If using oo graphics and a variable was provided, return plot to that var
 ;
-  if( ~keyword_set(directgraphics) and arg_present(oo) )then oo=plot1
+  if( ~keyword_set(directgraphics) and $
+      arg_present(plot_object) )then plot_object=plot1
 
 end

@@ -36,10 +36,10 @@
 ;         'RAD_NO': IUVS Apopase NO Radiance image.
 ;         'USER': User definied basemap. Will open a file dialog window
 ;                 to select the image.
-;    field: in, optional, type=string
-;       The name of the field to initiall plot in the widget window
+;    parameter: in, optional, type=string
+;       The name of the parameter to initiall plot in the widget window
 ;    minimum: in, optional, type=float
-;       THe minimum value to assign to color level 0
+;       The minimum value to assign to color level 0
 ;    maximum: in, optional, type=float
 ;       The maximum value to assign to color level 255
 ;    bgcolor: in, optional, type=byte or bytarr(3)
@@ -50,7 +50,7 @@
 ;       If provided as a boolean, display color bar upon opening window.
 ;       Define the text color for the color bar in the plotting subwindow
 ;       as an RGB vector.
-;    parameterplot: in, optional, type=boolean or structure
+;    showplot: in, optional, type=boolean or structure
 ;       If boolean, display the chosen parameter or S/C altitude at the 
 ;       bottom of the widget window.
 ;       If a structure, it provides the information to create the plot
@@ -69,7 +69,7 @@
 ;       
 ; :Keywords:
 ;    list: in, optional, type=boolean
-;       if selected, will list the KP data fields included in kp_data.
+;       if selected, will list the parameters included in kp_data.
 ;    range: in, optional, type=boolean
 ;       if selected, will list the beginning and end times of kp_data.
 ;    subsolar: in, optional, type=boolean
@@ -101,11 +101,11 @@
 pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                cow=cow, tron=tron, subsolar=subsolar, submaven=submaven, $
 ;               field=field, minimum=minimum, maximum=maximum, $
-               field=field, $
+               parameter=parameter, $
                colorbar_min=colorbar_min, colorbar_max=colorbar_max, $
                log=log, color_table=color_table, bgcolor=bgcolor, $
                plotname=plotname, color_bar=color_bar,axes=axes,$
-               whiskers=whiskers,parameterplot=parameterplot,$
+               whiskers=whiskers,showplot=showplot,$
                periapse_limb_scan=periapse_limb_scan, direct=direct, $
                ambient=ambient,view_size=view_size, camera_view=camera_view, $
                mso=mso, sunmodel=sunmodel, optimize=optimize, $
@@ -335,15 +335,15 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       backgroundcolor = [15,15,15]
     endelse
 
-    if keyword_set(field) then begin
+    if keyword_set(parameter) then begin
       ;if parameter not selected, pass an invalid value
-      MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+      MVN_KP_TAG_VERIFY, insitu1, parameter, base_tag_count, $
         first_level_count, base_tags,  $
         first_level_tags, check, level0_index, $
         level1_index, tag_array
       if check ne 0 then begin
         ;if requested parameter doesn't exist, default to none
-        print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2) $
+        print,'REQUESTED PLOT PARAMETER, '+strtrim(string(parameter),2) $
           +' IS NOT PART OF THE DATA STRUCTURE.'
         plotted_parameter_name = ''
         current_plotted_value = ''
@@ -356,8 +356,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       endelse
     endif else begin
       ;if no parameter selected, default to spacecraft altitude
-      field='spacecraft.altitude'
-      MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+      parameter='spacecraft.altitude'
+      MVN_KP_TAG_VERIFY, insitu1, parameter, base_tag_count, $
         first_level_count, base_tags,  $
         first_level_tags, check, level0_index, $
         level1_index, tag_array
@@ -1660,17 +1660,17 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
       ;DEFINE THE COLORS ALONG THE FLIGHT PATH
 
-; IDENTIFY THE FIELD TO BE PLOTTED
+; IDENTIFY THE PARAMETER TO BE PLOTTED
           
-;        if keyword_set(field) then begin      
+;        if keyword_set(parameter) then begin      
 ;          ;if parameter not selected, pass an invalid value
-;          MVN_KP_TAG_VERIFY, insitu1, field,base_tag_count, $
+;          MVN_KP_TAG_VERIFY, insitu1, parameter, base_tag_count, $
 ;                             first_level_count, base_tags,  $
 ;                             first_level_tags, check, level0_index, $
 ;                             level1_index, tag_array
 ;          if check ne 0 then begin         
 ;            ;if requested parameter doesn't exist, default to none
-;            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(field),2) $
+;            print,'REQUESTED PLOT PARAMETER, '+strtrim(string(parameter),2) $
 ;                  +' IS NOT PART OF THE DATA STRUCTURE.'
 ;            plotted_parameter_name = ''
 ;            current_plotted_value = ''
@@ -1924,24 +1924,24 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
 
       ;CREATE THE PARAMETER PLOT ALONG THE BOTTOM EDGE OF THE DISPLAY
       
-        if keyword_set(parameterplot) ne 1 then begin
+        if keyword_set(showplot) ne 1 then begin
           parameter_plot_connected = 1
           parameter_plot_axis_color = [0,128,0]
           parameter_plot_before_color = [255,0,0]
           parameter_plot_after_color = [0,0,255]
           parameter_plot_hide = 0
         endif else begin
-           if size(parameterplot,/type) ne 8 then begin
+           if size(showplot,/type) ne 8 then begin
             parameter_plot_connected = 1
             parameter_plot_axis_color = [0,128,0]
             parameter_plot_before_color = [255,0,0]
             parameter_plot_after_color = [0,0,255]
             parameter_plot_hide = 1
            endif else begin
-            parameter_plot_connected = parameterplot.plot_connected
-            parameter_plot_axis_color = parameterplot.axes_color
-            parameter_plot_before_color = parameterplot.before_color
-            parameter_plot_after_color = parameterplot.after_color
+            parameter_plot_connected = showplot.plot_connected
+            parameter_plot_axis_color = showplot.axes_color
+            parameter_plot_before_color = showplot.before_color
+            parameter_plot_after_color = showplot.after_color
             parameter_plot_hide = 1
            endelse
         endelse
@@ -1949,7 +1949,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         plot_model = obj_new('IDLgrModel')
         view->add,plot_model
         plot_x = insitu1.time
-        if keyword_set(field) then begin
+        if keyword_set(parameter) then begin
           plot_y = insitu1.(level0_index).(level1_index)
         endif else begin
           plot_y = insitu1.spacecraft.altitude

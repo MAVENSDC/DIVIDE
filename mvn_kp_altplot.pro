@@ -28,7 +28,7 @@
 ;           containing the structure index and tag names.
 ;    range: in, optional, type=boolean
 ;       if selected, will list the beginning and end times of kp_data
-;    oo: out, optional
+;    plot_object: out, optional
 ;       if provided, the name of the variable to which the plot created
 ;       will be assigned.  Ignored if /directgraphic is also set.
 ;    directgraphic: in, optional, type=boolean
@@ -61,7 +61,8 @@
 
 pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
                     directgraphic=directgraphic, $
-                    davin=davin, y_labels=y_labels, oo=oo, $
+                    davin=davin, y_labels=y_labels, $
+                    plot_object=plot_object, $
                     error=error, _extra = e, help=help
 
 
@@ -696,6 +697,7 @@ pro MVN_KP_ALTPLOT, kp_data, parameter, time=time, list=list, range=range, $
 ;
 ;  If using oo graphics and a variable was provided, return plot to that var
 ;
-  if( ~keyword_set(directgraphic) and arg_present(oo) )then oo=plot1
+  if( ~keyword_set(directgraphic) and $
+      arg_present(plot_object) )then plot_object=plot1
 
 end

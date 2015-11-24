@@ -83,7 +83,7 @@
 ;       return only the data from the inbound leg of an orbit
 ;    outbound: in, optional, type=boolean
 ;       return only the data from the outbound leg of an orbit 
-;    insitu_all: in, optional, type=boolean
+;    all_insitu: in, optional, type=boolean
 ;       return all in situ data. This keyword is necessary if an IUVS 
 ;       observation mode keyword is specified and you want to still read 
 ;       in all in situ data. If no in situ instrument or IUVS observation 
@@ -106,7 +106,7 @@
 ;       return all of the iuvs corona LoREs on limb data 
 ;    iuvs_stellarocc: in, optional, type=boolean
 ;       return all of the IUVS Stellar Occulatation data
-;    iuvs_all: in, optional, type=boolean
+;    all_iuvs: in, optional, type=boolean
 ;       return all IUVS observation modes. This keyword is necessary if 
 ;       an in situ instrument keyword is specified and you want to still 
 ;       read in all IUVS data. If no in situ instrument or IUVS observation 
@@ -119,11 +119,11 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                  new_files=new_files, $
                  update_prefs=update_prefs, debug=debug, duration=duration, $
                  text_files=text_files, save_files=save_files, $
-                 insitu_only=insitu_only, insitu_all=insitu_all, $
+                 insitu_only=insitu_only, all_insitu=all_insitu, $
                  inbound=inbound, outbound=outbound, $
                  lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, $
                  mag=mag, sep=sep, ngims=ngims, $    
-                 iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, $
+                 all_iuvs=all_iuvs, iuvs_periapse=iuvs_periapse, $
                  iuvs_apoapse=iuvs_apoapse, $
                  iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,$
                  iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
@@ -210,7 +210,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   ;AND CONTROLLING WHICH INSTRUMENTS DATA TO READ
   if keyword_set(lpw) or keyword_set(euv) or keyword_set(static) or $
      keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or $
-     keyword_set(sep) or keyword_set(ngims) or keyword_set(iuvs_all) or $
+     keyword_set(sep) or keyword_set(ngims) or keyword_set(all_iuvs) or $
      keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
      keyword_set(iuvs_coronaEchelleDisk) or $
      keyword_set(iuvs_coronaEchelleLimb) or $
@@ -218,7 +218,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
      keyword_set(iuvs_coronaLoresHigh) or $
      keyword_set(iuvs_coronaloreslimb) or $
      keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or $
-     keyword_set(insitu_all) then begin
+     keyword_set(all_insitu) then begin
 
 
   ;; Setup instrument struct which is used for creating data structure 
@@ -309,7 +309,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
       print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
     endif
     
-    if keyword_set(insitu_all) then begin
+    if keyword_set(all_insitu) then begin
       instruments.lpw    = 1
       instruments.euv    = 1
       instruments.static = 1
@@ -320,7 +320,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
       instruments.ngims  = 1
       print, 'Returning all INSITU Instrument KP Data.'
     endif
-    if keyword_set(iuvs_all) then begin
+    if keyword_set(all_iuvs) then begin
       instruments.periapse   = 1
       instruments.c_e_disk   = 1
       instruments.c_e_limb   = 1
