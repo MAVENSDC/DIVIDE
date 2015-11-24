@@ -27,8 +27,8 @@ function mvn_kp_read_ut::test_read_insitu_only
   assert, size(insitu, /N_ELEMENTS) eq 7869, "Wrong number of data points read in"
   insitu=0
   
-  print,"mvn_kp_read, ['2014-10-18/01:00:00', '2014-10-20/17:01:05'] , insitu, /insitu_all, /insitu_only, /text_files"
-  mvn_kp_read, ['2014-10-18/01:00:00', '2014-10-20/17:01:05'] , insitu, /insitu_all, /insitu_only, /text_files
+  print,"mvn_kp_read, ['2014-10-18/01:00:00', '2014-10-20/17:01:05'] , insitu, /all_insitu, /insitu_only, /text_files"
+  mvn_kp_read, ['2014-10-18/01:00:00', '2014-10-20/17:01:05'] , insitu, /all_insitu, /insitu_only, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 31115, "Wrong number of data points read in"
   insitu=0
   
@@ -173,8 +173,8 @@ function mvn_kp_read_ut::test_read_ascii_insitu_only
   insitu=0
   iuvs=0  
   
-  print,"mvn_kp_read, ['2014-10-22/01:00:00', '2014-10-24/17:01:05'] , insitu, /text_files, /insitu_all, /insitu_only"
-  mvn_kp_read, ['2014-10-22/01:00:00', '2014-10-24/17:01:05'] , insitu, /text_files, /insitu_all, /insitu_only
+  print,"mvn_kp_read, ['2014-10-22/01:00:00', '2014-10-24/17:01:05'] , insitu, /text_files, /all_insitu, /insitu_only"
+  mvn_kp_read, ['2014-10-22/01:00:00', '2014-10-24/17:01:05'] , insitu, /text_files, /all_insitu, /insitu_only
   assert, size(insitu, /N_ELEMENTS) eq 31125, "Wrong number of insitu data points read in"
   insitu=0
   iuvs=0
@@ -222,8 +222,8 @@ function mvn_kp_read_ut::test_read_ascii_subset
   insitu=0
   iuvs=0
   
-  print,"mvn_kp_read, time , insitu, iuvs, /text_files, /insitu_all, /iuvs_all"
-  mvn_kp_read, time , insitu, iuvs, /text_files, /insitu_all, /iuvs_all
+  print,"mvn_kp_read, time , insitu, iuvs, /text_files, /all_insitu, /all_iuvs"
+  mvn_kp_read, time , insitu, iuvs, /text_files, /all_insitu, /all_iuvs
   assert, size(insitu, /N_ELEMENTS) eq 35037, "Wrong number of insitu data points read in"
   assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
   insitu=0
