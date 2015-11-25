@@ -67,7 +67,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.periapse = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; periapse mode
       
       ; 
@@ -87,7 +87,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.c_l_high = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORNOA_LORES_LIMB' then begin
@@ -106,7 +106,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.c_l_limb = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORONA_ECHELLE_HIGH' then begin
@@ -125,7 +125,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;              nalts = create_struct( nalts, obs_mode, fix( nalt_line[1], type=2 ) )
 ;            endelse
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORONA_ECHELLE_LIMB' then begin
@@ -144,7 +144,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;              nalts = create_struct( nalts, obs_mode, fix( nalt_line[1], type=2 ) )
 ;            endelse
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
     endif  ; if it is an observation mode

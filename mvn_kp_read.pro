@@ -532,12 +532,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   ;; ------ and initialize data structures for holding data ------------- ;;
 
   ;; FIXME variable names
+
   MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, $
                       target_KP_filenames, kp_insitu_data_directory, $
                       iuvs_filenames, kp_iuvs_data_directory, $
                       save_files=save_files, text_files=text_files, $
                       insitu_only=insitu_only, new_files=new_files
- 
+
   ;; User may have forgotten to enter /text_files 
   if (target_KP_filenames[0] eq 'None') then begin
     print, "No files found.  Make sure you have the correct time range.  "
@@ -668,7 +669,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                                  debug=debug
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
-            iuvs_data_temp[iuvs_index] = iuvs_record
+;-orig            iuvs_data_temp[iuvs_index] = iuvs_record
+;-km: Use struct_assign to avoid conflicting structures error
+print,'may need to verify this step in mvn_kp_read'
+            struct_assign, iuvs_data_temp[iuvs_index], iuvs_record;, /verbose
             iuvs_index++
           endif
         endfor ; loop over filenames

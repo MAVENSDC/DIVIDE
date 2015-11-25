@@ -114,11 +114,13 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   endif else begin
     nalt = 1
   endelse
+;print,nalt
 ;    nalt = 120 ; this is number of altitude levels. 
 ;               ; In future, either make code abel to check for this and adjust
 ;               ; or get this info from the label.
+
     i6 = create_struct(                                                      $
-      NAME                   ='c_l_high',                                   $
+;      NAME                   ='c_l_high',                                   $
       iuvs_record_common     ,                                               $
       'half_int_distance_id' ,strarr(2),                                     $
       'half_int_distance'    ,make_array(2,    /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -150,7 +152,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     endelse
 ;    nalt = 32 
     i7 = create_struct(                                                   $
-      NAME               ='c_l_limb',                                     $
+;      NAME               ='c_l_limb',                                     $
       iuvs_record_common ,                                                $
       'scale_height_id'  ,strarr(7),                                      $
       'scale_height'     ,make_array(7,     /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -173,7 +175,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   ;INCLUDE IUVS LO RES DISK CORONA DATA STRUCTURE
   if instruments.c_l_disk then begin
     i8 = create_struct(                                               $
-      NAME               ='c_l_disk',                                 $
+;      NAME               ='c_l_disk',                                 $
       iuvs_record_common ,                                            $
       'ozone_depth'      ,!VALUES.F_NAN,                              $
       'ozone_depth_err'  ,!VALUES.F_NAN,                              $
@@ -198,7 +200,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     endelse
 ;    nalt = 77
     i3 = create_struct(                                                      $
-          NAME                     ='c_e_high',                              $
+;          NAME                     ='c_e_high',                              $
           iuvs_record_common ,                                               $
           'half_int_distance_id'   ,strarr(3),                               $ 
           'half_int_distance',      $
@@ -228,7 +230,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     endelse
 ;    nalt = 32
     i4 = create_struct(                                                      $
-      NAME                     ='c_e_limb',                                  $
+;      NAME                     ='c_e_limb',                                  $
       iuvs_record_common ,                                                   $
       'half_int_distance_id' ,strarr(3),                                     $
       'half_int_distance'    ,make_array(3,    /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -245,7 +247,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   ;INCLUDE IUVS ECHELLE DISK CORONA DATA STRUCTURE
   if instruments.c_e_disk then begin
     i9 = create_struct(                                            $
-      NAME            ='c_e_disk',                                 $
+;      NAME            ='c_e_disk',                                 $
       iuvs_record_common ,                                         $
       'radiance_id'   ,strarr(3),                                  $
       'radiance'      ,make_array(3, /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -291,5 +293,4 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   iuvs_record = 0
   iuvs_record = create_struct(iuvs_record_temp9)
   iuvs_common = iuvs_record_common
-
 end

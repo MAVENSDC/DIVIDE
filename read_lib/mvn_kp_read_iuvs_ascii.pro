@@ -38,7 +38,6 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
   line = strsplit(temp, ' ', /EXTRACT)
   in_struct.(1) = string(line[2])
   
-  
   for i=2, num_common-1 do begin
      temp = ''
      readf, lun, temp
@@ -89,10 +88,8 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   temp=''
   readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
   in_struct.n_alt_bins = fix(line[1],type=2)
-  
   ;; Assume next line with data will contain 
   ;; a single specicies and temperature
-;  temp = ''
 
   ;; Temperature_id, temperature, and temperature_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
@@ -114,9 +111,9 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
   in_struct.density_id  = string(line[1:*])
-  num_dens = (size(in_struct.density, /DIMENSIONS))[1]
+  num_dens = n_elements(in_struct.density_id)
 
-  for i=0, num_dens-1 do begin
+  for i=0, in_struct.n_alt_bins-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
     in_struct.alt[i] = float(line[0])
     in_struct.density[*, i] = float(line[1:*])
@@ -128,16 +125,17 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   ; now read the data
   num_dens = n_elements(in_struct.density_sys_unc)
   readf,lun,temp & line=strsplit(temp,' ',/extract)
+
   for i = 0,num_dens-1 do begin
-    in_struct.density_sys_unc[i] = fix(line[i])
+    in_struct.density_sys_unc[i] = float(line[i])
   endfor
 
   ;; Density Err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   readf, lun, temp ; read the DENSITY_UNC header
   ; now read the data
-  num_dens = (size(in_struct.density_unc, /DIMENSIONS))[1]
-  for i=0, num_dens-1 do begin
+;  num_dens = (size(in_struct.density_unc, /DIMENSIONS))[1]
+  for i=0, in_struct.n_alt_bins-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
     in_struct.density_unc[*, i] = float(line[1:*])
   endfor
@@ -147,8 +145,9 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   readf, lun, temp ; read the RADIANCE header line
   line = strtrim( strsplit(temp, '  ', /EXTRACT, /regex), 2)
   in_struct.radiance_id  = string(line[1:*])
-  num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
-  for i=0, num_rads-1 do begin
+;  num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
+  num_rads = n_elements(in_struct.radiance_id)
+  for i=0, in_struct.n_alt_bins-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
     in_struct.radiance[*, i] = float(line[1:*])
   endfor
@@ -157,19 +156,19 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   readf, lun, temp ; read the RADIANCE_SYS_UNC header
   ; now read the data
-  num_rads = n_elements(in_struct.radiance_sys_unc)
+;  num_rads = n_elements(in_struct.radiance_sys_unc)
   readf,lun,temp & line=strsplit(temp,' ',/extract)
   for i = 0,num_rads-1 do begin
-    in_struct.radiance_sys_unc[i] = fix(line[i])
+    in_struct.radiance_sys_unc[i] = float(line[i])
   endfor
  
   ;; Radiance Err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   readf, lun, temp ; read the RADIANCE_UNC header line
-  num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
-  for i=0, num_rads-1 do begin
+;  num_rads = (size(in_struct.radiance, /DIMENSIONS))[1]
+  for i=0, in_struct.n_alt_bins-1 do begin
     readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
-    in_struct.alt[i] = float(line[0])
+    in_struct.alt[i] = float(line[0])  ;  Redundant, drop this maybe check against previous?
     in_struct.radiance_unc[*, i] = float(line[1:*])
   endfor
 
@@ -598,7 +597,6 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
     line = strsplit(temp, ' ', /extract)
 
     if(line[0] eq 'OBSERVATION_MODE') then begin
-      
       ;; ======== If periapse mode ====================
       if(line[2] eq 'PERIAPSE') then begin
         temp_periapse = iuvs_record.periapse[periapse_i]
@@ -612,7 +610,6 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         orbit_number = iuvs_record.periapse[0].orbit_number
         continue
       endif
-      
       ;; ======== If corona lores disk mode ===========
       if(line[2] eq 'CORONA_LORES_DISK') then begin
         temp_c_l_disk = iuvs_record.corona_lo_disk
@@ -654,7 +651,6 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in c_l_high specific values
         mvn_kp_read_iuvs_ascii_c_l_high, lun, temp_c_l_high
-        
         iuvs_record.corona_lo_high = temp_c_l_high
         orbit_number = temp_c_l_high.orbit_number
         continue

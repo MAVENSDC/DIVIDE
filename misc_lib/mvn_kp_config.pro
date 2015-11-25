@@ -26,14 +26,15 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   if keyword_set(iuvs_file_spec) then begin
       
       ;; Production filename spec
-      iuvs_filename_spec   = create_struct('pattern', 'mvn_kp_iuvs_*T*', $
-      'year_index', 12, $
-      'month_index', 16, $
-      'day_index', 18, $
-      'hour_index', 21, $
-      'min_index', 23, $
-      'sec_index', 25, $
-      'basetrim', 27, $
+      iuvs_filename_spec   = create_struct('pattern', 'mvn_kp_iuvs_*_*T*', $
+      'orbit_index', 12, $
+      'year_index', 18, $
+      'month_index', 22, $
+      'day_index', 24, $
+      'hour_index', 27, $
+      'min_index', 29, $
+      'sec_index', 31, $
+      'basetrim', 33, $
       'vpos', 4, $
       'rpos', 5)
       
