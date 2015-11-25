@@ -18,7 +18,10 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
-  
+;-km-hack
+;  print,'Forcing debugging on mvn_kp_iuvs_struct_init'
+;  debug = 1B
+;-km-/hack
   ; IF NOT IN DEBUG MODE, SET ACTION TAKEN ON ERROR TO BE
   ; PRINT THE CURRENT PROGRAM STACK, RETURN TO THE MAIN PROGRAM LEVEL AND STOP
   if not keyword_set(debug) then begin
@@ -93,6 +96,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
       'radiance_id'      ,strarr(4),                                        $
       'radiance'         ,make_array(4,90,45, /FLOAT, VALUE=!VALUES.F_NAN), $
       'radiance_err'     ,make_array(4,90,45, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_sys_unc' ,make_array(4,       /FLOAT, VALUE=!VALUES.F_NAN), $
       'sza_bp'           ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $
       'local_time_bp'    ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $
       'lon_bins'         ,make_array(90,      /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -116,15 +120,17 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     i6 = create_struct(                                                      $
       NAME                   ='c_l_high',                                   $
       iuvs_record_common     ,                                               $
-      'half_int_distance_id' ,strarr(6),                                     $
-      'half_int_distance'    ,make_array(6,    /FLOAT, VALUE=!VALUES.F_NAN), $
-      'half_int_distance_unc',make_array(6,    /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_id'           ,strarr(4),                                     $
-      'density'            ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_unc'        ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_id'        ,strarr(6),                                       $
-      'radiance'           ,make_array(6,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_unc'       ,make_array(6,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'half_int_distance_id' ,strarr(2),                                     $
+      'half_int_distance'    ,make_array(2,    /FLOAT, VALUE=!VALUES.F_NAN), $
+      'half_int_distance_unc',make_array(2,    /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_id'           ,strarr(2),                                     $
+      'density'            ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_unc'        ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_sys_unc'    ,make_array(2,      /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_id'        ,strarr(2),                                       $
+      'radiance'           ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'       ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_sys_unc'    ,make_array(2,      /FLOAT, VALUE=!VALUES.F_NAN), $
       'alt'                ,make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN)  $
       )
       
@@ -259,7 +265,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     endelse
 ;    nalt = 32
     i1 = create_struct(                                                    $
-      NAME                ='periapse',                                     $
+;      NAME                ='periapse',                                     $
       iuvs_record_common,                                                  $
       'scale_height_id'  ,strarr(7),                                       $
       'scale_height'     ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $

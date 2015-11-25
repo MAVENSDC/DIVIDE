@@ -83,9 +83,16 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
 end
 
 pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
+  ; 
+  ; Need to get n_alt_bins from the end of the common block for this mode
+  ;
+  temp=''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
+  
   ;; Assume next line with data will contain 
   ;; a single specicies and temperature
-  temp = ''
+;  temp = ''
 
   ;; Temperature_id, temperature, and temperature_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
@@ -201,6 +208,8 @@ end
 
 pro mvn_kp_read_iuvs_ascii_c_l_limb, lun, in_struct
   temp = ''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
  
   ;; Temperature_ID, Temperature, Temperature_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
@@ -266,6 +275,8 @@ end
 
 pro mvn_kp_read_iuvs_ascii_c_l_high, lun, in_struct
   temp = ''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
   ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
   in_struct.half_int_distance_id  = string(line)
@@ -354,6 +365,8 @@ end
 
 pro mvn_kp_read_iuvs_ascii_c_e_limb, lun, in_struct
   temp = ''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
  
   ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
@@ -390,6 +403,8 @@ end
 
 pro mvn_kp_read_iuvs_ascii_c_e_high, lun, in_struct
   temp = ''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
   
    ;; Half_int_distance_id, Half_int_distance, & Half_int_distance_err
   line = mvn_kp_iuvs_ascii_read_blanks(lun)
@@ -589,7 +604,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         temp_periapse = iuvs_record.periapse[periapse_i]
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_periapse
-        readf,lun,temp ; skip over the n_alt_bins info
+;        readf,lun,temp ; skip over the n_alt_bins info
         ;; Read in Periapse specific values
         mvn_kp_read_iuvs_ascii_periapse, lun, temp_periapse
         iuvs_record.periapse[periapse_i] = temp_periapse
@@ -619,7 +634,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_l_limb
-        readf,lun,temp ; skip over the n_alt_bins info
+;        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_l_limb specific values
         mvn_kp_read_iuvs_ascii_c_l_limb, lun, temp_c_l_limb
@@ -635,7 +650,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_l_high
-        readf,lun,temp ; skip over the n_alt_bins info
+;        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_l_high specific values
         mvn_kp_read_iuvs_ascii_c_l_high, lun, temp_c_l_high
@@ -666,7 +681,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_e_limb
-        readf,lun,temp ; skip over the n_alt_bins info
+;        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_e_limb specific values
         mvn_kp_read_iuvs_ascii_c_e_limb, lun, temp_c_e_limb
@@ -682,7 +697,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_c_e_high
-        readf,lun,temp ; skip over the n_alt_bins info
+;        readf,lun,temp ; skip over the n_alt_bins info
         
         ;; Read in c_e_high specific values
         mvn_kp_read_iuvs_ascii_c_e_high, lun, temp_c_e_high

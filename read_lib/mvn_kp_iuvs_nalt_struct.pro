@@ -22,6 +22,9 @@
 pro mvn_kp_iuvs_nalt_struct, filename, nalts
   ;
   ; Create the dummy nalt structure
+  ; Only these five can have an n_alt_bins argument (at present)
+  ; It is possible, I think, that stellar_occultation can as well...
+  ; We will address that if IUVS gets and stellar occultation data.
   ;
   nalts = {periapse:-1, c_l_limb:-1, c_l_high:-1, c_e_limb:-1, c_e_high:-1}
   ;
