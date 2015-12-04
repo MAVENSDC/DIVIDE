@@ -66,7 +66,7 @@ if keyword_set(CDF) then begin
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-08/01:00:00' , insitu, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu,  /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/01:00:00', '2015-04-15/17:01:05'] , insitu, /all_insitu, /insitu_only"]
   
   
   ;; *** Test string time input ***
@@ -143,7 +143,7 @@ if keyword_set(CREATE_TEST_SAVE) then begin
   save, iuvs,   filename=test_loc_dir+'iuvs_old5.sav'
   insitu=0 & iuvs = 0
 
-  mvn_kp_read, [1040, 1044]  ,insitu, iuvs, /insitu_all, /iuvs_all
+  mvn_kp_read, [1040, 1044]  ,insitu, iuvs, /all_insitu, /all_iuvs
   save, insitu, filename=test_loc_dir+'insitu_old6.sav'
   save, iuvs,   filename=test_loc_dir+'iuvs_old6.sav'
   insitu=0 & iuvs = 0
@@ -203,7 +203,7 @@ if keyword_set(COMPARE_TEST_SAVE) then begin
   insitu=0 & iuvs = 0 & insitu_new=0 & iuvs_new = 0
   
   
-  mvn_kp_read, [1040, 1044]  ,insitu_new, iuvs_new, /insitu_all, /iuvs_all
+  mvn_kp_read, [1040, 1044]  ,insitu_new, iuvs_new, /all_insitu, /all_iuvs
   restore, filename=test_loc_dir+'insitu_old6.sav'
   restore, filename=test_loc_dir+'iuvs_old6.sav'
   mvn_kp_compare_data, insitu_new, insitu
@@ -226,7 +226,7 @@ if keyword_set(save_files) then begin
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-10/17:01:05'] , insitu, /save_files, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:00', '2015-04-11/00:00:01'] , insitu, /save_files, /swia, /mag, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, /save_files, /ngims, /static, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-29/17:01:05'] , insitu, /save_files, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-29/17:01:05'] , insitu, /save_files, /all_insitu, /insitu_only"]
 
 
   ;; *** Test string time input ***
@@ -277,13 +277,13 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, '2015-04-03/01:00:00' , insitu, /text_files, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-04/01:00:00', '2015-04-10/17:01:05'] , insitu, /text_files, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:00', '2015-04-11/00:00:01'] , insitu, /text_files, /swia, /mag, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-24/17:01:05'] , insitu, /text_files, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-24/17:01:05'] , insitu, /text_files, /all_insitu, /insitu_only"]
   
   
   ;; Orbit Numer ascii & insitu
   cmd_list = [cmd_list, "mvn_kp_read, 1024 , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, [1021,1032] , insitu, iuvs, /text_files"]
-  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_all"]
+  cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /swia, /mag, /all_iuvs"]
   cmd_list = [cmd_list, "mvn_kp_read, [1030,1045] , insitu, iuvs, /text_files, /static, /euv, /iuvs_periapse"]
   cmd_list = [cmd_list, "mvn_kp_read, [1060] , insitu, iuvs, /text_files, /ngims, /static, /iuvs_periapse, /iuvs_coronaEchelleDisk"]
   cmd_list = [cmd_list, "mvn_kp_read, [1021, 1022] , insitu, iuvs, /text_files"]
@@ -294,7 +294,7 @@ if keyword_set(ASCII) then begin
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-05/00:00:00', '2015-04-19/17:01:05'] , insitu, iuvs, /text_files"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-08/00:00:15', '2015-04-11/00:00:01'] , insitu, iuvs, /text_files, /swia, /mag, /iuvs_periapse, /iuvs_apoapse"]
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu, iuvs, /text_files"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-27/17:01:05'] , insitu, iuvs, /text_files, /insitu_all, /iuvs_all"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-22/01:00:00', '2015-04-27/17:01:05'] , insitu, iuvs, /text_files, /all_insitu, /all_iuvs"]
   
   cmd_list_prob = [cmd_list_prob, "mvn_kp_read, [1021, 2022] , insitu, iuvs, /text_files"]
   
@@ -320,8 +320,8 @@ if keyword_set(COMPAREINSITU) then begin
   cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-01/01:00:59', '2015-04-03/00:01:05'] , insitu2,  /ngims, /static, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
 
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /save_files, /insitu_all, /insitu_only"]
-  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /insitu_all, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu, /save_files, /all_insitu, /insitu_only"]
+  cmd_list = [cmd_list, "mvn_kp_read, ['2015-04-23/01:00:00', '2015-04-29/17:01:05'] , insitu2, /all_insitu, /insitu_only"]
   cmd_list = [cmd_list, "mvn_kp_compare_data, insitu, insitu2"]
   
   

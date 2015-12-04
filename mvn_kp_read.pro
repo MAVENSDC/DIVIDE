@@ -650,6 +650,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
           MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments,$
                                    nalt_struct=nalt_struct
           iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+          one_temp = iuvs_record ; testing debug 
         endif
         ; Loop over all files
         for file = 0,n_elements(iuvs_filenames)-1 do begin
@@ -669,10 +670,27 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                                  debug=debug
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
-;-orig            iuvs_data_temp[iuvs_index] = iuvs_record
-;-km: Use struct_assign to avoid conflicting structures error
-print,'may need to verify this step in mvn_kp_read'
-            struct_assign, iuvs_data_temp[iuvs_index], iuvs_record;, /verbose
+
+;-ToDo: This is potentially more stable if I use pointers to structures
+;       In that case, the top level structure never changes (it is a list
+;       of pointers), and the scond level structures *can* change.
+
+; This step is needed because struct_assign will not allow assignment
+; to an element of an array of structures.  So, first, assign to 
+; a dummy structure
+; The simple one-to-one assignment (i.e., iuvs[index] = iuvs_record
+;  whenever the iuvs_record structure format changes.
+; Alos, code this to provide verbose output only if in debugging mode
+;
+            if keyword_set(debug) then begin
+               struct_assign, iuvs_record, one_temp, /verbose
+            endif else begin
+               struct_assign, iuvs_record, one_temp
+            endelse
+;
+; And then put it in its proper place in the array.
+;
+            iuvs_data_temp[iuvs_index] = one_temp
             iuvs_index++
           endif
         endfor ; loop over filenames

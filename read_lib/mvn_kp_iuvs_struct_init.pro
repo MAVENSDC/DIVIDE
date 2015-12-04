@@ -84,7 +84,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   ;INCLUDE IUVS APOAPSE DATA STRUCTURE
   if instruments.apoapse then begin
     i2 = create_struct(                                                     $
-      NAME               ='apoapse',                                        $
+;      NAME               ='apoapse',                                        $
       iuvs_record_common ,                                                  $
       'ozone_depth'      ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $
       'ozone_depth_err'  ,make_array(90,45,   /FLOAT, VALUE=!VALUES.F_NAN), $

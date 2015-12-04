@@ -89,7 +89,7 @@ function mvn_kp_read_ut::test_read_subset_inst
   print,"mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/lpw,/euv,/iuvs_apoapse, /text_files"
   mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/lpw,/euv,/iuvs_apoapse, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 11780, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 5, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 6, "Wrong number of iuvs data points read in"
   
   return, 1
 end
@@ -100,7 +100,7 @@ function mvn_kp_read_ut::test_read_inbound_flag
   print,"mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound, /text_files"
   mvn_kp_read,'2014-10-18/16:05:58',insitu,iuvs,/ngims,/sep,/iuvs_periapse, /inbound, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 5769, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 5, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 6, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -188,14 +188,14 @@ function mvn_kp_read_ut::test_read_ascii
   print,"mvn_kp_read, '2014-10-18/16:05:58' , insitu, iuvs, /text_files"
   mvn_kp_read, '2014-10-18/16:05:58' , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 11780, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 5, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 6, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
   print,"mvn_kp_read, ['2014-10-18/12:00:00', '2014-10-20/06:00:30'] , insitu, iuvs, /text_files"
   mvn_kp_read, ['2014-10-18/12:00:00', '2014-10-20/06:00:30'] , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 20386, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 7, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 9, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -211,21 +211,21 @@ function mvn_kp_read_ut::test_read_ascii_subset
   time = '2014-10-'+['18','21']+'T00:00:00'
   mvn_kp_read, time , insitu, iuvs, /text_files, /swia, /mag, /iuvs_periapse, /iuvs_apoapse
   assert, size(insitu, /N_ELEMENTS) eq 35037, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 15, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
   print,"mvn_kp_read, time , insitu, iuvs, /text_files"
   mvn_kp_read, time , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 35037, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 15, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
   print,"mvn_kp_read, time , insitu, iuvs, /text_files, /all_insitu, /all_iuvs"
   mvn_kp_read, time , insitu, iuvs, /text_files, /all_insitu, /all_iuvs
   assert, size(insitu, /N_ELEMENTS) eq 35037, "Wrong number of insitu data points read in"
-  assert, size(iuvs, /N_ELEMENTS) eq 11, "Wrong number of iuvs data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 15, "Wrong number of iuvs data points read in"
   insitu=0
   iuvs=0
   
@@ -244,7 +244,7 @@ function mvn_kp_read_ut::test_read_ascii_orbit_number_input
   print,"mvn_kp_read, [20,150] , insitu, iuvs, /text_files"
   mvn_kp_read, [20,150] , insitu, iuvs, /text_files
   assert, size(insitu, /N_ELEMENTS) eq 294066, "Wrong number of insitu data points read in" 
-  assert, size(iuvs, /N_ELEMENTS) eq 18, "Wrong number of IUVS data points read in"
+  assert, size(iuvs, /N_ELEMENTS) eq 22, "Wrong number of IUVS data points read in"
   
   return, 1
 end
