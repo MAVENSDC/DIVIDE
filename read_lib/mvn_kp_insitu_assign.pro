@@ -37,7 +37,7 @@ pro MVN_KP_INSITU_ASSIGN, record, data_array, instruments, colmap
 
   if instruments.euv then begin             ;return all EUV data
     for i = 0,n_tags(record.euv)-1 do begin
-      record.euv.(i) = data_array.(colmap.lpw.(i)-1)
+      record.euv.(i) = data_array.(colmap.euv.(i)-1)
     endfor
   endif
 
