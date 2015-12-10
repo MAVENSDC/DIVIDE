@@ -35,7 +35,7 @@ pro mvn_kp_get_list, kp_data, list=list
           if first_level_count[i] ne 0 then begin 
              list[index2] = '#'+strtrim(string(index2+1),2)+' ' $
                           + base_tags[i]+'.' $
-                          + strtrim(string(first_level_tags[index2-1]),2)
+                          + strtrim(string(first_level_tags[index2]),2)
              index2 = index2+1
            endif 
         endfor

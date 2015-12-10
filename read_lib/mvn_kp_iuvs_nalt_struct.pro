@@ -22,6 +22,9 @@
 pro mvn_kp_iuvs_nalt_struct, filename, nalts
   ;
   ; Create the dummy nalt structure
+  ; Only these five can have an n_alt_bins argument (at present)
+  ; It is possible, I think, that stellar_occultation can as well...
+  ; We will address that if IUVS gets and stellar occultation data.
   ;
   nalts = {periapse:-1, c_l_limb:-1, c_l_high:-1, c_e_limb:-1, c_e_high:-1}
   ;
@@ -64,7 +67,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.periapse = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; periapse mode
       
       ; 
@@ -84,7 +87,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.c_l_high = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORNOA_LORES_LIMB' then begin
@@ -103,7 +106,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;            endelse
             nalts.c_l_limb = fix( nalt_line[1], type=2 )
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORONA_ECHELLE_HIGH' then begin
@@ -122,7 +125,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;              nalts = create_struct( nalts, obs_mode, fix( nalt_line[1], type=2 ) )
 ;            endelse
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
       if line[2] eq 'CORONA_ECHELLE_LIMB' then begin
@@ -141,7 +144,7 @@ pro mvn_kp_iuvs_nalt_struct, filename, nalts
 ;              nalts = create_struct( nalts, obs_mode, fix( nalt_line[1], type=2 ) )
 ;            endelse
           endif
-        endrep until stregex( temp, '[*]{100}' ) eq 0 ; Awful hack; better way?
+        endrep until ( stregex( temp, '[*]{100}' ) eq 0 or eof(lun) )
       endif ; obs mode
 
     endif  ; if it is an observation mode

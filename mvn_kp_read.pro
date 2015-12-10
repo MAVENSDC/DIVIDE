@@ -9,7 +9,7 @@
 ;     in situ KP data files and IUVS KP data files. Capable of reading in 
 ;     either CDF or ASCII formated data files. 
 ;     By default, CDF files are read. There are also hooks in place, 
-;     using /download_new keyword, to query the SDC web server and 
+;     using /new_files keyword, to query the SDC web server and 
 ;     download missing or updated KP data files.  
 ;
 ; :Params:
@@ -29,7 +29,7 @@
 ;       entry corresponds to one orbit of data. 
 ;
 ; :Keywords:
-;    download_new: in, optional, type=boolean
+;    new_files: in, optional, type=boolean
 ;       optional keyword to instruct IDL to query the SDC server to look 
 ;       for any new or missing files to download over the input timerange.
 ;    update_prefs: in, optional, type=boolean
@@ -83,7 +83,7 @@
 ;       return only the data from the inbound leg of an orbit
 ;    outbound: in, optional, type=boolean
 ;       return only the data from the outbound leg of an orbit 
-;    insitu_all: in, optional, type=boolean
+;    all_insitu: in, optional, type=boolean
 ;       return all in situ data. This keyword is necessary if an IUVS 
 ;       observation mode keyword is specified and you want to still read 
 ;       in all in situ data. If no in situ instrument or IUVS observation 
@@ -106,7 +106,7 @@
 ;       return all of the iuvs corona LoREs on limb data 
 ;    iuvs_stellarocc: in, optional, type=boolean
 ;       return all of the IUVS Stellar Occulatation data
-;    iuvs_all: in, optional, type=boolean
+;    all_iuvs: in, optional, type=boolean
 ;       return all IUVS observation modes. This keyword is necessary if 
 ;       an in situ instrument keyword is specified and you want to still 
 ;       read in all IUVS data. If no in situ instrument or IUVS observation 
@@ -116,14 +116,14 @@
 
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, $
-                 download_new=download_new, $
+                 new_files=new_files, $
                  update_prefs=update_prefs, debug=debug, duration=duration, $
                  text_files=text_files, save_files=save_files, $
-                 insitu_only=insitu_only, insitu_all=insitu_all, $
+                 insitu_only=insitu_only, all_insitu=all_insitu, $
                  inbound=inbound, outbound=outbound, $
                  lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, $
                  mag=mag, sep=sep, ngims=ngims, $    
-                 iuvs_all=iuvs_all, iuvs_periapse=iuvs_periapse, $
+                 all_iuvs=all_iuvs, iuvs_periapse=iuvs_periapse, $
                  iuvs_apoapse=iuvs_apoapse, $
                  iuvs_coronaEchellehigh=iuvs_coronaEchellehigh,$
                  iuvs_coronaEchelleDisk=iuvs_coronaEchelleDisk,$
@@ -210,7 +210,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   ;AND CONTROLLING WHICH INSTRUMENTS DATA TO READ
   if keyword_set(lpw) or keyword_set(euv) or keyword_set(static) or $
      keyword_set(swia) or keyword_set(swea) or keyword_set(mag) or $
-     keyword_set(sep) or keyword_set(ngims) or keyword_set(iuvs_all) or $
+     keyword_set(sep) or keyword_set(ngims) or keyword_set(all_iuvs) or $
      keyword_set(iuvs_periapse) or keyword_set(iuvs_apoapse) or $
      keyword_set(iuvs_coronaEchelleDisk) or $
      keyword_set(iuvs_coronaEchelleLimb) or $
@@ -218,7 +218,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
      keyword_set(iuvs_coronaLoresHigh) or $
      keyword_set(iuvs_coronaloreslimb) or $
      keyword_set(iuvs_coronaloresdisk) or keyword_set(iuvs_stellarocc) or $
-     keyword_set(insitu_all) then begin
+     keyword_set(all_insitu) then begin
 
 
   ;; Setup instrument struct which is used for creating data structure 
@@ -309,7 +309,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
       print,'Returning All IUVS Instrument Corona Echelle Disk KP Data.'
     endif
     
-    if keyword_set(insitu_all) then begin
+    if keyword_set(all_insitu) then begin
       instruments.lpw    = 1
       instruments.euv    = 1
       instruments.static = 1
@@ -320,7 +320,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
       instruments.ngims  = 1
       print, 'Returning all INSITU Instrument KP Data.'
     endif
-    if keyword_set(iuvs_all) then begin
+    if keyword_set(all_iuvs) then begin
       instruments.periapse   = 1
       instruments.c_e_disk   = 1
       instruments.c_e_limb   = 1
@@ -532,12 +532,13 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   ;; ------ and initialize data structures for holding data ------------- ;;
 
   ;; FIXME variable names
+
   MVN_KP_FILE_SEARCH, begin_time_struct, end_time_struct, $
                       target_KP_filenames, kp_insitu_data_directory, $
                       iuvs_filenames, kp_iuvs_data_directory, $
                       save_files=save_files, text_files=text_files, $
-                      insitu_only=insitu_only, download_new=download_new
- 
+                      insitu_only=insitu_only, new_files=new_files
+
   ;; User may have forgotten to enter /text_files 
   if (target_KP_filenames[0] eq 'None') then begin
     print, "No files found.  Make sure you have the correct time range.  "
@@ -639,11 +640,17 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 ;  Might be worthwhile to allow one to read CDF files of one and 
 ;  ASCII files of the other....
 ;
+
       if keyword_set(text_files) then begin
         if not keyword_set(insitu_only) then begin
           ;print,'Removing iuvs_struct_init from mvn_kp_read
-          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+;-km- Need to create the structure containing number of altitude levels
+          mvn_kp_iuvs_nalt_struct,kp_iuvs_data_directory+date_path+iuvs_filenames[0], nalt_struct
+;-km- And pass that to the structure initialization routine
+          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments,$
+                                   nalt_struct=nalt_struct
           iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+          one_temp = iuvs_record ; testing debug 
         endif
         ; Loop over all files
         for file = 0,n_elements(iuvs_filenames)-1 do begin
@@ -663,7 +670,27 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                                  debug=debug
           if size(iuvs_record, /type) eq 8 then begin
             ; Add single IUVS_record to array of IUVS records
-            iuvs_data_temp[iuvs_index] = iuvs_record
+
+;-ToDo: This is potentially more stable if I use pointers to structures
+;       In that case, the top level structure never changes (it is a list
+;       of pointers), and the scond level structures *can* change.
+
+; This step is needed because struct_assign will not allow assignment
+; to an element of an array of structures.  So, first, assign to 
+; a dummy structure
+; The simple one-to-one assignment (i.e., iuvs[index] = iuvs_record
+;  whenever the iuvs_record structure format changes.
+; Alos, code this to provide verbose output only if in debugging mode
+;
+            if keyword_set(debug) then begin
+               struct_assign, iuvs_record, one_temp, /verbose
+            endif else begin
+               struct_assign, iuvs_record, one_temp
+            endelse
+;
+; And then put it in its proper place in the array.
+;
+            iuvs_data_temp[iuvs_index] = one_temp
             iuvs_index++
           endif
         endfor ; loop over filenames

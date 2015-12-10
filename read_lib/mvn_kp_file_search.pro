@@ -89,6 +89,7 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
   if (count gt 0) then begin
     local_iuvs_base = file_basename(local_iuvs)
     
+;stop
     tiuvs_year  = fix(strmid(local_iuvs_base, iuvs_year_index,  4))
     tiuvs_month = fix(strmid(local_iuvs_base, iuvs_month_index,  2))
     tiuvs_day   = fix(strmid(local_iuvs_base, iuvs_day_index,  2))
@@ -241,7 +242,7 @@ end
 ;-
 
 pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs_filenames, iuvs_dir, $
-  save_files=save_files, text_files=text_files, insitu_only=insitu_only, download_new=download_new
+  save_files=save_files, text_files=text_files, insitu_only=insitu_only, new_files=new_files
   
   ;Set to 0 for public release, 1 for team release                              
   private = mvn_kp_config_file(/check_access)
@@ -268,7 +269,7 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
 
   ;; If user wants the SDC server to be queried for udpated files or to fill in files
   ;; needed to complete the time range
-  if keyword_set(download_new) then begin
+  if keyword_set(new_files) then begin
   
     ;Set to 0 for public release, 1 for team release                              
     private = mvn_kp_config_file(/check_access)
