@@ -1,4 +1,7 @@
-Current Version: 2015-11-10
+Current Version: 2015-12-10
+
+2015-12-10:
+	-Fixed bug reading in EUV data 
 
 2015-11-10:
 	-Updated to handle KP version 2 revision 8
