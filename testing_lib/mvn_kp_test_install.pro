@@ -15,15 +15,10 @@ pro mvn_kp_test_install, test_number
   test_file_directory = test_directory+path_sep()+'install_test'+path_sep()
   
   insitu_cdf = test_file_directory+'mvn_kp_insitu_20150403_v01_r01.cdf'
-;-orig  insitu_txt = test_file_directory+'mvn_kp_insitu_20150406_v01_r01.tab'
   insitu_txt = test_file_directory+'mvn_kp_insitu_20150406_v02_r05.tab'  
 
-;-orig
-;  iuvs_cdf   = test_file_directory+'mvn_kp_iuvs_20141029T031433_v00_r00.cdf'
-;  iuvs_txt   = test_file_directory+'mvn_kp_iuvs_20141030T021404_v00_r00.tab'
-  iuvs_txt = test_file_directory+'mvn_kp_iuvs_20141018T204300_v02_r10.tab'
-  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_20141018T204300_v02_r10.tab.cdf'
-  iuvs_txt = test_file_directory+'mvn_kp_iuvs_12345_20141018T204300_v02_r10.tab'
+  iuvs_cdf = test_file_directory+'mvn_kp_iuvs_00108_20141018T112856_v03_r01.cdf'
+  iuvs_txt = test_file_directory+'mvn_kp_iuvs_00108_20141018T112856_v03_r01.tab'
   ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE
   ;FULL STRUCTURE FOR ALL INSTRUMENT DATA
   instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, $
