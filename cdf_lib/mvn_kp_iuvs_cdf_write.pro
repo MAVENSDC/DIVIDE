@@ -37,6 +37,7 @@ pro mvn_kp_iuvs_cdf_write, iuvs, filename, overwrite=overwrite
 ;
 ;  Loop over level 1 tags of the structure
 ;
+stop
   for i1 = 0,n_tags(iuvs)-1 do begin
     if n_tags(iuvs.(i1)) gt 0 then begin
       ;
