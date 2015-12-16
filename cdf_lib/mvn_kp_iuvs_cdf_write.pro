@@ -27,6 +27,10 @@ pro mvn_kp_iuvs_cdf_write, iuvs, filename, overwrite=overwrite
        ? cdf_create(filename,/clobber) $
        : cdf_create(filename)
 ;
+;  Set the compression algorithm to GZIP
+;
+  cdf_compression, luno, set_compression=5 ; using gzip compression
+;
 ;  Get the tag names for level 1 of the structure
 ;
   l1_name = tag_names(iuvs)
