@@ -360,12 +360,15 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
     ;
     ;  Next, strip down to the date-time-stamp
     ;
+
+;ToDO: Incorporate orbit number from filename into time bounds?
+
     if n_elements(filename) gt 1 then begin
       temp = strsplit(base,'_',/extract,/regex)
       date_time = strarr(n_elements(temp))
-      for i = 0,n_elements(temp)-1 do date_time[i] = temp[i,3]
+      for i = 0,n_elements(temp)-1 do date_time[i] = temp[i,4]
     endif else begin
-      date_time = (strsplit(base,'_',/extract,/regex))[3]
+      date_time = (strsplit(base,'_',/extract,/regex))[4]
     endelse
     ;
     ;  Now, construct yyyy-mo-ddThh:mi:ss from this string
