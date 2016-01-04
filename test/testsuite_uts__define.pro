@@ -56,7 +56,9 @@ pro testsuite_uts::cleanup
   
   ;; Remove journal file if used/left around
   test_journal = getenv('MVN_TEST_JOURNAL')
-  file_delete, test_journal
+  if (file_test(test_journal)) then begin
+    file_delete, test_journal
+  endif
   
   ;;-------------------------------------------------------------------
   ;; Remove testing preferences file & replace existing one if present
