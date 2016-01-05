@@ -184,7 +184,8 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   endif else if keyword_set(cdf_files) then begin
     extension = 'cdf'
   endif else if n_elements(filenames) le 0 then begin
-    message, "If not specifying filename(s) to download, must specify either /TEXT_FILES or /CDF_FILES."
+    text_files = 1
+    extension = 'tab'
   endif
   
   ;; If specific filenames not specified, then user must specify insitu or iuvs

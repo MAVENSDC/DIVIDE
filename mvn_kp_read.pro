@@ -52,8 +52,10 @@
 ;       parameter is a single value.
 ;       If input time is a string, duration is interpreted as seconds. 
 ;       If input time is integer (orbit), duration is interpreted as orbits. 
-;    text_files: in optional, type=boolean
-;       Read in ASCII files instead of the default of reading CDF files. 
+;   text_files: in optional, type=boolean
+;       Read in ASCII files.  This is the default.
+;    cdf_files: in optional, type=boolean
+;       Read in CDF files instead of the default of reading ASCII files. 
 ;    save_files: in optional, type=boolean
 ;       Read in .sav files instead of the default of reading CDF files. 
 ;       This option exists primarily for the developers and debugging. 
@@ -116,9 +118,9 @@
 
 
 pro MVN_KP_READ, time, insitu_output, iuvs_output, $
-                 new_files=new_files, $
-                 update_prefs=update_prefs, debug=debug, duration=duration, $
-                 text_files=text_files, save_files=save_files, $
+                 new_files=new_files, update_prefs=update_prefs, $
+                 debug=debug, duration=duration, text_files=text_files, $
+                 cdf_files=cdf_files, save_files=save_files, $
                  insitu_only=insitu_only, all_insitu=all_insitu, $
                  inbound=inbound, outbound=outbound, $
                  lpw=lpw, euv=euv, static=static, swia=swia, swea=swea, $
@@ -139,8 +141,6 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
     mvn_kp_get_help,'mvn_kp_read'
     return
   endif
-
-
   
   ;IF NOT IN DEBUG, SETUP ERROR HANDLER
   if not keyword_set(debug) then begin
@@ -170,6 +170,14 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
   if keyword_set(debug) then begin
     setenv, 'MVNTOOLKIT_DEBUG=TRUE'
   endif
+  
+  ;Turn text_files on by default, have user specify CDF files
+  if keyword_set(cdf_files) then begin
+    text_files=0
+  endif else begin
+    text_files=1
+    cdf_files=0
+  endelse
 
   ;; Read from and/or update preferences file 
   if keyword_set(only_update_prefs) then begin
@@ -539,10 +547,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                       save_files=save_files, text_files=text_files, $
                       insitu_only=insitu_only, new_files=new_files
 
-  ;; User may have forgotten to enter /text_files 
   if (target_KP_filenames[0] eq 'None') then begin
     print, "No files found.  Make sure you have the correct time range.  "
-    print, "Use the /text_files flag if you meant to read the .tab data.  "
     return
   endif
 
