@@ -86,41 +86,6 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   ;provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_download_files'
-;    print,'MVN_KP_DOWNLOAD_FILES'
-;    print,'  Download in situ or IUVS kp data files from the Maven SDC web '
-;    print,'  service. Download either CDF or ASCII versions of the data files.'
-;    print,''
-;    print,'mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $'
-;    print,'   insitu=insitu, iuvs=iuvs, new_files=new_files, $'
-;    print,'  text_files=text_files, cdf_files=cdf_files, start_date=start_date, end_date=end_date, $'
-;    print,'                       update_prefs=update_prefs, list_files=list_files, debug=debug, only_update_prefs=only_update_prefs, help=help'
-;    print,''
-;    print,'OPTIONAL FIELDS'
-;    print,'***************'
-;    print,'  filenames: Scalar or array of filename strings to download'
-;    print,'  list_files: Print to standard output a list of files instead of actually downloading'
-;    print,'  insitu: Search/download in situ KP data files'
-;    print,'  iuvs: Search/download IUVS KP data files'
-;    print,'  text_files: Search/download ASCII (.tab) versions of the KP data files'
-;    print,'  cdf_files: Search/download CDF (.cdf) versions of the KP data files'
-;    print,'  new_files: Only download files you do not already have saved locally'
-;    print,'  start_date: Beginning of time range to search/download files. Format="YYYY-MM-DD"'   
-;    print,'  end_date: End of time range to search/download files. Format="YYYY-MM-DD"'
-;    print,'  update_prefs: Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which '
-;    print,'                contains paths to the root data directory. After selecting new path to data folders, '
-;    print,'                search or download of data files will continue.'
-;    print,'  only_update_prefs: Allow user to update mvn_toolkit_prefs.txt - which contains paths to the root data directory.'
-;    print,'                     After selecting new path to data folders, procedure will return - not downloading any data.'
-;    print,'  exclude_orbit_file: Do not download updated orbit # file from naif.jpl.nasa.gov'
-;    print,'  local_dir: Specify a directory to download files to - this overrides what is stored in mvn_toolkit_prefs.txt '
-;    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
-;    print,'         the current program stack." If not specified, error message will be printed and '
-;    print,'         IDL with return to main program level and stop.'
-;    print, ''
-;    print, ''
-;    print, 'Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR'
-;    print, ''
-;    print,'  help: Invoke this list.'
     return
   endif
 
@@ -284,7 +249,6 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
 
     ; Get list of files on server (within a time span if entereted), that are not on local machine
     filenames = mvn_kp_relative_complement(local_files, filenames)
-    
   endif
   
   ;; Sort the filenames
