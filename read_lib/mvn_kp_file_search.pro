@@ -62,6 +62,7 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
 
   ;; File pattern details 
   iuvs_pattern     = filename_spec.pattern
+  iuvs_orbit_index = filename_spec.orbit_index
   iuvs_year_index  = filename_spec.year_index
   iuvs_month_index = filename_spec.month_index
   iuvs_day_index   = filename_spec.day_index
@@ -89,7 +90,6 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
   if (count gt 0) then begin
     local_iuvs_base = file_basename(local_iuvs)
     
-;stop
     tiuvs_year  = fix(strmid(local_iuvs_base, iuvs_year_index,  4))
     tiuvs_month = fix(strmid(local_iuvs_base, iuvs_month_index,  2))
     tiuvs_day   = fix(strmid(local_iuvs_base, iuvs_day_index,  2))
@@ -147,7 +147,7 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
     revisions[i] = strmid(split[rpos], 1) ; strip off leading r
     i++
   endforeach
-  
+
   ;; Find max version and discard others
   
 ;; HACK HACK HACK
@@ -160,11 +160,11 @@ function MVN_KP_LATEST_VERSION_FILE, in_files, vpos, rpos
 ;;  we will re-enable reading of the most recent data.
 ;; Ultimately, this hack will be removed entirely.
 ;;
-  mvn_kp_version,version=divide_version
-  max_v = ( divide_version lt 1.04 ) $
-        ? where(versions eq (max(versions)<1)) $
-        : where(versions eq max(versions))
-;-old-code max_v = where( versions eq max(versions) )
+;  mvn_kp_version,version=divide_version
+;  max_v = ( divide_version lt 1.04 ) $
+;        ? where(versions eq (max(versions)<1)) $
+;        : where(versions eq max(versions))
+ max_v = where( versions eq max(versions) ) ; restored old code; if works delete hack
 ;; END HACK
 
   revisions = revisions[max_v]
@@ -182,7 +182,7 @@ end
 
 
 function MVN_KP_LATEST_VERSIONS, in_files, filename_spec
-  ; Prune out files that have multiple coppies, but just different versions/revisoinos
+  ; Prune out files that have multiple copies, but just different versions/revisoinos
   ; leave the highest version, then revision
   
   vpos=filename_spec.vpos
@@ -297,6 +297,7 @@ pro MVN_KP_FILE_SEARCH, begin_time, end_time, insitu_filenames, insitu_dir, iuvs
   insitu_filenames = MVN_KP_LATEST_VERSIONS(insitu_filenames, insitu_filename_spec) 
 
   if not keyword_set(insitu_only) then begin
+
     iuvs_filenames = MVN_KP_LOCAL_IUVS_FILES(begin_time.Jul, end_time.Jul, iuvs_dir, iuvs_filename_spec, $ 
                                              save_files=save_files, text_files=text_files)
     iuvs_filenames = MVN_KP_LATEST_VERSIONS(iuvs_filenames, iuvs_filename_spec)
