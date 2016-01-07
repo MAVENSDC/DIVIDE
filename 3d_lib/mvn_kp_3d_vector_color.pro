@@ -1,20 +1,3 @@
-;+
-; HERE RESTS THE ONE SENTENCE ROUTINE DESCRIPTION
-;
-; :Params:
-;    bounds : in, required, type="lonarr(ndims, 3)"
-;       bounds 
-;
-; :Keywords:
-;    start : out, optional, type=lonarr(ndims)
-;       input for start argument to H5S_SELECT_HYPERSLAB
-;    count : out, optional, type=lonarr(ndims)
-;       input for count argument to H5S_SELECT_HYPERSLAB
-;    block : out, optional, type=lonarr(ndims)
-;       input for block keyword to H5S_SELECT_HYPERSLAB
-;    stride : out, optional, type=lonarr(ndims)
-;       input for stride keyword to H5S_SELECT_HYPERSLAB
-;-
 pro MVN_KP_3D_VECTOR_COLOR, data, vert_color, colorbar_stretch
 
 
@@ -22,8 +5,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
 
 
-    maximum_value = max(data)
-    minimum_value = min(data)
+    maximum_value = max(data, /NAN)
+    minimum_value = min(data, /NAN)
     delta = (maximum_value-minimum_value)/255.
 
     range = size(data)
@@ -55,6 +38,14 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
             vert_color[0,(i*2)+1] = r_orig[t]
             vert_color[1,(i*2)+1] = g_orig[t]
             vert_color[2,(i*2)+1] = b_orig[t]
+          endif
+          if finite(data[i]) eq 0 then begin
+            vert_color[0,(i*2)] = 0
+            vert_color[1,(i*2)] = 0
+            vert_color[2,(i*2)] = 0
+            vert_color[0,(i*2)+1] = 0
+            vert_color[1,(i*2)+1] = 0
+            vert_color[2,(i*2)+1] = 0
           endif
       endfor
     endif

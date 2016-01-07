@@ -1810,6 +1810,13 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         vector_polylines[(i*3)+1] = (i*2l)
         vector_polylines[(i*3)+2] = (i*2l)+1l  
       endfor 
+      
+      ; vector_data contains the vector form of the actual data we want to plot
+      vector_data = fltarr(3, (n_elements(insitu1.spacecraft.geo_x)))
+      vector_data[1, *] = orbit_offset
+      
+      ;The even numbers of vector_path.data are simply the location of the spacecraft
+      ;The odd numbers of vector_path.data are the location of the spacecraft plus the vector data
       vector_path = obj_new('IDLgrPolyline', x_vector, y_vector, z_vector, $
                             polylines=vector_polylines, thick=1, $
                             vert_color=vert_color,shading=1,alpha_channel=0.2)
@@ -1819,7 +1826,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       if keyword_set(whiskers) then begin
         if size(whiskers,/type) eq 8 then begin
           vector_path->getproperty,data=old_data
-          MVN_KP_3D_VECTOR_INIT, old_data, vector_name, vector_scale, $
+          old_vec_data = vector_data
+          MVN_KP_3D_VECTOR_INIT, old_data, old_vec_data, vector_name, vector_scale, $
                                  coord_sys, insitu1
           vector_path->setproperty,data=old_data
           vector_path->getproperty, vert_color=vert_color
@@ -2738,7 +2746,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
            orbit_path: orbit_path, path_color_table: path_color_table, $
            orbit_offset:orbit_offset, vector_model:vector_model, $
            vector_path: vector_path, vector_scale: vector_scale, $
-           vector_color_method:vector_color_method, $
+           vector_data: vector_data, vector_color_method:vector_color_method, $
            vector_color_source:vector_color_source, $
            maven_model: maven_model, $
            sun_model: sun_model, sun_vector: sun_vector, $

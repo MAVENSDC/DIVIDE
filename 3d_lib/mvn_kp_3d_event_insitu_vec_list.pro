@@ -32,7 +32,8 @@ pro mvn_kp_3d_event_insitu_vec_list,event,inst_code
   (*pstate).vector_color_source[1] = newval(index)
   (*pstate).vector_path->getproperty,vert_color=vert_color
   insitu_spec = (*pstate).insitu
-  MVN_KP_3D_VECTOR_COLOR, insitu_spec.static.(index), vert_color, $
+  instrument_index = where(tag_names(insitu_spec[0]) eq inst_code)
+  MVN_KP_3D_VECTOR_COLOR, insitu_spec.(instrument_index).(index), vert_color, $
                           (*pstate).colorbar_stretch
   (*pstate).vector_path->setproperty,vert_color=vert_color
   (*pstate).window ->draw,(*pstate).view

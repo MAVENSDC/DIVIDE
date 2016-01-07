@@ -514,10 +514,16 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         widget_control,event.id, get_value=newval
         scale_factor=newval/100.0
         ;RESCALE THE DISPLAYED VECTOR FIELD
+        old_vec_data = (*pstate).vector_data
+                      
+        MVN_KP_3D_VECTOR_SCALE, old_vec_data, (*pstate).vector_scale, scale_factor
+        (*pstate).vector_data = old_vec_data     
         (*pstate).vector_path->getproperty,data=old_data
-                      
-        MVN_KP_3D_VECTOR_SCALE, old_data, (*pstate).vector_scale, scale_factor
-                      
+        for i=0,(n_elements((*pstate).x_orbit)/2)-1 do begin
+          old_data[0,(i*2)+1] = old_vec_data[0, i] + old_data[0,(i*2)]
+          old_data[1,(i*2)+1] = old_vec_data[1, i] + old_data[1,(i*2)]
+          old_data[2,(i*2)+1] = old_vec_data[2, i] + old_data[2,(i*2)]
+        endfor
         (*pstate).vector_path->setproperty,data=old_data
         (*pstate).vector_scale = scale_factor
         (*pstate).window->draw,(*pstate).view   
@@ -1271,7 +1277,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               cur_x = data[0,(*pstate).time_index*2]
                               cur_y = data[1,(*pstate).time_index*2]
                               cur_z = data[2,(*pstate).time_index*2]
-                           (*pstate).vector_path -> getproperty, data=vec_data
+                           (*pstate).vector_path -> getproperty, data=vec_path
+                           vec_data = (*pstate).vector_data
                            
                            ;; Make idl 8.2.2 happy - We found that dereferencing the pointer to the struct in each
                            ;; iteration of the for loop was very slow in 8.2.2
@@ -1314,20 +1321,24 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                if result eq 0 then begin
                                 vec_data1 = vec_data
                                 for i=0, n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
-                                  vec_data[0,i*2] = insitu_spec[i].spacecraft.geo_x/10000.0
-                                  vec_data[1,i*2] = insitu_spec[i].spacecraft.geo_y/10000.0
-                                  vec_data[2,i*2] = insitu_spec[i].spacecraft.geo_z/10000.0
-                                  vec_data[0,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t11)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t12)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t13)
-                                  vec_data[1,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t21)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t22)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t23)
-                                  vec_data[2,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t31)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t32)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t33)                                   
-                                endfor
-                                (*pstate).vector_path->setproperty,data=vec_data
+                                  vec_path[0,i*2] = insitu_spec[i].spacecraft.geo_x/10000.0
+                                  vec_path[1,i*2] = insitu_spec[i].spacecraft.geo_y/10000.0
+                                  vec_path[2,i*2] = insitu_spec[i].spacecraft.geo_z/10000.0
+                                  vec_data[0, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t11)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t21)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t31)
+                                  vec_data[1, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t12)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t22)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t32)
+                                  vec_data[2, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t13)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t23)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t33)                                                          
+                                  vec_path[0,(i*2)+1] = vec_data[0, i] + vec_path[0,(i*2)]
+                                  vec_path[1,(i*2)+1] = vec_data[1, i] + vec_path[1,(i*2)]
+                                  vec_path[2,(i*2)+1] = vec_data[2, i] + vec_path[2,(i*2)]                                
+                                endfor                                
+                                (*pstate).vector_path->setproperty,data=vec_path
+                                (*pstate).vector_data = vec_data
                                endif
                                
                                ;Undo the mars globe rotation from MSO coordinate system
@@ -1395,20 +1406,24 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                if result eq 0 then begin
                                   vec_data1 = vec_data
                                 for i=0, n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
-                                  vec_data[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
-                                  vec_data[1,i*2] = insitu_spec[i].spacecraft.mso_y/10000.0
-                                  vec_data[2,i*2] = insitu_spec[i].spacecraft.mso_z/10000.0
-                                  vec_data[0,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t11)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t21)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t31)
-                                  vec_data[1,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t12)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t22)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t32)
-                                  vec_data[2,(i*2)+1] = (vec_data1[0,(i*2)+1]*insitu_spec[i].spacecraft.t13)+$
-                                                        (vec_data1[1,(i*2)+1]*insitu_spec[i].spacecraft.t23)+$
-                                                        (vec_data1[2,(i*2)+1]*insitu_spec[i].spacecraft.t33)                      
-                                endfor
-                                (*pstate).vector_path->setproperty,data=vec_data
+                                  vec_path[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
+                                  vec_path[1,i*2] = insitu_spec[i].spacecraft.mso_y/10000.0
+                                  vec_path[2,i*2] = insitu_spec[i].spacecraft.mso_z/10000.0
+                                  vec_data[0, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t11)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t12)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t13)
+                                  vec_data[1, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t21)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t22)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t23)
+                                  vec_data[2, i] = (vec_data1[0, i]*insitu_spec[i].spacecraft.t31)+$
+                                                        (vec_data1[1, i]*insitu_spec[i].spacecraft.t32)+$
+                                                        (vec_data1[2, i]*insitu_spec[i].spacecraft.t33)                      
+                                  vec_path[0,(i*2)+1] = vec_data[0, i] + vec_path[0,(i*2)]
+                                  vec_path[1,(i*2)+1] = vec_data[1, i] + vec_path[1,(i*2)]
+                                  vec_path[2,(i*2)+1] = vec_data[2, i] + vec_path[2,(i*2)]                                
+                                endfor                                
+                                (*pstate).vector_path->setproperty,data=vec_path
+                                (*pstate).vector_data = vec_data
                                endif
                                
                                ;turn off the corona plotting because they can't be easily converted to MSO coordinates
