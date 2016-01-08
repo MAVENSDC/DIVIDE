@@ -13,12 +13,14 @@
 import numpy as np
 import sys
 
-def param_list( insitu ):
+def param_list_sav( insitu ):
     '''
     Return a listing of all parameters present in the given 
     insitu data dictionary/structure.  At present, this does
     not include the fancy formatting that can more easily 
     distinguish one instrument form another.
+    Rendered obsolete by param_list
+    (only works with data from IDL sav file)
     '''
     index = 1
     ParamList = []
@@ -34,6 +36,37 @@ def param_list( insitu ):
     return ParamList
 
 #---------------------------------------------------------------------
+
+def param_list( insitu ):
+    '''
+    Return a listing of all parameters present in the given 
+    insitu data dictionary/structure.  At present, this does
+    not include the fancy formatting that can more easily 
+    distinguish one instrument form another.
+    '''
+    import pandas as pd
+    import sys
+
+    index = 1
+    ParamList = []
+    for base_tag in insitu.keys():
+        if isinstance(insitu[base_tag], pd.DataFrame):
+            for obs_tag in insitu[base_tag].columns:
+                ParamList.append("#%3d %s.%s" % 
+                                 (index, base_tag, obs_tag ) )
+                index = index + 1
+        elif isinstance(insitu[base_tag], pd.Series):
+            ParamList.append("#%3d %s" % (index, base_tag) )
+            index = index + 1
+        else:
+            print 'Base tag neither DataFrame nor Series'
+            print 'Plese check read_insitu_file definition'
+            sys.exit(1)
+
+    return ParamList
+
+#---------------------------------------------------------------------
+
 def param_range( kp, iuvs=None ):
     '''
     Print the range of times and orbits for the provided insitu data.
@@ -261,13 +294,13 @@ def time_plot( kp, parameter=None, time=None, errors=None,
 
     # Check the time variable
     if time == None:
-        istart, iend = 0,np.count_nonzero(kp.orbit)-1
+        istart, iend = 0,np.count_nonzero(kp['Orbit'])-1
     else:
-        istart,iend = kp.range_select(time)
+        istart,iend = divide_lib_test.range_select(kp,time)
 
     # Possible hack: Make the time array
     t = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S') 
-         for i in kp['time_string']]
+         for i in kp['TimeString']]
 
     # Cycle through the parameters, plotting each according to
     #  the given keywords
@@ -278,8 +311,8 @@ def time_plot( kp, parameter=None, time=None, errors=None,
         # First, generate the dependent array from data
         y = []
         index = 0
-        for i in kp['time_string']:
-            y.append(kp[inst][index][obs])
+        for i in kp['TimeString']:
+            y.append(kp[inst][obs][index])
             index = index + 1
 
     # Generate the plot
@@ -300,11 +333,11 @@ def time_plot( kp, parameter=None, time=None, errors=None,
 
         # Set value of tickmarks
             xticknames = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S')
-                          for i in kp['time_string'][tickind]]
+                          for i in kp['TimeString'][tickind]]
 
         # Set text names of tick marks
             xticklab = make_time_labels( np.count_nonzero(kp), 
-                                         kp['time_string'] )
+                                         kp['TimeString'] )
 
         # Print ticknames labels at 90 degree rotation
             plt.xticks(xticknames, xticklab, rotation=90 )
@@ -368,15 +401,15 @@ def alt_plot( kp, parameter=None, time=None, errors=None,
 
     # Check the time variable
     if time == None:
-        istart, iend = 0,np.count_nonzero(kp.orbit)-1
+        istart, iend = 0,np.count_nonzero(kp['Orbit'])-1
     else:
-        istart,iend = kp.range_select(time)
+        istart,iend = divide_lib_test.range_select(kp,time)
 
     # Generate the altitude array
     z = []
     index = 0
-    for i in kp['time_string']:
-        z.append(kp['spacecraft'][index]['altitude'])
+    for i in kp['TimeString']:
+        z.append(kp['SPACECRAFT']['Altitude Aeroid'][index])
         index = index + 1
 
     # Cycle through the parameters, plotting each according to
@@ -388,8 +421,8 @@ def alt_plot( kp, parameter=None, time=None, errors=None,
         # First, generate the dependent array from data
         y = []
         index = 0
-        for i in kp['time_string']:
-            y.append(kp[inst][index][obs])
+        for i in kp['TimeString']:
+            y.append(kp[inst][obs][index])
             index = index + 1
 
     # Generate the plot
@@ -515,7 +548,7 @@ def read_insitu_file( filename, instruments = None, time=None ):
     # Break up dictionary into instrument groups
     #
     LPWgroup, EUVgroup, SWEgroup, SWIgroup, STAgroup, SEPgroup, MAGgroup, \
-    NGIgroup, APPgroup, SCgroup, SPICEgroup = [],[],[],[],[],[],[],[],[],[],[]
+    NGIgroup, APPgroup, SCgroup = [],[],[],[],[],[],[],[],[],[]
     First = True
     for i,j in zip(inst,names):
         if re.match('^LPW$',i.strip()):
@@ -536,7 +569,6 @@ def read_insitu_file( filename, instruments = None, time=None ):
             NGIgroup.append(j)
         elif re.match('^SPICE$',i.strip()):
             # NB Need to split into APP and SPACECRAFT
-            SPICEgroup.append(j) # keep for now for comparison
             if re.match('APP',j): 
                 APPgroup.append(j)
             else: # Everything not APP is SC in SPICE
@@ -546,7 +578,6 @@ def read_insitu_file( filename, instruments = None, time=None ):
                     SCgroup.append(j)
         else:
             pass
-    for i in LPWgroup: print i
     #
     # Now assign the subSeries to the instruments
     #
@@ -558,7 +589,6 @@ def read_insitu_file( filename, instruments = None, time=None ):
     SEP=temp[SEPgroup]
     MAG=temp[MAGgroup]
     NGIMS=temp[NGIgroup]
-    SPICE=temp[SPICEgroup] # needs to be split into APP and SPACECRAFT
     APP=temp[APPgroup]
     SPACECRAFT=temp[SCgroup]
     #
@@ -591,7 +621,3 @@ def read_insitu_file( filename, instruments = None, time=None ):
                  SEP, MAG, NGIMS, APP, SPACECRAFT]
     # return a dictionary made from tag_names and data_tags
     return dict( zip( tag_names, data_tags ) )
-    # orig preserved for refernce
-    #return dict(zip(['LPW','EUV','SWEA','SWIA','STATIC',
-    #                 'SEP','MAG','NGIMS','SPICE'],
-    #                [LPW,EUV,SWEA,SWIA,STATIC,SEP,MAG,NGIMS,SPICE]))
