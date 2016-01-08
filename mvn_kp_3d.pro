@@ -906,7 +906,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         slider10 = widget_slider(subbaseR10a, frame=2, maximum=100, $
                                  minimum=1, xsize=scale_factor*300, $
                                  ysize=scale_factor*33,uname='vec_scale', $
-                                 value=10)
+                                 value=100)
         vector_scale = 1.0
                    
         subbaseR10c = widget_base(subbaseR10, /column,/frame)
