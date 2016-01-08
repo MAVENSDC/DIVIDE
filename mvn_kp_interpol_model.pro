@@ -90,7 +90,7 @@ if( mso )then begin
   ;
   ; convert lon_sc_mso to 0..360 scale if needed
   ;
-  if (max(abs(model.dim[0].lon)) gt 180) then begin
+  if (max(abs(model.dim[0].lon), /NAN) gt 180) then begin
     neg_lon = where( lon_sc_mso lt 0, count )
     if count gt 0 then lon_sc_mso[neg_lon] = lon_sc_mso[neg_lon] + 360
   endif

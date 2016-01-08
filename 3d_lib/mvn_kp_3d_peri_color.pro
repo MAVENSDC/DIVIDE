@@ -21,8 +21,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
 
 
 
-    maximum_value = max(data)
-    minimum_value = min(data)
+    maximum_value = max(data, /NAN)
+    minimum_value = min(data, /NAN)
     delta = (maximum_value-minimum_value)/255.
 
     range = size(data)

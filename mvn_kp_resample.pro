@@ -73,8 +73,8 @@ pro mvn_kp_resample, kp_data, time, data_out, sc_only=sc_only, help=help
     endif
     
     
-    t1 = min(abs(kp_data.time - start_time), start_index)
-    t2 = min(abs(kp_data.time - end_time), end_index)
+    t1 = min(abs(kp_data.time - start_time), start_index, /NAN)
+    t2 = min(abs(kp_data.time - end_time), end_index, /NAN)
     
     kp_temp = kp_data[start_index:end_index]
     

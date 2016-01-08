@@ -2004,7 +2004,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endelse
 
         yr = [yrmin, yrmax]
-        xr = [min(plot_x),max(plot_x)]
+        xr = [min(plot_x, /NAN),max(plot_x, /NAN)]
 
         
 ; Now make the data log if requested
@@ -2217,9 +2217,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
           alt_xaxis_title = obj_new('IDLgrText', xlabel, color=peri_axis_color)
           alt_xaxis_ticks $
             = obj_new('idlgrtext', $
-                      [strtrim(string(min(current_periapse[1,*]), $
+                      [strtrim(string(min(current_periapse[1,*], /NAN), $
                                       format='(E8.2)'),2),$
-                       strtrim(string(max(current_periapse[1,*]), $
+                       strtrim(string(max(current_periapse[1,*], /NAN), $
                                       format='(E8.2)'),2)] )
           
           alt_yaxis = obj_new('IDLgrAxis', 1, range=yr,color=peri_axis_color, $

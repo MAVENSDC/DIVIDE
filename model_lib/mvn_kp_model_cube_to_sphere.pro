@@ -9,7 +9,7 @@ max_altitude = min(abs([old_model.dim.x[0], $
                        old_model.dim.y[0], $
                        old_model.dim.y[n_elements(old_model.dim.y)-1], $
                        old_model.dim.z[0], $
-                       old_model.dim.z[n_elements(old_model.dim.z)-1]])) $
+                       old_model.dim.z[n_elements(old_model.dim.z)-1]]), /NAN) $
                        - old_model.meta[0].mars_radius
                        
 altitude = (((max_altitude - min_altitude) / 99) * dindgen(100)) + min_altitude 

@@ -22,8 +22,8 @@ pro MVN_KP_MAP2D_SYMBOL_FILL, input, fill_color, color_default, colorbars
   loadct,color_default,/silent
 
   
-  parameter_minimum = min(input)
-  parameter_maximum = max(input)
+  parameter_minimum = min(input, /NAN)
+  parameter_maximum = max(input, /NAN)
   
   fill_color[0,*] = r_curr[fix(((input-parameter_minimum)/(parameter_maximum-parameter_minimum))*255)] 
   fill_color[1,*] = g_curr[fix(((input-parameter_minimum)/(parameter_maximum-parameter_minimum))*255)] 

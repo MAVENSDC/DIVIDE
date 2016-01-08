@@ -937,12 +937,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                          (*pstate).alt_xaxis_title->setproperty,strings=xlabel
                          (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
                          (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
-                         (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+                         (*pstate).alt_plot->setproperty,xrange=[min(peri_data[1,*], /NAN),max(peri_data[1,*], /NAN)]
                          (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
-                          xc = mg_linear_function([min(peri_data[1,*]),max(peri_data[1,*])], [-1.75,-1.5])
+                          xc = mg_linear_function([min(peri_data[1,*], /NAN),max(peri_data[1,*], /NAN)], [-1.75,-1.5])
                           yc = mg_linear_function(yr, [-1.3,1.0])
                           (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                          (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)
+                          (*pstate).alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*], /NAN),max(peri_data[1,*], /NAN)], format='(E8.2)'),2)
                          
                           
                          (*pstate).periapse_vectors->setproperty,vert_colors=verts
@@ -1485,8 +1485,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               widget_control, event.id, get_value=newval
                         
                               if newval[index] ne 'LoRes Disk' then begin
-                                min_val = min((*pstate).iuvs.corona_lo_disk.radiance[index-1])
-                                max_val = max((*pstate).iuvs.corona_lo_disk.radiance[index-1])
+                                min_val = min((*pstate).iuvs.corona_lo_disk.radiance[index-1], /NAN)
+                                max_val = max((*pstate).iuvs.corona_lo_disk.radiance[index-1], /NAN)
                                 
                                 disk_index = 0
                                 for i=0, n_elements((*pstate).iuvs.corona_lo_disk.lat) - 1 do begin
@@ -1541,8 +1541,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               widget_control, event.id, get_value=newval
                         
                               if newval[index] ne 'Echelle Disk' then begin
-                                min_val = min((*pstate).iuvs.corona_e_disk.radiance[index-1])
-                                max_val = max((*pstate).iuvs.corona_e_disk.radiance[index-1])
+                                min_val = min((*pstate).iuvs.corona_e_disk.radiance[index-1], /NAN)
+                                max_val = max((*pstate).iuvs.corona_e_disk.radiance[index-1], /NAN)
                                 
                                 disk_index = 0
                                 for i=0, n_elements((*pstate).iuvs.corona_e_disk.lat) - 1 do begin

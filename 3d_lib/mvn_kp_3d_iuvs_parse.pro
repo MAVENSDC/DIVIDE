@@ -9,7 +9,7 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp = where(iuvs.corona_e_disk.radiance_id[0] ne '')
           e_disk_list = [e_disk_list,$
-                         'Radiance:'+iuvs[min(temp)].corona_e_disk.radiance_id]
+                         'Radiance:'+iuvs[min(temp, /NAN)].corona_e_disk.radiance_id]
         endif
       endif
       e_limb_list = 'Echelle Limb'
@@ -19,14 +19,14 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp = where(iuvs.corona_e_limb.radiance_id[0] ne '')
           e_limb_list = [e_limb_list, $
-                         'Radiance:'+iuvs[min(temp)].corona_e_limb.radiance_id]
+                         'Radiance:'+iuvs[min(temp, /NAN)].corona_e_limb.radiance_id]
         endif
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_e_limb.half_int_distance_id[0] ne '')
           e_limb_list $
             = [e_limb_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
+               'HALF_INT_DISTANCE:'+iuvs[min(temp, /NAN)]$
                                     .corona_e_limb.half_int_distance_id]
         endif
       endif
@@ -37,14 +37,14 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp = where(iuvs.corona_e_high.radiance_id[0] ne '')
           e_high_list = [e_high_list, $
-                         'Radiance:'+iuvs[min(temp)].corona_e_high.radiance_id]
+                         'Radiance:'+iuvs[min(temp, /NAN)].corona_e_high.radiance_id]
         endif
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_e_high.half_int_distance_id[0] ne '')
           e_high_list $
             = [e_high_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
+               'HALF_INT_DISTANCE:'+iuvs[min(temp, /NAN)]$
                                     .corona_e_high.half_int_distance_id]
         endif
       endif
@@ -55,7 +55,7 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp  = where(iuvs.corona_lo_disk.radiance_id[0] ne '')
           lo_disk_list = [lo_disk_list, $
-                          'Radiance:'+iuvs[min(temp)]$
+                          'Radiance:'+iuvs[min(temp, /NAN)]$
                                       .corona_lo_disk.radiance_id]
         endif
         check = where(tag_list eq 'DUST_DEPTH:')
@@ -72,21 +72,21 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_limb.radiance_id[0] ne '')    
           lo_limb_list = [lo_limb_list, $
-                          'Radiance:'+iuvs[min(temp)]$
+                          'Radiance:'+iuvs[min(temp, /NAN)]$
                                       .corona_lo_limb.radiance_id]
         endif
         check = where(tag_list eq 'SCALE_HEIGHT')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_limb.scale_height_id[0] ne '')    
           lo_limb_list = [lo_limb_list, $
-                          'Scale_Height:'+iuvs[min(temp)]$
+                          'Scale_Height:'+iuvs[min(temp, /NAN)]$
                                           .corona_lo_limb.scale_height_id]
         endif
         check = where(tag_list eq 'DENSITY')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_limb.density_id[0] ne '')
           lo_limb_list = [lo_limb_list, $
-                          'Density:'+iuvs[min(temp)]$
+                          'Density:'+iuvs[min(temp, /NAN)]$
                                      .corona_lo_limb.density_id]
         endif
         check = where(tag_list eq 'TEMPERATURE')
@@ -99,21 +99,21 @@ pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_high.radiance_id[0] ne '')    
           lo_high_list = [lo_high_list, $
-                          'Radiance:'+iuvs[min(temp)]$
+                          'Radiance:'+iuvs[min(temp, /NAN)]$
                                       .corona_lo_high.radiance_id]
         endif
         check = where(tag_list eq 'DENSITY')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_high.density_id[0] ne '')    
           lo_high_list = [lo_high_list, $
-                          'Density:'+iuvs[min(temp)].corona_lo_high.density_id]
+                          'Density:'+iuvs[min(temp, /NAN)].corona_lo_high.density_id]
         endif        
         check = where(tag_list eq 'HALF_INT_DISTANCE')
         if check ne -1 then begin
           temp = where(iuvs.corona_lo_high.half_int_distance_id[0] ne '')    
           lo_high_list $
             = [lo_high_list, $
-               'HALF_INT_DISTANCE:'+iuvs[min(temp)]$
+               'HALF_INT_DISTANCE:'+iuvs[min(temp, /NAN)]$
                                     .corona_lo_high.half_int_distance_id]
         endif          
      endif

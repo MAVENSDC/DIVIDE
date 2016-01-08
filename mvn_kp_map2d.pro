@@ -656,8 +656,8 @@ pro MVN_KP_MAP2D, kp_data, parameter=parameter, iuvs=iuvs, time=time, $
 ;-orig          if( parameter_minimum ne parameter_maximum )then begin
 ;-orig            c_range = [parameter_minimum, parameter_maximum]
             c_title = 'MAVEN ALTITUDE ABOVE SURFACE [km]'
-            c_range = [min(kp_data1.spacecraft.altitude), $
-                       max(kp_data1.spacecraft.altitude)]
+            c_range = [min(kp_data1.spacecraft.altitude, /NAN), $
+                       max(kp_data1.spacecraft.altitude, /NAN)]
             c = COLORBAR( TITLE=c_title, rgb_table=39, $;i_colortable, $
                           orientation=0, $
                           position=positions[color_bar_index,*], $

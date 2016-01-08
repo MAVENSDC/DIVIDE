@@ -33,8 +33,8 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
         level1_index = where(target_name eq data1[i].(level0_index-1))
       
         data_hold = alog10(data1[i].(level0_index))
-        data_min = min(data_hold[level1_index,*])
-        data_max = max(data_hold[level1_index,*])
+        data_min = min(data_hold[level1_index,*], /NAN)
+        data_max = max(data_hold[level1_index,*], /NAN)
         range = data_max - data_min
      
         if finite(range) then begin

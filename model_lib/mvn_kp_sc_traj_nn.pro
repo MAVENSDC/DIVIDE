@@ -33,7 +33,7 @@
 function mvn_kp_sc_traj_nn, tracer, dims, x, y, z
 ;
 ; Find nearest neighbor
-  if min(dims.lon lt 0) then $
+  if min(dims.lon lt 0, /NAN) then $
     dims.lon = dims.lon - 360 * floor(dims.lon/180. )
   ; Above fails to deal with 180 degrees properly (becomes -180)
   ; But already a problem since we have -180 and 180 in lon array

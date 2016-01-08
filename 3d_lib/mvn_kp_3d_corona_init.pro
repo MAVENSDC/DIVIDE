@@ -28,8 +28,8 @@ pro MVN_KP_3D_CORONA_INIT, data, insitu_time, insitu_alt, x_orbit, y_orbit, z_or
       t1 = time_double(data[i].time_start,tformat="YYYY-MM-DDThh:mm:ss")
       t2 = time_double(data[i].time_stop,tformat="YYYY-MM-DDThh:mm:ss")
       
-      m1 = min((insitu_time-t1) ,t1_index,/absolute)
-      m2 = min((insitu_time-t2) ,t2_index,/absolute)
+      m1 = min((insitu_time-t1) ,t1_index,/absolute, /NAN)
+      m2 = min((insitu_time-t2) ,t2_index,/absolute, /NAN)
       
       delta_x = (x_orbit[t2_index*2] - x_orbit[t1_index*2])/n_elements(data[i].alt)
       delta_y = (y_orbit[t2_index*2] - y_orbit[t1_index*2])/n_elements(data[i].alt)
@@ -50,8 +50,8 @@ pro MVN_KP_3D_CORONA_INIT, data, insitu_time, insitu_alt, x_orbit, y_orbit, z_or
         opp2 = t2_index+1500
       endelse
       
-      a1 = min((insitu_alt[t1_index+1:opp1]) - alt1, alt1_index, /absolute)
-      a2 = min((insitu_alt[t2_index+1:opp2]) - alt2, alt2_index, /absolute)
+      a1 = min((insitu_alt[t1_index+1:opp1]) - alt1, alt1_index, /absolute, /NAN)
+      a2 = min((insitu_alt[t2_index+1:opp2]) - alt2, alt2_index, /absolute, /NAN)
       
       alt1_index = alt1_index + 1 + t1_index
       alt2_index = alt2_index + 1 + t2_index

@@ -577,7 +577,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
           if keyword_set(yrange) then begin
             temp_yrange = yrange[*,i]
           endif else begin
-            temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
+            temp_yrange = [min(y[oplot_index,*], /NAN),max(y[oplot_index,*], /NAN)]
           endelse
           plot,x,y[oplot_index,*],xtitle='Time', ytitle=y_titles[i],$
                yrange=temp_yrange,title=title[i],background='FFFFFF'x,$
@@ -593,7 +593,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
           if keyword_set(yrange) then begin
             temp_yrange = yrange[*,i]
           endif else begin
-            temp_yrange = [min(y[oplot_index,*]),max(y[oplot_index,*])]
+            temp_yrange = [min(y[oplot_index,*], /NAN),max(y[oplot_index,*], /NAN)]
           endelse
           plot,x,y[oplot_index,*],xtitle='Time',ytitle=y_titles[i],$
                title=title[i],background='FFFFFF'x,$

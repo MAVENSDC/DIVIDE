@@ -28,8 +28,8 @@ latitude = data(1,0,2:nlats-3,0)
 lon = reform(data(0,2:nlons-3,0,0))
 lat = reform(data(1,0,2:nlats-3,0))
 alt = reform(data(2,0,0,0:nalts-3))/1000.
-ialtmin = min(where(alt ge 98))
-ialtmax = max(where(alt le 252))
+ialtmin = min(where(alt ge 98), /NAN)
+ialtmax = max(where(alt le 252), /NAN)
 naltsprint = ialtmax - ialtmin+1
 
 iSZA = where(vars eq 'SolarZenithAngle')

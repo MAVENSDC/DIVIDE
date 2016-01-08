@@ -1308,7 +1308,7 @@ if( (disp_check[0] eq 1) and (disp_check[1] eq 1) and $
    if e_h_r eq 1 then begin     ;echelle high radiance
       plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+           yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
            title='Echelle High: Radiance',$
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, e_high_total -1 do begin
@@ -1322,7 +1322,7 @@ if( (disp_check[0] eq 1) and (disp_check[1] eq 1) and $
    if e_l_r eq 1 then begin     ;echelle limb radiance
       plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,$
            charsize=1.5,ystyle=1, $
-           yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+           yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)],$
            title='Echelle Limb: Radiance',$
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, e_limb_total -1 do begin
@@ -1346,7 +1346,7 @@ if( (disp_check[0] eq 1) and (disp_check[1] eq 1) and $
    if e_h_h eq 1 then begin     ;echelle high half int dist
       plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,charsize=1.5,$
            /ylog,ystyle=1,$
-           yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+           yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
            title='Echelle High: 1/2 Int Dist',$
            xtitle='1/2 Distance', ytitle='Altitude, km'
       for i=0, e_high_total -1 do begin
@@ -1360,7 +1360,7 @@ if( (disp_check[0] eq 1) and (disp_check[1] eq 1) and $
    if e_l_h eq 1 then begin     ;echelle limb half int dist
       plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,$
            charsize=1.5,ystyle=1, $
-           yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+           yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)], $
            title='Echelle Limb: 1/2 Int Dist',$
            xtitle='1/2 Distance', ytitle='Altitude, km'
       for i=0, e_limb_total -1 do begin
@@ -1558,7 +1558,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_h_r eq 1 then begin        ;lores high radiance
     plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,$
          charsize=1.5,/ylog,ystyle=1,$
-         yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+         yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
          title='Lo-Res High: Radiance',$
          xtitle='Radiance', ytitle='Altitude, km'
     for i=0, lo_high_total -1 do begin
@@ -1572,7 +1572,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_l_r eq 1 then begin        ;lores limb radiance
     plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
          charsize=1.5,ystyle=1,$
-         yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+         yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
         title='Lo_Res Limb: Radiance',$
          xtitle='Radiance', ytitle='Altitude, km'
     for i=0, lo_limb_total -1 do begin
@@ -1596,7 +1596,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_h_d eq 1 then begin        ;lores high density
     plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,$
          charsize=1.5,/ylog,ystyle=1,$
-         yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+         yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*]), /NAN], $
          title='Lo-Res High: Density',$
          xtitle='Density', ytitle='Altitude, km'
     for i=0, lo_high_total -1 do begin
@@ -1610,7 +1610,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_l_d eq 1 then begin        ;lores limb density
     plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
          charsize=1.5,ystyle=1,$
-         yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+         yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
          title='Lo_Res Limb: Density',$
          xtitle='Density', ytitle='Altitude, km'
     for i=0, lo_limb_total -1 do begin
@@ -1633,13 +1633,13 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   ;*break here* ???
   plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
        charsize=1.5,ystyle=1,$
-       yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])],$
+       yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)],$
        color=255
   
   if l_l_s eq 1 then begin        ;lores limb scale
     plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
          charsize=1.5,ystyle=1,$
-         yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+         yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
          title='Lo_Res Limb: Scale Height',$
          xtitle='Scale Height', ytitle='Altitude, km'
     for i=0, lo_limb_total -1 do begin
@@ -1663,7 +1663,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_h_h eq 1 then begin        ;lores high half int
     plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,$
          charsize=1.5,/ylog,ystyle=1,$
-         yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+         yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
          title='Lo_Res High: 1/2 Int Dist',$
          xtitle='1/2 Dist', ytitle='Altitude, km'
     for i=0, lo_high_total -1 do begin
@@ -1676,7 +1676,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   ;**Break here ???
   plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
        charsize=1.5,ystyle=1,$
-       yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])],$
+       yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)],$
        color=255
   if l_d_o eq 1 then begin        ;lores disk ozone
     plot,lo_disk_ozone[0,*],lo_disk_timestamp,/nodata,charsize=1.5,$
@@ -2129,7 +2129,7 @@ if( (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    if e_l_r eq 1 then begin     ;echelle limb radiance
      plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,$
           charsize=1.5,ystyle=1, $
-          yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+          yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)],$
           title='Echelle Limb: Radiance',$
           xtitle='Radiance', ytitle='Altitude, km'
      for i=0, e_limb_total -1 do begin
@@ -2143,7 +2143,7 @@ if( (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    if e_l_h eq 1 then begin        ;echelle limb half int dist
      plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,$
           charsize=1.5,ystyle=1, $
-          yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+          yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)], $
           title='Echelle Limb: 1/2 Int Dist',$
           xtitle='1/2 Distance', ytitle='Altitude, km'
      for i=0, e_limb_total -1 do begin
@@ -2157,7 +2157,7 @@ if( (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    if l_l_r eq 1 then begin        ;lores limb radiance
      plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
           charsize=1.5,ystyle=1,$
-          yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+          yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
           title='Lo_Res Limb: Radiance',$
           xtitle='Radiance', ytitle='Altitude, km'
      for i=0, lo_limb_total -1 do begin
@@ -2171,7 +2171,7 @@ if( (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    if l_l_d eq 1 then begin        ;lores limb density
      plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
           charsize=1.5,ystyle=1,$
-          yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+          yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
           title='Lo_Res Limb: Density',$
           xtitle='Density', ytitle='Altitude, km'
      for i=0, lo_limb_total -1 do begin
@@ -2185,7 +2185,7 @@ if( (disp_check[1] eq 1) and (disp_check[4] eq 1) and $
    if l_l_s eq 1 then begin        ;lores limb scale
      plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
           charsize=1.5,ystyle=1,$
-          yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+          yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
           title='Lo_Res Limb: Scale Height',$
           xtitle='Scale Height', ytitle='Altitude, km'
      for i=0, lo_limb_total -1 do begin
@@ -2360,7 +2360,7 @@ if( (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    if e_h_r eq 1 then begin     ;echelle high radiance
      plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,$
           charsize=1.5,/ylog,ystyle=1,$
-          yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+          yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
           title='Echelle High: Radiance',$
           xtitle='Radiance', ytitle='Altitude, km'
      for i=0, e_high_total -1 do begin
@@ -2374,7 +2374,7 @@ if( (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    if e_h_h eq 1 then begin        ;echelle high half int dist
      plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,$
           charsize=1.5,/ylog,ystyle=1,$
-          yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+          yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
           title='Echelle High: 1/2 Int Dist',$
           xtitle='1/2 Distance', ytitle='Altitude, km'
      for i=0, e_high_total -1 do begin
@@ -2388,7 +2388,7 @@ if( (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    if l_h_r eq 1 then begin        ;lores high radiance
      plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,$
           charsize=1.5,/ylog,ystyle=1,$
-          yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+          yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
           title='Lo-Res High: Radiance',$
           xtitle='Radiance', ytitle='Altitude, km'
      for i=0, lo_high_total -1 do begin
@@ -2402,7 +2402,7 @@ if( (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    if l_h_d eq 1 then begin        ;lores high density
      plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,$
           charsize=1.5,/ylog,ystyle=1,$
-          yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+          yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
           title='Lo-Res High: Density',$
           xtitle='Density', ytitle='Altitude, km'
      for i=0, lo_high_total -1 do begin
@@ -2416,7 +2416,7 @@ if( (disp_check[2] eq 1) and (disp_check[5] eq 1) and $
    if l_h_h eq 1 then begin        ;lores high half int
      plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,$
           charsize=1.5,/ylog,ystyle=1,$
-          yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+          yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
           title='Lo_Res High: 1/2 Int Dist',$
           xtitle='1/2 Dist', ytitle='Altitude, km'
      for i=0, lo_high_total -1 do begin
@@ -2659,7 +2659,7 @@ if( (disp_check[1] eq 1) and (disp_check[0] eq 0) and $
     if e_l_r eq 1 then begin        ;echelle limb radiance
       plot,e_limb_radiance[0,0,*],e_limb_rad_alt[0,*],/nodata,$
            charsize=1.5,ystyle=1, $
-           yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])],$
+           yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)],$
            title='Echelle Limb: Radiance',$
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, e_limb_total -1 do begin
@@ -2673,7 +2673,7 @@ if( (disp_check[1] eq 1) and (disp_check[0] eq 0) and $
     if e_l_h eq 1 then begin        ;echelle limb half int dist
       plot,e_limb_half[0,0,*],e_limb_rad_alt[0,*],/nodata,$
            charsize=1.5,ystyle=1, $
-           yrange=[min(e_limb_rad_alt[0,*]),max(e_limb_rad_alt[0,*])], $
+           yrange=[min(e_limb_rad_alt[0,*], /NAN),max(e_limb_rad_alt[0,*], /NAN)], $
            title='Echelle Limb: 1/2 Int Dist',$
            xtitle='1/2 Distance', ytitle='Altitude, km'
       for i=0, e_limb_total -1 do begin
@@ -2769,7 +2769,7 @@ if( (disp_check[2] eq 1) and (disp_check[0] eq 0) and $
     if e_h_r eq 1 then begin        ;echelle high radiance
       plot,e_high_radiance[0,0,*],e_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+           yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
            title='Echelle High: Radiance', $
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, e_high_total -1 do begin
@@ -2783,7 +2783,7 @@ if( (disp_check[2] eq 1) and (disp_check[0] eq 0) and $
     if e_h_h eq 1 then begin        ;echelle high half int dist
       plot,e_high_half[0,0,*],e_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(e_high_rad_alt[0,*]),max(e_high_rad_alt[0,*])], $
+           yrange=[min(e_high_rad_alt[0,*], /NAN),max(e_high_rad_alt[0,*], /NAN)], $
            title='Echelle High: 1/2 Int Dist',$
            xtitle='1/2 Distance', ytitle='Altitude, km'
       for i=0, e_high_total -1 do begin
@@ -3026,7 +3026,7 @@ if( (disp_check[4] eq 1) and (disp_check[0] eq 0) and $
     if l_l_r eq 1 then begin    ;lores limb radiance
        plot,lo_limb_radiance[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
             charsize=1.5,ystyle=1,$
-            yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+            yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
             title='Lo_Res Limb: Radiance',$
             xtitle='Radiance', ytitle='Altitude, km'
        for i=0, lo_limb_total -1 do begin
@@ -3040,7 +3040,7 @@ if( (disp_check[4] eq 1) and (disp_check[0] eq 0) and $
     if l_l_d eq 1 then begin    ;lores limb density
        plot,lo_limb_density[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
             charsize=1.5,ystyle=1,$
-            yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+            yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
             title='Lo_Res Limb: Density',$
             xtitle='Density', ytitle='Altitude, km'
        for i=0, lo_limb_total -1 do begin
@@ -3054,7 +3054,7 @@ if( (disp_check[4] eq 1) and (disp_check[0] eq 0) and $
     if l_l_s eq 1 then begin    ;lores limb scale
        plot,lo_limb_scale[0,0,*],lo_limb_rad_alt[0,*],/nodata,$
             charsize=1.5,ystyle=1,$
-            yrange=[min(lo_limb_rad_alt[0,*]),max(lo_limb_rad_alt[0,*])], $
+            yrange=[min(lo_limb_rad_alt[0,*], /NAN),max(lo_limb_rad_alt[0,*], /NAN)], $
             title='Lo_Res Limb: Scale Height',$
             xtitle='Scale Height', ytitle='Altitude, km'
        for i=0, lo_limb_total -1 do begin
@@ -3176,7 +3176,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
     if l_h_r eq 1 then begin        ;lores high radiance
       plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+           yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
            title='Lo-Res High: Radiance',$
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
@@ -3190,7 +3190,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
     if l_h_d eq 1 then begin        ;lores high density
       plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+           yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
            title='Lo-Res High: Density',$
            xtitle='Density', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
@@ -3204,7 +3204,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
     if l_h_h eq 1 then begin        ;lores high half int
       plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
-           yrange=[min(lo_high_rad_alt[0,*]),max(lo_high_rad_alt[0,*])], $
+           yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
            title='Lo_Res High: 1/2 Int Dist',$
            xtitle='1/2 Dist', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin

@@ -130,7 +130,7 @@ pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, 
                    quiet=quiet, status=status, pixtolerance=pixtolerance
 
   if keyword_set(logscale) then begin
-     if min(xrange0) LE 0 OR min(imgxrange0) LE 0 then $
+     if min(xrange0, /NAN) LE 0 OR min(imgxrange0, /NAN) LE 0 then $
         message, ('ERROR: if XLOG or YLOG is set, then the image boundary cannot '+$
                   'cross or touch zero.  Did you forget to set IMGXRANGE or IMGYRANGE?')
      xrange    = alog10(xrange0)
@@ -153,7 +153,7 @@ pro plotimage_pos, xrange0, imgxrange0, imgxsize, xreverse, srcxpix, imgxpanel, 
   ;; Size of one x pix
   dx = double(imgxrange(1) - imgxrange(0)) / imgxsize
 
-  if min(xrange) GE max(imgxrange) OR max(xrange) LE min(imgxrange) then begin
+  if min(xrange, /NAN) GE max(imgxrange, /NAN) OR max(xrange, /NAN) LE min(imgxrange, /NAN) then begin
       message, 'WARNING: No image data in specified plot RANGE.', /info, $
         noprint=keyword_set(quiet)
       return
@@ -576,7 +576,7 @@ pro mvn_kp_plotimage, img0, xrange=xrange0, yrange=yrange0, $
   ;; Default handling of color table stuff
   if n_elements(bottom0) EQ 0 then bottom0 = 1B
   bottom = byte(bottom0(0)) < 255B
-  dncolors = min([!d.n_colors, !d.table_size, 256])
+  dncolors = min([!d.n_colors, !d.table_size, 256], /NAN)
   if n_elements(ncolors0) EQ 0 then ncolors0 = dncolors - 1 - bottom
   ;; Make sure color table values are in bounds
   ncolors = floor(ncolors0(0)) < 256
@@ -804,7 +804,7 @@ pro mvn_kp_plotimage, img0, xrange=xrange0, yrange=yrange0, $
 
       ;; If printing, and the printed resolution of the image will be
       ;; too coarse, then we should resample and interpolate
-      dpi = min([nx*!d.x_px_cm/dx, ny*!d.y_px_cm/dy]*2.54) ; d.p.i. of image
+      dpi = min([nx*!d.x_px_cm/dx, ny*!d.y_px_cm/dy]*2.54, /NAN) ; d.p.i. of image
       dxsize = dx & dysize = dy
       if printing AND (dpi LT min_dpi(0)) then begin
           dx = round(min_dpi(0)*dx/(2.54*!d.x_px_cm)) > nx

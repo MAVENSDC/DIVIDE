@@ -27,7 +27,7 @@ pro mvn_kp_3d_event_time, event
   widget_control, event.id, get_value=newval
 
   ;MOVE THE SPACECRAFT MODEL TO IT'S NEW LOCATION
-  t = min(abs(((*pstate).insitu.time - newval)),t_index)
+  t = min(abs(((*pstate).insitu.time - newval)),t_index, /NAN)
 
   ;    data = *(*pstate).orbit_path.data
   (*pstate).orbit_path -> getproperty, data=data
@@ -168,13 +168,13 @@ pro mvn_kp_3d_event_time, event
     (*pstate).alt_plot->setproperty,datax=peri_data[1,*]
     (*pstate).alt_plot->setproperty,datay=peri_data[0,*]
     (*pstate).alt_plot->setproperty,$
-      xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+      xrange=[min(peri_data[1,*]),max(peri_data[1,*]), /NAN]
     (*pstate).alt_plot->getproperty, xrange=xr, yrange=yr
     xc = mg_linear_function(xr, [-1.75,-1.5])
     yc = mg_linear_function(yr, [-1.3,1.0])
     (*pstate).alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
     (*pstate).alt_xaxis_ticks->setproperty,$
-      strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])],$
+      strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*]), /NAN],$
       format='(E8.2)'),2)
   endif
 

@@ -47,8 +47,8 @@ pro MVN_KP_RANGE, kp_data, iuvs=iuvs
           +strtrim(string(iuvs[0].orbit),2)+' and '$
           +strtrim(string(iuvs[n_elements(iuvs.orbit)-1].orbit),2)
     insitu_orbits = kp_data[uniq(kp_data.orbit)].orbit
-    if( max(iuvs.orbit) lt min(insitu_orbits) or $
-        min(iuvs.orbit) gt max(insitu_orbits) )then begin
+    if( max(iuvs.orbit, /NAN) lt min(insitu_orbits, /NAN) or $
+        min(iuvs.orbit, /NAN) gt max(insitu_orbits, /NAN) )then begin
       print,'****WARNING****'
       print,'There is NO overlap between the supplied in-situ and IUVS'
       print,'  data structures.  I cannot guarantee your safety if you'

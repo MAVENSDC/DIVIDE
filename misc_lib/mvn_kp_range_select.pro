@@ -59,14 +59,14 @@ pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
     ;IF USER SUPPLIED STRING BASED TIME
     if size(time,/dimensions) eq 0 then begin
       time = time_double(time, tformat="YYYY-MM-DDThh:mm:ss")
-      t1 = min((kp_data.time - time),begin_index,/absolute)
-      t2 = min((kp_data.time - (time + 86400L)),end_index,/absolute)
+      t1 = min((kp_data.time - time),begin_index,/absolute, /NAN)
+      t2 = min((kp_data.time - (time + 86400L)),end_index,/absolute, /NAN)
     endif
     if size(time,/dimensions) eq 2 then begin
       time1 = time_double(time[0], tformat="YYYY-MM-DDThh:mm:ss")
       time2 = time_double(time[1], tformat="YYYY-MM-DDThh:mm:ss")
-      t1 = min((kp_data.time - time1),begin_index,/absolute)
-      t2 = min((kp_data.time - time2),end_index,/absolute) 
+      t1 = min((kp_data.time - time1),begin_index,/absolute, /NAN)
+      t2 = min((kp_data.time - time2),end_index,/absolute, /NAN) 
     endif
   endif
   
@@ -74,13 +74,13 @@ pro MVN_KP_RANGE_SELECT, kp_data, time, begin_index, end_index
     ;IF USER SUPPLIED POSIX TIME (IE LONG INTEGERS)
     if size(time,/dimensions) eq 0 then begin   
       ;user gives only 1 integer, then default to 1 day of plotting
-      t1 = min((kp_data.time - time),begin_index,/absolute)
-      t2 = min((kp_data.time - (time + 86400L)),end_index,/absolute)
+      t1 = min((kp_data.time - time),begin_index,/absolute, /NAN)
+      t2 = min((kp_data.time - (time + 86400L)),end_index,/absolute, /NAN)
     endif 
     if size(time,/dimensions) eq 2 then begin   
       ;user gives 2 integers, so find indices that match start/end times
-      t1 = min((kp_data.time - time[0]),begin_index,/absolute)
-      t2 = min((kp_data.time - time[1]),end_index,/absolute)      
+      t1 = min((kp_data.time - time[0]),begin_index,/absolute, /NAN)
+      t2 = min((kp_data.time - time[1]),end_index,/absolute, /NAN)      
     endif
   endif 
 

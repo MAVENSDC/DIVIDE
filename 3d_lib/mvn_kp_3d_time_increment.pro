@@ -115,12 +115,12 @@ t_index = state1.time_index+direction
                    state1.alt_xaxis_title->setproperty,strings=xlabel
                    state1.alt_plot->setproperty,datax=peri_data[1,*]
                    state1.alt_plot->setproperty,datay=peri_data[0,*]
-                   state1.alt_plot->setproperty,xrange=[min(peri_data[1,*]),max(peri_data[1,*])]
+                   state1.alt_plot->setproperty,xrange=[min(peri_data[1,*], /NAN),max(peri_data[1,*], /NAN)]
                    state1.alt_plot->getproperty, xrange=xr, yrange=yr
                    xc = mg_linear_function(xr, [-1.75,-1.5])
                    yc = mg_linear_function(yr, [-1.3,1.0])
                    state1.alt_plot->setproperty,xcoord_conv=xc, ycoord_conv=yc
-                   state1.alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*]),max(peri_data[1,*])], format='(E8.2)'),2)       
+                   state1.alt_xaxis_ticks->setproperty,strings=strtrim(string([min(peri_data[1,*], /NAN),max(peri_data[1,*], /NAN)], format='(E8.2)'),2)       
                  endif
                   
                  state1.time_index = t_index

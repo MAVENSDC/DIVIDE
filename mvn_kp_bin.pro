@@ -127,7 +127,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
   if keyword_set(mins) ne 1 then begin
     mins = dblarr(total_fields)
     for i=0,total_fields-1 do begin
-      mins[i] = min(kp_data.(level0_index[i]).(level1_index[i]))
+      mins[i] = min(kp_data.(level0_index[i]).(level1_index[i]), /NAN)
     endfor
   endif else begin
     if n_elements(mins) ne total_fields then begin
@@ -140,7 +140,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
   if keyword_set(maxs) ne 1 then begin
     maxs = dblarr(total_fields)
     for i=0, total_fields-1 do begin
-      maxs[i] = max(kp_data.(level0_index[i]).(level1_index[i]))
+      maxs[i] = max(kp_data.(level0_index[i]).(level1_index[i]), /NAN)
     endfor
   endif else begin
     if n_elements(maxs) ne total_fields then begin
@@ -232,8 +232,8 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
    
    if arg_present(median) eq 1 then begin   
     
-      bin_min = dblarr(n_elements(total_bins), max(total_bins))
-      bin_max = dblarr(n_elements(total_bins), max(total_bins))
+      bin_min = dblarr(n_elements(total_bins), max(total_bins, /NAN))
+      bin_max = dblarr(n_elements(total_bins), max(total_bins, /NAN))
       
       if keyword_set(mins) eq 0 then begin
         mins = dblarr(n_elements(bin_by))
@@ -261,7 +261,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
       for i=0, n_elements(kp_data) - 1 do begin
         for j=0, n_elements(total_bins) -1 do begin
           value = kp_data[i].(level0_index[j]).(level1_index[j])
-          temp_min = max(where(value-bin_min[j,*] ge 0.0),temp_min_index)
+          temp_min = max(where(value-bin_min[j,*] ge 0.0),temp_min_index, /NAN)
           bin_index[j,i] = temp_min_index
         endfor
       endfor
