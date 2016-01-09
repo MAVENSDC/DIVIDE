@@ -4,9 +4,22 @@
 #
 # Author: McGouldrick
 #
-# Version 0.1 (2015-Nov-30)
+# Version 0.2 (2016-Jan-08)
+#   Wrote read_insitu_file
+#   Modified time_plot to work with read file (not sav file)
+#   Modified alt_plot (ditto)
+#   Modified param_list (ditto)
+#   Modified param_range (ditto)
+#   Modified range_select (ditto)
 #
 # This will be a library of the DIVIDE IDL toolkit translated into python
+#
+# History:
+#  v.0.1 (2015-Nov-30): Begun.  For a month, used IDL sav file, 
+#         imported using scipy.io.readsav.
+#    Wrote param_list, find_param_from_index, get_inst_obs_labels, 
+#          make_time_labels, param_list, param_range, range_select, 
+#          time_plot, alt_plot.
 #
 #-------------------------------------------------------------------
 #
@@ -76,11 +89,13 @@ def param_range( kp, iuvs=None ):
 #
 # First, the case where insitu data are provided
 #
-    if kp.dtype.names[0] == 'TIME_STRING':
-        print "The loaded insitu KP data set contains data between"
-        print( "   %s and %s" % (kp[0].time_string, kp[-1].time_string) )
-        print "Equivalently, this corresponds to orbits"
-        print ( "   %6d and %6d." % (kp[0].orbit, kp[-1].orbit) )
+#    if kp.dtype.names[0] == 'TIME_STRING':
+    print "The loaded insitu KP data set contains data between"
+    print( "   %s and %s" % ( np.array(kp['TimeString'])[0], 
+                              np.array(kp['TimeString'])[-1]) )
+    print "Equivalently, this corresponds to orbits"
+    print ( "   %6d and %6d." % ( np.array(kp['Orbit'])[0], 
+                                  np.array(kp['Orbit'])[-1]) )
 #
 #  Next, the case where IUVS data are provided
 #
@@ -88,18 +103,22 @@ def param_range( kp, iuvs=None ):
     iuvs_tags = ['CORONA_LO_HIGH','CORONA_LO_LIMB','CORONA_LO_DISK',
                  'CORONA_E_HIGH','CORONA_E_LIMB','CORONA_E_DISK',
                  'APOAPSE','PERIAPSE','STELLAR_OCC']
-    if kp.dtype.names[0] in iuvs_tags:
+    if kp.keys() in iuvs_tags:
         print "The loaded IUVS KP data set contains data between orbits"
-        print "   %6d and %6d." % (kp[0].orbit, kp[-1].orbit)
+        print ( "   %6d and %6d." % ( np.array(kp['Orbit'])[0], 
+                                      np.array(kp['Orbit'])[-1] ) )
 #
 #  Finally, the case where both insitu and IUVS are provided
 #
     if iuvs is not None: 
         print "The loaded IUVS KP data set contains data between orbits"
-        print "   %6d and %6d." % (iuvs[0].orbit, iuvs[-1].orbit)
-        insitu_min, insitu_max = np.nanmin(kp.orbit), np.nanmax(kp.orbit)
-        if ( np.nanmax(iuvs.orbit) < insitu_min or 
-             np.nanmin(iuvs.orbit) > insitu_max ): 
+        print ( "   %6d and %6d." 
+                % ( np.array(iuvs['Orbit'])[0], 
+                    np.array(iuvs['Orbit'])[-1] ) )
+        insitu_min, insitu_max = ( np.nanmin([kp['Orbit']]), 
+                                   np.nanmax([kp['Orbit']]) )
+        if ( np.nanmax([iuvs['Orbit']]) < insitu_min or 
+             np.nanmin([iuvs['Orbit']]) > insitu_max ): 
             print "*** WARNING ***"
             print "There is NO overlap between the supplied insitu and IUVS"
             print "  data structures.  We cannot guarantee your safety "
@@ -114,15 +133,19 @@ def range_select( kp, time ):
     Given an insitu KP data set and time information in the form of 
     either an array of times or orbits, return the starting and ending
     indices of the provided dataset for the requested range.
+    NB: This may need updating...
     '''
+
     import bisect # can I import htis here only?
     from datetime import datetime
+
     # First, define the time strings if needed
-    dt = [datetime.strptime(i, '%Y-%m-%dT%H:%M:%S') for i in kp.time_string]
+    dt = [datetime.strptime(i, '%Y-%m-%dT%H:%M:%S') 
+          for i in kp['TimeString']]
     # Now check the input time values
     try:
         orbit = int(time) # time given as single integer orbit number
-        mask = np.where( orbit == kp.orbit )
+        mask = np.where( orbit == kp['Orbit'] )
         return kp[mask]
     except:
         if np.count_nonzero(time) == 1:
@@ -141,8 +164,8 @@ def range_select( kp, time ):
                 # If successful, we have two ints
                 int(time[0])
                 orbit = np.array(time)
-                mask = np.all([np.min(orbit) <= kp.orbit, 
-                                  np.max(orbit) >= kp.orbit], axis=0 )
+                mask = np.all([np.min(orbit) <= kp['Orbit'], 
+                                  np.max(orbit) >= kp['Orbit']], axis=0 )
                 return kp[mask]
             except:
                 # Check for data times between given times
@@ -154,7 +177,7 @@ def range_select( kp, time ):
 
 #--------------------------------------------------------------------------
 
-def make_time_labels(ndat, time_strings):
+def make_time_labels(kp):
     '''
     Convert the time strings to 2-line versions so that
     the date and time do not cause significant ovlerlap 
@@ -170,11 +193,13 @@ def make_time_labels(ndat, time_strings):
 
     from datetime import datetime
 
-    tickind = ndat / 4 * np.arange(5)
-    tickval = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S') 
-               for i in time_strings[tickind]]
-    tickname = [i for i in time_strings[tickind]]
-    return [i.replace('T','\n') for i in tickname]
+    indices = kp['Time'].index.values
+    t1 = kp['Time'][np.nanmin(kp['Time'].index.values)]
+    t5 = kp['Time'][np.nanmax(kp['Time'].index.values)]
+    tn = (t5-t1)/4*np.arange(5)
+    tickval = [datetime.fromtimestamp(i+t1) for i in tn]
+    ticklab = [i.strftime('%Y-%m-%d\n%H:%M:%S') for i in tickval]
+    return tickval,ticklab
 
 #--------------------------------------------------------------------------
 
@@ -307,13 +332,8 @@ def time_plot( kp, parameter=None, time=None, errors=None,
     #
     iplot = 1 # subplot indexes on 1
     for inst,obs in inst_obs:
-        #
-        # First, generate the dependent array from data
-        y = []
-        index = 0
-        for i in kp['TimeString']:
-            y.append(kp[inst][obs][index])
-            index = index + 1
+    # First, generate the dependent array from data
+        y = kp[inst][obs]
 
     # Generate the plot
         if iplot == 1 or not SamePlot: a = plt.figure()
@@ -329,15 +349,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
 
     # If last plot, get the five time strings for labels
         if iplot == nparam or not SamePlot:
-            tickind = index / 4 * np.arange(5)
-
-        # Set value of tickmarks
-            xticknames = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S')
-                          for i in kp['TimeString'][tickind]]
-
-        # Set text names of tick marks
-            xticklab = make_time_labels( np.count_nonzero(kp), 
-                                         kp['TimeString'] )
+            xticknames, xticklab = make_time_labels(kp)
 
         # Print ticknames labels at 90 degree rotation
             plt.xticks(xticknames, xticklab, rotation=90 )
@@ -460,7 +472,6 @@ def read_insitu_file( filename, instruments = None, time=None ):
      and the time windows.
     '''
     import pandas as pd
-    import numpy as np
     import re
     import time
     from datetime import datetime
@@ -515,7 +526,7 @@ def read_insitu_file( filename, instruments = None, time=None ):
     # Generate the names list.
     # NB, there are special case redundancies in there
     # (e.g., LPW: Electron Density Quality (min and max))
-    #
+    # ****SWEA FLUX electron QUALITY *****
     First = True
     names = []
     for i,j,k in zip(obs1,obs2,obs3):
