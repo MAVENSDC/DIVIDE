@@ -4,13 +4,8 @@
 #
 # Author: McGouldrick
 #
-# Version 0.2 (2016-Jan-08)
-#   Wrote read_insitu_file
-#   Modified time_plot to work with read file (not sav file)
-#   Modified alt_plot (ditto)
-#   Modified param_list (ditto)
-#   Modified param_range (ditto)
-#   Modified range_select (ditto)
+# Version 0.3 (2016-Jan-12)
+#   Modified range_select
 #
 # This will be a library of the DIVIDE IDL toolkit translated into python
 #
@@ -20,6 +15,12 @@
 #    Wrote param_list, find_param_from_index, get_inst_obs_labels, 
 #          make_time_labels, param_list, param_range, range_select, 
 #          time_plot, alt_plot.
+#  v.0.2 (2016-Jan-08)
+#   Wrote read_insitu_file
+#   Modified time_plot to work with read file (not sav file)
+#   Modified alt_plot (ditto)
+#   Modified param_list (ditto)
+#   Modified param_range (ditto)
 #
 #-------------------------------------------------------------------
 #
@@ -128,52 +129,206 @@ def param_range( kp, iuvs=None ):
 
 #--------------------------------------------------------------------------
 
-def range_select( kp, time ):
+def range_select( kp, Time=None, Parameter=None, 
+                  maximum=None, minimum=None ):
     '''
-    Given an insitu KP data set and time information in the form of 
-    either an array of times or orbits, return the starting and ending
-    indices of the provided dataset for the requested range.
-    NB: This may need updating...
+    Returns a subset of the input data based on the provided time
+    and/or parameter criteria.  Time must be provided as a two-element
+    list of integers or strings.  Any parameter used as a discriminating
+    criterion must be paried with either a maximum and/or a minimum
+    value.  Open ended bounds must be indicated with either a value
+    of 'None' or an empty string ('').
     '''
 
-    import bisect # can I import htis here only?
+    from divide_lib_test import insufficient_input_range_select
+    from divide_lib_test import find_param_from_index
+    from divide_lib_test import get_inst_obs_labels
     from datetime import datetime
 
-    # First, define the time strings if needed
-    dt = [datetime.strptime(i, '%Y-%m-%dT%H:%M:%S') 
-          for i in kp['TimeString']]
-    # Now check the input time values
-    try:
-        orbit = int(time) # time given as single integer orbit number
-        mask = np.where( orbit == kp['Orbit'] )
-        return kp[mask]
-    except:
-        if np.count_nonzero(time) == 1:
-            # time given as single date-time string
-            # First convert it to a date-time object
-            dt_in = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
-            # select 24 hours of data following given time
-            # for debugging purposes, use 3 hr
-            dt_delta = [(i-dt_in).total_seconds() for i in dt]
-            mask = np.all([np.array(dt_delta) < 10800., 
-                              np.array(dt_delta) > 0], axis=0 )
-            return kp[mask]
+    #  Initialize the filter_list
+    filter_list = []
+
+    # First, check the arguments
+    if Time is None and Parameter is None:
+        insufficient_input_range_select()
+        print 'Neither Time nor Parameter provided'
+        return kp
+    elif Time is None:
+        # Then only subset based on parameters
+        # Need to check whether one or several Parameters given
+        inst = []
+        obs = []
+        if type(Parameter) is int or type(Parameter) is str:
+        # First, verify that at least one bound exists
+            if minimum is None and maximum is None:
+                insufficient_input_range_select()
+                print 'No bounds set for parameter: %s' % Parameter
+                return kp
+            elif minimum is None:
+            # Range only bounded above
+                minimum = -np.Infinity
+            elif maximum is None:
+            # range only bounded below
+                maximum = np.Infinity
+            else:
+            # Range bounded on both ends
+                pass
+            a,b = get_inst_obs_labels(kp,Parameter)
+            inst.append(a)
+            obs.append(b)
+            nparam = 1 # necc?
+        elif type(Parameter) is list:
+            nparam = len(Parameter)
+            for param in Parameter:
+                a,b = get_inst_obs_labels(kp,param)
+                inst.append(a)
+                obs.append(b)
         else:
-            # Either we have two ints or two strings
-            try: 
-                # If successful, we have two ints
-                int(time[0])
-                orbit = np.array(time)
-                mask = np.all([np.min(orbit) <= kp['Orbit'], 
-                                  np.max(orbit) >= kp['Orbit']], axis=0 )
-                return kp[mask]
-            except:
-                # Check for data times between given times
-                dt_in = [datetime.strptime(i, '%Y-%m-%dT%H:%M:%S') 
-                         for i in time]
-                lower = bisect.bisect_left(dt,min(dt_in))
-                upper = bisect.bisect_right(dt,max(dt_in))
-                return kp[lower:upper]
+            print '*****ERROR*****'
+            print 'Cannot identify given parameter: %s' % Parameter
+            print 'Suggest using param_list(kp) to identify Parameter'
+            print 'by index or by name'
+            print 'Returning complete original data dictionary'
+            return kp
+# I think I should move this below the Time conditional and move 
+# Baselining of Filter List to above time
+    else:
+    # Time has been provided as a filtering agent
+    # Determine whether Time is provided as strings or orbits
+        if (len(Time) != 2):
+            if Parameter is not None:
+                print '*****WARNING*****'
+                print 'Time must be provided as a two-element list'
+                print 'of either strings (yyyy-mm-ddThh:mm:ss) '
+                print 'or orbits.  Since a Parameter *was* provided,'
+                print 'I will filter on that, but ignore the time input.'
+            else:
+            # Cannot proceed with filtering
+                insufficient_input_range_select()
+                print 'Time malformed (must be either a string of format'
+                print 'yyyy-mm-ddThh:mm:ss or integer orbit)'
+                print 'and no Parameter criterion given'
+        else:
+        # We have a two-element Time list: parse it
+            if type(Time[0]) is not type(Time[1]):
+                if Parameter is not None:
+                    print '*****WARNING*****'
+                    print 'Both elements of time must be same type'
+                    print 'Only strings of format yyyy-mm-ddThh:mm:ss'
+                    print 'or integers (orbit numbers) are allowed.'
+                    print 'Ignoring time inputs; will filter ONLY'
+                    print 'on Parameter inputs.'
+                else:
+                    print '*****ERROR*****'
+                    print 'Both elements of Time must be same type'
+                    print 'Only Strings of format yyyy-mm-ddThh:mm:ss'
+                    print 'or integers (orbit numbers) are allowed.'
+                    print 'Returning original unchanged data dictionary'
+                    return kp
+            elif type(Time[0]) is int:
+            # Filter based on orbit number
+                Min = min( Time )
+                Max = max( Time )
+                filter_list.append( kp['Orbit'] >= Min )
+                filter_list.append( kp['Orbit'] <= Max )
+            elif type( Time[0] ) is str:
+            # Filter acc to string dat, need to parse it
+                Time_dt = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S') 
+                           for i in Time]
+                Min = min( Time_dt )
+                Max = max( Time_dt )
+                kp_dt = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S')
+                         for i in kp['TimeString'] ]
+                delta_tmin = np.array( [ (i-Min).total_seconds()
+                                        for i in kp_dt ] )
+                delta_tmax = np.array( [ (i-Max).total_seconds()
+                                         for i in kp_dt ] )
+                filter_list.append( delta_tmin >= 0 )
+                filter_list.append( delta_tmax <= 0 )
+            else:
+            # Time provided as other than string or Integer
+                if Parameter is not None:
+                    print '*****WARNING*****'
+                    print 'Both elements of time must be same type'
+                    print 'Only strings of format yyyy-mm-ddThh:mm:ss'
+                    print 'or integers (orbit numbers) are allowed.'
+                    print 'Ignoring time inputs; will filter ONLY'
+                    print 'on Parameter inputs.'
+                else:
+                    print '*****ERROR*****'
+                    print 'Both elements of Time must be same type'
+                    print 'Only Strings of format yyyy-mm-ddThh:mm:ss'
+                    print 'or integers (orbit numbers) are allowed.'
+                    print 'Returning original unchanged data dictionary'
+                    return kp
+            # Now, we apply the Parameter selection
+            inst = []
+            obs = []
+            if type(Parameter) is int or type(Parameter) is str:
+            # Then we have a single Parameter to filter on
+            # Verify that bounds info exists
+                if minimum is None and maximum is None:
+                    insufficient_input_range_select()
+                    print 'No bounds set for parameter %s' % Parameter
+                    print 'Applying only Time filtering'
+                    Parameter = None
+                elif minimum is None:
+                    minimum = -np.Infinity # Unbounded below
+                elif maximum is None:
+                    maximum = np.Infinity # Unbounded above
+                else:
+                    pass # Range fully bounded
+                a,b = get_inst_obs_labels(kp,Parameter)
+                inst.append(a)
+                obs.append(b)
+                nparam = 1 # necessary?
+            elif type(Parameter) is list:
+                if ( len(Parameter) != len(minimum) or
+                     len(Parameter) != len(maximum) ):
+                    print '*****ERROR*****'
+                    print '---range_select---'
+                    print 'Number of minima and maxima provided'
+                    print 'MUST match number of Parameters provided'
+                    print 'You provided %4d Parameters' % len(Parameter)
+                    print '             %4d minima' % len(minimum)
+                    print '         and %4d maxima' % len(maximum)
+                    print 'Filtering only on Time'
+                    Parameter = None
+                else:
+                    nparam = len(Parameter)
+                    for param in Parameter:
+                        a,b = get_inst_obs_labels(kp,Parameter)
+                        inst.append(a)
+                        obs.append(b)
+    # Now, apply the filters
+    if Parameter is not None:
+        inst_obs_minmax = zip( inst, obs, minimum, maximum )
+    # If we got here, we have a valid set of inst,obs,min,max 
+    # Cycle through them to further build a mask
+        for inst,obs,Min,Max in inst_obs_minmax:
+            filter_list.append( kp[inst][obs] >= Min )
+            filter_list.append( kp[inst][obs] <= Max )
+    # Filter list built, apply to data
+    Filter = np.all( filter_list, axis=0 )
+    new = {}
+    for i in kp:
+        temp = kp[i]
+        new.update({i:temp[Filter]})
+    return new
+
+#--------------------------------------------------------------------------
+
+def insufficient_input_range_select():
+    '''
+    This error message is called if user calls range_select with
+    inputs that result in neither a valid Time range nor a valid
+    Parameter range capable of being determined
+    '''
+    print '*****ERROR*****'
+    print 'Either a time criterion with two values.'
+    print '  or a parameter name with maximum and/or'
+    print '  minimum values must be provided.'
+    print 'Returning the complete original data dictionary'
 
 #--------------------------------------------------------------------------
 
@@ -342,7 +497,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
         if SubPlot: ax = a.add_subplot(nparam,1,iplot)
 
     # Now, generate the plot
-        plt.plot(t,y,label=('%s.%s'%(inst,obs)))
+        plt.plot(t,y,'.',label=('%s.%s'%(inst,obs)))
 
     # If subplots, and not last one, suppress x-axis labels
         if SubPlot and iplot < nparam: ax.axes.xaxis.set_ticklabels([])
