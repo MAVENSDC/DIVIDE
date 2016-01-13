@@ -27,20 +27,26 @@
 import numpy as np
 import sys
 
-def param_list_sav( insitu ):
+def param_list_sav( kp ):
     '''
     Return a listing of all parameters present in the given 
-    insitu data dictionary/structure.  At present, this does
-    not include the fancy formatting that can more easily 
-    distinguish one instrument form another.
-    Rendered obsolete by param_list
-    (only works with data from IDL sav file)
+    insitu data dictionary/structure.
+
+    Caveats:
+        Rendered obsolete by param_list.
+           (only works with data from IDL sav file)
+
+    Input:
+        kp: insitu kp data structure/dictionary imported from
+            and IDL sav file
+    Output:
+        ParamList: a list of all contained items and their indices.
     '''
     index = 1
     ParamList = []
-    for base_tag in insitu.dtype.names:
+    for base_tag in kp.dtype.names:
         try:
-            first_level_tags = insitu[base_tag][0].dtype.names
+            first_level_tags = kp[base_tag][0].dtype.names
             for first_level_tag in first_level_tags:
                 ParamList.append("#%3d %s.%s" % 
                                  (index,base_tag,first_level_tag) )
@@ -51,31 +57,35 @@ def param_list_sav( insitu ):
 
 #---------------------------------------------------------------------
 
-def param_list( insitu ):
+def param_list( kp ):
     '''
     Return a listing of all parameters present in the given 
-    insitu data dictionary/structure.  At present, this does
-    not include the fancy formatting that can more easily 
-    distinguish one instrument form another.
+    insitu data dictionary/structure.
+
+    Input:
+        kp: insitu kp data structure/dictionary read from file(s)
+    Output:
+        ParamList: a list of all contained items and their indices.
     '''
     import pandas as pd
-    import sys
 
     index = 1
     ParamList = []
-    for base_tag in insitu.keys():
-        if isinstance(insitu[base_tag], pd.DataFrame):
-            for obs_tag in insitu[base_tag].columns:
+    for base_tag in kp.keys():
+        if isinstance(kp[base_tag], pd.DataFrame):
+            for obs_tag in kp[base_tag].columns:
                 ParamList.append("#%3d %s.%s" % 
                                  (index, base_tag, obs_tag ) )
                 index = index + 1
-        elif isinstance(insitu[base_tag], pd.Series):
+        elif isinstance(kp[base_tag], pd.Series):
             ParamList.append("#%3d %s" % (index, base_tag) )
             index = index + 1
         else:
+            print '*****WARNING*****'
+            print 'Returning INCOMPLETE Parameter List'
             print 'Base tag neither DataFrame nor Series'
             print 'Plese check read_insitu_file definition'
-            sys.exit(1)
+            #sys.exit(1)
 
     return ParamList
 
@@ -84,8 +94,18 @@ def param_list( insitu ):
 def param_range( kp, iuvs=None ):
     '''
     Print the range of times and orbits for the provided insitu data.
-    If iuvs data are also provided, return orbit numbers for IUVS data.
-    At present, not configured to handle IUVS data.
+    If iuvs data are also provided, return only orbit numbers for IUVS data.
+
+    Caveats:
+        At present, not configured to handle (real) IUVS data.
+        Current configuration of procedure assumes IUVS has identical 
+            time information as in-situ.
+
+    Input:
+        kp: insitu kp data structure/dictionary
+        iuvs: IUVS kp data strucure/dictionary
+    Output:
+        None: prints information to screen
     '''
 #
 # First, the case where insitu data are provided
@@ -133,11 +153,34 @@ def range_select( kp, Time=None, Parameter=None,
                   maximum=None, minimum=None ):
     '''
     Returns a subset of the input data based on the provided time
-    and/or parameter criteria.  Time must be provided as a two-element
-    list of integers or strings.  Any parameter used as a discriminating
-    criterion must be paried with either a maximum and/or a minimum
-    value.  Open ended bounds must be indicated with either a value
-    of 'None' or an empty string ('').
+    and/or parameter criteria.  If neither Time nor Parameter filter
+    information is provided, then no subselection of dta will occur.
+    Any parameter used as a filtering criterion must be paired with 
+    either a maximum and/or a minimum value.  Open ended bounds must 
+    be indicated with either a value of 'None' or an empty string ('').
+
+    Input:
+        kp: insitu kp data structure/dictionary read from file(s)
+        Time: two-element time range must be either strings of format
+            'yyyy-mm-ddThh:mm:ss' or integers (orbit numbers)
+        Parameter: Element of provided data structure/dictionary by
+            which to filter data.  Parameter(s) must be either integer
+            type (search by index) or string type (search by instrument
+            name and observation type).  If multiple Parameters are used
+            to filter the data, they must be provided as a list (mixing
+            data types within a list is permitted).
+        Maximum: maximum value of Parameter on which to filter.  A value of 
+            None or '' will leave the Parameter filter unbounded above.
+            The number of elements of Maximum *MUST* equal the number of
+            elements of Parameter.
+        Minimum: minimum value of Parameter on which to filter.  A value of 
+            None or '' will leave the Parameter filter unbounded below.
+            The number of elements of Minimum *MUST* equal the number of
+            elements of Parameter.
+    Output: a dictionary/structure containing the same elements as the provided
+        one, but filtered according to the Time and Parameter options.
+
+    ToDo: compartmentalize the filtering and/or argument checks.
     '''
 
     from divide_lib_test import insufficient_input_range_select
@@ -190,8 +233,10 @@ def range_select( kp, Time=None, Parameter=None,
             print 'by index or by name'
             print 'Returning complete original data dictionary'
             return kp
-# I think I should move this below the Time conditional and move 
+#
+# Should I move this below the Time conditional and move 
 # Baselining of Filter List to above time
+#
     else:
     # Time has been provided as a filtering agent
     # Determine whether Time is provided as strings or orbits
@@ -300,15 +345,17 @@ def range_select( kp, Time=None, Parameter=None,
                         a,b = get_inst_obs_labels(kp,Parameter)
                         inst.append(a)
                         obs.append(b)
+    #
     # Now, apply the filters
+    #
     if Parameter is not None:
         inst_obs_minmax = zip( inst, obs, minimum, maximum )
-    # If we got here, we have a valid set of inst,obs,min,max 
-    # Cycle through them to further build a mask
         for inst,obs,Min,Max in inst_obs_minmax:
             filter_list.append( kp[inst][obs] >= Min )
             filter_list.append( kp[inst][obs] <= Max )
+    #
     # Filter list built, apply to data
+    #
     Filter = np.all( filter_list, axis=0 )
     new = {}
     for i in kp:
@@ -323,6 +370,8 @@ def insufficient_input_range_select():
     This error message is called if user calls range_select with
     inputs that result in neither a valid Time range nor a valid
     Parameter range capable of being determined
+
+    ToDo: Is there a way to hide this from the help feature?
     '''
     print '*****ERROR*****'
     print 'Either a time criterion with two values.'
@@ -336,12 +385,10 @@ def make_time_labels(kp):
     '''
     Convert the time strings to 2-line versions so that
     the date and time do not cause significant ovlerlap 
-    or vertical length on the x axis
+    or vertical length on the time(x) axis
 
     Input: 
-        ndat: the number of indices in the current dataset
-              (may wish to submit the times and divide on those)
-        time_strings: a list of time strings for current data set
+        kp: insitu kp data structure/dictionary read from file(s)
     Output:
         a set of five strings to be used as x-axis time labels
     '''
@@ -363,15 +410,17 @@ def get_inst_obs_labels( kp, name ):
     Given parameter input in either string or integer format,
     identify the instrument name and observation type for use
     in accessing the relevant part of the data structure
+    E.g.: 'LPW.EWAVE_LOW_FREQ' would be returned as
+          ['LPW', 'EWAVE_LOW_FREQ']
 
     Input:
-        kp: insitu data structure/dictionary
-        name: string identifying a parameter
+        kp: insitu kp data structure/dictionary read from file(s)
+        name: string identifying a parameter.
+            (Indices must be converted to inst.obs strings before
+             calling this routine)
     Output:
         inst (1st arg): instrument identifier
         obs (2nd arg): observation type identifier
-    N.B.: 'LPW.EWAVE_LOW_FREQ' would be returned as
-          inst,obs = ['LPW','EWAVE_LOW_FREQ']
     '''
 
     from divide_lib_test import find_param_from_index as get_param
@@ -405,8 +454,9 @@ def get_inst_obs_labels( kp, name ):
 def find_param_from_index( kp, index ):
     '''
     Given an integer index, find the name of the parameter
+
     Input: 
-        insitu: the insitu data product
+        kp: insitu kp data structure/dictionary read from file(s)
         index: the index of the desired parameter (integer type)
     Output:
         A string of form <instrument>.<observation>
@@ -414,7 +464,6 @@ def find_param_from_index( kp, index ):
     '''
 
     from divide_lib_test import param_list
-    import sys
     import re
 
     index = '#%3d' % int(index)
@@ -433,24 +482,42 @@ def find_param_from_index( kp, index ):
 #--------------------------------------------------------------------------
 
 def time_plot( kp, parameter=None, time=None, errors=None, 
-               SamePlot=True, SubPlot=False ):
+              SamePlot=True, SubPlot=False ):
     '''
     Plot the provided data as a time series.
     For now, do not accept any error bar information.
     If time is not provided plot entire data set.
-    SamePlot: if True, put all curves on same axes
-              if False, generate new axes for each plot
-    SubPlot: if True, stack plots with common x axis
-             if False and nplots > 1, make several distinct plots
+
+    Input:
+        kp: insitu kp data structure/dictionary read from file(s)
+        Time: Two-element list of strings or integers indicating the 
+            range of Time to be plotted.  At present, there are no
+            checks on whether provided Times are within provided data
+        Parameter: The parameter(s) to be plotted.  Can be provided as
+            integers (by index) or strings (by name: inst.obs).  If a 
+            single parameter is provided, it must be an int or str.  If
+            several are provided it must be a list.  A list may contain
+            a mixture of data types.
+        Errors: **Not Yet Implemented**
+            Will be the Parameter(s) to use for the generation of error
+            bars in the created plots.  Since each inst.obs *may* define
+            its own unique useage of the 'quality flag', this will be a
+            parameter-dependent determination, requiring an add'l routine.
+        SamePlot: if True, put all curves on same axes
+                  if False, generate new axes for each plot
+        SubPlot: if True, stack plots with common x axis
+                 if False and nplots > 1, make several distinct plots
+    Output: None
+        -> Generates plot(s) as requested.  But since there is no plot
+           object returned, can not alter any plot subsequently (yet)
+
+    ToDo: Provide mechanism for calculating and plotting error bars
+          Return plot object(s) for subsequent editing?
     '''
 
     import matplotlib.pyplot as plt
     from datetime import datetime
-
-    # No need for get help routine: embedded in python
-    # No need for tag parsing: python does this
-    # No need for list call: that attribute has been provided
-    # No need for range call: already provided
+    from divide_lib_test import range_select
 
     # Check existence of parameter
     if parameter == None: 
@@ -476,7 +543,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
     if time == None:
         istart, iend = 0,np.count_nonzero(kp['Orbit'])-1
     else:
-        istart,iend = divide_lib_test.range_select(kp,time)
+        istart,iend = range_select(kp,time)
 
     # Possible hack: Make the time array
     t = [datetime.strptime(i,'%Y-%m-%dT%H:%M:%S') 
@@ -527,24 +594,42 @@ def time_plot( kp, parameter=None, time=None, errors=None,
 #--------------------------------------------------------------------------
 
 def alt_plot( kp, parameter=None, time=None, errors=None, 
-               SamePlot=True, SubPlot=False ):
+              SamePlot=True, SubPlot=False ):
     '''
     Plot the provided data plotted against spacecraft altitude.
     For now, do not accept any error bar information.
     If time is not provided plot entire data set.
-    SamePlot: if True, put all curves on same axes
-              if False, generate new axes for each plot
-    SubPlot: if True, stack plots with common x axis
-             if False and nplots > 1, make several distinct plots
+
+    Input:
+        kp: insitu kp data structure/dictionary read from file(s)
+        Time: Two-element list of strings or integers indicating the 
+            range of Time to be plotted.  At present, there are no
+            checks on whether provided Times are within provided data
+        Parameter: The parameter(s) to be plotted.  Can be provided as
+            integers (by index) or strings (by name: inst.obs).  If a 
+            single parameter is provided, it must be an int or str.  If
+            several are provided it must be a list.  A list may contain
+            a mixture of data types.
+        Errors: **Not Yet Implemented**
+            Will be the Parameter(s) to use for the generation of error
+            bars in the created plots.  Since each inst.obs *may* define
+            its own unique useage of the 'quality flag', this will be a
+            parameter-dependent determination, requiring an add'l routine.
+        SamePlot: if True, put all curves on same axes
+                  if False, generate new axes for each plot
+        SubPlot: if True, stack plots with common x axis
+                 if False and nplots > 1, make several distinct plots
+    Output: None
+        -> Generates plot(s) as requested.  But since there is no plot
+           object returned, can not alter any plot subsequently (yet)
+
+    ToDo: Provide mechanism for calculating and plotting error bars
+          Return plot object(s) for subsequent editing?
     '''
 
     import matplotlib.pyplot as plt
     from datetime import datetime
-
-    # No need for get help routine: embedded in python
-    # No need for tag parsing: python does this
-    # No need for list call: that attribute has been provided
-    # No need for range call: already provided
+    from divide_lib_test import range_select
 
     # Check existence of parameter
     if parameter == None: 
@@ -570,7 +655,7 @@ def alt_plot( kp, parameter=None, time=None, errors=None,
     if time == None:
         istart, iend = 0,np.count_nonzero(kp['Orbit'])-1
     else:
-        istart,iend = divide_lib_test.range_select(kp,time)
+        istart,iend = range_select(kp,time)
 
     # Generate the altitude array
     z = []
@@ -625,6 +710,23 @@ def read_insitu_file( filename, instruments = None, time=None ):
     Read in a given filename in situ file into a dictionary object
     Optional keywords maybe used to downselect instruments returned
      and the time windows.
+
+    Input:
+        filename: Name of the in situ KP file to read in.
+        time (Not Yet Implemeted): 
+            Set a time bounds/filter on the data
+            (this will be necessary when this is called by a wrapper that
+             seeks to ingest all data within a range of dates that may
+             be allowed to span multiple days (files) ).
+        Instruments: (Not Yet Implemented)
+            Optional keyword listing the instruments to include 
+            in the returned dictionary/structure.
+    Output:
+        A dictionary (data structure) containing up to all of the columns
+            included in a MAVEN in-situ Key parameter data file.
+
+    ToDo: Implement Instrument selection ability
+          Some repetition of effort here; maybe modularize parts of this?
     '''
     import pandas as pd
     import re
@@ -682,18 +784,39 @@ def read_insitu_file( filename, instruments = None, time=None ):
     # NB, there are special case redundancies in there
     # (e.g., LPW: Electron Density Quality (min and max))
     # ****SWEA FLUX electron QUALITY *****
+    #
     First = True
+    Parallel = None
     names = []
-    for i,j,k in zip(obs1,obs2,obs3):
+    for h,i,j,k in zip(inst,obs1,obs2,obs3):
         combo_name = (' '.join([i.strip(),j.strip(),k.strip()])).strip()
-        if re.match('(Electron|Spacecraft)(.+)Quality', combo_name):
-            if First:
-                combo_name = combo_name + ' Min'
-                First = False
-            else:
-                combo_name = combo_name + ' Max'
-                First = True
-        names.append(combo_name)
+        if re.match('^LPW$',h.strip()):
+        # Max and min error bars use same name in column
+        # SIS says first entry is min and second is max
+            if re.match('(Electron|Spacecraft)(.+)Quality', combo_name):
+                if First:
+                    combo_name = combo_name + ' Min'
+                    First = False
+                else:
+                    combo_name = combo_name + ' Max'
+                    First = True
+        elif re.match('^SWEA$',h.strip()):
+        # electron flux qual flags do not indicate whether parallel or anti
+        # From context it is clear; but we need to specify in name
+            if re.match('.+Parallel.+',combo_name): Parallel = True
+            elif re.match('.+Anti-par',combo_name): Parallel = False
+            else: pass
+            if re.match('Flux, e-(.+)Quality', combo_name ):
+                if Parallel: 
+                    p = re.compile( 'Flux, e- ' )
+                    combo_name = p.sub('Flux, e- Parallel ',combo_name)
+                else:
+                    p = re.compile( 'Flux, e- ' )
+                    combo_name = p.sub('Flux, e- Anti-par ',combo_name)
+        # Hack: add inst to names to avoid ambiguity
+        # Will want to remove these after splitting
+        names.append('.'.join([h.strip(),combo_name]))
+    names[0] = 'Time' # Hack to fix result of adding inst to names
     #
     # Now close the file and read the data section into a temporary DataFrame
     #
@@ -708,8 +831,8 @@ def read_insitu_file( filename, instruments = None, time=None ):
                                              .timetuple()) 
                 for i in temp['Time']]
     TimeUnix = pd.Series(TimeUnix) # convert into Series for consistency
-    Orbit = temp['Orbit Number']
-    IOflag = temp['Inbound Outbound Flag']
+    Orbit = temp['SPICE.Orbit Number']
+    IOflag = temp['SPICE.Inbound Outbound Flag']
     #
     # Break up dictionary into instrument groups
     #
