@@ -24,9 +24,6 @@
 #
 #-------------------------------------------------------------------
 #
-import numpy as np
-import sys
-
 def param_list_sav( kp ):
     '''
     Return a listing of all parameters present in the given 
@@ -85,7 +82,6 @@ def param_list( kp ):
             print 'Returning INCOMPLETE Parameter List'
             print 'Base tag neither DataFrame nor Series'
             print 'Plese check read_insitu_file definition'
-            #sys.exit(1)
 
     return ParamList
 
@@ -107,6 +103,8 @@ def param_range( kp, iuvs=None ):
     Output:
         None: prints information to screen
     '''
+
+    import numpy as np
 #
 # First, the case where insitu data are provided
 #
@@ -187,6 +185,7 @@ def range_select( kp, Time=None, Parameter=None,
     from divide_lib_test import find_param_from_index
     from divide_lib_test import get_inst_obs_labels
     from datetime import datetime
+    import numpy as np
 
     #  Initialize the filter_list
     filter_list = []
@@ -394,6 +393,7 @@ def make_time_labels(kp):
     '''
 
     from datetime import datetime
+    import numpy as np
 
     indices = kp['Time'].index.values
     t1 = kp['Time'][np.nanmin(kp['Time'].index.values)]
@@ -477,12 +477,11 @@ def find_param_from_index( kp, index ):
         print '%s not a valid index.' % index
         print 'Use param_list to list options'
         return
-#        sys.exit('In find_param_from_index: not found')
 
 #--------------------------------------------------------------------------
 
 def time_plot( kp, parameter=None, time=None, errors=None, 
-              SamePlot=True, SubPlot=False ):
+              SamePlot=True, SubPlot=False, **kwargs ):
     '''
     Plot the provided data as a time series.
     For now, do not accept any error bar information.
@@ -516,6 +515,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
     '''
 
     import matplotlib.pyplot as plt
+    import numpy as np
     from datetime import datetime
     from divide_lib_test import range_select
 
@@ -564,7 +564,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
         if SubPlot: ax = a.add_subplot(nparam,1,iplot)
 
     # Now, generate the plot
-        plt.plot(t,y,'.',label=('%s.%s'%(inst,obs)))
+        plt.plot(t,y,label=('%s.%s'%(inst,obs)),**kwargs)
 
     # If subplots, and not last one, suppress x-axis labels
         if SubPlot and iplot < nparam: ax.axes.xaxis.set_ticklabels([])
@@ -594,7 +594,7 @@ def time_plot( kp, parameter=None, time=None, errors=None,
 #--------------------------------------------------------------------------
 
 def alt_plot( kp, parameter=None, time=None, errors=None, 
-              SamePlot=True, SubPlot=False ):
+              SamePlot=True, SubPlot=False, **kwargs ):
     '''
     Plot the provided data plotted against spacecraft altitude.
     For now, do not accept any error bar information.
@@ -628,6 +628,7 @@ def alt_plot( kp, parameter=None, time=None, errors=None,
     '''
 
     import matplotlib.pyplot as plt
+    import numpy as np
     from datetime import datetime
     from divide_lib_test import range_select
 
@@ -684,7 +685,8 @@ def alt_plot( kp, parameter=None, time=None, errors=None,
         if SubPlot: ax = a.add_subplot(1,nparam,iplot)
 
     # Now, generate the plot
-        plt.plot(y,z,label=('%s.%s'%(inst,obs)))
+#orig        plt.plot(y,z,label=('%s.%s'%(inst,obs)))
+        plt.plot(y,z,label=('%s.%s'%(inst,obs)),**kwargs)
 
     # If subplots, and not last one, suppress x-axis labels
         if SubPlot and iplot > 1 : 
@@ -738,6 +740,7 @@ def read_insitu_file( filename, instruments = None, time=None ):
     for line in open(filename):
         if line.startswith('#'):
             nheader = nheader+1
+
     #
     # Parse the header (still needs special case work)
     #
@@ -779,6 +782,7 @@ def read_insitu_file( filename, instruments = None, time=None ):
             iname = iname + 1
         else:
             pass
+
     #
     # Generate the names list.
     # NB, there are special case redundancies in there
@@ -813,16 +817,18 @@ def read_insitu_file( filename, instruments = None, time=None ):
                 else:
                     p = re.compile( 'Flux, e- ' )
                     combo_name = p.sub('Flux, e- Anti-par ',combo_name)
-        # Hack: add inst to names to avoid ambiguity
-        # Will want to remove these after splitting
+        # Add inst to names to avoid ambiguity
+        # Will need to remove these after splitting
         names.append('.'.join([h.strip(),combo_name]))
-    names[0] = 'Time' # Hack to fix result of adding inst to names
+        names[0] = 'Time'
+
     #
     # Now close the file and read the data section into a temporary DataFrame
     #
     fin.close()
     temp = pd.read_fwf(filename, skiprows=nheader, index_col=False, 
                        widths=[19]+ncol*[16], names = names)
+
     #
     # Assign the first-level only tags
     #
@@ -833,6 +839,7 @@ def read_insitu_file( filename, instruments = None, time=None ):
     TimeUnix = pd.Series(TimeUnix) # convert into Series for consistency
     Orbit = temp['SPICE.Orbit Number']
     IOflag = temp['SPICE.Inbound Outbound Flag']
+
     #
     # Break up dictionary into instrument groups
     #
@@ -858,17 +865,18 @@ def read_insitu_file( filename, instruments = None, time=None ):
             NGIgroup.append(j)
         elif re.match('^SPICE$',i.strip()):
             # NB Need to split into APP and SPACECRAFT
-            if re.match('APP',j): 
+            if re.match('(.+)APP(.+)',j): 
                 APPgroup.append(j)
             else: # Everything not APP is SC in SPICE
                 # But do not include Orbit Num, or IO Flag
                 # Could probably stand to clean this line up a bit
-                if not re.match('(Orbit Number)|(Inbound Outbound Flag)',j):
+                if not re.match('(.+)(Orbit Number|Inbound Outbound Flag)',j):
                     SCgroup.append(j)
         else:
             pass
+
     #
-    # Now assign the subSeries to the instruments
+    # Build the sub-level DataFrames for the larger dictionary/structure
     #
     LPW=temp[LPWgroup]
     EUV=temp[EUVgroup]
@@ -880,6 +888,14 @@ def read_insitu_file( filename, instruments = None, time=None ):
     NGIMS=temp[NGIgroup]
     APP=temp[APPgroup]
     SPACECRAFT=temp[SCgroup]
+
+    #
+    # Strip out the duplicated instrument part of the column names
+    # (this is a bit hardwired and can be improved)
+    #
+    for i in [LPW,EUV,SWEA,SWIA,SEP,STATIC,NGIMS,MAG,APP,SPACECRAFT]:
+        i.columns = remove_inst_tag(i)
+
     #
     # Clean up SPACECRAFT column names
     #
@@ -897,8 +913,6 @@ def read_insitu_file( filename, instruments = None, time=None ):
             newcol.append(oldcol)
     SPACECRAFT.columns = newcol
 
-    # Others?
-
     # Do not forget to save units
     # Define the list of first level tag names
     tag_names = ['TimeString','Time','Orbit','IOflag',
@@ -909,4 +923,26 @@ def read_insitu_file( filename, instruments = None, time=None ):
                  LPW, EUV, SWEA, SWIA, STATIC, 
                  SEP, MAG, NGIMS, APP, SPACECRAFT]
     # return a dictionary made from tag_names and data_tags
-    return dict( zip( tag_names, data_tags ) )
+    return ( dict( zip( tag_names, data_tags ) ), 
+             dict( zip( tag_names, unit ) ) )
+
+#------------------------------------------------------------------------------
+
+def remove_inst_tag(df):
+    '''
+    Remove the leading part of the column name that includes the instrument
+    identifier for use in creating the parameter names for the toolkit.
+
+    Input:
+        A DataFrame produced from the insitu KP data
+    Output:
+        A new set of column names
+    '''
+
+    newcol = []
+    for i in df.columns:
+        if( len(i.split('.'))>=2):
+            j = i.split('.')
+            newcol.append('.'.join(j[1:]))
+
+    return newcol
