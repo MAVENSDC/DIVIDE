@@ -89,7 +89,7 @@ pro MVN_KP_IUVS_CORONA, kp_data, echelle=echelle, lores=lores, disk=disk, $
                   kp_data.corona_lo_limb.time_start ne '')
     if check ne -1 then data_choice[4] = 1
     check = where(base_tags eq 'CORONA_LO_HIGH' and $
-                  kp_data.corona_lo_high.time_start ne '')
+                  kp_data[0].corona_lo_high.time_start ne '')
     if check ne -1 then data_choice[5] = 1
 
 print,data_choice
@@ -1596,7 +1596,7 @@ if( (disp_check[3] eq 1) and (disp_check[4] eq 1) and $
   if l_h_d eq 1 then begin        ;lores high density
     plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,$
          charsize=1.5,/ylog,ystyle=1,$
-         yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*]), /NAN], $
+         yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
          title='Lo-Res High: Density',$
          xtitle='Density', ytitle='Altitude, km'
     for i=0, lo_high_total -1 do begin
@@ -3181,7 +3181,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
         for j=0, n_elements(lo_high_rad_labels[0,*])-1 do begin
-          oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],$
+          oplot,lo_high_radiance[i,j,*],lo_high_rad_alt[i,*],$
                 linestyle=(i mod 7),color=i*(255/lo_high_total)
         endfor
       endfor 
@@ -3209,7 +3209,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
            xtitle='1/2 Dist', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
         for j=0, n_elements(lo_high_den_labels[0,*])-1 do begin
-          oplot,lo_high_density[i,j,*],lo_high_rad_alt[i,*],$
+          oplot,lo_high_half[i,j,*],lo_high_rad_alt[i,*],$
                 linestyle=(i mod 7),color=i*(255/lo_high_total)
         endfor
       endfor      

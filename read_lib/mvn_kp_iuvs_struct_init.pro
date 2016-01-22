@@ -112,7 +112,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   if nalt_struct.c_l_high gt 0 then begin
       nalt = nalt_struct.c_l_high
   endif else begin
-    nalt = 1
+    nalt = 104
   endelse
 ;print,nalt
 ;    nalt = 120 ; this is number of altitude levels. 

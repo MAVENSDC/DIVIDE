@@ -1316,9 +1316,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 (*pstate).axesmodel_msoz->setproperty,hide=1
                                 (*pstate).axesmodel->setproperty,hide=0
                                endif
-                              ;UPDATE THE VECTOR WHISKERS, IF NECESSARY
-                               (*pstate).vector_model.getProperty, HIDE=result
-                               if result eq 0 then begin
+                              ;UPDATE THE VECTOR WHISKERS
                                 vec_data1 = vec_data
                                 for i=0, n_elements((*pstate).insitu.spacecraft.geo_x)-1 do begin
                                   vec_path[0,i*2] = insitu_spec[i].spacecraft.geo_x/10000.0
@@ -1339,7 +1337,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 endfor                                
                                 (*pstate).vector_path->setproperty,data=vec_path
                                 (*pstate).vector_data = vec_data
-                               endif
                                
                                ;Undo the mars globe rotation from MSO coordinate system
                                (*pstate).mars_globe -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
@@ -1402,8 +1399,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 (*pstate).axesmodel->setproperty,hide=1
                                endif
                              ;UPDATE THE VECTOR WHISKERS, IF NECESSARY
-                               (*pstate).vector_model.getProperty, hide=result
-                               if result eq 0 then begin
                                   vec_data1 = vec_data
                                 for i=0, n_elements((*pstate).insitu.spacecraft.mso_x)-1 do begin
                                   vec_path[0,i*2] = insitu_spec[i].spacecraft.mso_x/10000.0
@@ -1424,7 +1419,6 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 endfor                                
                                 (*pstate).vector_path->setproperty,data=vec_path
                                 (*pstate).vector_data = vec_data
-                               endif
                                
                                ;turn off the corona plotting because they can't be easily converted to MSO coordinates
                                ; (*pstate).corona_lo_disk_model.getProperty, hide=result

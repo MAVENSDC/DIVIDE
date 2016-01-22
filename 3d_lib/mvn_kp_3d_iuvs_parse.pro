@@ -1,4 +1,4 @@
-pro mvn_kp_3d_iuvs_parse, instrument_list, e_disk_list=e_disk_list, $
+pro mvn_kp_3d_iuvs_parse, iuvs, instrument_array, e_disk_list=e_disk_list, $
        e_limb_list=e_limb_list, e_high_list, lo_disk_list=lo_disk_list, $
        lo_limb_list=lo_limb_list, lo_high_list=lo_high_list
 
