@@ -35,7 +35,6 @@ def get_file_from_site(filename, public, data_dir):
     if (public==False):
         username = uname
         password = pword
-        print pword
         p = urllib2.HTTPPasswordMgrWithDefaultRealm()
         p.add_password(None, private_url, username, password)
         handler = urllib2.HTTPBasicAuthHandler(p)
@@ -120,15 +119,15 @@ def set_root_data_dir():
     
     return
 
-def get_new_files(files_on_site):
+def get_new_files(files_on_site, data_dir, instrument, level):
     import os
     import re
     
     fos = files_on_site
     files_on_hd = []
-    for (dir, _, files) in os.walk(get_root_data_dir()):
+    for (dir, _, files) in os.walk(data_dir):
         for f in files:
-            if re.match('mvn_kp_iuvs_*_v*_r*', f) or re.match('mvn_kp_insitu_*_v*_r*', f):
+            if re.match('mvn_'+instrument+'_'+level+'_*', f):
                 files_on_hd.append(f)
     
     x = set(files_on_hd).intersection(files_on_site)
@@ -137,10 +136,13 @@ def get_new_files(files_on_site):
     
     return fos
 
-def create_dir_if_needed(f, data_dir):
+def create_dir_if_needed(f, data_dir, level):
     import os
     
-    year, month, _ = get_year_month_day_from_kp_file(f)
+    if (level == 'insitu'):
+        year, month, _ = get_year_month_day_from_kp_file(f)
+    else:
+        year, month, _ = get_year_month_day_from_sci_file(f)
     
     if not os.path.exists(os.path.join(data_dir, year, month)):
         os.makedirs(os.path.join(data_dir, year, month))
@@ -150,6 +152,15 @@ def create_dir_if_needed(f, data_dir):
 def get_year_month_day_from_kp_file(f):
     
     date_string = f.split('_')[3]
+    year = date_string[0:4]
+    month = date_string[4:6]
+    day = date_string[6:8]
+    
+    return year, month, day
+
+def get_year_month_day_from_sci_file(f):
+    
+    date_string = f.split('_')[4]
     year = date_string[0:4]
     month = date_string[4:6]
     day = date_string[6:8]

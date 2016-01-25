@@ -6,19 +6,18 @@
 
 import mvn_kp_download_files_utilities as utils
 
-def mvn_kp_download_files(filenames=None, 
-                          list_files=False, 
-                          insitu=True, iuvs=False, 
-                          text_files=True, 
-                          cdf_files=False, 
-                          new_files=False, 
-                          start_date='2014-09-01', 
-                          end_date='2015-08-15', 
-                          update_prefs=False,
-                          only_update_prefs=False, 
-                          exclude_orbit_file=False,
-                          local_dir=None,
-                          help=False):
+def mvn_kp_download_sci_files(filenames=None, 
+                              instrument=None,
+                              level=None,
+                              list_files=False, 
+                              new_files=False, 
+                              start_date='2014-09-01', 
+                              end_date='2015-08-15', 
+                              update_prefs=False,
+                              only_update_prefs=False, 
+                              exclude_orbit_file=False,
+                              local_dir=None,
+                              help=False):
     
     import os
     
@@ -30,45 +29,32 @@ def mvn_kp_download_files(filenames=None,
     public = utils.get_access()
     if (public==False):
         utils.get_uname_and_password()
-    
-    if text_files==True:
-        extension='tab'
-    if cdf_files==True:
-        extension='cdf'
-    if filenames==None:
-        text_files=True
-        extension='tab'
 
     if (filenames != None):
-        if (insitu == True) and (iuvs == True):
-            print "Can't request both INSITU and IUVS in one query."
+        if (instrument == None):
+            print "Must specify an instrument."
+            print "lpw, ngi, euv, sta, swi, swe, mag, iuv, sep"
             return
-        if not ((insitu == True) or (iuvs == True)):
-            print "If not specifying filename(s) to download, Must specify either insitu=True or iuvs=True."
+        if (level == None):
+            print "Must specify a data level."
+            print "l1a, l1b, l1c, l2, or l3"
             return
-    
-    instrument='kp'
-    if (insitu==True):
-        level='insitu'
-    if (iuvs==True):
-        level='iuvs'
     
     # Build the query to the website
     query_args=[]
     query_args.append("instrument="+instrument)
-    query_args.append("level="+level)
+    query_args.append("level="+str(level))
     if (filenames!=None):
         query_args.append("file="+filenames)
     query_args.append("start_date="+start_date)
     query_args.append("end_date="+end_date)
-    query_args.append("file_extension="+extension)
-    
+
     if local_dir == None:
         mvn_root_data_dir = utils.get_root_data_dir()
     else:
         mvn_root_data_dir = local_dir
     
-    data_dir = os.path.join(mvn_root_data_dir,'maven','data','sci',instrument,level)  
+    data_dir   = os.path.join(mvn_root_data_dir,'maven','data','sci',instrument,level)     
     
     query = '&'.join(query_args)
     
@@ -92,18 +78,7 @@ def mvn_kp_download_files(filenames=None,
         print "No files found."
         return
     
-    if (insitu==True):
-        if (text_files==True):
-            estimated_size=len(s) * 38
-        else:
-            estimated_size=len(s) * 19
-    else:
-        if (text_files==True):
-            estimated_size=len(s) * 1.0
-        else:
-            estimated_size=len(s) * .684
-    
-    print "Your request will download a total of: "+str(len(s))+" files with an approx total size of: "+str(estimated_size)+" MBs."
+    print "Your request will download a total of: "+str(len(s))+" files."
     print 'Would you like to procede with the download: '
     valid_response=False
     while(valid_response==False):
