@@ -77,6 +77,7 @@ pro mvn_kp_test_install, test_number
     ;; Error occured
     results = [results, "[INSTALL TEST] - ERROR with: CDF Test 1"]
     results = [results, "                  ----- "+!ERROR_STATE.MSG]
+    results = [results, "                  NOTE:  There are currently no available CDF files to download.  This error should not affect your ability to use the toolkit."]
   endif else begin
     ;; Success
     results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 1"]
@@ -92,6 +93,7 @@ pro mvn_kp_test_install, test_number
     ;; Error occured
     results = [results,"[INSTALL TEST] - ERROR with: CDF Test 2"]
     results = [results,"                  ----- "+!ERROR_STATE.MSG]
+    results = [results, "                  NOTE:  There are currently no available CDF files to download.  This error should not affect your ability to use the toolkit."]
   endif else begin
     ;; Success
     results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 2"]
