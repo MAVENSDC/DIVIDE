@@ -25,19 +25,6 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   ;; provide help for those who don't have IDLDOC installed
   if keyword_set(help) then begin
     mvn_kp_get_help,'mvn_kp_download_orbit_file'
-;    print,'MVN_KP_DOWNLOAD_ORBIT_FILE'
-;    print, ' Download orbit number file from jpl into toolkit installation directory.'
-;    print, ' If orbit file already exists, overwrite it.'
-;    print,''
-;    print,'mvn_kp_download_orbit_file, debug=debug, help=help
-;    print,''
-;    print,'OPTIONAL FIELDS'
-;    print,'***************'
-;    print,'  debug: On error, - "Stop immediately at the statement that caused the error and print '
-;    print,'         the current program stack." If not specified, error message will be printed and '
-;    print,'         IDL with return to main program level and stop.'
-;    print,'  help: Invoke this list.'
-
     return
   endif
   
@@ -46,7 +33,6 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
   if not keyword_set(debug) then begin
     debug = getenv('MVNTOOLKIT_DEBUG')
   endif
-  
   ;; if not in debug mode, set action taken on error to be
   ;; print the current program stack, return to the main program level and stop
   if not keyword_set(debug) then begin
@@ -58,20 +44,48 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
 
   ;; Get location to safe file locally
   install_result = routine_info('mvn_kp_download_orbit_file',/source)
-  install_directory = strsplit(install_result.path,'mvn_kp_download_orbit_file.pro',/extract,/regex)
-  if !version.os_family eq 'unix' then begin
-  install_directory = install_directory+'orbitfiles/'
-  endif else begin
-    install_directory = install_directory+'orbitfiles\'
-  endelse
-  file_and_path = install_directory[0] + spec.orbit_filename
+  install_directory = strsplit(install_result.path,$
+                               'mvn_kp_download_orbit_file.pro',$
+                               /extract,/regex)
+  install_directory = install_directory + 'orbitfiles' + path_sep()
+;  if !version.os_family eq 'unix' then begin
+;  install_directory = install_directory+'orbitfiles/'
+;  endif else begin
+;    install_directory = install_directory+'orbitfiles\'
+;  endelse
+;-old  file_and_path = install_directory[0] + spec.orbit_filename
 
   ;; Get connection & execute GET query for orbit file  
-  netURL = mvn_kp_get_temp_connection(spec.host, spec.port, spec.username, spec.password, spec.url_scheme, spec.authentication)
-  for i = 0,n_elements(spec.orbit_filename)-1 do begin
-    return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path[i], '', filename=file_and_path[i], /not_sdc_connection)
-  endfor
-  
+;--old version-preserved
+;  netURL = mvn_kp_get_temp_connection(spec.host, spec.port, spec.username, spec.password, spec.url_scheme, spec.authentication)
+;  for i = 0,n_elements(spec.orbit_filename)-1 do begin
+;    return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path[i], '', filename=file_and_path[i], /not_sdc_connection)
+;  endfor
+;--end-old-version
+
+;-new version-test
+  ; Get connection and query for the file list (really just the HTML)
+  netURL = mvn_kp_get_temp_connection( spec.host, spec.port, $
+                                  spec.username, spec.password, $
+                                  spec.url_scheme, spec.authentication )
+  orb_dir_list = mvn_kp_execute_neturl_query( netURL, spec.url_path, '', $
+                                             /not_sdc_connection )
+  ; Define the regular expression used to select the orbit files from list
+  orb_regex_string = 'maven_orb_rec(\.orb|.{17}\.orb)'
+  ; apply regex to identify how to retrieve the orbit file names
+  pos = stregex( orb_dir_list, orb_regex_string, length=len )
+  ; cycle through HTML and build an array of orbit file names to download
+  orb_list = []
+  for i = 0,n_elements(orb_dir_list)-1 do $
+    if pos[i] gt 0 then $
+      orb_list = [orb_list, strmid( orb_dir_list[i], pos[i], len[i] )]
+  ; Now, cycle through the selected orbit filenames to download them
+  file_and_path = install_directory[0] + orb_list
+  for i = 0,n_elements(orb_list)-1 do $
+    return_value = mvn_kp_execute_neturl_query( netURL, $
+                   spec.url_path+orb_list[i], '', filename=file_and_path[i], $
+                   /not_sdc_connection )
+
   if size(return_value, /TYPE) ne 7 then begin
     print, "Problem downloading orbit file."
     print, "If not connected to the internet, then this is to be expected"
