@@ -1,4 +1,11 @@
-Current Version: 2015-12-10
+Current Version: 2016-02-04
+
+2016-02-04:
+	-IUVS KP Reader updates
+	-Many bug fixes with 3D vectors
+	-Added l1 and l3 science file downloaders
+	-Changed some of the keywords to improve consistency across functions
+	-Text files are now default for downloading and reading procedures
 
 2015-12-10:
 	-Fixed bug reading in EUV data 
