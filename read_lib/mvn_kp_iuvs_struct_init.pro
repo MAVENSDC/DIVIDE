@@ -263,7 +263,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
     if nalt_struct.periapse gt 0 then begin
           nalt = nalt_struct.periapse
     endif else begin
-      nalt = 1
+      nalt = 32
     endelse
 ;    nalt = 32
     i1 = create_struct(                                                    $
