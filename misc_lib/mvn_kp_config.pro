@@ -93,8 +93,10 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
                       'maven_orb_rec_150101_150401_v1.orb',$
                       'maven_orb_rec_150401_150701_v1.orb',$
                       'maven_orb_rec_150701_151001_v1.orb',$
+                      'maven_orb_rec_151001_160101_v1.orb', $
                       'maven_orb_rec.orb']
-    
+    ; -test
+;    orbit_files_rec = ['maven_orb_rec_*.orb', 'maven_orb_rec.orb']
     
     orbit_file_server_spec = create_struct($
       'host', 'naif.jpl.nasa.gov/', $
