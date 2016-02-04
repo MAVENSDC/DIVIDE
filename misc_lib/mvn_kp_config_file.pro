@@ -1,6 +1,6 @@
 
 
-function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2, check_access=check_access
+function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l0=l0, l1=l1, l2=l2, l3=l3, check_access=check_access
 
   ;; Check ENV variable to see if we are in debug mode
   debug = getenv('MVNTOOLKIT_DEBUG')
@@ -165,9 +165,36 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2, check_acce
   endif 
   
   ;; Create l2 directory structure under top level data directory
-  if keyword_set(l2) then begin
+  if keyword_set(l1) then begin
     pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
     
+    dirs_to_create = [pre+'sta'+path_sep()+'l1', $
+      pre+'sep'+path_sep()+'l1', $
+      pre+'swi'+path_sep()+'l1', $
+      pre+'swe'+path_sep()+'l1', $
+      pre+'lpw'+path_sep()+'l1b', $
+      pre+'euv'+path_sep()+'l1', $
+      pre+'mag'+path_sep()+'l1', $
+      pre+'iuv'+path_sep()+'l1a', $
+      pre+'iuv'+path_sep()+'l1b', $
+      pre+'iuv'+path_sep()+'l1c', $
+      pre+'acc'+path_sep()+'l1', $
+      pre+'ngi'+path_sep()+'l1a', $
+      pre+'ngi'+path_sep()+'l1b', $
+      pre+'ngi'+path_sep()+'l1c', $
+      pre+'kp'+path_sep()+'insitu', $
+      pre+'kp'+path_sep()+'iuvs']
+      
+     
+    for dir_i=0, n_elements(dirs_to_create)-1 do begin
+      mvn_kp_create_dir_if_needed, mvn_root_data_dir+path_sep()+dirs_to_create[dir_i], /verbose, /open_permissions
+    endfor
+    
+  endif
+  
+  if keyword_set(l2) then begin
+    pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
+
     dirs_to_create = [pre+'sta'+path_sep()+'l2', $
       pre+'sep'+path_sep()+'l2', $
       pre+'swi'+path_sep()+'l2', $
@@ -180,12 +207,35 @@ function mvn_kp_config_file, update_prefs=update_prefs, kp=kp, l2=l2, check_acce
       pre+'ngi'+path_sep()+'l2', $
       pre+'kp'+path_sep()+'insitu', $
       pre+'kp'+path_sep()+'iuvs']
-      
-     
+
+
     for dir_i=0, n_elements(dirs_to_create)-1 do begin
       mvn_kp_create_dir_if_needed, mvn_root_data_dir+path_sep()+dirs_to_create[dir_i], /verbose, /open_permissions
     endfor
-    
+
+  endif
+  
+  if keyword_set(l3) then begin
+    pre='maven'+path_sep()+'data'+path_sep()+'sci'+path_sep()
+
+    dirs_to_create = [pre+'sta'+path_sep()+'l3', $
+      pre+'sep'+path_sep()+'l3', $
+      pre+'swi'+path_sep()+'l3', $
+      pre+'swe'+path_sep()+'l3', $
+      pre+'lpw'+path_sep()+'l3', $
+      pre+'euv'+path_sep()+'l3', $
+      pre+'mag'+path_sep()+'l3', $
+      pre+'iuv'+path_sep()+'l3', $
+      pre+'acc'+path_sep()+'l3', $
+      pre+'ngi'+path_sep()+'l3', $
+      pre+'kp'+path_sep()+'insitu', $
+      pre+'kp'+path_sep()+'iuvs']
+
+
+    for dir_i=0, n_elements(dirs_to_create)-1 do begin
+      mvn_kp_create_dir_if_needed, mvn_root_data_dir+path_sep()+dirs_to_create[dir_i], /verbose, /open_permissions
+    endfor
+
   endif
   
   return, mvn_root_data_dir
