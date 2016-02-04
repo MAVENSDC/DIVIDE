@@ -97,14 +97,14 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
   if keyword_set(alpha) eq 0 then alpha=0
   ;IF THE BASEMAP HAS BEEN SELECTED, LOAD IT FIRST
   if keyword_set(basemap) then begin
-    if basemap eq 'mdim' then begin
+    if strlowcase(basemap) eq 'mdim' then begin
       mapimage = FILEPATH('MDIM_2500x1250.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
       if (~keyword_set(map_limit) )then map_limit = [-90,0,90,360]
       map_location = [0,-90]
       map_projection  = 'Equirectangular'
     endif
-    if basemap eq 'mola' then begin
+    if strlowcase(basemap) eq 'mola' then begin
       mapimage = FILEPATH('MOLA_color_2500x1250.jpg',$
         root_dir=install_directory)
       read_jpeg,mapimage,mapimage
@@ -112,21 +112,21 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
       if ~keyword_set(map_location) then map_location = [-180,-90]
       if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
-    if basemap eq 'mola_bw' then begin
+    if strlowcase(basemap) eq 'mola_bw' then begin
       mapimage = FILEPATH('MOLA_BW_2500x1250.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
       if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
       if ~keyword_set(map_location) then map_location = [-180,-90]
       if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
-    if basemap eq 'mag' then begin
+    if strlowcase(basemap) eq 'mag' then begin
       mapimage = FILEPATH('MAG_Connerny_2005.jpg',root_dir=install_directory)
       read_jpeg,mapimage,mapimage
       if ~keyword_set(map_limit) then map_limit = [-90,0,90,360]
       if ~keyword_set(map_location) then map_location = [0,-90]
       if ~keyword_set(map_projection) then map_projection  = 'Equirectangular'
     endif
-    if basemap eq 'dust' then begin
+    if strlowcase(basemap) eq 'dust' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'DUST_DEPTH')
       if t1 ne -1 then begin
@@ -153,7 +153,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'ozone' then begin
+    if strlowcase(basemap) eq 'ozone' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'OZONE_DEPTH')
       if t1 ne -1 then begin
@@ -180,7 +180,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'rad_h' then begin
+    if strlowcase(basemap) eq 'rad_h' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'RADIANCE')
       if t1 ne -1 then begin
@@ -208,7 +208,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'rad_o' then begin
+    if strlowcase(basemap) eq 'rad_o' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'RADIANCE')
       if t1 ne -1 then begin
@@ -236,7 +236,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'rad_co' then begin
+    if strlowcase(basemap) eq 'rad_co' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'RADIANCE')
       if t1 ne -1 then begin
@@ -264,7 +264,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'rad_no' then begin
+    if strlowcase(basemap) eq 'rad_no' then begin
       tag_check = tag_names(iuvs.apoapse)
       t1 = where(tag_check eq 'RADIANCE')
       if t1 ne -1 then begin
@@ -292,7 +292,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if basemap eq 'user' then begin
+    if strlowcase(basemap) eq 'user' then begin
       input_file = dialog_pickfile(path=install_directory)
       if input_file ne '' then begin
         if (STRMID(input_file,3,4, /REVERSE_OFFSET) eq '.jpg') then read_jpeg,input_file,mapimage
@@ -343,7 +343,7 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
   endelse
 endif else begin      ;blank canvas for the MSO plot
   if keyword_set(basemap) then begin
-    if basemap eq 'user' then begin
+    if strlowcase(basemap) eq 'user' then begin
       input_file = dialog_pickfile(path=install_directory)
       if (strmatch(input_file, '*.jpg')) then begin
         read_jpeg,input_file,mapimage
