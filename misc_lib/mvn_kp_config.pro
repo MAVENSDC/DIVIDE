@@ -103,7 +103,8 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
       'password', '', $
       'url_scheme', 'http', $
       'authentication', 0, $
-      'url_path', base_url_path+orbit_files_rec,$
+;-test-old      'url_path', base_url_path+orbit_files_rec,$
+      'url_path', base_url_path, $
       'orbit_filename', orbit_files_rec)
     
     return, orbit_file_server_spec
