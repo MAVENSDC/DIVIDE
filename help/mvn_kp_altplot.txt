@@ -27,7 +27,7 @@
            containing the structure index and tag names.
     range: in, optional, type=boolean
        if selected, will list the beginning and end times of kp_data
-    oo: out, optional
+    plot_object: out, optional
        if provided, the name of the variable to which the plot created
        will be assigned.  Ignored if /directgraphic is also set.
     directgraphic: in, optional, type=boolean

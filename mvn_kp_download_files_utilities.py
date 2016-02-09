@@ -53,25 +53,21 @@ def get_orbit_files():
     import os
     import urllib
     import urllib2
+    import re 
     
     orbit_files_url = "http://naif.jpl.nasa.gov/pub/naif/MAVEN/kernels/spk/"
-    orbit_file_names = ["maven_orb_rec_140922_150101_v1.orb",
-                        "maven_orb_rec_150101_150401_v1.orb",
-                        "maven_orb_rec_150401_150701_v1.orb",
-                        "maven_orb_rec_150701_151001_v1.orb", 
-                        "maven_orb_rec.orb"]
-    
+    pattern = 'maven_orb_rec(\.orb|.{17}\.orb)'
+    page = urllib2.urlopen(orbit_files_url)
     full_path=os.path.realpath(__file__)
     path, filename = os.path.split(full_path)
-    
     orbit_files_path = os.path.join(path, "orbitfiles")
-    
-    for o_file in orbit_file_names:
-        page = urllib2.urlopen(orbit_files_url+o_file)
-        with open(os.path.join(orbit_files_path,o_file), "wb") as code:
-            code.write(page.read())
-    
-    
+
+    for matching_pattern in re.findall(pattern, page.read()):
+        filename = "maven_orb_rec"+matching_pattern
+        print filename
+        o_file = urllib2.urlopen(orbit_files_url+filename)
+        with open(os.path.join(orbit_files_path,filename), "wb") as code:
+            code.write(o_file.read())
     return
 
 

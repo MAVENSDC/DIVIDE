@@ -1,11 +1,20 @@
 Current Version: 2016-02-04
 
 2016-02-04:
-	-IUVS KP Reader updates
+	-IUVS KP Reader updated to work with new IUVS KP data
 	-Many bug fixes with 3D vectors
-	-Added l1 and l3 science file downloaders
-	-Changed some of the keywords to improve consistency across functions
+	-Added l1 and l3 science file downloaders, (mvn_kp_download_l1_files and mvn_kp_download_l3_files)
 	-Text files are now default for downloading and reading procedures
+	-Changed some of the keywords to improve consistency across functions:
+		mvn_kp_read "/download_new" is now "/new_files" (check for and download new files)
+		mvn_kp_3d "field=" is now "parameter=" (initial Key parameter to be displayed)
+		mvn_kp_3d "/parameterplot" is now "/showplot" (turn on the plot window in the 3d viewer)
+		mvn_kp_altplot "oo=" is now "plot_object=" (name of plot window)
+		mvn_kp_plot "oo=" is now "plot_object=" (name of plot window)
+		mvn_kp_map2d "colors=" is now "color_table=" (sets the color of the 2d plot)
+		mvn_kp_read "/insitu_all" is now "/all_insitu" (makes reader read in all insitu data)
+		mvn_kp_read "/iuvs_all" is now "/all_iuvs" (makes reader read in all iuvs data)
+
 
 2015-12-10:
 	-Fixed bug reading in EUV data 

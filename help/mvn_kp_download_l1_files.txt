@@ -4,7 +4,7 @@
 
 
  :Description:
-     Download level 1 data files from the Maven SDC web service for any instrument. 
+     Download level 1 data files from the Maven SDC web service for any instrument.
 
 
  :Keywords:
@@ -12,8 +12,8 @@
        Scalar or array of instruments (three letter representations) of l1 data to download/list
        
     sublevel: in, required, type=string
-    	Level 1 files come in either 'a', 'b', or 'c'.  Specify which of these will be downloaded
-       
+       Level 1 files come in either 'a', 'b', or 'c'.  Specify which of these will be downloaded
+
     filenames: in, optional, type=string or strarr
        Scalar or array of filename strings to download. If used, /new_files keyword is ignored.
 
@@ -23,16 +23,16 @@
     new_files: in, optional, type=boolean
        Only download files you don't already have saved locally. This option is ignored if specific
        filenames are input via the filenames keyword.
-       
+
     start_date: in, optional, type=string
        Beginning of time range to search/download files. Format='YYYY-MM-DD'
 
     end_date: in, optional, type=string
        End of time range to search/download files. Format='YYYY-MM-DD'
-       
+
     update_prefs: in, optional, type=boolean
-       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which 
-       contains location of ROOT_DATA_DIR. After selecting new path to data folders, 
+       Before searching or downloading data, allow user to update mvn_toolkit_prefs.txt - which
+       contains location of ROOT_DATA_DIR. After selecting new path to data folders,
        search or download of data files will continue.
 
     only_update_prefs: in, optional, type=boolean
@@ -50,10 +50,10 @@
 
 
   Note- One can override the preferences file by setting the environment variable ROOT_DATA_DIR
- 
- 
+
+
    Directory structure that will be created under <root_data_dir>/ (user chooses top root_data_dir):
-   
+
    <root_data_dir>/maven/data/sci/
    |
    --sta/
