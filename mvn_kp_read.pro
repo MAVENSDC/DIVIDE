@@ -649,11 +649,8 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 
       if keyword_set(text_files) then begin
         if not keyword_set(insitu_only) then begin
-          ;print,'Removing iuvs_struct_init from mvn_kp_read
-;-km- Need to create the structure containing number of altitude levels
           date_path = mvn_kp_date_subdir(iuvs_filenames[0])
           mvn_kp_iuvs_nalt_struct,kp_iuvs_data_directory+date_path+iuvs_filenames[0], nalt_struct
-;-km- And pass that to the structure initialization routine
           MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments,$
                                    nalt_struct=nalt_struct
           iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))

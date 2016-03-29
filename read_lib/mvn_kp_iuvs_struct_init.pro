@@ -108,16 +108,11 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   
   ;INCLUDE IUVS LO RES HIGH ALITUDE CORONA DATA STRUCTURE
   if instruments.c_l_high then begin
-;-orig    if nalt_struct.c_l_high gt 0 then $
   if nalt_struct.c_l_high gt 0 then begin
       nalt = nalt_struct.c_l_high
   endif else begin
     nalt = 104
   endelse
-;print,nalt
-;    nalt = 120 ; this is number of altitude levels. 
-;               ; In future, either make code abel to check for this and adjust
-;               ; or get this info from the label.
 
     i6 = create_struct(                                                      $
 ;      NAME                   ='c_l_high',                                   $
@@ -126,8 +121,8 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
       'half_int_distance'    ,make_array(2,    /FLOAT, VALUE=!VALUES.F_NAN), $
       'half_int_distance_unc',make_array(2,    /FLOAT, VALUE=!VALUES.F_NAN), $
       'density_id'           ,strarr(2),                                     $
-      'density'            ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_unc'        ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'column_density'            ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'column_density_unc'        ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
       'density_sys_unc'    ,make_array(2,      /FLOAT, VALUE=!VALUES.F_NAN), $
       'radiance_id'        ,strarr(2),                                       $
       'radiance'           ,make_array(2,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
@@ -260,30 +255,36 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
   ;INCLUDE IUVS PERIAPSE DATA STRUCTURE
   if instruments.periapse then begin
 ;-orig    if nalt_struct.periapse gt 0 then $
-    if nalt_struct.periapse gt 0 then begin
-          nalt = nalt_struct.periapse
+    if nalt_struct.periapse_rad gt 0 then begin
+      nalt_rad = nalt_struct.periapse_rad
     endif else begin
-      nalt = 32
+      nalt_rad = 32
     endelse
-;    nalt = 32
-    i1 = create_struct(                                                    $
-;      NAME                ='periapse',                                     $
-      iuvs_record_common,                                                  $
-      'scale_height_id'  ,strarr(7),                                       $
-      'scale_height'     ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
-      'scale_height_unc' ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_id'       ,strarr(7),                                       $
-      'density'          ,make_array(7,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_unc'      ,make_array(7,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
-      'density_sys_unc'  ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_id'      ,strarr(11),                                      $
-      'radiance'         ,make_array(11,nalt,/FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_unc'     ,make_array(11,nalt,/FLOAT, VALUE=!VALUES.F_NAN), $
-      'radiance_sys_unc' ,make_array(11,     /FLOAT, VALUE=!VALUES.F_NAN), $
-      'temperature_id'   ,'',                                              $
-      'temperature'      ,!VALUES.F_NAN,                                   $
-      'temperature_unc'  ,!VALUES.F_NAN,                                   $
-      'alt'              ,make_array(nalt, /FLOAT, VALUE=!VALUES.F_NAN))
+    if nalt_struct.periapse_den gt 0 then begin
+      nalt_den = nalt_struct.periapse_den
+    endif else begin
+      nalt_den = 53
+    endelse
+    i1 = create_struct(                                                        $
+;      NAME                ='periapse',                                        $
+      iuvs_record_common,                                                      $
+      'n_alt_den_bins'   ,!VALUES.F_NAN,                                       $
+      'scale_height_id'  ,strarr(7),                                           $
+      'scale_height'     ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN),     $
+      'scale_height_unc' ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN),     $
+      'density_id'       ,strarr(7),                                           $
+      'density'          ,make_array(7,nalt_den, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_unc'      ,make_array(7,nalt_den, /FLOAT, VALUE=!VALUES.F_NAN), $
+      'density_sys_unc'  ,make_array(7,      /FLOAT, VALUE=!VALUES.F_NAN),     $
+      'radiance_id'      ,strarr(11),                                          $
+      'radiance'         ,make_array(11,nalt_rad,/FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_unc'     ,make_array(11,nalt_rad,/FLOAT, VALUE=!VALUES.F_NAN), $
+      'radiance_sys_unc' ,make_array(11,     /FLOAT, VALUE=!VALUES.F_NAN),     $
+      'temperature_id'   ,'',                                                  $
+      'temperature'      ,!VALUES.F_NAN,                                       $
+      'temperature_unc'  ,!VALUES.F_NAN,                                       $
+      'alt_rad'          ,make_array(nalt_rad, /FLOAT, VALUE=!VALUES.F_NAN),  $
+      'alt_den'          ,make_array(nalt_den, /FLOAT, VALUE=!VALUES.F_NAN))   
       
     iuvs_record_temp9 = create_struct(['periapse'],[i1,i1,i1],iuvs_record_temp8)
   endif else  iuvs_record_temp9 = create_struct(iuvs_record_temp8)
