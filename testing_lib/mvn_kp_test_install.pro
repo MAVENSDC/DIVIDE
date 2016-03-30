@@ -18,7 +18,7 @@ pro mvn_kp_test_install, test_number
   insitu_txt = test_file_directory+'mvn_kp_insitu_20150406_v02_r05.tab'  
 
   iuvs_cdf = test_file_directory+'mvn_kp_iuvs_00108_20141018T112856_v03_r01.cdf'
-  iuvs_txt = test_file_directory+'mvn_kp_iuvs_00108_20141018T112856_v03_r01.tab'
+  iuvs_txt = test_file_directory+'mvn_kp_iuvs_00108_20141018T112856_v04_r01.tab'
   ;SET ALL INSTRUMENT FLAGS TO 1 TO CREATE
   ;FULL STRUCTURE FOR ALL INSTRUMENT DATA
   instruments = CREATE_STRUCT('lpw',      1, 'euv',      1, 'static',   1, $
