@@ -11,6 +11,22 @@ function mvn_kp_iuvs_ascii_read_blanks, lun
   return, line
 end
 
+pro mvn_kp_iuvs_replace_NaNs, in_struct
+  for i=0, n_tags(in_struct)-1 do begin
+    if (size(in_struct.(i), /TYPE) ne 7) then begin
+      nan_locations = where(in_struct.(i) eq -9.9999990e+009)
+      if (n_elements(nan_locations) gt 1) then begin
+          in_struct.(i)(nan_locations) = !VALUES.F_NaN
+      endif
+      if (n_elements(nan_locations) eq 1) then begin
+        if (nan_locations ne -1) then begin
+          in_struct.(i)(nan_locations) = !VALUES.F_NaN
+        endif
+      endif
+    endif
+  endfor
+end
+
 
 pro mvn_kp_iuvs_ascii_common, lun, in_struct
 
@@ -572,15 +588,7 @@ end
 ;;
 ;;
 pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
-  
-  ;; First, read the provided file to determine the number of altitude bins
-  ;;  for each observation mode.
-  mvn_kp_iuvs_nalt_struct, filename, nalt_struct
-
-  ;; Init IUVS struct
-
-  MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct
- 
+   
   ;; Set for collecting orbit number later
   orbit_number = -1
   
@@ -603,6 +611,8 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
 ;        readf,lun,temp ; skip over the n_alt_bins info
         ;; Read in Periapse specific values
         mvn_kp_read_iuvs_ascii_periapse, lun, temp_periapse
+        mvn_kp_iuvs_replace_NaNs, temp_periapse
+        
         iuvs_record.periapse[periapse_i] = temp_periapse
         periapse_i++
         orbit_number = iuvs_record.periapse[0].orbit_number
@@ -617,7 +627,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in c_l_disk specific values
         mvn_kp_read_iuvs_ascii_c_l_disk, lun, temp_c_l_disk
-        
+        mvn_kp_iuvs_replace_NaNs, temp_c_l_disk
         iuvs_record.corona_lo_disk = temp_c_l_disk
         orbit_number = temp_c_l_disk.orbit_number
         continue
@@ -633,7 +643,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in c_l_limb specific values
         mvn_kp_read_iuvs_ascii_c_l_limb, lun, temp_c_l_limb
-        
+        mvn_kp_iuvs_replace_NaNs,temp_c_l_limb
         iuvs_record.corona_lo_limb = temp_c_l_limb
         orbit_number = temp_c_l_limb.orbit_number
         continue
@@ -649,6 +659,8 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in c_l_high specific values
         mvn_kp_read_iuvs_ascii_c_l_high, lun, temp_c_l_high
+        
+        mvn_kp_iuvs_replace_NaNs,temp_c_l_high
         iuvs_record.corona_lo_high = temp_c_l_high
         orbit_number = temp_c_l_high.orbit_number
         continue
@@ -664,6 +676,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         ;; Read in c_e_disk specific values
         mvn_kp_read_iuvs_ascii_c_e_disk, lun, temp_c_e_disk
         
+        mvn_kp_iuvs_replace_NaNs,temp_c_e_disk
         iuvs_record.corona_e_disk = temp_c_e_disk
         orbit_number = temp_c_e_disk.orbit_number
         continue
@@ -680,6 +693,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         ;; Read in c_e_limb specific values
         mvn_kp_read_iuvs_ascii_c_e_limb, lun, temp_c_e_limb
         
+        mvn_kp_iuvs_replace_NaNs,temp_c_e_limb
         iuvs_record.corona_e_limb = temp_c_e_limb
         orbit_number = temp_c_e_limb.orbit_number
         continue
@@ -695,7 +709,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in c_e_high specific values
         mvn_kp_read_iuvs_ascii_c_e_high, lun, temp_c_e_high
-        
+        mvn_kp_iuvs_replace_NaNs,temp_c_e_high
         iuvs_record.corona_e_high = temp_c_e_high
         orbit_number = temp_c_e_high.orbit_number
         continue
@@ -711,7 +725,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         
         ;; Read in apoapse specific values
         mvn_kp_read_iuvs_ascii_apoapse, lun, temp_apoapse
-        
+        mvn_kp_iuvs_replace_NaNs, temp_apoapse
         iuvs_record.apoapse = temp_apoapse
         orbit_number = temp_apoapse.orbit_number
         continue

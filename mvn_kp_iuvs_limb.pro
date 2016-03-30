@@ -135,10 +135,19 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   if( ~keyword_set(radiance) and ~keyword_set(density) and $
       ~keyword_set(rad_species) and ~keyword_set(den_species) )then begin
     print,"****ERROR****"
-    print,"At least one of '/radiance' or '/density', or a selection of "
+    print,"One of '/radiance' or '/density', or a selection of "
     print,"   'rad_species' or 'den_species' must be provided."
     print,"See users guide, and/or use the keyword '/help' " $
           + "for more information."
+    return
+  endif
+  
+  if( keyword_set(radiance) and keyword_set(density)) then begin
+    print,"****ERROR****"
+    print,"Select only one of '/radiance' or '/density', or "
+    print,"   'rad_species' or 'den_species'."
+    print,"See users guide, and/or use the keyword '/help' " $
+      + "for more information."
     return
   endif
     
@@ -254,17 +263,18 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   ; may want to call this numplots or something more descriptive...
   tot_species = profile_dimensions * species_dimensions
 
-  ;DEFINE THE ALTITUDE RANGE FOR THE KP DATA
-  altitude = kp_data[0].periapse[0].alt
-  nalt = n_elements(altitude) 
 
   ;EXTRACT THE DATA FROM THE STRUCTURE INTO TEMPORARY ARRAYS 
   ; TO FACILITATE THE PLOT PROCEDURE/FUNCTIN CALLS   
   if( keyword_set(radiance) )then begin
+    altitude = kp_data[0].periapse[0].alt_rad
+    nalt = n_elements(altitude)
     radiance_data = fltarr((n_elements(kp_data)),3,radiance_dimensions,nalt)
     radiance_error = fltarr((n_elements(kp_data)),3,radiance_dimensions,nalt)
   endif
   if( keyword_set(density) )then begin
+    altitude = kp_data[0].periapse[0].alt_den
+    nalt = n_elements(altitude)
     density_data = fltarr((n_elements(kp_data)),3,density_dimensions,nalt)
     density_error = fltarr((n_elements(kp_data)),3,density_dimensions,nalt)
   endif
@@ -284,16 +294,6 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
         endif
         if( keyword_set(density) )then begin
 
-;-hack
-;  HACK HACK HACK To test density plotting
-;  Just fill the arrays with radiance info
-;  This only works because Nden lt Nrad
-;
-;          density_data[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
-;                                  .radiance[(den_species-1),*]
-;          density_error[i,j,*,*] = 1e3*kp_data[i].periapse[j]$
-;                                   .radiance_unc[(den_species-1),*]
-;-\hack
           density_data[i,j,*,*] = kp_data[i].periapse[j]$
                                   .density[(den_species-1),*]
           density_error[i,j,*,*] = kp_data[i].periapse[j]$
@@ -498,7 +498,9 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
   if keyword_set(directgraphics) then begin
     ;  Call DG plotting routine
     mvn_kp_iuvs_limb_dg, kp_data, radiance_data=radiance_data, $
-                         density_data=density_data, altitude=altitude, $
+                         density_data=density_data, $
+                         altitude_density=altitude_density, $
+                         altitude_radiance=altitude_radiance, $
                          den_species=den_species, rad_species=rad_species, $
                          nolegend=nolegend, linear=linear, $
                          species_expand=species_expand, $
@@ -506,13 +508,21 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                          rad_linestyle=rad_linestyle, $
                          den_linestyle=den_linestyle, $
                          rad_thick=rad_thick, den_thick=den_thick, $
+                         profile_dimensions=profile_dimensions, $
                          profile_inclusion=profile_inclusion, $
                          profile_colors=profile_colors, window=window, $
-                         winX=winX, winY=winY, help=help
+                         winX=winX, winY=winY, rad_plot=keyword_set(radiance), $
+                         den_plot=keyword_set(density), $
+                         density_labels=density_labels, $
+                         radiance_label=radiance_labels, $
+                         profile_labels=profile_labels, $
+                         species_expand=species_expand, $
+                         profile_expand=profile_expand
    endif else begin
     ; call OO plotting routine
     mvn_kp_iuvs_limb_oo, kp_data=kp_data, species_data=species_data, $
-                         altitude=altitude, layout_vector=layout_vector, $
+                         altitude=altitude, $
+                         layout_vector=layout_vector, $
                          plot_name=plot_name, oplot_vector=oplot_vector, $
                          species_linestyle=species_linestyle, $
                          species_thick=species_thick, xlog=xlog, $
@@ -521,7 +531,12 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                          profile_dimensions=profile_dimensions, $
                          profile_inclusion=profile_inclusion, $
                          oo=oo, leg=leg, winx=winx, winy=winy, $
-                         nolegend=nolegend, _extra=e
+                         nolegend=nolegend, _extra=e, $
+                         density_labels=density_labels, $
+                         radiance_label=radiance_labels, $
+                         profile_labels=profile_labels, $
+                         species_expand=species_expand, $
+                         profile_expand=profile_expand
    endelse
 
 end

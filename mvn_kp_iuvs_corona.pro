@@ -660,9 +660,9 @@ print,data_choice
         lo_high_rad_alt[lo_high_total,*] $
           = kp_data[i].corona_lo_high.alt
         lo_high_density[lo_high_total,*,*] $
-          = kp_data[i].corona_lo_high.density
+          = kp_data[i].corona_lo_high.column_density
         lo_high_density_unc[lo_high_total,*,*] $
-          = kp_data[i].corona_lo_high.density_unc
+          = kp_data[i].corona_lo_high.column_density_unc
         lo_high_den_labels[lo_high_total,*] $
           = kp_data[i].corona_lo_high.density_id
         lo_high_half[lo_high_total,*] $
@@ -3157,7 +3157,7 @@ if( (disp_check[4] eq 1) and (disp_check[0] eq 0) and $
     endif              
 endif
 
-;****** PLOT ALL THE CORONAL LROES HIGH ALT PLOTS ******
+;****** PLOT ALL THE CORONAL LORES HIGH ALT PLOTS ******
 if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
     (disp_check[1] eq 0) and (disp_check[2] eq 0) and $
     (disp_check[3] eq 0) and (disp_check[4] eq 0) )then begin
@@ -3177,6 +3177,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
       plot,lo_high_radiance[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
            yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
+           xrange=[min(lo_high_radiance, /NAN),max(lo_high_radiance, /NAN)], $
            title='Lo-Res High: Radiance',$
            xtitle='Radiance', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
@@ -3191,6 +3192,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
       plot,lo_high_density[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
            yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
+           xrange=[min(lo_high_density, /NAN),max(lo_high_density, /NAN)], $
            title='Lo-Res High: Density',$
            xtitle='Density', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin
@@ -3205,6 +3207,7 @@ if( (disp_check[5] eq 1) and (disp_check[0] eq 0) and $
       plot,lo_high_half[0,0,*],lo_high_rad_alt[0,*],/nodata,$
            charsize=1.5,/ylog,ystyle=1,$
            yrange=[min(lo_high_rad_alt[0,*], /NAN),max(lo_high_rad_alt[0,*], /NAN)], $
+           xrange=[min(lo_high_half, /NAN),max(lo_high_half, /NAN)], $
            title='Lo_Res High: 1/2 Int Dist',$
            xtitle='1/2 Dist', ytitle='Altitude, km'
       for i=0, lo_high_total -1 do begin

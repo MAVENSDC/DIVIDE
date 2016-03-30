@@ -649,10 +649,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 
       if keyword_set(text_files) then begin
         if not keyword_set(insitu_only) then begin
-          date_path = mvn_kp_date_subdir(iuvs_filenames[0])
-          mvn_kp_iuvs_nalt_struct,kp_iuvs_data_directory+date_path+iuvs_filenames[0], nalt_struct
-          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments,$
-                                   nalt_struct=nalt_struct
+          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
           iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
           one_temp = iuvs_record ; testing debug 
         endif
@@ -664,7 +661,10 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
           date_path = mvn_kp_date_subdir(iuvs_filenames[file])
           fileAndPath = kp_iuvs_data_directory + date_path $
                       + iuvs_filenames[file]
-
+          
+          ;Reset IUVS Struct
+          MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+          
           MVN_KP_READ_IUVS_FILE, fileAndPath, iuvs_record, $
                                  begin_time=begin_time_struct, $
                                  end_time=end_time_struct, $

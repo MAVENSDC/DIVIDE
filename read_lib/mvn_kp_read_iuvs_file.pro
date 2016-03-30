@@ -323,9 +323,6 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
 
     ;; Call IUVS ASCII reader to read one iuvs file in ascii format
     MVN_KP_READ_IUVS_ASCII, filename, iuvs_record
-;-km This can surely be done more efficiently
-;-km creating altitude structure from the current filename
-    mvn_kp_iuvs_nalt_struct, filename, nalt_struct
     ;; If timebounds or instrument array - FIXME 
     if time_bounds then begin
       mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, $

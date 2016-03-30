@@ -60,7 +60,9 @@
 ; :Version:   1.0   July 8, 2014
 ;-
 pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
-                         density_data=density_data, altitude=altitude, $
+                         density_data=density_data, $
+                         altitude_density=altitude_density, $
+                         altitude_radiance=altitude_radiance, $
                          den_species=den_species, rad_species=rad_species, $
                          nolegend=nolegend, linear=linear, $
                          species_expand=species_expand, $
@@ -68,9 +70,13 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                          rad_linestyle=rad_linestyle, $
                          den_linestyle=den_linestyle, $
                          rad_thick=rad_thick, den_thick=den_thick, $
+                         profile_dimensions=profile_dimensions, $
                          profile_inclusion=profile_inclusion, $
                          profile_colors=profile_colors, window=window, $
-                         winX=winX, winY=winY
+                         winX=winX, winY=winY, rad_plot=rad_plot, $
+                         den_plot=den_plot, density_labels=density_labels, $
+                         radiance_label=radiance_labels, $
+                         profile_labels=profile_labels
 
   ;SET WINDOW NUMBERS FOR PLOTS, IF FLAG IS SET
     if keyword_set(window) then begin
@@ -118,7 +124,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
          ; DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES,
          ; AND PROFILES ON A SINGLE PLOT
          ;
-          plot,radiance_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
+          plot,radiance_data[0,0,0,*],altitude_radiance,thick=2,xlog=log_option,$
                charsize=2,yrange=[100,220],$
                ytitle='Altitude, km',/nodata,ymargin=y_label_margin
           check_index = 0
@@ -127,7 +133,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
               if kp_data[i].periapse[j].time_start ne '' then begin
                 if profile_inclusion[check_index] eq 1 then begin
                   for k=0,n_elements(rad_species)-1 do begin
-                    oplot,radiance_data[i,j,k,*],altitude,$
+                    oplot,radiance_data[i,j,k,*],altitude_radiance,$
                           thick=rad_thick[k],$
                           linestyle=rad_linestyle[k],$
                           color=profile_colors[(i*3)+j]
@@ -146,14 +152,14 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
           ;
            for i=0,n_elements(rad_species)-1 do begin
               check_index = 0
-              plot,radiance_data[0,0,i,*],altitude,title=radiance_labels[i],$
+              plot,radiance_data[0,0,i,*],altitude_radiance,title=radiance_labels[i],$
                    thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
                    ytitle='Altitude, km',/nodata,ymargin=y_label_margin
               for j=0,n_elements(kp_data)-1 do begin
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin        
-                      oplot,radiance_data[j,k,i,*],altitude,$
+                      oplot,radiance_data[j,k,i,*],altitude_radiance,$
                             thick=rad_thick[i],$
                             color=profile_colors[(j*3)+k]
                     endif
@@ -175,7 +181,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
               for j=0,2 do begin
                 if kp_data[i].periapse[j].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
-                    plot,radiance_data[i,j,0,*],altitude,thick=2,$
+                    plot,radiance_data[i,j,0,*],altitude_radiance,thick=2,$
                          xlog=log_option,charsize=1.5,yrange=[100,220],$
                          ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
                          title=profile_labels[check_index]
@@ -183,7 +189,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                     ; profile_labels[check_index],/normal,charsize=1.5
                     label_index = label_index + 1
                     for k=0,n_elements(rad_species)-1 do begin
-                      oplot,radiance_data[i,j,k,*],altitude, $
+                      oplot,radiance_data[i,j,k,*],altitude_radiance, $
                             thick=rad_thick[k], $
                             linestyle=rad_linestyle[k]
                     endfor
@@ -206,7 +212,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin
-                       plot,radiance_data[j,k,i,*],altitude,$
+                       plot,radiance_data[j,k,i,*],altitude_radiance,$
                             thick=rad_thick[i],$
                             xlog=log_option,charsize=1.5,yrange=[100,220],$
                             ytitle='Altitude, km',ymargin=y_label_margin,$
@@ -234,7 +240,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
             (keyword_set(profile_expand) eq 0) then begin
            ;DEFAULT PLOTTING OF ALL PERIAPSE SCANS, SPECIES,
            ;AND PROFILES ON ONE PLOT
-            plot,density_data[0,0,0,*],altitude,thick=2,xlog=log_option,$
+            plot,density_data[0,0,0,*],altitude_density,thick=2,xlog=log_option,$
                  charsize=2,yrange=[100,200],$
                  ytitle='Altitude,km',/nodata,ymargin =y_label_margin
             check_index = 0
@@ -243,7 +249,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                  if kp_data[i].periapse[j].time_start ne '' then begin
                    if profile_inclusion[check_index] eq 1 then begin
                      for k=0,n_elements(den_species)-1 do begin
-                       oplot,density_data[i,j,k,*],altitude,thick=2,$
+                       oplot,density_data[i,j,k,*],altitude_density,thick=2,$
                              linestyle=den_linestyle[k],$
                              color=profile_colors[(i*3)+j]
                      endfor
@@ -261,14 +267,14 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
            ;
             for i=0,n_elements(den_species)-1 do begin
                check_index = 0
-               plot,density_data[0,0,i,*],altitude,title=density_labels[i],$
+               plot,density_data[0,0,i,*],altitude_density,title=density_labels[i],$
                  thick=2,xlog=log_option,charsize=1.5,yrange=[100,220],$
                  ytitle='Altitude, km',/nodata,ymargin=y_label_margin
                for j=0,n_elements(kp_data)-1 do begin
                  for k=0,2 do begin
                    if kp_data[j].periapse[k].time_start ne '' then begin
                      if profile_inclusion[check_index] eq 1 then begin
-                       oplot,density_data[j,k,i,*],altitude,thick=2,$
+                       oplot,density_data[j,k,i,*],altitude_density,thick=2,$
                          color=profile_colors[(j*3)+k]
                      endif
                      check_index = check_index + 1
@@ -289,13 +295,13 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
               for j=0,2 do begin
                 if kp_data[i].periapse[j].time_start ne '' then begin
                   if profile_inclusion[check_index] eq 1 then begin
-                    plot,density_data[i,j,0,*],altitude,thick=2,$
+                    plot,density_data[i,j,0,*],altitude_density,thick=2,$
                          xlog=log_option,charsize=1.5,yrange=[100,220],$
                          ytitle='Altitude, km',/nodata,ymargin=y_label_margin, $
                          title=profile_labels[check_index]
                     label_index = label_index + 1
                     for k=0,n_elements(den_species)-1 do begin
-                      oplot,density_data[i,j,k,*],altitude,thick=2,$
+                      oplot,density_data[i,j,k,*],altitude_density,thick=2,$
                             linestyle=den_linestyle[k]
                     endfor
                   endif
@@ -319,7 +325,7 @@ pro MVN_KP_IUVS_LIMB_DG, kp_data, radiance_data=radiance_data, $
                 for k=0,2 do begin
                   if kp_data[j].periapse[k].time_start ne '' then begin
                     if profile_inclusion[check_index] eq 1 then begin
-                       plot,density_data[j,k,i,*],altitude,thick=2,$
+                       plot,density_data[j,k,i,*],altitude_density,thick=2,$
                             xlog=log_option,charsize=1.5,yrange=[100,220],$
                             ytitle='Altitude, km',ymargin=y_label_margin,$
                             title= density_labels[i] +':  '$

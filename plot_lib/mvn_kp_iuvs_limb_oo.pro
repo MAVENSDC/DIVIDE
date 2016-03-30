@@ -69,7 +69,12 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
                          profile_dimensions=profile_dimensions, $
                          profile_inclusion=profile_inclusion, $
                          oo=oo, leg=leg, winx=winx, winy=winy, $
-                         nolegend=nolegend, _extra=e
+                         nolegend=nolegend, _extra=e, $
+                         density_labels=density_labels, $
+                         radiance_label=radiance_labels, $
+                         profile_labels=profile_labels, $
+                         species_expand=species_expand, $
+                         profile_expand=profile_expand
 
   tot_species = profile_dimensions * species_dimensions
 
@@ -88,20 +93,7 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
   ;MARGINS 
   p_margin = replicate(0.1,4)   ; Set Default for OO graphics
   if keyword_set(species_expand) then begin
-    if keyword_set(directgraphics) then begin
-      y_label_margin = [5,10]
-    endif else begin
       p_margin[3] = 0.125      ; top margin
-;      p_margin[1] = 0.1 ; bot margin
-    endelse
-  endif
-  if keyword_set(profile_expand) then begin
-    if keyword_set(directgraphics) then begin
-      x_label_margin = [15,5]
-    endif else begin
-;      p_margin[0] = 0.1; left margin
-;      p_margin[2] = 0.1; right margin
-    endelse
   endif
 
   ;
@@ -114,6 +106,7 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
 ;  help,color_vector
 ;stop
   include = where(profile_inclusion eq 1)
+  
   plot1=[]
   for ispec = 0,species_dimensions-1 do begin
     k = ispec
@@ -159,20 +152,6 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
       leg1[i].hide = hide_vector[i]  ; HIDE REDUNDANT LABELS
     endfor
   endif 
-
-  ;IF BOTH RADIANCE AND DENSITY ARE BEING PLOTTED,
-  ;DRAW A VERTICAL LINE TO SEPARATE THE TWO SIDES OF THE PLOT
-
-  ;MID-PLOT LINE IF BOTH RADIANCE AND DENSITY IS INCLUDED
-  if keyword_set(species_expand) then begin
-    line_marker = 1.*radiance_dimensions / species_dimensions
-
-    if rad_plot eq 1 and den_plot eq 1 then begin
-      line1 = polyline( [line_marker,line_marker], [0,1], $
-                        /normal, thick=3, linestyle=1, $
-                        target=plot1 )
-    endif
-  endif
 
   ;ADD OVERALL LABELS 
     
