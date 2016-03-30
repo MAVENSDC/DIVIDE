@@ -197,7 +197,7 @@ endif
           'radiance_id'            ,strarr(3),                               $ 
           'radiance', make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN),       $ 
           'radiance_unc', make_array(3,nalt, /FLOAT, VALUE=!VALUES.F_NAN),   $ 
-          'alt', make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN))            $
+          'alt', make_array(nalt,   /FLOAT, VALUE=!VALUES.F_NAN))           
     
              iuvs_record_temp6 = create_struct(['corona_e_high'],i3,$
                                                iuvs_record_temp5)
