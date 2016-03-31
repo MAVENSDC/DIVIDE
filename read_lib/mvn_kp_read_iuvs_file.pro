@@ -322,7 +322,7 @@ pro mvn_kp_read_iuvs_file, filename, iuvs_record, begin_time=begin_time, $
     ;READ IUVS DATA FROM ASCII FILES
 
     ;; Call IUVS ASCII reader to read one iuvs file in ascii format
-    MVN_KP_READ_IUVS_ASCII, filename, iuvs_record
+    MVN_KP_READ_IUVS_ASCII, filename, iuvs_record, instruments
     ;; If timebounds or instrument array - FIXME 
     if time_bounds then begin
       mvn_kp_read_iuvs_return_substruct, iuvs_record, begin_time, $

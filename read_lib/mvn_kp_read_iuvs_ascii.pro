@@ -587,7 +587,7 @@ end
 ;;
 ;;
 ;;
-pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
+pro mvn_kp_read_iuvs_ascii, filename, iuvs_record, instruments
    
   ;; Set for collecting orbit number later
   orbit_number = -1
@@ -604,7 +604,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
 
     if(line[0] eq 'OBSERVATION_MODE') then begin
       ;; ======== If periapse mode ====================
-      if(line[2] eq 'PERIAPSE') then begin
+      if(line[2] eq 'PERIAPSE' && instruments.periapse) then begin
         temp_periapse = iuvs_record.periapse[periapse_i]
         ;; Read in common values
         mvn_kp_iuvs_ascii_common, lun, temp_periapse
@@ -619,7 +619,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
         continue
       endif
       ;; ======== If corona lores disk mode ===========
-      if(line[2] eq 'CORONA_LORES_DISK') then begin
+      if(line[2] eq 'CORONA_LORES_DISK' && instruments.c_l_disk) then begin
         temp_c_l_disk = iuvs_record.corona_lo_disk
         
         ;; Read in common values
@@ -634,7 +634,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       endif
       
       ;; ======== If corona lores limb mode ===========
-      if(line[2] eq 'CORONA_LORES_LIMB') then begin
+      if(line[2] eq 'CORONA_LORES_LIMB' && instruments.c_l_limb) then begin
         temp_c_l_limb = iuvs_record.corona_lo_limb
         
         ;; Read in common values
@@ -650,7 +650,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       endif
       
       ;; ======== If corona lores high mode ===========
-      if(line[2] eq 'CORONA_LORES_HIGH') then begin
+      if(line[2] eq 'CORONA_LORES_HIGH' && instruments.c_l_high) then begin
         temp_c_l_high = iuvs_record.corona_lo_high
         
         ;; Read in common values
@@ -667,7 +667,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       endif
       
       ;; ======== If corona echelle disk mode ===========
-      if(line[2] eq 'CORONA_ECHELLE_DISK') then begin
+      if(line[2] eq 'CORONA_ECHELLE_DISK' && instruments.c_e_disk) then begin
         temp_c_e_disk = iuvs_record.corona_e_disk
         
         ;; Read in common values
@@ -683,7 +683,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       endif
       
       ;; ======== If conona echelle limb mode ===========
-      if(line[2] eq 'CORONA_ECHELLE_LIMB') then begin
+      if(line[2] eq 'CORONA_ECHELLE_LIMB' && instruments.c_e_limb) then begin
         temp_c_e_limb = iuvs_record.corona_e_limb
         
         ;; Read in common values
@@ -700,7 +700,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       endif
       
       ;; ======== If corona echelle high mode ===========
-      if(line[2] eq 'CORONA_ECHELLE_HIGH') then begin
+      if(line[2] eq 'CORONA_ECHELLE_HIGH' && instruments.c_e_high) then begin
         temp_c_e_high = iuvs_record.corona_e_high
         
         ;; Read in common values
@@ -717,7 +717,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record
       
       
       ;; ======== If apoapse mode =====================
-      if(line[2] eq 'APOAPSE') then begin
+      if(line[2] eq 'APOAPSE' && instruments.apoapse) then begin
         temp_apoapse = iuvs_record.apoapse
         
         ;; Read in common values
