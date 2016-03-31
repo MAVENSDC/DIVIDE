@@ -1,4 +1,7 @@
-Current Version: 2016-02-04
+Current Version: 2016-03-31
+
+2016-03-31:
+	-IUVS KP Reader Updated to work with new IUVS KP data
 
 2016-02-04:
 	-IUVS KP Reader updated to work with new IUVS KP data
