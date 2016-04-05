@@ -105,8 +105,8 @@ def mvn_kp_download_sci_files(filenames=None,
     utils.display_progress(i, len(s))
     for f in s:
         i = i+1
-        utils.create_dir_if_needed(f, data_dir, level)
-        utils.get_file_from_site(f, public, data_dir)
+        full_path = utils.create_dir_if_needed(f, data_dir, level)
+        utils.get_file_from_site(f, public, full_path)
         utils.display_progress(i, len(s))
     
      

@@ -13,7 +13,7 @@ def mvn_kp_download_files(filenames=None,
                           cdf_files=False, 
                           new_files=False, 
                           start_date='2014-09-01', 
-                          end_date='2015-08-15', 
+                          end_date='2015-11-15', 
                           update_prefs=False,
                           only_update_prefs=False, 
                           exclude_orbit_file=False,
@@ -130,8 +130,8 @@ def mvn_kp_download_files(filenames=None,
     utils.display_progress(i, len(s))
     for f in s:
         i = i+1
-        utils.create_dir_if_needed(f, data_dir, level)
-        utils.get_file_from_site(f, public, data_dir)
+        full_path = utils.create_dir_if_needed(f, data_dir, level)
+        utils.get_file_from_site(f, public, full_path)
         utils.display_progress(i, len(s))
     
      

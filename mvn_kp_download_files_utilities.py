@@ -143,7 +143,9 @@ def create_dir_if_needed(f, data_dir, level):
     if not os.path.exists(os.path.join(data_dir, year, month)):
         os.makedirs(os.path.join(data_dir, year, month))
 
-    return
+    full_path = os.path.join(data_dir, year, month)
+
+    return full_path
 
 def get_year_month_day_from_kp_file(f):
     
