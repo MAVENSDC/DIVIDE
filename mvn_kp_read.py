@@ -1,3 +1,4 @@
+import os
 from mvn_kp_utilities import param_list_sav
 from mvn_kp_utilities import param_list
 from mvn_kp_utilities import param_range
@@ -7,9 +8,12 @@ from mvn_kp_utilities import make_time_labels
 from mvn_kp_utilities import get_inst_obs_labels
 from mvn_kp_utilities import find_param_from_index
 from mvn_kp_utilities import remove_inst_tag
+from mvn_kp_utilities import kp_regex
+from mvn_kp_utilities import get_latest_file_from_date
+import mvn_kp_download_files_utilities as utils
 
 
-def mvn_kp_read( filename, instruments = None, time=None ):
+def mvn_kp_read(input_time, instruments = None):
     '''
     Read in a given filename in situ file into a dictionary object
     Optional keywords maybe used to downselect instruments returned
@@ -37,7 +41,12 @@ def mvn_kp_read( filename, instruments = None, time=None ):
     import time
     from datetime import datetime
 
-    # Determine number of header lines
+    # Get the file name from the date
+    year, month, day = input_time.split('-')
+    filename = get_latest_file_from_date(year, month, day)
+    
+    
+    # Determine number of header lines    
     nheader = 0
     for line in open(filename):
         if line.startswith('#'):
@@ -225,5 +234,5 @@ def mvn_kp_read( filename, instruments = None, time=None ):
                  LPW, EUV, SWEA, SWIA, STATIC, 
                  SEP, MAG, NGIMS, APP, SPACECRAFT]
     # return a dictionary made from tag_names and data_tags
-    return ( dict( zip( tag_names, data_tags ) ), 
-             dict( zip( tag_names, unit ) ) )
+    return ( dict( zip( tag_names, data_tags ) ) )#, 
+             #dict( zip( tag_names, unit ) ) )

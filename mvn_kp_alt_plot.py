@@ -117,3 +117,5 @@ def mvn_kp_alt_plot( kp, parameter=None, time=None, errors=None,
 
     # Increment plot number 
         iplot = iplot + 1
+        
+        plt.show()

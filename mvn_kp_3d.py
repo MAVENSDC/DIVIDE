@@ -14,9 +14,11 @@ import math
 import os
 import csv
 import wx
+import numpy
+from math import log
 
 
-def mvn_kp_3d():
+def mvn_kp_3d(kp):
     
 ##### #Buttons event handlers #################################################
     def axes_display(evt):
@@ -49,6 +51,48 @@ def mvn_kp_3d():
             for curve in curve_list:
                 curve.visible = False
     
+    def color_display(evt):
+        #Get colors from data
+        if evt.Checked():
+            point_red=[]
+            point_green=[]
+            point_blue=[]
+            mag_x_no_nans = []
+            for value in mag_x:
+                value = abs(value)
+                mag_x_no_nans.append(0.001) if math.isnan(value) else mag_x_no_nans.append(value)
+            mag_x_log = [log(num+1, 3) for num in mag_x_no_nans]
+            min = numpy.nanmin(mag_x_log)
+            max = numpy.nanmax(mag_x_log)
+            for point in mag_x_log:
+                if math.isnan(point):
+                    point = 0
+                point_red.append(1-((point-min)*(1/max)))  
+                point_green.append(1-((point-min)*(1/max)))
+                #point_blue.append(1-((point-min)*(1/max)))                       
+            spacecraft_position.set_red(point_red)
+            spacecraft_position.set_green(point_green)
+            #spacecraft_position.set_blue(point_blue)
+        else:
+            point_red=[]
+            point_green=[]
+            point_blue=[]
+            mag_x_no_nans = []
+            for value in mag_x:
+                value = abs(value)
+                mag_x_no_nans.append(0.001) if math.isnan(value) else mag_x_no_nans.append(value)
+            mag_x_log = [log(num+1, 3) for num in mag_x_no_nans]
+            min = numpy.nanmin(mag_x_log)
+            max = numpy.nanmax(mag_x_log)
+            for point in mag_x_log:
+                if math.isnan(point):
+                    point = 0
+                point_red.append(1)  
+                point_green.append(1)
+                point_blue.append(1)                       
+            spacecraft_position.set_red(point_red)
+            spacecraft_position.set_green(point_green)
+            spacecraft_position.set_blue(point_blue)
         
     def setTime(evt):
         value = s1.GetValue()
@@ -67,7 +111,7 @@ def mvn_kp_3d():
 
 ###############################################################################
 
-    spacecraft_x = kp['SPACECRAFT']['GEO X']
+    spacecraft_x = []
     spacecraft_y = []
     spacecraft_z = []
     mag_x = []
@@ -75,7 +119,21 @@ def mvn_kp_3d():
     mag_z = []
     solar_lon = []
     solar_lat = []
-    hplus_temp = []
+    flux = []
+    
+    #Fill in relevant arrays
+    index = 0
+    for i in kp['TimeString']:
+        spacecraft_x.append(kp['SPACECRAFT']['GEO X'][index]/3390)
+        spacecraft_y.append(kp['SPACECRAFT']['GEO Y'][index]/3390)
+        spacecraft_z.append(kp['SPACECRAFT']['GEO Z'][index]/3390)
+        mag_x.append(kp['MAG']['Magnetic Field GEO X'][index]/100)
+        mag_y.append(kp['MAG']['Magnetic Field GEO Y'][index]/100)
+        mag_z.append(kp['MAG']['Magnetic Field GEO Z'][index]/100)
+        solar_lon.append(kp['SPACECRAFT']['Subsolar Point GEO Longitude'][index])
+        solar_lat.append(kp['SPACECRAFT']['Subsolar Point GEO Latitude'][index])
+        flux.append(kp['SWEA']['Flux, e- Parallel (5-100 ev)'][index])
+        index = index+1
 
     
     #Get the Mars Texture
@@ -116,6 +174,8 @@ def mvn_kp_3d():
     wx.StaticText(p,label="Data Options", pos=(650,125))
     mag_disp = wx.ToggleButton(p, label='Display Mag', pos=(650, 150))
     mag_disp.Bind(wx.EVT_TOGGLEBUTTON, mag_vector_display)
+    color_disp = wx.ToggleButton(p, label='Display Color', pos=(800, 150))
+    color_disp.Bind(wx.EVT_TOGGLEBUTTON, color_display)
     
     
     #Set up Radio Buttons
@@ -139,7 +199,7 @@ def mvn_kp_3d():
     geo_y_axis = arrow(pos=vector(0,0,0), axis=vector(0,3,0), color=color.white, shaftwidth=0.03, headwidth=.06, opacity = 0)
     geo_z_axis = arrow(pos=vector(0,0,0), axis=vector(0,0,3), color=color.white, shaftwidth=0.03, headwidth=.06, opacity = 0)
     sun = distant_light(direction=(math.cos(solar_lon[0]*math.pi/180), math.sin(solar_lon[0]*math.pi/180), math.sin(solar_lat[0]*math.pi/180)), color=color.white)
-    spacecraft_position=curve(x=spacecraft_x, y=spacecraft_y, z=spacecraft_z)
+    spacecraft_position=curve(x=spacecraft_x, y=spacecraft_y, z=spacecraft_z, radius = .02)
     x_label = label(pos=(3.1,0,0), text='x', visible=False)
     y_label = label(pos=(0,3.1,0), text='y', visible=False)
     z_label = label(pos=(0,0,3.1), text='z', visible=False)

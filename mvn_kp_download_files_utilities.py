@@ -93,8 +93,10 @@ def get_root_data_dir():
     f = open(os.path.join(path, 'mvn_toolkit_prefs.txt'), 'r')
     f.readline()
     s = f.readline().rstrip()
+    #Get rid of first space
     s = s.split(' ')
-    return s[1]
+    nothing = ' '
+    return nothing.join(s[1:])
 
         
 def set_root_data_dir():

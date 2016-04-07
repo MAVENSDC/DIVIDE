@@ -1,3 +1,7 @@
+import re
+import os
+import mvn_kp_download_files_utilities as utils
+
 def param_list_sav( kp ):
     '''
     Return a listing of all parameters present in the given 
@@ -469,3 +473,48 @@ def remove_inst_tag(df):
             newcol.append('.'.join(j[1:]))
 
     return newcol
+
+def get_latest_file_from_date(year, month ,day):
+    mvn_root_data_dir = utils.get_root_data_dir()
+    maven_data_dir = os.path.join(mvn_root_data_dir,'maven','data','sci','kp', 'insitu') 
+    full_path = os.path.join(maven_data_dir,year,month) 
+    
+    version = 0
+    revision = 0
+    for f in os.listdir(full_path):
+        if kp_regex.match(f).group('day') == day:
+            v = kp_regex.match(f).group('version')
+            if v > version:
+                version = v
+    for f in os.listdir(full_path):
+        if kp_regex.match(f).group('day') == day and kp_regex.match(f).group('version') == version:
+            r = kp_regex.match(f).group('revision')
+            if r > revision:
+                revision = r
+                
+    seq = ('mvn','kp','insitu',year+month+day,'v'+version,'r'+revision+'.tab')
+    return os.path.join(full_path, '_'.join(seq))
+
+# kp pattern
+kp_pattern = (r'^mvn_(?P<{0}>kp)_'
+              '(?P<{1}>insitu|iuvs)'
+              '(?P<{2}>|_[a-zA-Z0-9\-]+)_'
+              '(?P<{3}>[0-9]{{4}})'
+              '(?P<{4}>[0-9]{{2}})'
+              '(?P<{5}>[0-9]{{2}})'
+              '(?P<{6}>|[t|T][0-9]{{6}})_'
+              'v(?P<{7}>[0-9]+)_r(?P<{8}>[0-9]+)\.'
+              '(?P<{9}>tab)'
+              '(?P<{10}>\.gz)*').format('instrument',
+                                        'level',
+                                        'description',
+                                        'year',
+                                        'month',
+                                        'day',
+                                        'time',
+                                        'version',
+                                        'revision',
+                                        'extension',
+                                        'gz')
+
+kp_regex = re.compile(kp_pattern)
