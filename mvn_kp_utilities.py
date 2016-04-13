@@ -474,26 +474,135 @@ def remove_inst_tag(df):
 
     return newcol
 
-def get_latest_file_from_date(year, month ,day):
+def get_latest_files_from_date_range(date1, date2):
+    from datetime import datetime, timedelta
+    from dateutil.parser import parse
+    
     mvn_root_data_dir = utils.get_root_data_dir()
     maven_data_dir = os.path.join(mvn_root_data_dir,'maven','data','sci','kp', 'insitu') 
-    full_path = os.path.join(maven_data_dir,year,month) 
     
-    version = 0
-    revision = 0
-    for f in os.listdir(full_path):
-        if kp_regex.match(f).group('day') == day:
-            v = kp_regex.match(f).group('version')
-            if v > version:
-                version = v
-    for f in os.listdir(full_path):
-        if kp_regex.match(f).group('day') == day and kp_regex.match(f).group('version') == version:
-            r = kp_regex.match(f).group('revision')
-            if r > revision:
-                revision = r
-                
-    seq = ('mvn','kp','insitu',year+month+day,'v'+version,'r'+revision+'.tab')
-    return os.path.join(full_path, '_'.join(seq))
+    time_spanned = date2 - date1
+    num_days = time_spanned.days + 1
+    filenames = []
+    
+    for i in range(num_days):
+        current_date = date1 + timedelta(days=i)
+        year = str(current_date.year)
+        month = str('%02d' % current_date.month)
+        day = str('%02d' % current_date.day)
+        full_path = os.path.join(maven_data_dir,year,month) 
+        version = 0
+        revision = 0
+        for f in os.listdir(full_path):
+            if kp_regex.match(f).group('day') == day:
+                v = kp_regex.match(f).group('version')
+                if v > version:
+                    version = v
+        for f in os.listdir(full_path):
+            if kp_regex.match(f).group('day') == day and kp_regex.match(f).group('version') == version:
+                r = kp_regex.match(f).group('revision')
+                if r > revision:
+                    revision = r
+                    
+        seq = ('mvn','kp','insitu',year+month+day,'v'+version,'r'+revision+'.tab')
+        filenames.append(os.path.join(full_path, '_'.join(seq)))
+        
+    return filenames
+
+def get_header_info(filename):
+        # Determine number of header lines    
+        nheader = 0
+        for line in open(filename):
+            if line.startswith('#'):
+                nheader = nheader+1
+    
+        #
+        # Parse the header (still needs special case work)
+        #
+        ReadParamList = False
+        index_list = []
+        fin = open(filename)
+        icol = -2 # Counting header lines detailing column names
+        iname = 1 # for counting seven lines with name info
+        ncol = -1 # Dummy value to allow reading of early headerlines?
+        col_regex = '#\s(.{16}){%3d}' % ncol # needed for column names
+        for iline in range(nheader):
+            line = fin.readline()
+            if re.search('Number of parameter columns',line): 
+                ncol = int(re.split("\s{3}",line)[1])
+                col_regex = '#\s(.{16}){%3d}' % ncol # needed for column names
+            elif re.search('Line on which data begins',line): 
+                nhead_test = int(re.split("\s{3}",line)[1])-1
+            elif re.search('Number of lines',line): 
+                ndata = int(re.split("\s{3}",line)[1])
+            elif re.search('PARAMETER',line):
+                ReadParamList = True
+                ParamHead = iline
+            elif ReadParamList:
+                icol = icol + 1
+                if icol > ncol: ReadParamList = False
+            elif re.match(col_regex,line):
+                # OK, verified match now get the values
+                temp = re.findall('(.{16})',line[3:])
+                if iname == 1: index = temp
+                elif iname == 2: obs1 = temp
+                elif iname == 3: obs2 = temp
+                elif iname == 4: obs3 = temp
+                elif iname == 5: inst = temp
+                elif iname == 6: unit = temp
+                elif iname == 7: FormatCode = temp
+                else: 
+                    print 'More lines in data descriptor than expected.'
+                    print 'Line %d' % iline
+                iname = iname + 1
+            else:
+                pass
+    
+        #
+        # Generate the names list.
+        # NB, there are special case redundancies in there
+        # (e.g., LPW: Electron Density Quality (min and max))
+        # ****SWEA FLUX electron QUALITY *****
+        #
+        First = True
+        Parallel = None
+        names = []
+        for h,i,j,k in zip(inst,obs1,obs2,obs3):
+            combo_name = (' '.join([i.strip(),j.strip(),k.strip()])).strip()
+            if re.match('^LPW$',h.strip()):
+            # Max and min error bars use same name in column
+            # SIS says first entry is min and second is max
+                if re.match('(Electron|Spacecraft)(.+)Quality', combo_name):
+                    if First:
+                        combo_name = combo_name + ' Min'
+                        First = False
+                    else:
+                        combo_name = combo_name + ' Max'
+                        First = True
+            elif re.match('^SWEA$',h.strip()):
+            # electron flux qual flags do not indicate whether parallel or anti
+            # From context it is clear; but we need to specify in name
+                if re.match('.+Parallel.+',combo_name): Parallel = True
+                elif re.match('.+Anti-par',combo_name): Parallel = False
+                else: pass
+                if re.match('Flux, e-(.+)Quality', combo_name ):
+                    if Parallel: 
+                        p = re.compile( 'Flux, e- ' )
+                        combo_name = p.sub('Flux, e- Parallel ',combo_name)
+                    else:
+                        p = re.compile( 'Flux, e- ' )
+                        combo_name = p.sub('Flux, e- Anti-par ',combo_name)
+            # Add inst to names to avoid ambiguity
+            # Will need to remove these after splitting
+            names.append('.'.join([h.strip(),combo_name]))
+            names[0] = 'Time'
+    
+        #
+        # Now close the file and read the data section into a temporary DataFrame
+        #
+        fin.close()
+        return names, inst
+
 
 # kp pattern
 kp_pattern = (r'^mvn_(?P<{0}>kp)_'

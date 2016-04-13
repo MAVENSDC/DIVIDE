@@ -84,8 +84,6 @@ def mvn_kp_plot( kp, parameter=None, time=None, errors=None,
     iplot = 1 # subplot indexes on 1
     for inst,obs in inst_obs:
     # First, generate the dependent array from data
-        print inst
-        print obs
         y = kp[inst][obs]
 
     # Generate the plot
