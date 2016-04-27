@@ -126,6 +126,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
 
   if keyword_set(mins) ne 1 then begin
     mins = dblarr(total_fields)
+    mins[where(mins eq 0)] = !Values.F_NAN
     for i=0,total_fields-1 do begin
       mins[i] = min(kp_data.(level0_index[i]).(level1_index[i]), /NAN)
     endfor
@@ -139,6 +140,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
 
   if keyword_set(maxs) ne 1 then begin
     maxs = dblarr(total_fields)
+    maxs[where(maxs eq 0)] = !Values.F_NAN
     for i=0, total_fields-1 do begin
       maxs[i] = max(kp_data.(level0_index[i]).(level1_index[i]), /NAN)
     endfor
@@ -151,7 +153,9 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
   endelse
   
   ranges = dblarr(total_fields)
+  ranges[where(ranges eq 0)] = !Values.F_NAN
   total_bins = intarr(total_fields)
+  total_bins[where(total_bins eq 0)] = !Values.F_NAN
   
   for i=0, total_fields -1 do begin
     ranges[i] = maxs[i] - mins[i]
@@ -165,9 +169,10 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
   
   ;BIN THE INPUT DATA ACCORDING TO THE VARIOUS FIELDS
       
-      output = make_array(total_bins+1,/double)
-      density = make_array(total_bins+1,/double)
-      index = intarr(total_fields+1)
+      output = make_array(total_bins,/double)
+      density = make_array(total_bins,/double)
+      index = intarr(total_fields)
+      index[where(index eq 0)] = !Values.F_NAN
       
       for i=0, n_elements(kp_data) -1 do begin
         for j=0, total_fields-1 do begin
@@ -227,16 +232,25 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
              end
         endcase
       endfor  ;end of the data loop
-      
+     
+   ;Set the total to NAN in places where we have no data, 
+   ;because we can't say it is zero since zero could be an
+   ;actual result  
+   output[where(density eq 0)] = !Values.F_NAN
+   
+   
    ;CALCULATE THE MEDIAN VALUES AND STANDARD DEVIATIONS
    
    if arg_present(median) eq 1 then begin   
     
       bin_min = dblarr(n_elements(total_bins), max(total_bins, /NAN))
+      bin_min[where(bin_min eq 0)] = !Values.F_NAN
       bin_max = dblarr(n_elements(total_bins), max(total_bins, /NAN))
+      bin_max[where(bin_max eq 0)] = !Values.F_NAN
       
       if keyword_set(mins) eq 0 then begin
         mins = dblarr(n_elements(bin_by))
+        mins[where(mins eq 0)] = !Values.F_NAN
         for i=0, n_elements(bin_by)-1 do begin
           mins[i] = min(kp_data.(level0_index[i]).(level1_index[i]), /nan)
         endfor
@@ -244,6 +258,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
     
       if keyword_set(maxs) eq 0 then begin
         maxs = dblarr(n_elements(bin_by))
+        maxs[where(maxs eq 0)] = !Values.F_NAN
         for i=0, n_elements(bin_by)-1 do begin
           maxs[i] = max(kp_data.(level0_index[i]).(level1_index[i]), /nan)
         endfor
@@ -257,6 +272,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
       endfor
    
       bin_index = intarr(n_elements(bin_by), n_elements(kp_data))
+      bin_index[where(bin_index eq 0)] = !Values.F_NAN
    
       for i=0, n_elements(kp_data) - 1 do begin
         for j=0, n_elements(total_bins) -1 do begin
@@ -266,8 +282,9 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
         endfor
       endfor
    
-      medians = make_array(total_bins+1, /double) 
-     
+      medians = make_array(total_bins, /double) 
+      medians[where(medians eq 0)] = !Values.F_NAN
+      
      case n_elements(bin_by) of 
       1: begin
           for i=0, total_bins[0] -1 do begin
@@ -511,7 +528,14 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
         endcase
     
     endfor
-       
+    
+    
+    
+    ;Set the total to NAN in places where we have no data,
+    ;because we can't say it is zero since zero could be an
+    ;actual result
+    std_out[where(density eq 0)] = !Values.F_NAN
+    
     std_out = sqrt(std_out/density)
         
   endif
