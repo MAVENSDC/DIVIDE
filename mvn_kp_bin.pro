@@ -159,6 +159,11 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
   
   for i=0, total_fields -1 do begin
     ranges[i] = maxs[i] - mins[i]
+    if ranges[i] lt 0 then begin
+      print, "ERROR: Minimum value of " + string(mins[i]) + " is greater than the maximum value of " + string(maxs[i])
+      print, "for bin-by parameter " + bin_by[i] + ".  Returning..."
+      return
+    endif
     total_bins[i] = ceil(ranges[i]/binsize[i])
   endfor
   
@@ -175,12 +180,24 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
       index[where(index eq 0)] = !Values.F_NAN
       
       for i=0, n_elements(kp_data) -1 do begin
+        bad_data_value = 0
+        if ~finite(kp_data[i].(input_level0).(input_level1)) then begin
+          continue
+        endif
         for j=0, total_fields-1 do begin
           data_value = kp_data[i].(level0_index[j]).(level1_index[j])
+          if ~finite(data_value) or data_value lt mins[j] or data_value gt maxs[j] then begin
+            bad_data_value = 1
+            continue
+          endif
           dv = floor((data_value - mins[j])/binsize[j])
           index[j] = dv
         
         endfor ;end of the bin loop
+        
+        if bad_data_value then begin
+          continue
+        endif
         
         case total_fields of 
           1: begin
@@ -271,15 +288,23 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
        endfor
       endfor
    
-      bin_index = intarr(n_elements(bin_by), n_elements(kp_data))
+      bin_index = fltarr(n_elements(bin_by), n_elements(kp_data))
       bin_index[where(bin_index eq 0)] = !Values.F_NAN
    
       for i=0, n_elements(kp_data) - 1 do begin
+        bad_data_value=0
         for j=0, n_elements(total_bins) -1 do begin
           value = kp_data[i].(level0_index[j]).(level1_index[j])
+          if ~finite(value) or value lt mins[j] or value gt maxs[j] then begin
+            bad_data_value = 1
+            continue
+          endif
           temp_min = max(where(value-bin_min[j,*] ge 0.0),temp_min_index, /NAN)
           bin_index[j,i] = temp_min_index
         endfor
+        if bad_data_value eq 1 then begin
+          continue
+        endif
       endfor
    
       medians = make_array(total_bins, /double) 
@@ -294,8 +319,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
             if temp[0] ne -1 then begin
               if n_elements(temp) gt 1 then begin
                 medians[i] $
-                  = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]]$
-                                           .(input_level0).(input_level1),/double)
+                  = median(kp_data[temp].(input_level0).(input_level1),/double)
               endif else begin
                 medians[i] = kp_data[temp[0]].(input_level0).(input_level1)
               endelse
@@ -311,8 +335,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
             if temp[0] ne -1 then begin
               if n_elements(temp) gt 1 then begin
                 medians[i,j] $
-                  = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]]$
-                                           .(input_level0).(input_level1),/double)
+                  = median(kp_data[temp].(input_level0).(input_level1),/double)
               endif else begin
                 medians[i,j] = kp_data[temp[0]].(input_level0).(input_level1)
               endelse
@@ -329,7 +352,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
               temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k))
               if temp[0] ne -1 then begin
                 if n_elements(temp) gt 1 then begin
-                  medians[i,j,k] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                  medians[i,j,k] = median(kp_data[temp].(input_level0).(input_level1),/double)
                 endif else begin
                   medians[i,j,k] = kp_data[temp[0]].(input_level0).(input_level1)
                 endelse
@@ -348,7 +371,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
               temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l))
               if temp[0] ne -1 then begin
                 if n_elements(temp) gt 1 then begin
-                  medians[i,j,k,l] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                  medians[i,j,k,l] = median(kp_data[temp].(input_level0).(input_level1),/double)
                 endif else begin
                   medians[i,j,k,l] = kp_data[temp[0]].(input_level0).(input_level1)
                 endelse
@@ -369,7 +392,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
                     temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m))
                     if temp[0] ne -1 then begin
                       if n_elements(temp) gt 1 then begin
-                        medians[i,j,k,l,m] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                        medians[i,j,k,l,m] = median(kp_data[temp].(input_level0).(input_level1),/double)
                       endif else begin
                         medians[i,j,k,l,m] = kp_data[temp[0]].(input_level0).(input_level1)
                       endelse
@@ -393,7 +416,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
                       temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n))
                       if temp[0] ne -1 then begin
                         if n_elements(temp) gt 1 then begin
-                          medians[i,j,k,l,m,n] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                          medians[i,j,k,l,m,n] = median(kp_data[temp].(input_level0).(input_level1),/double)
                         endif else begin
                           medians[i,j,k,l,m,n] = kp_data[temp[0]].(input_level0).(input_level1)
                         endelse
@@ -419,7 +442,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
                         temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n) and (bin_index[6,*] eq p))
                         if temp[0] ne -1 then begin
                           if n_elements(temp) gt 1 then begin
-                            medians[i,j,k,l,m,n,p] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                            medians[i,j,k,l,m,n,p] = median(kp_data[temp].(input_level0).(input_level1),/double)
                           endif else begin
                             medians[i,j,k,l,m,n,p] = kp_data[temp[0]].(input_level0).(input_level1)
                           endelse
@@ -447,7 +470,7 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
                           temp = where((bin_index[0,*] eq i) and (bin_index[1,*] eq j) and (bin_index[2,*] eq k) and (bin_index[3,*] eq l) and (bin_index[4,*] eq m) and (bin_index[5,*] eq n) and (bin_index[6,*] eq p) and (bin_index[7,*] eq q))
                           if temp[0] ne -1 then begin
                             if n_elements(temp) gt 1 then begin
-                              medians[i,j,k,l,m,n,p,q] = median(kp_data[temp[0]:temp[(n_elements(temp)-1)]].(input_level0).(input_level1),/double)
+                              medians[i,j,k,l,m,n,p,q] = median(kp_data[temp].(input_level0).(input_level1),/double)
                             endif else begin
                               medians[i,j,k,l,m,n,p,q] = kp_data[temp[0]].(input_level0).(input_level1)
                             endelse
@@ -481,13 +504,22 @@ pro mvn_kp_bin, kp_data, to_bin, bin_by, output, std_out, binsize=binsize, $
     endif
     std_out = make_array(total_bins,/double)
     for i=0, n_elements(kp_data) -1 do begin
+      if ~finite(kp_data[i].(input_level0).(input_level1)) then begin
+        continue
+      endif
+      bad_data_value = 0
      for j=0, total_fields-1 do begin
        data_value = kp_data[i].(level0_index[j]).(level1_index[j])
+       if ~finite(data_value) or data_value lt mins[j] or data_value gt maxs[j] then begin
+         bad_data_value = 1
+         continue
+       endif
        dv = floor((data_value - mins[j])/binsize[j])
        index[j] = dv
-        
      endfor    
-  
+     if bad_data_value eq 1 then begin
+       continue
+     endif
         case total_fields of 
           1: begin
               std_out[index[0]] = std_out[index[0]] $
