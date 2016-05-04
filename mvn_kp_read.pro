@@ -181,7 +181,7 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
 
   ;; Read from and/or update preferences file 
   if keyword_set(only_update_prefs) then begin
-    out = mvn_kp_config_file(/update_prefs, /kp)
+    out = mvn_kp_config_file(update_prefs=update_prefs, /kp)
     
     ;; Warn user if other parameters supplied
     if keyword_set(time) or keyword_set(insitu) or $
