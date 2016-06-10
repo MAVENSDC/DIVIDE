@@ -1,4 +1,7 @@
-Current Version: 2016-03-31
+Current Version: 2016-06-10
+
+2016-06-10:
+	-General bug fixes to mvn_kp_resample and mvn_kp_bin procedures
 
 2016-03-31:
 	-IUVS KP Reader Updated to work with new IUVS KP data
