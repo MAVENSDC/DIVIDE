@@ -52,7 +52,8 @@ pro mvn_kp_test_install, test_number
   endelse
   
   message, /reset
-  cmd = "mvn_kp_read_iuvs_file, '"+iuvs_txt+"', iuvs, /text_files"
+  MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+  cmd = "mvn_kp_read_iuvs_file, '"+iuvs_txt+"', iuvs_record, /text_files, instruments=instruments"
   return = EXECUTE(cmd[0])
   if !ERROR_STATE.CODE NE 0 then begin
     ;; Error occured
