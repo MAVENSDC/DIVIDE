@@ -1,4 +1,7 @@
-Current Version: 2016-06-10
+Current Version: 2016-06-27
+
+2016-06-27:
+	-Fixing the mvn_kp_test_install procedure 
 
 2016-06-10:
 	-General bug fixes to mvn_kp_resample and mvn_kp_bin procedures
