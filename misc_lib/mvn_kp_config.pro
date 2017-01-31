@@ -101,7 +101,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
       'port', 80, $
       'username', '', $
       'password', '', $
-      'url_scheme', 'http', $
+      'url_scheme', 'https', $
       'authentication', 0, $
 ;-test-old      'url_path', base_url_path+orbit_files_rec,$
       'url_path', base_url_path, $
