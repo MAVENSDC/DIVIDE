@@ -1,4 +1,7 @@
-Current Version: 2016-06-27
+Current Version: 2017-01-31
+
+2017-01-31:
+	-Changing orbit file download link to HTTPS
 
 2016-06-27:
 	-Fixing the mvn_kp_test_install procedure 

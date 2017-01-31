@@ -72,8 +72,8 @@ altitude_from = 'UNK'
     ;  SHould ask for a label/indicator for the date
     ;
     if strmatch( line, '*MGITM Results*' ) then begin
-      date = (strsplit(line,' ', /extract))[3]
-      time = (strsplit(line,' ', /extract))[5]
+      date = (strsplit(line,' ', /extract))[4]
+      time = (strsplit(line,' ', /extract))[6]
       year = fix( (strsplit( date,'-', /extract ))[0] )
       month = fix( (strsplit( date,'-', /extract ))[1] )
       day = fix( (strsplit( date,'-', /extract ))[2] )
