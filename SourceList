@@ -25,7 +25,7 @@ ba2a81568525ccd52d4b346912b2d478 mvn_kp_download_files.pro
 4909e792c996b25c2a4c464b6947322b mvn_kp_map2d.pro
 a7fe71ae1ad0635dc20c33774f3a39c1 mvn_kp_standards.pro
 341f17ed72277a007027d79f0d332ebe access.txt
-c11c44e439f14d055cb2567b214ea0fb Version_History.txt
+44c197d3a5b342e401e2f62a53b2b121 Version_History.txt
 e6c9093c2f319a87973bf62e735ae06d ./misc_lib\mvn_kp_get_list.pro
 8b2e7f6e342c152e7379e15f2ab22c81 ./misc_lib\mvn_combine_structs.pro
 57157c314e5651f51a32b01e0c31547b ./misc_lib\mvn_kp_merge_orbit_files.pro
@@ -37,7 +37,7 @@ f5c285bb4f90412235666f47810862b9 ./misc_lib\mvn_kp_config_file.pro
 72cf30d4e57a9a6e23125524a5387618 ./misc_lib\mvn_copy_struct.pro
 9ce5eb60483f62dc1558b9f9eecd6627 ./misc_lib\mvn_kp_range_select.pro
 95cfc19a88cddcf7054ecd8ca727517a ./misc_lib\mvn_kp_structure_index.pro
-5b827a7bef4fc1c45d400cc272d1a23d ./misc_lib\mvn_kp_config.pro
+6aa72a360d3f10cc98134cfc299b6710 ./misc_lib\mvn_kp_config.pro
 930b673806d1fef7c907009b0b9152f0 ./misc_lib\mvn_kp_tag_verify.pro
 f01e6f59131e1aee7a6368be70a546a5 ./misc_lib\mvn_kp_tag_list.pro
 4769dfeee19e3e15e99c18969d260c2d ./misc_lib\mvn_kp_date_subdir.pro
@@ -59,6 +59,8 @@ e873eef625e750e306af87f9a61b202e ./testing_lib\mvn_kp_regression_test.pro
 6e21f82457ca7efce8c6e616dc7e0885 ./testing_lib\mvn_kp_test_install.pro
 adbcc6a9b8ba1544d7bf0c6614540af0 ./testing_lib\mvn_kp_compare_data.pro
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r13.sav
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v04_r01.sav
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v08_r01.sav
 eb3940df1f178e300544d320fada6e72 ./read_lib\mvn_kp_iuvs_binary_assign.pro
 43e1219ef3afa647af820c9b43eaae35 ./read_lib\mvn_kp_read_iuvs_ascii.pro
 f6d8b5e4ab5e8db1dcdcfdb56522a432 ./read_lib\insitu_ascii_template_v02_r05.sav
@@ -66,6 +68,7 @@ c9dad990b5a9bb6cfd2da3c522bc5778 ./read_lib\insitu_ascii_template_v02_r02.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v03_r02.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r12.sav
 00dade0b40796c5009fc09e4f04bdb59 ./read_lib\mvn_kp_iuvs_nalt_struct.pro
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v05_r01.sav
 f8613425036c9cdcc8754c68349cb43f ./read_lib\insitu_ascii_template_v01_r01.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r09.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r07.sav
@@ -77,13 +80,16 @@ b82ba1d47b93b2493ab0f7a05f385ba1 ./read_lib\mvn_kp_loop_progress.pro
 b96b1c6811e976e516f33f8199684729 ./read_lib\mvn_kp_insitu_struct_init.pro
 6b28ed1623178833a5b743229029f05a ./read_lib\mvn_kp_iuvs_struct_init.pro
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r11.sav
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v07_r01.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v03_r01.sav
 2207223c6dc3980ef867658c1182da92 ./read_lib\insitu_ascii_template_v01_r04.sav
 08451655d7d9d0333f5f1db5ea9f3c96 ./read_lib\mvn_kp_file_search.pro
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v06_r01.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r06.sav
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r08.sav
 29ba7c984dc6d2c80d0c034344d8484b ./read_lib\mvn_kp_read_iuvs_file.pro
 6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v02_r10.sav
+6872787130382d05a571e64c72cd9c0e ./read_lib\insitu_ascii_template_v04_r02.sav
 2002d5d4277bc41d2f7eee79bdb8bc4a ./time_lib\mvn_kp_make_time_labels.pro
 c6e068e656570101c5afead51cc9fffc ./time_lib\mvn_kp_time_bounds.pro
 6b07e128ea14c1ca906d32b812e2a2d3 ./time_lib\mvn_kp_orbit_time.pro
