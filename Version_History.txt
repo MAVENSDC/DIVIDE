@@ -1,5 +1,8 @@
-Current Version: 2017-01-31
+Current Version: 2017-04-04
 
+2017-04-04:
+	-Fixing a small bug with MSO coordinates in the 3D viewer
+	
 2017-01-31:
 	-Changing orbit file download link to HTTPS
 
