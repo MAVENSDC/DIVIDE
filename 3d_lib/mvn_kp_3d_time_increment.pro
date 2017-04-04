@@ -67,12 +67,14 @@ t_index = state1.time_index+direction
 
                 endif else begin                              ;MSO COORDINATE DISPLAY
                   ;Rotate the mars globe back zero (so that 0 lat/lon is on the x axis)
+                  state1.mars_globe -> rotate, [-1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
                   state1.mars_globe -> rotate, [0,-1,0], state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_latitude
                   state1.mars_globe -> rotate, [0,0,-1], -state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_longitude
     
                   ;Rotate the globe so that the subsolar point aligns with the x axis
                   state1.mars_globe -> rotate, [0,0,1], -state1.insitu(t_index).spacecraft.subsolar_point_geo_longitude
                   state1.mars_globe -> rotate, [0,1,0], state1.insitu(t_index).spacecraft.subsolar_point_geo_latitude
+                  state1.mars_globe -> rotate, [1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
     
                   ;Same logic as above, but with the axes model instead of the globe
                   state1.axesmodel -> rotate, [0,-1,0], state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_latitude

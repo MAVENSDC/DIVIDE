@@ -94,6 +94,10 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
                       'maven_orb_rec_150401_150701_v1.orb',$
                       'maven_orb_rec_150701_151001_v1.orb',$
                       'maven_orb_rec_151001_160101_v1.orb',$
+                      'maven_orb_rec_160101_160401_v1.orb',$
+                      'maven_orb_rec_160401_160701_v1.orb',$
+                      'maven_orb_rec_160701_161001_v1.orb',$
+                      'maven_orb_rec_161001_170101_v1.orb',$
                       'maven_orb_rec.orb']
     
     orbit_file_server_spec = create_struct($

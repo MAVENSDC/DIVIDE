@@ -120,12 +120,14 @@ pro mvn_kp_3d_event_time, event
   endif else begin  ;MSO COORDINATE DISPLAY
     
     ;Rotate the mars globe back zero (so that 0 lat/lon is on the x axis)
+    (*pstate).mars_globe -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
     (*pstate).mars_globe -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
     (*pstate).mars_globe -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
     
     ;Rotate the globe so that the subsolar point aligns with the x axis
     (*pstate).mars_globe -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
     (*pstate).mars_globe -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).mars_globe -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[t_index].spacecraft.mars_season*!dtor))
     
     ;Same logic as above, but with the axes model instead of the globe
     (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude

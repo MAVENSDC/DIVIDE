@@ -1339,9 +1339,10 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                 (*pstate).vector_data = vec_data
                                
                                ;Undo the mars globe rotation from MSO coordinate system
+                               (*pstate).mars_globe -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
                                (*pstate).mars_globe -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
                                (*pstate).mars_globe -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
-                              
+                               
                                ;Undo the axes model rotation from MSO coordinate system
                                (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
                                (*pstate).axesmodel -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
@@ -1443,9 +1444,10 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                  if result eq 0 then (*pstate).corona_e_high_model.setproperty, hide=1 
                                endif 
                                
-                               ;Rotate the planet to be under the sun
+                               ;Rotate the planet to be under the sun                          
                                (*pstate).mars_globe -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
                                (*pstate).mars_globe -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude
+                               (*pstate).mars_globe -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
                                
                                ;Rotate the axes to align with the planet's new rotation
                                (*pstate).axesmodel -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
