@@ -130,11 +130,29 @@ pro mvn_kp_3d_event_time, event
     (*pstate).mars_globe -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[t_index].spacecraft.mars_season*!dtor))
     
     ;Same logic as above, but with the axes model instead of the globe
+    (*pstate).axesmodel -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
     (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
     (*pstate).axesmodel -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
     (*pstate).axesmodel -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
     (*pstate).axesmodel -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).axesmodel -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[t_index].spacecraft.mars_season*!dtor))
     
+    
+    ;Same logic as above, but with the grid lines instead of the globe
+    (*pstate).gridlines -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+    (*pstate).gridlines -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).gridlines -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).gridlines -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).gridlines -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).gridlines -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[t_index].spacecraft.mars_season*!dtor))
+    
+    ;Same logic as above, but with the orbit projection instead of the globe
+    (*pstate).orb_projection -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+    (*pstate).orb_projection -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).orb_projection -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).orb_projection -> rotate, [0,0,1], -(*pstate).insitu(t_index).spacecraft.subsolar_point_geo_longitude
+    (*pstate).orb_projection -> rotate, [0,1,0], (*pstate).insitu(t_index).spacecraft.subsolar_point_geo_latitude
+    (*pstate).orb_projection -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[t_index].spacecraft.mars_season*!dtor))
     
     ;Change submaven point to the mso coordinates
     (*pstate).sub_maven_line_mso->setproperty,$
@@ -204,6 +222,7 @@ pro mvn_kp_3d_event_time, event
     (*pstate).atmModel5->rotate,axis,-angle
     (*pstate).atmModel6->rotate,axis,-angle
     (*pstate).gridlines -> rotate,axis,-angle
+    (*pstate).orb_projection -> rotate,axis,-angle
     (*pstate).orbit_model -> rotate,axis,-angle
     (*pstate).sub_solar_model->rotate,axis,-angle
     (*pstate).sub_maven_model->rotate,axis,-angle

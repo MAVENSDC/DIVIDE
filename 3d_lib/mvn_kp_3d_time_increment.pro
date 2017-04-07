@@ -75,13 +75,32 @@ t_index = state1.time_index+direction
                   state1.mars_globe -> rotate, [0,0,1], -state1.insitu(t_index).spacecraft.subsolar_point_geo_longitude
                   state1.mars_globe -> rotate, [0,1,0], state1.insitu(t_index).spacecraft.subsolar_point_geo_latitude
                   state1.mars_globe -> rotate, [1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
-    
+ 
+                  
                   ;Same logic as above, but with the axes model instead of the globe
+                  state1.axesmodel -> rotate, [-1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
                   state1.axesmodel -> rotate, [0,-1,0], state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_latitude
                   state1.axesmodel -> rotate, [0,0,-1], -state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_longitude
                   state1.axesmodel -> rotate, [0,0,1], -state1.insitu(t_index).spacecraft.subsolar_point_geo_longitude
                   state1.axesmodel -> rotate, [0,1,0], state1.insitu(t_index).spacecraft.subsolar_point_geo_latitude
-    
+                  state1.axesmodel -> rotate, [1,0,0], 25.19 * (-cos(state1.insitu[t_index].spacecraft.mars_season*!dtor))
+
+
+                  ;Same logic as above, but with the grid lines instead of the globe
+                  state1.gridlines -> rotate, [-1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
+                  state1.gridlines -> rotate, [0,-1,0], state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_latitude
+                  state1.gridlines -> rotate, [0,0,-1], -state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_longitude
+                  state1.gridlines -> rotate, [0,0,1], -state1.insitu(t_index).spacecraft.subsolar_point_geo_longitude
+                  state1.gridlines -> rotate, [0,1,0], state1.insitu(t_index).spacecraft.subsolar_point_geo_latitude
+                  state1.gridlines -> rotate, [1,0,0], 25.19 * (-cos(state1.insitu[t_index].spacecraft.mars_season*!dtor))
+
+                  ;Same logic as above, but with the orbit projection instead of the globe
+                  state1.orb_projection -> rotate, [-1,0,0], 25.19 * (-cos(state1.insitu[state1.time_index].spacecraft.mars_season*!dtor))
+                  state1.orb_projection -> rotate, [0,-1,0], state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_latitude
+                  state1.orb_projection -> rotate, [0,0,-1], -state1.insitu(state1.time_index).spacecraft.subsolar_point_geo_longitude
+                  state1.orb_projection -> rotate, [0,0,1], -state1.insitu(t_index).spacecraft.subsolar_point_geo_longitude
+                  state1.orb_projection -> rotate, [0,1,0], state1.insitu(t_index).spacecraft.subsolar_point_geo_latitude
+                  state1.orb_projection -> rotate, [1,0,0], 25.19 * (-cos(state1.insitu[t_index].spacecraft.mars_season*!dtor))
     
                   ;Change submaven point to the mso coordinates
                   state1.sub_maven_line_mso->setproperty,$

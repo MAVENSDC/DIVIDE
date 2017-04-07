@@ -68,7 +68,7 @@ pro mvn_kp_3d_event_draw, event
       (*pstate).atmModel4->setProperty, transform=newatmtrans4
       (*pstate).atmModel5->setProperty, transform=newatmtrans5
       (*pstate).atmModel6->setProperty, transform=newatmtrans6
-      (*pstate).gridlines->setproperty, transform=newtransform
+      (*pstate).surfacemarks ->setproperty, transform=newTransform
       (*pstate).orbit_model -> setProperty, transform=newTransform
       (*pstate).maven_model -> setProperty, transform=newMavTrans
       (*pstate).sub_solar_model->setProperty,transform=newSsTrans
@@ -135,7 +135,7 @@ pro mvn_kp_3d_event_draw, event
       (*pstate).atmModel4->scale,s,s,s
       (*pstate).atmModel5->scale,s,s,s
       (*pstate).atmModel6->scale,s,s,s
-      (*pstate).gridlines->scale,s,s,s
+      (*pstate).surfacemarks->scale,s,s,s
       (*pstate).orbit_model->scale,s,s,s
       (*pstate).maven_model->scale,s,s,s
       (*pstate).sub_solar_model->scale,s,s,s

@@ -854,7 +854,12 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                       strings=strtrim(string(temp_ticks),2)
             (*pstate).window ->draw,(*pstate).view
           end
-                        
+        'colorbar_title': $
+            begin
+            widget_control,event.id,get_value=newval
+            (*pstate).colorbar_title->setproperty,strings=newval[0]
+            (*pstate).window ->draw,(*pstate).view
+          end                
         'colorbar_reset': $
           begin
             temp_vert $
@@ -1227,6 +1232,7 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                               (*pstate).atmModel5->rotate,axis,-angle
                               (*pstate).atmModel6->rotate,axis,-angle
                               (*pstate).gridlines -> rotate,axis,-angle
+                              (*pstate).orb_projection -> rotate,axis,-angle
                               (*pstate).orbit_model -> rotate,axis,-angle
                               (*pstate).sub_solar_model->rotate,axis,-angle
                               (*pstate).sub_maven_model->rotate,axis,-angle
@@ -1344,9 +1350,20 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                (*pstate).mars_globe -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
                                
                                ;Undo the axes model rotation from MSO coordinate system
+                               (*pstate).axesmodel -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
                                (*pstate).axesmodel -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
                                (*pstate).axesmodel -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
                                
+                               ;Undo the orbit projection rotation from MSO coordinate system
+                               (*pstate).orb_projection -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+                               (*pstate).orb_projection -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+                               (*pstate).orb_projection -> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+
+                               ;Undo the grid rotation from MSO coordinate system
+                               (*pstate).gridlines -> rotate, [-1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+                               (*pstate).gridlines -> rotate, [0,-1,0], (*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_latitude
+                               (*pstate).gridlines-> rotate, [0,0,-1], -(*pstate).insitu((*pstate).time_index).spacecraft.subsolar_point_geo_longitude
+                                                              
                                ;Change the sun vector back to GEO coordinates
                                (*pstate).sun_vector -> getproperty, data=data1
                                data1[0,1] = (*pstate).solar_x_coord((*pstate).time_index)
@@ -1452,6 +1469,17 @@ common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
                                ;Rotate the axes to align with the planet's new rotation
                                (*pstate).axesmodel -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
                                (*pstate).axesmodel -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude                               
+                               (*pstate).axesmodel -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+                               
+                               ;Rotate the orbit projection to align with the planet's new rotation
+                               (*pstate).orb_projection -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
+                               (*pstate).orb_projection -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude
+                               (*pstate).orb_projection -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
+                               
+                               ;Rotate the grid to align with the planet's new rotation
+                               (*pstate).gridlines -> rotate, [0,0,1], -(*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_longitude
+                               (*pstate).gridlines -> rotate, [0,1,0], (*pstate).insitu[(*pstate).time_index].spacecraft.subsolar_point_geo_latitude
+                               (*pstate).gridlines -> rotate, [1,0,0], 25.19 * (-cos((*pstate).insitu[(*pstate).time_index].spacecraft.mars_season*!dtor))
                                
                                ;Change the sun vector to the x-axis
                                (*pstate).sun_vector -> getproperty, data=data1

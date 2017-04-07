@@ -111,7 +111,9 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                mso=mso, sunmodel=sunmodel, optimize=optimize, $
                initialview=initialview, drawid=drawid, $
                scale_factor=scale_factor, spacecraft_scale=spacecraft_scale, $
-               speckle=speckle, range=range, list=list, help=help
+               speckle=speckle, range=range, list=list, help=help, $
+               maven_sphere=maven_sphere, maven_color=maven_color, $
+               path=path, maven_size=maven_size
   
   common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr
   
@@ -839,6 +841,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         button7 = widget_button(subbaseR7c, value = 'Color Bar', $
                                 uname='ColorBarPlot', xsize=scale_factor*300, $
                                 ysize=scale_factor*30)
+        subbaseR7c2 = widget_base(subbaseR7c, /row)
+        label7 = widget_label(subbaseR7c2, value='Color Bar Title')
+        text7 = widget_text(subbaseR7c2, value='', $
+                                /editable,xsize=scale_factor*3,$
+                                uname='colorbar_title', scr_xsize=300)
         subbaseR7d = widget_base(subbaseR7c, /row)
         label7 = widget_label(subbaseR7d, value='Min')
         text7 = widget_text(subbaseR7d, value=strtrim(string(colorbar_min),2), $
@@ -1308,6 +1315,8 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
      
       ;ADD LINES   DEFAULT THAT GRIDLINES ARE NOT SHOWN
       ;LATITUDE
+      
+      surfacemarks = obj_new('IDLgrModel')
       if keyword_set(grid) then begin
         if n_elements(grid) eq 3 then begin
           grid_color = grid
@@ -1352,10 +1361,32 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
                              char_dimensions=[10,10],$
                              render_method=render_method)
       gridlines->Add, mytext_south
-      view -> add, gridlines
+      ;view -> add, gridlines
       gridlines -> setProperty, hide=1
-      
       if keyword_set(grid) then gridlines -> setProperty,hide=0
+      surfacemarks -> Add, gridlines 
+      
+      if keyword_set(path) then begin
+        path_color = [255,255,255]
+        xcenter = 0
+        ycenter = 0
+        rplanet = .33962
+        radius = rplanet+(rplanet*0.0001)
+        x = (xcenter + radius * cos(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
+        y = (ycenter + radius * sin(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
+        z = (insitu.spacecraft.sub_sc_latitude*0.)+(ycenter + (radius * sin((insitu.spacecraft.sub_sc_latitude)*!dtor)))
+        arr = transpose ([[x],[y],[z]])
+        ogridarr = obj_new('IDLgrPolyline',arr,thick=1,$
+            color=path_color, linestyle=5)
+        orb_projection = obj_new('IDLgrModel')
+        orb_projection -> ADD, ogridarr
+        ;orb_projection -> rotate, [0,0,1], 180
+        ;mars_globe -> ADD, ogridarr
+        ;view -> add, orb_projection
+        surfacemarks -> Add, orb_projection
+      endif
+      view -> add, surfacemarks
+
 
     ;ADD THE LIGHTING
       lightModel = obj_new('IDLgrModel')
@@ -1873,11 +1904,23 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       endif else begin
         colorbar_color = [0,255,0]
       endelse
+      
+      colorbar_font = OBJ_NEW('IDLgrFont', 'times*bold', SIZE=8)
+      
       colorbarmodel = obj_new('IDLgrModel')
-      barDims = [0.1, 0.4]
+      barDims = [0.1, 0.5]
       colorbar_ticktext = obj_new('idlgrtext',$
                                   string(colorbar_ticks,format='(e7.0)'),$
-                                  color=colorbar_color)
+                                  color=colorbar_color, font=colorbar_font)
+      ;colorbartitle = obj_new('IDLgrModel')
+      colorbar_title = obj_new('idlgrtext',$
+                                string(''),$
+                                color=colorbar_color, $
+                                alignment=1, locations=[.09,.6,0], font=colorbar_font)
+                                
+      ;colorbartitle->add,colorbar_title
+      ;view->add,colorbartitle
+      colorbarmodel->add,colorbar_title
       colorbar1 = obj_new('IdlgrColorbar', dimensions=barDims, $
                           r_curr,g_curr, b_curr, $
                           /show_axis, /show_outline, $
@@ -1907,28 +1950,54 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
             model_scale = 0.03
           endelse
         endelse
- 
-    ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
-        MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,$
-                               install_directory
-    ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
-        x = x + x_orbit[time_index*2]
-        y = y + y_orbit[time_index*2]
-        z = z + z_orbit[time_index*2]
-        ;add its position to the camera tracking variable
+        
+        if keyword_set(maven_sphere) eq 0 then begin
+         ;ROUTINE TO LOAD A MODEL OF THE MAVEN SPACECRAFT (WHEN AVAILABLE)
+          MVN_KP_3D_MAVEN_MODEL, x,y,z,polylist,model_scale,cow=cow,$
+                                 install_directory
+         ;MOVE THE MAVEN MODEL TO THE CORRECT ORBITAL LOCATION
+          x = x + x_orbit[time_index*2]
+          y = y + y_orbit[time_index*2]
+          z = z + z_orbit[time_index*2]
+          ;add its position to the camera tracking variable
+          maven_location[0] = x_orbit[time_index*2]
+          maven_location[1] = y_orbit[time_index*2]
+          maven_location[2] = z_orbit[time_index*2]
+          maven_location[3] = 1.0                        ;default scale factor
+          maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, $
+                               color=[255,102,0], shading=1,reject=1,$
+                               specular=[0,255,255],style=model_style)
+          maven_model -> add, maven_poly
+          view -> add, maven_model
+       endif else begin
+        ;ROTATE THE SPACECRAFT TO ITS INITIAL POSITION
+        npoints=361
+        if keyword_set(maven_size) eq 0 then begin
+          radius_maven = .03
+        endif else begin
+          radius_maven = maven_size
+        endelse
+        arr = REPLICATE(radius_maven,npoints,npoints)
+        mesh_obj, 4, vertices, polygons, arr
+        vertices[0,*] = vertices[0,*] + x_orbit[time_index*2]
+        vertices[1,*] = vertices[1,*] + y_orbit[time_index*2]
+        vertices[2,*] = vertices[2,*] + z_orbit[time_index*2]
         maven_location[0] = x_orbit[time_index*2]
         maven_location[1] = y_orbit[time_index*2]
         maven_location[2] = z_orbit[time_index*2]
-        maven_location[3] = 1.0                        ;default scale factor
-        maven_poly = obj_new('IDLgrPolygon', x, y, z, polygons=polylist, $
-                             color=[255,102,0], shading=1,reject=1,$
-                             specular=[0,255,255],style=model_style)
-        maven_model -> add, maven_poly
+        maven_location[3] = 1.0 
+        if keyword_set(maven_color) eq 0 then begin
+          color_maven = [255, 102, 0]
+        endif else begin
+          color_maven = maven_color
+        endelse
+        oPolygons = OBJ_NEW('IDLgrPolygon', $
+          DATA = vertices, POLYGONS = polygons, $
+          COLOR = color_maven, reject=1, shading=1, $
+          specular=[255,255,255])
+        maven_model -> ADD, oPolygons
         view -> add, maven_model
-
-    ;ROTATE THE SPACECRAFT TO ITS INITIAL POSITION
-      
-
+      endelse
 
       ;CREATE THE PARAMETER PLOT ALONG THE BOTTOM EDGE OF THE DISPLAY
       
@@ -2512,7 +2581,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     atmModel4->translate, xtrans,ytrans,0
     atmModel5->translate, xtrans,ytrans,0
     atmModel6->translate, xtrans,ytrans,0
-    gridlines->translate, xtrans,ytrans,0
+    surfacemarks->translate, xtrans,ytrans,0
     orbit_model->translate, xtrans,ytrans,0
     maven_model->translate, xtrans,ytrans,0
     sub_solar_model->translate, xtrans,ytrans,0
@@ -2535,7 +2604,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     atmModel4->rotate,[1,0,0],-rot_angle
     atmModel5->rotate,[1,0,0],-rot_angle
     atmModel6->rotate,[1,0,0],-rot_angle
-    gridlines->rotate,[1,0,0],-rot_angle
+    surfacemarks->rotate,[1,0,0],-rot_angle
     orbit_model -> rotate,[1,0,0],-rot_angle
     maven_model ->rotate,[1,0,0],-rot_angle
     sub_solar_model->rotate,[1,0,0],-rot_angle
@@ -2557,7 +2626,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     atmModel4->rotate,[0,1,0],lon_angle
     atmModel5->rotate,[0,1,0],lon_angle
     atmModel6->rotate,[0,1,0],lon_angle
-    gridlines->rotate,[0,1,0],lon_angle
+    surfacemarks->rotate,[0,1,0],lon_angle
     orbit_model ->rotate,[0,1,0],lon_angle
     maven_model ->rotate,[0,1,0],lon_angle
     sub_solar_model->rotate,[0,1,0],lon_angle
@@ -2580,7 +2649,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     atmModel4->scale,s,s,s
     atmModel5->scale,s,s,s
     atmModel6->scale,s,s,s
-    gridlines->scale,s,s,s
+    surfacemarks->scale,s,s,s
     orbit_model->scale,s,s,s
     maven_model->scale,s,s,s
     sub_solar_model->scale,s,s,s
@@ -2739,7 +2808,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
            atmLevel1height: atmLevel1height, atmLevel2height: atmLevel2height, $
            atmLevel3height: atmLevel3height, atmLevel4height: atmLevel4height, $
            atmLevel5height: atmLevel5height, atmLevel6height: atmLevel6height, $
-           gridlines: gridlines, axesmodel: axesmodel, dirlight: dirlight, $
+           gridlines: gridlines, orb_projection: orb_projection, axesmodel: axesmodel, dirlight: dirlight, $
            lightmodel: lightmodel, ambientlight: ambientlight, track: track, $
            coord_sys: coord_sys, textModel: textModel, timetext: timetext, $
            timeline:timeline, orbit_model: orbit_model, $
@@ -2760,6 +2829,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
            colorbarmodel: colorbarmodel, colorbar_ticks: colorbar_ticks, $
            colorbar_ticktext: colorbar_ticktext, colorbar1: colorbar1, $
            colorbar_min:colorbar_min, colorbar_max:colorbar_max, $
+           colorbar_title:colorbar_title, $
 ;           log:log, $
            colorbar_stretch:colorbar_stretch, $
            plot_model: plot_model, parameter_plot: parameter_plot, $
@@ -2789,7 +2859,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
            install_directory: install_directory, $
            bm_install_directory:bm_install_directory, $
            instrument_array:instrument_array, camera_view: camera_view, $
-           maven_location:maven_location, z_position:z_position $
+           maven_location:maven_location, z_position:z_position, surfacemarks:surfacemarks $
            }
      
       
