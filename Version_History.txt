@@ -1,4 +1,13 @@
-Current Version: 2017-04-04
+Current Version: 2017-04-20
+
+2017-04-20:
+	-Fixed a bug with the projection of MAVEN in the 3D mars
+
+2017-04-07:
+	-Added option to make MAVEN a sphere in the 3D viewer
+	-Added option to show a projection of MAVEN on the surface in the 3D viewer
+	-Added option to title the colorbar in the 3D viewer
+	-Fixed a bug where the grid did not move to the proper location in MSO coordinates
 
 2017-04-04:
 	-Fixing a small bug with MSO coordinates in the 3D viewer
