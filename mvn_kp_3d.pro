@@ -1366,25 +1366,27 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       if keyword_set(grid) then gridlines -> setProperty,hide=0
       surfacemarks -> Add, gridlines 
       
-      if keyword_set(path) then begin
-        path_color = [255,255,255]
-        xcenter = 0
-        ycenter = 0
-        rplanet = .33962
-        radius = rplanet+(rplanet*0.0001)
-        x = (xcenter + radius * cos(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
-        y = (ycenter + radius * sin(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
-        z = (insitu.spacecraft.sub_sc_latitude*0.)+(ycenter + (radius * sin((insitu.spacecraft.sub_sc_latitude)*!dtor)))
-        arr = transpose ([[x],[y],[z]])
-        ogridarr = obj_new('IDLgrPolyline',arr,thick=1,$
-            color=path_color, linestyle=5)
-        orb_projection = obj_new('IDLgrModel')
-        orb_projection -> ADD, ogridarr
-        ;orb_projection -> rotate, [0,0,1], 180
-        ;mars_globe -> ADD, ogridarr
-        ;view -> add, orb_projection
-        surfacemarks -> Add, orb_projection
-      endif
+      ;Add a projection of the orbit
+      path_color = [255,255,255]
+      xcenter = 0
+      ycenter = 0
+      rplanet = .33962
+      radius = rplanet+(rplanet*0.0001)
+      x = (xcenter + radius * cos(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
+      y = (ycenter + radius * sin(insitu.spacecraft.sub_sc_longitude*!dtor))*cos((insitu.spacecraft.sub_sc_latitude)*!dtor)
+      z = (insitu.spacecraft.sub_sc_latitude*0.)+(ycenter + (radius * sin((insitu.spacecraft.sub_sc_latitude)*!dtor)))
+      arr = transpose ([[x],[y],[z]])
+      ogridarr = obj_new('IDLgrPolyline',arr,thick=1,$
+        color=path_color, linestyle=5)
+      orb_projection = obj_new('IDLgrModel')
+      orb_projection -> ADD, ogridarr
+      surfacemarks -> Add, orb_projection
+      
+      
+      if keyword_set(path) then orb_projection -> setProperty,hide=0 else orb_projection -> setProperty,hide=1
+      
+      
+      
       view -> add, surfacemarks
 
 
