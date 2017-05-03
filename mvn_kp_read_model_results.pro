@@ -110,7 +110,7 @@ pro mvn_kp_read_model_results, file, output
       'Z': dim_struct.z = value
       
       ;; Meta information
-      'COORDINATE_SYSTEM' : meta_struct.coord_sys = string(value)
+      'COORDINATE_SYSTEM' : meta_struct.coord_sys = strtrim(strtrim(string(value), 1),0)
       'LS': begin
           ;Check if the attribute has an attribute named units
           if (abs(value) ge 2*!pi) then begin
@@ -184,7 +184,7 @@ pro mvn_kp_read_model_results, file, output
           endelse 
           end
       'MARS_RADIUS' : meta_struct.mars_radius = value
-      'ALTITUDE_FROM' : meta_struct.altitude_from = string(value)
+      'ALTITUDE_FROM' : meta_struct.altitude_from = strtrim(strtrim(string(value), 1),0)
         
       ;; If not dimension or meta info, check if this is a modeled measurement 
       ELSE: begin
@@ -204,6 +204,15 @@ pro mvn_kp_read_model_results, file, output
           dim_order = strarr(var_info.ndims)
           for z=0, var_info.ndims-1 do begin
             ncdf_diminq, id, var_info.dim[z], dname, dsize
+            if dname eq 'size_x' then begin
+              dname = 'x'
+            endif
+            if dname eq 'size_y' then begin
+              dname = 'y'
+            endif
+            if dname eq 'size_z' then begin
+              dname = 'z'
+            endif
             dim_order[z] = dname
           endfor
           

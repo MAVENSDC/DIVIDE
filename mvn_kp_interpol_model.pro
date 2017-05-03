@@ -53,7 +53,16 @@ nearest_neighbor=keyword_set(nearest_neighbor)
 ; Start the output model with the meta data
 ;
 model_interpol = model.meta
+mars_radius = model.meta.mars_radius
 
+;Get the path of the spacecraft
+sc_mso_x = kp_data.spacecraft.mso_x
+sc_mso_y = kp_data.spacecraft.mso_y
+sc_mso_z = kp_data.spacecraft.mso_z
+sc_r = sqrt(sc_mso_x^2 + sc_mso_y^2 + sc_mso_z^2)
+sc_alt_mso = kp_data.spacecraft.altitude
+sc_lat_mso = 90.0 - (acos(sc_mso_z/sc_r)/ !dtor)
+sc_lon_mso = atan(sc_mso_x , sc_mso_y) / !dtor
 
 ;
 ;Determine if the model is in lat/lon/alt or x/y/z
@@ -62,150 +71,230 @@ if ((*model.data[0]).dim_order[0] eq 'longitude' || $
     (*model.data[0]).dim_order[0] eq 'latitude' || $
     (*model.data[0]).dim_order[0] eq 'altitude') then begin
 
-;
-; Determine the coordinate system for the input model
-;
-case model.meta.coord_sys of
-  'MSO': begin
-    mso = keyword_set(1B) & geo = keyword_set(0B)
-         end
-  'GEO': begin
-    geo = keyword_set(1B) & mso = keyword_set(0B)
-         end
-  else: message, "Ill-defined or undefined coord_sys in meta structure"
-endcase
-
-;
-;  Get the appropriate spacecraft geometry
-;
-if( mso )then begin
   ;
-  ;  calculate maven MSO lat,lon from MSO x,y,z
+  ; Determine the coordinate system for the input model
   ;
-  r_mso = sqrt( kp_data.spacecraft.mso_x^2 + kp_data.spacecraft.mso_y^2 $
-              + kp_data.spacecraft.mso_z^2 )
-  lat_sc_mso = 90. - acos( kp_data.spacecraft.mso_z / r_mso ) * !radeg
-  lon_sc_mso = atan( kp_data.spacecraft.mso_y, $
-                     kp_data.spacecraft.mso_x ) * !radeg ; returns on -180..180
-  ;
-  ; convert lon_sc_mso to 0..360 scale if needed
-  ;
-  if (max(abs(model.dim[0].lon), /NAN) gt 180) then begin
-    neg_lon = where( lon_sc_mso lt 0, count )
-    if count gt 0 then lon_sc_mso[neg_lon] = lon_sc_mso[neg_lon] + 360
-  endif
-  ;
-  ;Give the values to the correct variable names for the logic below
-  ;
-  lon_sc_model = lon_sc_mso
-  lat_sc_model = lat_sc_mso
-  sc_altitude = r_mso - model.meta[0].mars_radius
-endif
-;TODO: I don't think that this geo procedure takes into account the rotation of Mars due to its tilt
-if( geo )then begin
-  ;
-  ; Calculate delta offset from subsolar point in Model to subsolar point from insitu data
-  ;
-  delta_lon = model.meta.longsubsol $
-            - kp_data.spacecraft.subsolar_point_geo_longitude
-  delta_lat = model.meta.declination $
-            - kp_data.spacecraft.subsolar_point_geo_latitude
-  ;
-  ;  Correct for negative delta longitude
-  ;
-  neg_lon = where( delta_lon lt 0, count)
-  if count gt 0 then delta_lon[neg_lon] = delta_lon[neg_lon] + 360
-  ;
-  ; Update the lon,lat in GEO coords
-  ;
-  lon_sc_model = ( kp_data.spacecraft.sub_sc_longitude + delta_lon ) mod 360
-  colat_sc_model = acos( cos( ( 90. - kp_data.spacecraft.sub_sc_latitude $
-                              + delta_lat ) * !dtor ) ) * !radeg
-  lat_sc_model = 90. - colat_sc_model
+  coord_sys = strtrim(strtrim(model.meta[0].coord_sys, 1),0)
+  case coord_sys of
+    'MSO': begin
+      mso = keyword_set(1B) & geo = keyword_set(0B)
+           end
+    'GEO': begin
+      geo = keyword_set(1B) & mso = keyword_set(0B)
+           end
+    else: message, "Ill-defined or undefined coord_sys in meta structure"
+  endcase
   
-  overpole = where( abs( colat_sc_model $
-                       - ( 90 - kp_data.spacecraft.sub_sc_latitude + delta_lat ) ) gt 1e-4, count )
-  if count gt 0 then $
-    lon_sc_model[overpole] = ( lon_sc_model[overpole] + 180 ) mod 360
+  ;
+  ;  Get the appropriate spacecraft geometry
+  ;
+  if( mso )then begin
+    lat_mso_model = model.dim.lat
+    lon_mso_model = model.dim.lon
+    alt_mso_model = model.dim.alt
+  
+    ;Create Longitude Array
+    lon_array = replicate(0.0, n_elements(lat_mso_model)*n_elements(lon_mso_model)*n_elements(alt_mso_model))
+    for i=1,n_elements(lon_mso_model) do begin
+      lon_array[(i-1)*n_elements(lat_mso_model)*n_elements(alt_mso_model) : i*n_elements(lat_mso_model)*n_elements(alt_mso_model)-1] = lon_mso_model[i-1]
+    endfor
+  
+    ;Create Latitude Array
+    lat_array = []
+    for k=1,n_elements(lon_mso_model) do begin
+      temp_lat_array = replicate(0.0, n_elements(lat_mso_model)*n_elements(alt_mso_model))
+      for i=1,n_elements(lat_mso_model) do begin
+        temp_lat_array[(i-1)*n_elements(alt_mso_model) : i*n_elements(alt_mso_model)-1] = lat_mso_model[i-1]
+      endfor
+      lat_array = [lat_array, temp_lat_array]
+    endfor
+  
+    ;Create Altitude Array
+    alt_array = replicate(0.0, n_elements(lat_mso_model)*n_elements(lon_mso_model)*n_elements(alt_mso_model))
+    for i=1,n_elements(lat_mso_model)*n_elements(lon_mso_model) do begin
+      alt_array[(i-1)*n_elements(alt_mso_model) : i*n_elements(alt_mso_model)-1] = alt_mso_model
+    endfor
     
-  sc_altitude = kp_data.spacecraft.altitude
-endif
-
-;
-;  Now, cycle through the provided variables and interpolate them to the
-;  spacecraft trajectory.  Note, the data are arrays of pointers to structures
-;  Note also the lat/lon coords are reversed for each 
-;
-  for i = 0,n_elements(model.data)-1 do begin
-;
-;  First, ensure the data are in lon / lat / alt order
-;
-    dim_order_array = bytarr(3)
-    for j = 0,2 do begin
-      case (*model.data[i]).dim_order[j] of
-        'longitude': dim_order_array[0] = j
-        'latitude': dim_order_array[1] = j
-        'altitude': dim_order_array[2] = j
-        else: message, "Invalid dimension Identifier in model_data: ",i,j
-      endcase
-    endfor ; j=0,2
-    tracer = transpose( (*model.data[i]).data, dim_order_array )
-;
-;  Now, interpolate the model to the SC trajectory
-;  (Will need to consider what to do when SC outside of model domain)
-;
-    if grid3 then $
-      tracer_interpol = mvn_kp_sc_traj_g3( tracer, model.dim, $
-                                           lon_sc_model, lat_sc_model, $
-                                           sc_altitude )
-    if nearest_neighbor then $
-      tracer_interpol = mvn_kp_sc_traj_nn( tracer, model.dim, $
-                                           lon_sc_model, lat_sc_model, $
-                                           sc_altitude ) 
-;
-;  Add the interpolated model data to the structure
-;
-    model_interpol = create_struct( model_interpol, $
-                                    (*model.data[i]).name, $
-                                    tracer_interpol )
-  endfor ; i=0,n_elements(data)
+    data_points = transpose([[lon_array], [lat_array], [alt_array]])
+    
+    
+      for i = 0,n_elements(model.data)-1 do begin
+        if strlowcase((*model.data[i]).name) eq "geo_x" then continue
+        if strlowcase((*model.data[i]).name) eq "geo_y" then continue
+        if strlowcase((*model.data[i]).name) eq "geo_z" then continue
+      
+        ;
+        ;  First, ensure the data are in lon / lat / alt order
+        ;
+        dim_order_array = bytarr(3)
+        for j = 0,2 do begin
+          case (*model.data[i]).dim_order[j] of
+            'longitude': dim_order_array[0] = j
+            'latitude': dim_order_array[1] = j
+            'altitude': dim_order_array[2] = j
+            else: message, "Invalid dimension Identifier in model_data: ",i,j
+          endcase
+        endfor ; j=0,2
+        data_new = transpose( (*model.data[i]).data, dim_order_array )
+      
+        index = 0.0
+        values = replicate(0.0, n_elements(lat_mso_model)*n_elements(lon_mso_model)*n_elements(alt_mso_model))
+        for lon=0,n_elements(lon_mso_model)-1 do begin
+          for lat=0,n_elements(lat_mso_model)-1 do begin
+            for alt=0,n_elements(alt_mso_model)-1 do begin
+              values[index] = data_new[lon,lat,alt]
+              index++
+            endfor
+          endfor
+        endfor
+          
+        
+        tracer_interpol = replicate(!VALUES.F_NAN, n_elements(sc_lon_mso))
+        indices_to_interpolate = where(kp_data.spacecraft.altitude le max(alt_mso_model))
+        interp_values = mvn_kp_shepards_method(lon_array, lat_array, alt_array, values, sc_lon_mso[indices_to_interpolate], sc_lat_mso[indices_to_interpolate], sc_alt_mso[indices_to_interpolate], nearest_neighbor = nearest_neighbor)
+        tracer_interpol[indices_to_interpolate] = interp_values
+        
+        model_interpol = create_struct( model_interpol, $
+          (*model.data[i]).name, $
+          tracer_interpol )
+      
+    endfor 
+  endif
+  if( geo )then begin
+    
+    
+    modellon = - model.meta.longsubsol *!dtor
+    ls_rad = model.meta.ls * !dtor 
+    rads_tilted_y = 25.19 * sin(ls_rad) * !dtor
+    rads_tilted_x = -25.19 * cos(ls_rad) * !dtor
+    
+    z_rotation = [[cos(modellon), -sin(modellon), 0], $
+                  [sin(modellon), cos(modellon), 0], $
+                  [0,0,1]]
+    y_rotation = [[cos(rads_tilted_y), 0, sin(rads_tilted_y)], $
+                  [0,1,0], $
+                  [-sin(rads_tilted_y), 0, cos(rads_tilted_y)]]
+    x_rotation = [[1,0,0], $
+                  [0,cos(rads_tilted_x),-sin(rads_tilted_x)], $
+                  [0,sin(rads_tilted_x),cos(rads_tilted_x)]]
+    
+    geo_to_mso_matrix = x_rotation##(y_rotation##z_rotation)
+    
+    lat_geo_model = model.dim.lat
+    lon_geo_model = model.dim.lon
+    alt_geo_model = model.dim.alt
+    
+    ;Create Longitude Array
+    lon_array = replicate(0.0, n_elements(lat_geo_model)*n_elements(lon_geo_model)*n_elements(alt_geo_model))
+    for i=1,n_elements(lon_geo_model) do begin
+      lon_array[(i-1)*n_elements(lat_geo_model)*n_elements(alt_geo_model) : i*n_elements(lat_geo_model)*n_elements(alt_geo_model)-1] = lon_geo_model[i-1]
+    endfor 
+    
+    ;Create Latitude Array
+    lat_array = []
+    for k=1,n_elements(lon_geo_model) do begin
+      temp_lat_array = replicate(0.0, n_elements(lat_geo_model)*n_elements(alt_geo_model))
+      for i=1,n_elements(lat_geo_model) do begin
+        temp_lat_array[(i-1)*n_elements(alt_geo_model) : i*n_elements(alt_geo_model)-1] = lat_geo_model[i-1]
+      endfor
+      lat_array = [lat_array, temp_lat_array]
+    endfor
+    
+    ;Create Altitude Array
+    alt_array = replicate(0.0, n_elements(lat_geo_model)*n_elements(lon_geo_model)*n_elements(alt_geo_model))
+    for i=1,n_elements(lat_geo_model)*n_elements(lon_geo_model) do begin
+      alt_array[(i-1)*n_elements(alt_geo_model) : i*n_elements(alt_geo_model)-1] = alt_geo_model
+    endfor
+    
+    ;Convert lat/lon/alt to GEO, then to MSO
+    data_points = transpose([[lon_array], [lat_array], [alt_array]])
+    for i=0,n_elements(alt_array)-1 do begin
+      r = data_points[2, i] + mars_radius
+      x = r * sin((90-data_points[1,i]) * !dtor) * cos(data_points[0,i] * !dtor)
+      y = r * sin((90-data_points[1,i]) * !dtor) * sin(data_points[0,i] * !dtor)
+      z = r * cos((90-data_points[1,i]) * !dtor)
+      data_points[*,i] = geo_to_mso_matrix##[x,y,z]
+    endfor
+  
+    
+    
+    for i = 0,n_elements(model.data)-1 do begin     
+      if strlowcase((*model.data[i]).name) eq "geo_x" then continue
+      if strlowcase((*model.data[i]).name) eq "geo_y" then continue
+      if strlowcase((*model.data[i]).name) eq "geo_z" then continue
+      ;
+      ;  First, ensure the data are in lon / lat / alt order
+      ;
+      dim_order_array = bytarr(3)
+      for j = 0,2 do begin
+        case (*model.data[i]).dim_order[j] of
+          'longitude': dim_order_array[0] = j
+          'latitude': dim_order_array[1] = j
+          'altitude': dim_order_array[2] = j
+          else: message, "Invalid dimension Identifier in model_data: ",i,j
+        endcase
+      endfor ; j=0,2
+      data_new = transpose( (*model.data[i]).data, dim_order_array )
+    
+      index = 0.0
+      values = replicate(0.0, n_elements(lat_geo_model)*n_elements(lon_geo_model)*n_elements(alt_geo_model))
+      for lon=0,n_elements(lon_geo_model)-1 do begin
+        for lat=0,n_elements(lat_geo_model)-1 do begin
+          for alt=0,n_elements(alt_geo_model)-1 do begin
+            values[index] = data_new[lon,lat,alt]
+            index++
+          endfor
+        endfor
+      endfor
+      
+      ;Convert everything in an MSO lat/lon/alt so that things are weighted properly
+      r = sqrt(reform(data_points[0,*])^2 + reform(data_points[1,*])^2 + reform(data_points[2,*])^2)
+      alt_mso = r - mars_radius
+      lat_mso = 90.0 - (acos(reform(data_points[2,*])/r) / !dtor)
+      lon_mso = atan(reform(data_points[0,*]) , reform(data_points[1,*])) / !dtor
+      
+      
+      tracer_interpol = replicate(!VALUES.F_NAN, n_elements(sc_lon_mso))
+      indices_to_interpolate = where(kp_data.spacecraft.altitude le max(alt_geo_model))
+      interp_values = mvn_kp_shepards_method(lon_mso, lat_mso, alt_mso, values, sc_lon_mso[indices_to_interpolate], sc_lat_mso[indices_to_interpolate], sc_alt_mso[indices_to_interpolate], nearest_neighbor=nearest_neighbor)
+      tracer_interpol[indices_to_interpolate] = interp_values
+      model_interpol = create_struct( model_interpol, $
+        (*model.data[i]).name, $
+        tracer_interpol )
+      
+    endfor 
+  
+  endif
 
 endif else begin
-
-
-
+  
+  
 for i = 0,n_elements(model.data)-1 do begin
-;
-;  First, ensure the data are in x / y / z order
-;
-    dim_order_array = bytarr(3)
-    for j = 0,2 do begin
-      case (*model.data[i]).dim_order[j] of
-        'size_x': dim_order_array[0] = j
-        'size_y': dim_order_array[1] = j
-        'size_z': dim_order_array[2] = j
-        else: message, "Invalid dimension Identifier in model_data: ",i,j
-      endcase
-    endfor ; j=0,2
-    tracer = transpose( (*model.data[i]).data, dim_order_array )
-;
-;  Now, interpolate the model to the SC trajectory
-;  (Will need to consider what to do when SC outside of model domain)
-      tracer_interpol = mvn_kp_sc_traj_xyz( tracer, model.dim, $
-                                           kp_data.spacecraft.mso_x, $
-                                           kp_data.spacecraft.mso_y, $
-                                           kp_data.spacecraft.mso_z, $
-                                           grid3=grid3, nn=nearest_neighbor)                                   
-;
-;  Add the interpolated model data to the structure
-;
-    model_interpol = create_struct( model_interpol, $
-                                    (*model.data[i]).name, $
-                                    tracer_interpol )
-  endfor ; i=0,n_elements(data)
-
-
-
+  dim_order_array = bytarr(3)
+  for j = 0,2 do begin
+    case (*model.data[i]).dim_order[j] of
+      'x': dim_order_array[0] = j
+      'y': dim_order_array[1] = j
+      'z': dim_order_array[2] = j
+      else: message, "Invalid dimension Identifier in model_data: ",i,j
+    endcase
+  endfor 
+  tracer = transpose( (*model.data[i]).data, dim_order_array )
+  ;
+  ;  Now, interpolate the model to the SC trajectory
+  ;
+  tracer_interpol = mvn_kp_sc_traj_xyz( tracer, model.dim, $
+    kp_data.spacecraft.mso_x, $
+    kp_data.spacecraft.mso_y, $
+    kp_data.spacecraft.mso_z, $
+    grid3=grid3, nn=nearest_neighbor)
+  ;
+  ;  Add the interpolated model data to the structure
+  ;
+  model_interpol = create_struct( model_interpol, $
+    (*model.data[i]).name, $
+    tracer_interpol )
+endfor
 
 endelse
 
