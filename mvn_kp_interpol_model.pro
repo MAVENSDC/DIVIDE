@@ -120,7 +120,6 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
 
 
       for i = 0,n_elements(model.data)-1 do begin
-        if strlowcase((*model.data[i]).name) ne "co2" then continue
         if strlowcase((*model.data[i]).name) eq "geo_x" then continue
         if strlowcase((*model.data[i]).name) eq "geo_y" then continue
         if strlowcase((*model.data[i]).name) eq "geo_z" then continue
