@@ -101,7 +101,12 @@ pro mvn_kp_read_model_results, file, output
     case strupcase(var_info.name) of
       ;; Lat lon alt
       'LATITUDE': dim_struct.lat = value
-      'LONGITUDE': dim_struct.lon = value
+      'LONGITUDE': begin
+          if max(value) gt 180 and min(value) gt 0 then begin
+            value[where(value gt 180)] = value[where(value gt 180)] - 360
+          endif
+        dim_struct.lon = value
+        end
       'ALTITUDE': dim_struct.alt = value
       
       ;; X Y Z
