@@ -180,9 +180,6 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
               tracer_interpol[k] = !VALUES.F_NAN
               continue
             endif
-            if k eq 700 then begin
-              fdsasdf =2 
-            endif
             first_val = griddata(lon_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], lat_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], values[*,alti1], xout = [sc_lon_mso[k]], yout = [sc_lat_mso[k]], /linear, triangles=tr)
             second_val = griddata(lon_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], lat_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], values[*,alti2], xout = [sc_lon_mso[k]], yout = [sc_lat_mso[k]], /linear, triangles=tr)
             delta_1 = sc_alt_mso[k] - alt_mso_model[alti1]
