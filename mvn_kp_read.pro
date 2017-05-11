@@ -548,82 +548,86 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                       insitu_only=insitu_only, new_files=new_files
 
   if (target_KP_filenames[0] eq 'None') then begin
-    print, "No files found.  Make sure you have the correct time range.  "
-    return
-  endif
-
-  ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS AND INITIALIZE 
-  ;ARRAY OF DATA STRUTURES 
-;-orig  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
-  fname = kp_insitu_data_directory+mvn_kp_date_subdir(target_KP_filenames[0])+target_KP_filenames[0]
-  MVN_KP_INSITU_STRUCT_INIT, fname, insitu_record, $
-                             col_map, formats, ncol, nrec, $
-                             vnum=vnum, rnum=rnum, $
-                             instruments=instruments
-  kp_data_temp = replicate(insitu_record,$
-                           21600L*n_elements(target_KP_filenames))
-    
-  if not keyword_set(insitu_only) then begin  
-    if keyword_set(debug) then $
-      print,'Removing iuvs_struct_init from mvn_kp_read
-;    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
-;    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
-  endif
-  
-  ;; ---------------------------------------------------------------------- ;;
-  ;; ---------------- Main read loop: In situ data    --------------------- ;;
-  
+    print, "No insitu files found.  Make sure you have the correct time range.  "
+    insitu_found=0
+  endif else begin
+    insitu_found=1
+  endelse
   
   overall_start_time = systime(1)
   
-  if target_kp_filenames[0] ne 'None' then begin
-    totalEntries=0L
-    start_index=0L
-    for file=0,n_elements(target_KP_filenames)-1 do begin
-    
-      ;UPDATE THE READ STATUS BAR
-      MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,$
-                           message='In-situ KP File Read Progress'
+  if insitu_found eq 1 then begin
+    ;CREATE OUTPUT STRUCTURES BASED ON SEARCH PARAMETERS AND INITIALIZE 
+    ;ARRAY OF DATA STRUTURES 
+  ;-orig  MVN_KP_INSITU_STRUCT_INIT, insitu_record, instruments=instruments
+    fname = kp_insitu_data_directory+mvn_kp_date_subdir(target_KP_filenames[0])+target_KP_filenames[0]
+    MVN_KP_INSITU_STRUCT_INIT, fname, insitu_record, $
+                               col_map, formats, ncol, nrec, $
+                               vnum=vnum, rnum=rnum, $
+                               instruments=instruments
+    kp_data_temp = replicate(insitu_record,$
+                             21600L*n_elements(target_KP_filenames))
       
-      ;; Construct path to file
-      date_path = mvn_kp_date_subdir(target_kp_filenames[file])
-      fileAndPath = kp_insitu_data_directory+date_path $
-                  +target_kp_filenames[file]
-      
+    if not keyword_set(insitu_only) then begin  
+      if keyword_set(debug) then $
+        print,'Removing iuvs_struct_init from mvn_kp_read
+  ;    MVN_KP_IUVS_STRUCT_INIT, iuvs_record, instruments=instruments
+  ;    iuvs_data_temp = replicate(iuvs_record, n_elements(iuvs_filenames))
+    endif
     
-      MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, $
-                               begin_time=begin_time_struct, $
-                               end_time=end_time_struct, io_flag=io_flag, $
-                               instruments=instruments, $
-                               save_files=save_files, text_files=text_files
+    ;; ---------------------------------------------------------------------- ;;
+    ;; ---------------- Main read loop: In situ data    --------------------- ;;
+    
+    
+    
+    if target_kp_filenames[0] ne 'None' then begin
+      totalEntries=0L
+      start_index=0L
+      for file=0,n_elements(target_KP_filenames)-1 do begin
+      
+        ;UPDATE THE READ STATUS BAR
+        MVN_KP_LOOP_PROGRESS,file,0,n_elements(target_KP_filenames)-1,$
+                             message='In-situ KP File Read Progress'
         
-    
-      ;; Ensure what was returned is a structure, 
-      ;; (and not int 0 indicating no matches)
-      if size(kp_data, /TYPE) eq 8 then begin
-        kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] $
-          = kp_data
-        start_index += n_elements(kp_data)
-        totalEntries += n_elements(kp_data)
-      endif
-    endfor
-    
-    
-    ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
-    if totalEntries gt 0 then begin
-      insitu_output = kp_data_temp[0:totalEntries-1]
-      print,'A total of ',strtrim(n_elements(insitu_output),2),$
-          + ' INSITU KP data records were found that met the search criteria.'
+        ;; Construct path to file
+        date_path = mvn_kp_date_subdir(target_kp_filenames[file])
+        fileAndPath = kp_insitu_data_directory+date_path $
+                    +target_kp_filenames[file]
+        
+      
+        MVN_KP_READ_INSITU_FILE, fileAndPath, kp_data, $
+                                 begin_time=begin_time_struct, $
+                                 end_time=end_time_struct, io_flag=io_flag, $
+                                 instruments=instruments, $
+                                 save_files=save_files, text_files=text_files
+          
+      
+        ;; Ensure what was returned is a structure, 
+        ;; (and not int 0 indicating no matches)
+        if size(kp_data, /TYPE) eq 8 then begin
+          kp_data_temp[start_index:(start_index+n_elements(kp_data)-1)] $
+            = kp_data
+          start_index += n_elements(kp_data)
+          totalEntries += n_elements(kp_data)
+        endif
+      endfor
+      
+      
+      ;OUTPUT INSITU DATA STRUCTURE - If any data points found within time range
+      if totalEntries gt 0 then begin
+        insitu_output = kp_data_temp[0:totalEntries-1]
+        print,'A total of ',strtrim(n_elements(insitu_output),2),$
+            + ' INSITU KP data records were found that met the search criteria.'
+      endif else begin
+        insitu_output = 0
+        print, 'NO INSITU KP data records were found that met '$
+             + 'the search criteria.'
+      endelse
+          
     endif else begin
-      insitu_output = 0
-      print, 'NO INSITU KP data records were found that met '$
-           + 'the search criteria.'
+      printf,-2, "Warning: No Insitu files found for input timerange."
     endelse
-        
-  endif else begin
-    printf,-2, "Warning: No Insitu files found for input timerange."
-  endelse
-  
+  endif
   ;; ---------------------------------------------------------------------- ;;
   ;; ---------------- Main read loop: IUVS  data   ------------------------ ;;
   

@@ -140,9 +140,9 @@ pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
 
 
   ;GET INSTALL DIRECTORY
-  install_result = routine_info('mvn_kp_create_model_maps2',/source)
+  install_result = routine_info('mvn_kp_create_model_maps',/source)
   install_directory = strsplit(install_result.path,$
-    'mvn_kp_create_model_maps2.pro',$
+    'mvn_kp_create_model_maps.pro',$
     /extract,/regex)
   if !version.os_family eq 'unix' then begin
     basemap_directory = install_directory+'basemaps/'
