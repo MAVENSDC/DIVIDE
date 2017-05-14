@@ -292,8 +292,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
         endelse
       endif
     endif
-    if strlowcase(basemap) eq 'user' then begin
-      input_file = dialog_pickfile(path=install_directory)
+    if file_test(basemap) then begin
+      input_file = basemap
       if input_file ne '' then begin
         if (STRMID(input_file,3,4, /REVERSE_OFFSET) eq '.jpg') then read_jpeg,input_file,mapimage
         if (STRMID(input_file,3,4, /REVERSE_OFFSET) eq '.png') then mapimage=input_file
@@ -343,8 +343,8 @@ if keyword_set(mso) eq 0 then begin  ;only bother if plotting geo coordinates
   endelse
 endif else begin      ;blank canvas for the MSO plot
   if keyword_set(basemap) then begin
-    if strlowcase(basemap) eq 'user' then begin
-      input_file = dialog_pickfile(path=install_directory)
+    if file_test(basemap) then begin
+      input_file = basemap
       if (strmatch(input_file, '*.jpg')) then begin
         read_jpeg,input_file,mapimage
       endif

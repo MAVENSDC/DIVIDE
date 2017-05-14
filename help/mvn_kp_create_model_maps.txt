@@ -4,7 +4,7 @@
 
  :Description:
      Takes the 3 data structures from mvn_kp_model_results and takes a slice
-     from them at a certain altitude.  A contour plot is made from the data, 
+     from them at a certain altitude.  A contour plot is made from the data,
      which can then be used in mvn_kp_map2d or mvn_kp_3d.  The contour plot
      is saved as a png in the same directory as the model data.
 
@@ -25,24 +25,24 @@
     numContourLines: in, optional, type=integer
        The user can specify the number of contour lines in the output contour
        Default is 25 contour lines
-       
+
     fill: in, optional, type=boolean
        If this flag is selected, the contour plot fills in the levels
-       with a certain color. 
+       with a certain color.
 
     ct: in, optional, type=integer array 256x3
-       The user can specify a color table for the contour plot.  The 
+       The user can specify a color table for the contour plot.  The
        default is the array given by COLORTABLE(72, /REVERSE)
-       
+
     basemap: in, optional, type=string
        If either 'mdim', 'mola', 'mola_bw', or 'mag is specified, the
        contour will be overlaid on one of these basemaps with 50%
        transparency
-       
-    contourtransparency: in, optional, type=integer
-       The user can specify the level of transparency in the contour plot. 
+
+    transparency: in, optional, type=integer
+       The user can specify the level of transparency in the contour plot.
        Useful when plotting the contour over a basemap.  Must be a number
        between 0 (no transparency) and 100 (completely transparent)
-       
+
 
 -

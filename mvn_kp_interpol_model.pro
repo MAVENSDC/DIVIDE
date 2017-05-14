@@ -13,18 +13,26 @@
 ;
 ;    model: in, required, type=struct
 ;       Structure containing relevant model metadata, dimensions, and data
+;       
+;    file: in, required, type=string
+;       File path containing the directory of the model file you want to read in.
+;       This is only required if "model" is not provided
 ;
 ;    model_interpol: out, required, type=struct
 ;       Structure containing the model tracers interpolated to the provided
 ;       spacecraft trajectory from the kp_data
+;       
+;    nearest: out, required, type=struct
+;       Finds the nearest neighbor to the spacecraft rather than interpolate
+;
 ;    help: optional: opens a window describing the function
 ;
 ; :Version:
 ;   1.1 (2015-Jun-16)
 ;
 ;-
-pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
-  grid3=grid3, nearest_neighbor=nearest_neighbor, $
+pro mvn_kp_interpol_model, kp_data, model=model, model_interpol, $
+  nearest=nearest, file=file, $
   help=help
   ;
   ; Place an argument check here,  Should provide 4 args
@@ -44,12 +52,17 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
     mvn_kp_get_help,'mvn_kp_interpol_model'
     return
   endif
+  
+  if ~keyword_set(model) then begin
+    mvn_kp_read_model_results, file, model
+  endif
+  
   ;
   ;  Set the keywords for the interpoaltion style
   ;
-  grid3=keyword_set(grid3)
-  nearest_neighbor=keyword_set(nearest_neighbor)
-  if nearest_neighbor eq 0 then grid3=1 
+  linear =0
+  nearest=keyword_set(nearest)
+  if nearest eq 0 then linear=1 
   ;
   ; Start the output model with the meta data
   ;
@@ -162,7 +175,7 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
           if k eq 689 then begin
             asdfdsafsdf=2
           endif
-          if keyword_set(nearest_neighbor) then begin
+          if keyword_set(nearest) then begin
             tracer_interpol[k] = griddata(lon_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], lat_array[0:n_elements(lat_mso_model)*n_elements(lon_mso_model)-1], values[*,alti1], xout = [sc_lon_mso[k]], yout = [sc_lat_mso[k]], /nearest_neighbor, triangles=tr)
           endif else begin 
             if alti1-1 lt 0 then begin
@@ -296,7 +309,7 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
           if sc_alt_mso[k] gt max(alt_geo_model) then continue
           if sc_alt_mso[k] lt min(alt_geo_model) then continue
           alti1_temp = min(abs(alt_geo_model - sc_alt_mso[k]), alti1)
-          if keyword_set(nearest_neighbor) then begin
+          if keyword_set(nearest) then begin
             tracer_interpol[k] = griddata(lon_mso[0:n_elements(lat_geo_model)*n_elements(lon_geo_model)-1], lat_mso[0:n_elements(lat_geo_model)*n_elements(lon_geo_model)-1], values[*,alti1], xout = [sc_lon_mso[k]], yout = [sc_lat_mso[k]], /nearest_neighbor, triangles=tr)
           endif else begin
             if alti1-1 lt 0 then begin
@@ -353,7 +366,7 @@ pro mvn_kp_interpol_model, kp_data, model, model_interpol, $
         kp_data.spacecraft.mso_x, $
         kp_data.spacecraft.mso_y, $
         kp_data.spacecraft.mso_z, $
-        grid3=grid3, nn=nearest_neighbor)
+        linear=linear, nn=nearest)
       ;
       ;  Add the interpolated model data to the structure
       ;

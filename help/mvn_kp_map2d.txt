@@ -40,8 +40,6 @@
          'RAD_O': IUVS Apopase O Radiance image.
          'RAD_CO': IUVS Apopase CO Radiance image.
          'RAD_NO': IUVS Apopase NO Radiance image.
-         'USER': User definied basemap. Will open a file dialog window 
-                 to select the image. 
     color_table: in, optional, type=string/integer
        the name (bw, red) or index of the color table to use when 
        plotting the selected parameter.

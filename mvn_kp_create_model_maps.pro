@@ -40,7 +40,7 @@
 ;       contour will be overlaid on one of these basemaps with 50%
 ;       transparency
 ;
-;    contourtransparency: in, optional, type=integer
+;    transparency: in, optional, type=integer
 ;       The user can specify the level of transparency in the contour plot.
 ;       Useful when plotting the contour over a basemap.  Must be a number
 ;       between 0 (no transparency) and 100 (completely transparent)
@@ -52,12 +52,12 @@ pro MVN_KP_CREATE_MODEL_MAPS, altitude, $
   model=model, $
   file=file, $
   interp=interp, $
-  numContourLines = numContourLines, $
+  numContours = numContours, $
   fill=fill, $
   ct=ct, $
-  contourtransparency=contourtransparency, $
-  grid3=grid3,$
-  nearest_neighbor=nearest_neighbor
+  transparency=transparency, $
+  linear=linear,$
+  nearest=nearest
 
 
 
@@ -190,9 +190,9 @@ sc_alt_array = replicate(altitude, n_elements(sc_lat_array))
   ;
   ;  Set the keywords for the interpoaltion style
   ;
-  grid3=keyword_set(grid3)
+  linear=keyword_set(linear)
   nearest_neighbor=keyword_set(nearest_neighbor)
-  if nearest_neighbor eq 0 then grid3=1
+  if nearest_neighbor eq 0 then linear=1
   ;
   ; Start the output model with the meta data
   ;
@@ -485,7 +485,7 @@ sc_alt_array = replicate(altitude, n_elements(sc_lat_array))
         sc_mso_x, $
         sc_mso_y, $
         sc_mso_z, $
-        grid3=grid3, nn=nearest_neighbor)
+        linear=linear, nn=nearest_neighbor)
       ;
       ;  Add the interpolated model data to the structure
       ;

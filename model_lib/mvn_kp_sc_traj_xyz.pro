@@ -1,5 +1,5 @@
 function mvn_kp_sc_traj_xyz, tracer, dims, x, y, z, $
-        nn=nn, grid3=grid3, ti=ti
+        nn=nn, linear=linear, ti=ti
   
 if (keyword_set(nn)) then begin
   ;
@@ -12,7 +12,7 @@ if (keyword_set(nn)) then begin
   return, model_interpol
 endif
 
-if (keyword_set(grid3)) then begin
+if (keyword_set(linear)) then begin
   
   data = x
   

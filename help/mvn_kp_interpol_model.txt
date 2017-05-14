@@ -3,7 +3,7 @@
  :Author: Kevin McGouldrick (2015-Apr-15)
 
  :Description:
-    Convert a model cube and its metadata into an a structure of arrays 
+    Convert a model cube and its metadata into an a structure of arrays
     interpolated to the spacecraft trajectory given by kp_data
 
  :Keywords:
@@ -12,10 +12,18 @@
 
     model: in, required, type=struct
        Structure containing relevant model metadata, dimensions, and data
+       
+    file: in, required, type=string
+       File path containing the directory of the model file you want to read in.
+       This is only required if "model" is not provided
 
     model_interpol: out, required, type=struct
        Structure containing the model tracers interpolated to the provided
        spacecraft trajectory from the kp_data
+       
+    nearest: out, required, type=struct
+       Finds the nearest neighbor to the spacecraft rather than interpolate
+
     help: optional: opens a window describing the function
 
  :Version:

@@ -42,15 +42,15 @@ def check_args():
     total = len( sys.argv )   # get total number of args passed
     cmdargs = str( sys.argv ) # Get the args list
     if total <= 1:
-        print '\nUSAGE:'
-        print '%> python make_zip.py access=... ' \
-              + '[IncludeBasemaps=...] [Debug=...]'
-        print '  -- or --'
-        print '%> ./make_zip.py access=... ' \
-              + '[IncludeBasemaps=...] [Debug=...]'
-        print ' '
-        print 'Where values in [] are Optional arguments.\n'
-        print 'Returning having done nothing.....\n'
+        print('\nUSAGE:')
+        print('%> python make_zip.py access=... ' \
+              + '[IncludeBasemaps=...] [Debug=...]')
+        print('  -- or --')
+        print('%> ./make_zip.py access=... ' \
+              + '[IncludeBasemaps=...] [Debug=...]')
+        print(' ')
+        print('Where values in [] are Optional arguments.\n')
+        print('Returning having done nothing.....\n')
         sys.exit(1)        
     #
     #  cycle through args and get info
@@ -63,24 +63,24 @@ def check_args():
             elif value == 'Public' or value == 'public':
                 access='Public'
             else:
-                print "****ERROR****"
-                print '"%s" is an invalid argument for <access>' % value
-                print 'Only "Team" and "Public" are acceptable'
-                print 'Returning having done nothing...'
+                print("****ERROR****")
+                print('"%s" is an invalid argument for <access>' % value)
+                print('Only "Team" and "Public" are acceptable')
+                print('Returning having done nothing...')
                 sys.exit(1)
         if re.match('[Ii]nclude[Bb]asemaps',token): 
             if value != 'True' and value != 'False':
-                print '*****ERROR*****'
-                print '<IncludeBasemaps> must be Boolean (True/False)'
-                print 'Returning having done nothing...'
+                print('*****ERROR*****')
+                print('<IncludeBasemaps> must be Boolean (True/False)')
+                print('Returning having done nothing...')
                 sys.exit(1)
             else:
                 IncludeBasemaps=(value=='True')
         if re.match('[Dd]ebug',token):
             if value != 'True' and value != 'False':
-                print '*****ERROR*****'
-                print '<Debug> must be Boolean (True/False)'
-                print 'Returning having done nothing...'
+                print('*****ERROR*****')
+                print('<Debug> must be Boolean (True/False)')
+                print('Returning having done nothing...')
                 sys.exit(1)
             else:
                 Debug=(value=='True')
@@ -88,11 +88,11 @@ def check_args():
     #  Verify that access argument was provided
     #
     if 'access' not in locals():
-        print '*****ERROR*****'
-        print 'Access level must be provided as an argument'
-        print '%> python make_zip.py access=<value>'
-        print 'where <value> = "Team" or "Public"'
-        print 'Returning having done nothing...'
+        print('*****ERROR*****')
+        print('Access level must be provided as an argument')
+        print('%> python make_zip.py access=<value>')
+        print('where <value> = "Team" or "Public"')
+        print('Returning having done nothing...')
         sys.exit(1)
 
     return Debug, IncludeBasemaps, access
@@ -107,14 +107,15 @@ def define_file_name(Debug, IncludeBasemaps, access):
     #
     # Move to relevant direcotry
     #
-    os.chdir(os.environ['HOME']+'/DIVIDE/dev/maventoolkit/')
+    os.chdir('W:/DIVIDE/dev/maventoolkit/')
+    #os.chdir('W:/DIVIDE/dev/maventoolkit/')
     #
     #  Create the new access.txt file
     #
     if Debug:
-        access_file = open('access.txt.temp','wb')
+        access_file = open('access.txt.temp','w')
     else:
-        access_file = open('access.txt','wb')
+        access_file = open('access.txt','w')
         access_file.write('; IDL Toolkit Access Level (Public(=0) '+
                           'or Private(=1) website)\n')
     if access == 'Team': 
@@ -122,8 +123,8 @@ def define_file_name(Debug, IncludeBasemaps, access):
     elif access == 'Public':
         access_file.write('access_level: 0\n')
     else:
-        print '*****ERROR*****'
-        print 'value of <access> must be either "Team" or "Public"'
+        print('*****ERROR*****')
+        print('value of <access> must be either "Team" or "Public"')
         sys.exit(1)
     access_file.flush()
     access_file.close()
@@ -145,7 +146,7 @@ def define_file_name(Debug, IncludeBasemaps, access):
     #
     map_str = ('WithMaps' if IncludeBasemaps else 'NoMaps')
     zipout = '../Toolkit_V'+version+'_'+access+'_'+map_str+'.zip'
-    print 'Preparing file: %s' % zipout[3:]
+    print('Preparing file: %s' % zipout[3:])
 
     return zipout
 
@@ -220,21 +221,21 @@ def create_zip_file(Debug,IncludeBasemaps,access,zipout):
 
 def make_help():
     '''
-    Python script to parse the *.pro files in the MAVEn Toolkit main level
+    Python script to parse the *.pro files in the MAVEN Toolkit main level
     directory, and make a txt help file out of the header information, located
     between bracket ;+ and ;- lines
 
     Author: McGouldrick (2015-Jul-21)
     '''
 
-    os.chdir(os.environ['HOME']+'/DIVIDE/dev/maventoolkit/')
+    os.chdir('W:/DIVIDE/dev/maventoolkit/')
     pro_files = []
     pro_files += [each for each in os.listdir('./') if each.endswith('.pro')]
 
     for f in pro_files:
-        fin = open(f,'rb')
+        fin = open(f,'r')
         # create the output file
-        fout = open('help/'+re.sub('\.pro','.txt',f), 'wb')
+        fout = open('help/'+re.sub('\.pro','.txt',f), 'w')
         # Initialize parse Boolean
         parse = False
         # Parse the pro file and write the header to txt file

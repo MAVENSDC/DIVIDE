@@ -1,4 +1,7 @@
-Current Version: 2017-04-20
+Current Version: 2017-05-12
+
+2017-05-12:
+	-Simplified some of the keywords
 
 2017-04-20:
 	-Fixed a bug with the projection of MAVEN in the 3D mars

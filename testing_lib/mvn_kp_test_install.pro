@@ -65,41 +65,6 @@ pro mvn_kp_test_install, test_number
   endelse
   
   
-  ;;
-  ;; Test CDF Read
-  ;;
-  
-  
-  message, /reset
-  cmd = "mvn_kp_read_insitu_file, '"+insitu_cdf+"', insitu"
-  
-  return = EXECUTE(cmd[0])
-  if return ne 1 and !ERROR_STATE.CODE NE 0 then begin
-    ;; Error occured
-    results = [results, "[INSTALL TEST] - ERROR with: CDF Test 1"]
-    results = [results, "                  ----- "+!ERROR_STATE.MSG]
-    results = [results, "                  NOTE:  There are currently no available CDF files to download.  This error should not affect your ability to use the toolkit."]
-  endif else begin
-    ;; Success
-    results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 1"]
-  endelse
-  
-  message, /reset
-  cmd = "mvn_kp_read_iuvs_file, '"+iuvs_cdf+"', iuvs, instruments=instruments"
-  return = EXECUTE(cmd[0])
-
-;  print,return
-
-  if return ne 1 and !ERROR_STATE.CODE NE 0 then begin
-    ;; Error occured
-    results = [results,"[INSTALL TEST] - ERROR with: CDF Test 2"]
-    results = [results,"                  ----- "+!ERROR_STATE.MSG]
-    results = [results, "                  NOTE:  There are currently no available CDF files to download.  This error should not affect your ability to use the toolkit."]
-  endif else begin
-    ;; Success
-    results = [results, "[INSTALL TEST] - SUCCESS with: CDF Test 2"]
-  endelse
-  
   print, "Completed tests."
   
   
@@ -112,13 +77,6 @@ pro mvn_kp_test_install, test_number
   print, ""
   for I=0, n_elements(results_txt)-1 do begin
     print, results_txt[I]
-  endfor
-  
-  print, ""
-  print, "Install CDF read test results"
-  print, ""
-  for I=0, n_elements(results)-1 do begin
-    print, results[I]
   endfor
   
 

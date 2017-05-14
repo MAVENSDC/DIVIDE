@@ -16,7 +16,7 @@
 ; :Keywords:
 ;    list: in, optional, type=boolean
 ;       List out possible parameters names to search (& index identifiers associated with parameters). No
-;       search performed. If no observation keyword supplied, will only list “common” variables 
+;       search performed. If no observation keyword supplied, will only list "common" variables 
 ;       (geometry values which exist in all observation modes). If observation keyword supplied, 
 ;       will also list parameters for that observation mode. 
 ;    
