@@ -2,6 +2,10 @@
 ;
 ; :Name: mvn_kp_resample
 ; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ; :Author: Kristopher Larsen
 ; 
 ; :Description:

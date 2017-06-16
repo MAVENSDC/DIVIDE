@@ -19,6 +19,11 @@
 ;   
 ; :Version:
 ;   1.0
+;   
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 pro mvn_kp_define_error_bars, kp_data, level0_index, level1_index, $
                               base_tags, err0_index, err1_index, $

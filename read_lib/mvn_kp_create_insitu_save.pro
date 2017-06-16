@@ -1,3 +1,9 @@
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+
 ;; Infiles : Input array of files with paths of insitu ascii files to convert to save files
 ;;
 ;; Outdir : Output path where created save files should go.

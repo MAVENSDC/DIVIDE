@@ -19,6 +19,11 @@
 ;    second_level_tags: out, requried, type=strarr(second_level_count)
 ;       the names of hte second level tags
 ;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+;
 ;-
 pro MVN_KP_TAG_PARSER, kp_data, base_tag_count, first_level_count, $
                        second_level_count, base_tags,  $

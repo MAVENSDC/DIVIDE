@@ -71,7 +71,11 @@
 ; mod Mar.97 by F.V. do not pass the SELECT_TAGS keyword in recursion.
 ; Converted to IDL V5.0   W. Landsman   September 1997
 ; 
-; RENAMED WITH MVN_KP PREFIX FOR INCLUSION IN THE MAVEN TOOLKIT
+; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 
 pro mvn_copy_struct, struct_From, struct_To, NT_copied, Recur_Level,            $

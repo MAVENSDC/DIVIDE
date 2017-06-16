@@ -12,6 +12,11 @@
 ;       the names of the base level tags
 ;    first_level_tags: in, required, type=strarr(first_level_count)
 ;       the names of the first level tags.
+; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 
 

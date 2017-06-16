@@ -14,7 +14,11 @@
 ; :Keywords:
 ;    proc_name: in, required, type=string
 ;       The name of the procedure from which help is requested
-;
+; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 pro mvn_kp_get_help, proc_name
 

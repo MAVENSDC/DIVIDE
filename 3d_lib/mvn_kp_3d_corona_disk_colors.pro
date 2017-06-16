@@ -14,6 +14,11 @@
 ;       input for block keyword to H5S_SELECT_HYPERSLAB
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 pro MVN_KP_3D_CORONA_DISK_COLORS, iuvs, min_val, max_val, d_color
 common colors, r_orig, g_orig, b_orig, r_curr, g_curr, b_curr

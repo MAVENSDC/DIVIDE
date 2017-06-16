@@ -1,6 +1,10 @@
 ;+
 ; :Name: mvn_kp_3d
 ; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ; :Author: Kristopher Larsen
 ; 
 ; :Description: 
@@ -280,23 +284,57 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
       instrument_array[7] = 1
       tags1 = tag_names(iuvs)
       temp = where(tags1 eq 'PERIAPSE')
-      if temp ne -1 then instrument_array[8] = 1
+      if temp ne -1 then begin
+        if iuvs[0].periapse[0].time_start ne '' then begin
+          instrument_array[8] = 1
+        endif
+      endif
       temp = where(tags1 eq 'APOAPSE')
-      if temp ne -1 then instrument_array[9] = 1
+      if temp ne -1 then begin
+        if iuvs[0].APOAPSE[0].time_start ne '' then begin
+          instrument_array[9] = 1
+        endif
+      endif
       temp = where(tags1 eq 'CORONA_E_HIGH')
-      if temp ne -1 then instrument_array[10] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_E_HIGH[0].time_start ne '' then begin
+          instrument_array[10] = 1
+        endif
+      endif
       temp = where(tags1 eq 'CORONA_E_DISK')
-      if temp ne -1 then instrument_array[11] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_E_DISK[0].time_start ne '' then begin
+          instrument_array[11] = 1
+        endif
+      endif
       temp = where(tags1 eq 'STELLAR_OCC')
-      if temp ne -1 then instrument_array[12] = 1
+      if temp ne -1 then begin
+        instrument_array[12] = 0
+      endif
       temp = where(tags1 eq 'CORONA_LO_HIGH')
-      if temp ne -1 then instrument_array[13] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_LO_HIGH[0].time_start ne '' then begin
+          instrument_array[13] = 1
+        endif
+      endif
       temp = where(tags1 eq 'CORONA_LO_LIMB')
-      if temp ne -1 then instrument_array[14] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_LO_LIMB[0].time_start ne '' then begin
+          instrument_array[14] = 1
+        endif
+      endif
       temp = where(tags1 eq 'CORONA_E_LIMB')
-      if temp ne -1 then instrument_array[15] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_E_LIMB[0].time_start ne '' then begin
+          instrument_array[15] = 1
+        endif
+      endif
       temp = where(tags1 eq 'CORONA_LO_DISK')
-      if temp ne -1 then instrument_array[16] = 1
+      if temp ne -1 then begin
+        if iuvs[0].CORONA_LO_DISK[0].time_start ne '' then begin
+          instrument_array[16] = 1
+        endif
+      endif
      endif
      temp = where(tags eq 'USER') 
      if temp ne -1 then instrument_array[17] = 1
@@ -386,7 +424,7 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
     ;to see which coronal observations are present
 
     if instrument_array[7] eq 1 then begin
-      mvn_kp_3d_iuvs_parse, instrument_array, e_disk_list=e_disk_list, $
+      mvn_kp_3d_iuvs_parse, iuvs, instrument_array, e_disk_list=e_disk_list, $
             e_limb_list=e_limb_list, e_high_list, lo_disk_list=lo_disk_list, $
             lo_limb_list=lo_limb_list, lo_high_list=lo_high_list
     endif

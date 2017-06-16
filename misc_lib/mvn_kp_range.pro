@@ -12,6 +12,11 @@
 ;      output the range of times and orbits for in-situ, and range of orbits
 ;      for IUVS.  It will then check whether there is overlap between the
 ;      two.
+; 
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 pro MVN_KP_RANGE, kp_data, iuvs=iuvs
 

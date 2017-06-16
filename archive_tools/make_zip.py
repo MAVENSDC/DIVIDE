@@ -17,6 +17,12 @@ Output: None: generates ZIP file, placed two directories above archive_tools/
               Updates the help files
               prints message to screen indicating name of generated file.
 
+Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+Released under the MIT license.
+This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+			  
+			  
 Author: McGouldrick (2015-Oct-01)
 Version: 1.0
 '''
@@ -208,9 +214,9 @@ def create_zip_file(Debug,IncludeBasemaps,access,zipout):
     #  Re-write the access.txt file to indicate Team member access
     #
     if Debug:
-        access_file = open('access.txt.temp','wb')
+        access_file = open('access.txt.temp','w')
     else:
-        access_file = open('access.txt','wb')
+        access_file = open('access.txt','w')
     access_file.write('; IDL Toolkit Access Level (Public(=0) '+
                       'or Private(=1) website)\n')
     access_file.write('access_level: 1\n')

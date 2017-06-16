@@ -1,3 +1,9 @@
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+
 pro mvn_kp_time_split_one_string, time_in, year=year, month=month, day=day, hour=hour, min=min, sec=sec
   ;; Copy time input
   time_string = time_in

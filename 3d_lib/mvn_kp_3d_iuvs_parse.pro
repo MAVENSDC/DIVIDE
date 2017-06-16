@@ -1,3 +1,9 @@
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+
 pro mvn_kp_3d_iuvs_parse, iuvs, instrument_array, e_disk_list=e_disk_list, $
        e_limb_list=e_limb_list, e_high_list, lo_disk_list=lo_disk_list, $
        lo_limb_list=lo_limb_list, lo_high_list=lo_high_list

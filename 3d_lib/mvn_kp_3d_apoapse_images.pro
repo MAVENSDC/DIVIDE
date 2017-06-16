@@ -14,6 +14,11 @@
 ;       input for block keyword to H5S_SELECT_HYPERSLAB
 ;    stride : out, optional, type=lonarr(ndims)
 ;       input for stride keyword to H5S_SELECT_HYPERSLAB
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 pro MVN_KP_3D_APOAPSE_IMAGES,input, image_out, blend, time, start, stop, apo_time_blend
 

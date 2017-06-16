@@ -26,6 +26,11 @@ pro mvn_combine_structs,str1,str2,strsum,structyp=structyp
 ; ADDED MVN_KP PREFIX WITHOUT MODIFYING ANY OTHER CODE FOR INCLUSION 
 ;   IN MAVEN TOOLKIT WITHOUT POSSIBILITY OF CONFLICT WITH ROUTINES ON 
 ;   USER COMPUTERS ALREADY.
+;
+; Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+; Released under the MIT license.
+; This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+; Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
 ;-
 
 if n_params() LT 2 then begin 
