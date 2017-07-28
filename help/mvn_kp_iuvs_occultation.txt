@@ -1,0 +1,55 @@
+
+ :Name: mvn_kp_iuvs_occultation
+
+ Copyright 2017 Regents of the University of Colorado. All Rights Reserved.
+ Released under the MIT license.
+ This software was developed at the University of Colorado's Laboratory for Atmospheric and Space Physics.
+ Verify current version before use at: https://lasp.colorado.edu/maven/sdc/public/pages/software.html
+ :Author: Harter
+
+ :Description:
+   This routine is the wrapper for the IUVS occultation
+   plotting routines. 
+
+ :Params:
+    kp_data : in, required, type=structure
+       the IUVS data structure read into memory by the MVN_KP_READ routine
+
+ :Keywords:
+    profiles : in, optional, type=intarr(ndims)
+       an array listing the orbits to be plotted
+    ret_species : in, optional, type=intarr(ndims)
+       an array listing the retrieval measurements of particular
+       species to be plotted
+    nolegend : in, optional, type=strarr(1)
+       either 'vertical' or 'horizontal',
+       defining the orientation of the legend.
+    linear : in, optional, type=byte
+       optional keyword to make plots on a linear scale, instead of the
+       logarithmic default
+    oo: out, optional, object
+       Variable to which plot object may be passed to $MAIN$.
+    leg: out, optional, object
+       Variable to which legend object may be passed to $MAIN$.
+    species_expand: in, optional, byte
+       if this keyword is selected, then all the species for a given orbit
+       will be plotted on a single graph
+    profile_expand: in, optional, byte
+       if this keyword is selected, then all the orbits will be combined
+       into a single plot for comparison purposes
+    range: in, optional, byte
+       if selected, this will return the temporal range of the data set
+       without plotting anything
+    colortable: in, optional, type=integer
+       an option to override the default colortable with any other
+       IDL colortable
+    window: in, optional, type=byte
+       if invoked, will create a new window instead of reusing the previous.
+    winX: in, optional, type=integer
+       sets the X size of the window, in pixels.
+    winY: in, optional, type=integer
+       sets the Y size of the window, in pixels.
+
+ :History:   1.0   July 28, 2017
+
+-

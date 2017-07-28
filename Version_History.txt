@@ -1,4 +1,8 @@
-Current Version: 2017-05-12
+Current Version: 2017-07-28
+
+2017-07-28:
+	-Added ability to download and read in IUVS Occultation KP files
+	-Added new function, "mvn_kp_iuvs_occultation", which will plot the occultation data
 
 2017-05-12:
 	-Simplified some of the keywords
