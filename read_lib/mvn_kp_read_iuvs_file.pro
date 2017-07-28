@@ -36,6 +36,18 @@ pro mvn_kp_read_iuvs_return_substruct, iuvs_record_temp, begin_time, $
     endfor
   endif
   
+  if instruments.stellarocc then begin
+    for occ_index = 0, n_elements(iuvs_record_temp.stellar_occ.time_start)-1 do begin
+      if (iuvs_record_temp.stellar_occ[occ_index].time_start ne '') then begin
+        check = MVN_KP_TIME_BOUNDS(iuvs_record_temp.stellar_occ[occ_index].time_start, begin_time, end_time)
+        if check then begin
+          iuvs_record_time_temp.stellar_occ[occ_index] = iuvs_record_temp.stellar_occ[occ_index]
+          any_within_bounds = 1
+        endif
+      endif
+    endfor
+  endif
+  
   ;; Check Echelle Observation Modes
   if instruments.c_e_limb then begin
     if (iuvs_record_temp.corona_e_limb.time_start ne '') then begin

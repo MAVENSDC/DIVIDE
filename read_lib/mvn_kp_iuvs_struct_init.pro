@@ -19,7 +19,7 @@ pro MVN_KP_IUVS_STRUCT_INIT, iuvs_record, nalt_struct=nalt_struct,  $
                              instruments=instruments
 
 if not (keyword_set(nalt_struct)) then begin
-  nalt_struct = {periapse_rad:32, periapse_den:53, c_l_limb:-1, c_l_high:130, c_e_limb:-1, c_e_high:-1}
+  nalt_struct = {periapse_rad:32, periapse_den:53, c_l_limb:-1, c_l_high:130, c_e_limb:-1, c_e_high:-1, stellarocc:40}
 endif
   
   ;; Check ENV variable to see if we are in debug mode
@@ -75,9 +75,27 @@ endif
 
   ;INCLUDE IUVS STELLAR OCCULTATION DATA STRUCTURE
   if instruments.stellarocc then begin
-    i5 = {stellar, test1:!VALUES.F_NAN}
+      if nalt_struct.stellarocc gt 0 then begin
+        nalt = nalt_struct.stellarocc
+      endif else begin
+        nalt = 40
+      endelse
+      i5 = create_struct(                                                          $
+  ;      NAME                ='occultation',                                       $
+        iuvs_record_common,                                                        $
+        'n_alt_den_bins'     ,!VALUES.F_NAN,                                       $
+        'target_name'        ,'',                                                  $
+        'scale_height_id'    ,strarr(3),                                           $
+        'scale_height'       ,make_array(3,      /FLOAT, VALUE=!VALUES.F_NAN),     $
+        'scale_height_unc'   ,make_array(3,      /FLOAT, VALUE=!VALUES.F_NAN),     $
+        'retrieval_id'       ,strarr(4),                                           $
+        'retrieval'          ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+        'retrieval_unc'      ,make_array(4,nalt, /FLOAT, VALUE=!VALUES.F_NAN), $
+        'retrieval_sys_unc'  ,make_array(3, /FLOAT, VALUE=!VALUES.F_NAN),          $
+        'alt'              ,make_array(nalt,    /FLOAT, VALUE=!VALUES.F_NAN))   
+      
     
-    iuvs_record_temp1 = create_struct(['stellar_occ'],i5,iuvs_record_temp)
+    iuvs_record_temp1 = create_struct(['stellar_occ'],[i5,i5,i5,i5,i5],iuvs_record_temp)
   endif else  iuvs_record_temp1 = create_struct(iuvs_record_temp)
 
 

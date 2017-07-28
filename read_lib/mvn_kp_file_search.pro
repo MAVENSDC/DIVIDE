@@ -91,8 +91,19 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
  
   ;; - recursive search to look through year/month subdirs
   local_iuvs = file_search(iuvs_dir+path_sep(), iuvs_pattern, count=count)
+  local_iuvs_no_occ = local_iuvs
+  
+  ;; This is a complete hack but without completely redoing the code I can't see a way around it
+  ;; This removes the "occ-" from all IUVS stellar occultation files
+  
+  for i=0,n_elements(local_iuvs_no_occ)-1 do begin
+    if strmatch(local_iuvs_no_occ[i], '*occ-*', /fold_Case) then begin
+      local_iuvs_no_occ[i] = strjoin(strsplit(local_iuvs_no_occ[i], 'occ-', /extract), '')
+    endif
+  endfor
+  
   if (count gt 0) then begin
-    local_iuvs_base = file_basename(local_iuvs)
+    local_iuvs_base = file_basename(local_iuvs_no_occ)
     
     tiuvs_year  = fix(strmid(local_iuvs_base, iuvs_year_index,  4))
     tiuvs_month = fix(strmid(local_iuvs_base, iuvs_month_index,  2))

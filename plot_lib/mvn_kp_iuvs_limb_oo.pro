@@ -78,7 +78,9 @@ pro MVN_KP_IUVS_LIMB_OO, kp_data=kp_data, species_data=species_data, $
                          radiance_label=radiance_labels, $
                          profile_labels=profile_labels, $
                          species_expand=species_expand, $
-                         profile_expand=profile_expand
+                         profile_expand=profile_expand, $
+                         rad_plot = rad_plot, $
+                         den_plot = den_plot
 
   tot_species = profile_dimensions * species_dimensions
 

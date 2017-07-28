@@ -27,7 +27,7 @@ function mvn_kp_date_subdir, filename
   endif
 
 
-  ;; Determine yearh & month from filename
+  ;; Determine year & month from filename
   date_string = ''
   date_string = stregex(filename, '[0|1|2|3|4|5|6|7|8|9]{8}', /extract)
   

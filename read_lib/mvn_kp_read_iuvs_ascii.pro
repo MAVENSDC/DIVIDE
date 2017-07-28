@@ -34,12 +34,10 @@ pro mvn_kp_iuvs_replace_NaNs, in_struct
 end
 
 
-pro mvn_kp_iuvs_ascii_common, lun, in_struct
+pro mvn_kp_iuvs_ascii_common, lun, in_struct, occultation=occultation
 
-  ;Set to 0 for public release, 1 for team release
-  private = mvn_kp_config_file(/check_access)
   ;; read in from config info about iuvs data
-  iuvs_data_spec = mvn_kp_config(/iuvs_data, private=private)
+  iuvs_data_spec = mvn_kp_config(/iuvs_data)
   num_common = iuvs_data_spec.num_common
  ;; Read in until we hit 'TIME_START'
   while not eof(lun) do begin
@@ -59,6 +57,13 @@ pro mvn_kp_iuvs_ascii_common, lun, in_struct
   readf, lun, temp
   line = strsplit(temp, ' ', /EXTRACT)
   in_struct.(1) = string(line[2])
+  
+  if keyword_set(occultation) then begin
+    readf, lun, temp
+    line = strsplit(temp, ' ', /EXTRACT)
+    in_struct.target_name = string(line[2])
+  endif
+  
   
   for i=2, num_common-1 do begin
      temp = ''
@@ -197,6 +202,59 @@ pro mvn_kp_read_iuvs_ascii_periapse, lun, in_struct
   endfor
 
 end
+
+pro mvn_kp_read_iuvs_ascii_occultation, lun, in_struct
+
+  temp = ''
+  readf, lun, temp & line = strsplit(temp, '=',/EXTRACT)
+  in_struct.n_alt_bins = fix(line[1],type=2)
+
+  ;; Scale Height ID, Scale Height, and Scale Height Err
+  line =   mvn_kp_iuvs_ascii_read_blanks(lun)
+  in_struct.scale_height_id = line
+  readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
+  in_struct.scale_height = float(line[1:*])
+  readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
+  in_struct.scale_height_unc = float(line[1:*])
+
+  ;; Density_ID, Density, Altitude
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
+  in_struct.retrieval_id  = string(line[1:*])
+  num_dens = n_elements(in_struct.retrieval_id)
+
+  for i=0, in_struct.n_alt_bins-1 do begin
+    readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
+    in_struct.alt[i] = float(line[0])
+    in_struct.retrieval[*, i] = float(line[1:*])
+  endfor
+
+  ;; retrieval_sys_unc
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  readf, lun, temp ; read the retrieval_SYS_UNC header
+  ; now read the data
+  num_dens = n_elements(in_struct.retrieval_sys_unc)
+  readf,lun,temp & line=strsplit(temp,' ',/extract)
+
+  for i = 0,num_dens-1 do begin
+    in_struct.retrieval_sys_unc[i] = float(line[i])
+  endfor
+
+  ;; Density Err
+  line = mvn_kp_iuvs_ascii_read_blanks(lun)
+  readf, lun, temp ; read the DENSITY_UNC header
+  ; now read the data
+  ;  num_dens = (size(in_struct.density_unc, /DIMENSIONS))[1]
+  for i=0, in_struct.n_alt_bins-1 do begin
+    readf, lun, temp & line = strsplit(temp, ' ', /EXTRACT)
+    in_struct.retrieval_unc[*, i] = float(line[1:*])
+  endfor
+
+end
+
+
+
+
 
 pro mvn_kp_read_iuvs_ascii_c_l_disk, lun, in_struct
   temp = ''
@@ -603,6 +661,7 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record, instruments
   
   ;; Read in each line
   periapse_i = 0
+  occ_i = 0
   while not eof(lun) do begin
     temp = ''
     readf, lun, temp
@@ -622,6 +681,20 @@ pro mvn_kp_read_iuvs_ascii, filename, iuvs_record, instruments
         iuvs_record.periapse[periapse_i] = temp_periapse
         periapse_i++
         orbit_number = iuvs_record.periapse[0].orbit_number
+        continue
+      endif
+      if(line[2] eq 'OCCULTATION' && instruments.stellarocc) then begin
+        temp_occ = iuvs_record.stellar_occ[occ_i]
+        ;; Read in common values
+        mvn_kp_iuvs_ascii_common, lun, temp_occ, /occultation
+        ;        readf,lun,temp ; skip over the n_alt_bins info
+        ;; Read in Periapse specific values
+        mvn_kp_read_iuvs_ascii_occultation, lun, temp_occ
+        mvn_kp_iuvs_replace_NaNs, temp_occ
+
+        iuvs_record.stellar_occ[occ_i] = temp_occ
+        occ_i++
+        orbit_number = iuvs_record.stellar_occ[0].orbit_number
         continue
       endif
       ;; ======== If corona lores disk mode ===========

@@ -519,9 +519,7 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                          den_plot=keyword_set(density), $
                          density_labels=density_labels, $
                          radiance_label=radiance_labels, $
-                         profile_labels=profile_labels, $
-                         species_expand=species_expand, $
-                         profile_expand=profile_expand
+                         profile_labels=profile_labels
    endif else begin
     ; call OO plotting routine
     mvn_kp_iuvs_limb_oo, kp_data=kp_data, species_data=species_data, $
@@ -540,7 +538,9 @@ pro MVN_KP_IUVS_LIMB, kp_data, density=density, radiance=radiance, $
                          radiance_label=radiance_labels, $
                          profile_labels=profile_labels, $
                          species_expand=species_expand, $
-                         profile_expand=profile_expand
+                         profile_expand=profile_expand, $
+                         rad_plot=keyword_set(radiance), $
+                         den_plot=keyword_set(density)
    endelse
 
 end
