@@ -1,4 +1,16 @@
-Current Version: 2017-07-28
+Current Version: 2018-08-30
+
+2018-08-30:
+	-Fixed issue where the altitude in the KP files was not read correctly
+
+2018-01-25:
+	-Made changes to the toolkit so that access to the NAIF site was no longer necessary 
+
+2018-01-24:
+	-Set the toolkit to use the latest template if no template for the KP data is found
+
+2017-12-06:
+	-Fixed a bug where the 3D basemaps would affect the maven_sphere rather than the planet
 
 2017-07-28:
 	-Added ability to download and read in IUVS Occultation KP files

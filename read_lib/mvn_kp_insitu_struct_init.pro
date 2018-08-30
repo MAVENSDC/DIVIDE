@@ -309,7 +309,7 @@ pro mvn_kp_insitu_struct_init, filename, output, col_map, formats, $
       ;
       if strmatch( name, '*solar zenith angle*', /fold_case ) then $
          name = 'sza'
-      if strmatch( name, '*altitude*aeroid*', /fold_case ) then $
+      if strmatch( name, '*altitude*ellipsoid*', /fold_case ) then $
          name = 'altitude'
       if strmatch( name, 'Mars season*', /fold_case ) then $
          name = 'Mars_season'

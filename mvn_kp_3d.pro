@@ -2031,11 +2031,11 @@ pro MVN_KP_3D, insitu, iuvs=iuvs, time=time, basemap=basemap, grid=grid, $
         endif else begin
           color_maven = maven_color
         endelse
-        oPolygons = OBJ_NEW('IDLgrPolygon', $
+        mavenPolygons = OBJ_NEW('IDLgrPolygon', $
           DATA = vertices, POLYGONS = polygons, $
           COLOR = color_maven, reject=1, shading=1, $
           specular=[255,255,255])
-        maven_model -> ADD, oPolygons
+        maven_model -> ADD, mavenPolygons
         view -> add, maven_model
       endelse
 

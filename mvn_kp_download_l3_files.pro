@@ -43,7 +43,7 @@
 ;       downloading any data.
 ;
 ;    exclude_orbit_file: in, optional, type=boolean
-;       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
+;       Don't download an updated version of the orbit # file from MAVEN Science Data Center
 ;
 ;    debug: in, optional, type=boolean
 ;       On error, - "Stop immediately at the statement that caused the error and print
@@ -199,7 +199,7 @@ pro mvn_kp_download_l3_files, instruments=instruments, filenames=filenames, list
 
   ;; Unless specified not to, check for & download updated orbit # file
   if (not keyword_set(exclude_orbit_file)) and (not keyword_set(list_files)) then begin
-    print, "Before downloading data files, checking for updated orbit # file from naif.jpl.nasa.gov"
+    print, "Before downloading data files, checking for updated orbit # file from the MAVEN Science Data Center"
     print, ""
     mvn_kp_download_orbit_file
   endif

@@ -14,7 +14,7 @@
 
 pro mvn_kp_download_template_file
 
-   Get JPL Naif connection information
+   Get MAVEN Science Data Center connection information
   spec = mvn_kp_config(/template_file_location)
 
    Get location to safe file locally

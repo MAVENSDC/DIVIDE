@@ -56,7 +56,7 @@
 ;       
 ;    exclude_orbit_file: in, optional, type=boolean
 ;       Don't download an updated version of the orbit # file 
-;       from naif.jpl.nasa.gov
+;       from MAVEN Science Data Center
 ;    
 ;    local_dir: in, optional, type=string
 ;       Specify a directory to download files to - this overrides what's 
@@ -322,7 +322,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   
   ;; Unless specified not to, check for & download updated orbit # file
   if not keyword_set(exclude_orbit_file) then begin
-    print, "Before downloading data files, checking for updated orbit # file from naif.jpl.nasa.gov"
+    print, "Before downloading data files, checking for updated orbit # file from MAVEN Science Data Center"
     print, ""
     mvn_kp_download_orbit_file
   endif

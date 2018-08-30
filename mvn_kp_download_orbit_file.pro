@@ -43,7 +43,7 @@ pro mvn_kp_download_orbit_file, debug=debug, help=help
     on_error, 1
   endif
 
-  ;; Get JPL Naif connection information
+  ;; Get orbit file connection information
   spec = mvn_kp_config(/orbit_file_location)
 
   ;; Get location to safe file locally

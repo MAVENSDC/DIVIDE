@@ -77,7 +77,7 @@ function MVN_KP_LOCAL_IUVS_FILES, begin_jul, end_jul, iuvs_dir, filename_spec, s
 
 
   ;; SET THE PATTERN FOR THE IUVS KP FILENAME BASED ON THE BEGINNING DATE
-  ;; Default is CDF format
+  ;; Default is text format
   if keyword_set(save_files) then begin
     ext = '.sav' 
     iuvs_pattern += ext

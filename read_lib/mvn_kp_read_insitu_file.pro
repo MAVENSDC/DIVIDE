@@ -60,6 +60,12 @@ pro mvn_kp_read_insitu_file, filename, insitu_record_out, $
     ascii_template = install_dir + path_sep() + 'insitu_ascii_template' $
                    + '_v' + string( vnum, format='(i02)') $
                    + '_r' + string( rnum, format='(i02)') + '.sav'
+    
+    if file_test(ascii_template) eq 0 then begin
+      ;Find the latest files in the directory, use that one instead
+      template_files = file_search(install_dir, "*.sav")
+      ascii_template = template_files[-1]
+    endif
     restore,ascii_template
     
     ;The data doesn't start in the same place in every file.

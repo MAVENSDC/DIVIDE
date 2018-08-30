@@ -92,7 +92,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
   if keyword_set(orbit_file_location) then begin
     
     ;UPDATE FILES IN TIME ORDER HERE AS NEEDED
-    base_url_path = '/pub/naif/MAVEN/kernels/spk/'
+    base_url_path = '/maven/sdc/public/data/anc/orb/'
     orbit_files_rec = ['maven_orb_rec_140922_150101_v1.orb',$
                       'maven_orb_rec_150101_150401_v1.orb',$
                       'maven_orb_rec_150401_150701_v1.orb',$
@@ -105,7 +105,7 @@ function mvn_kp_config, insitu_file_spec=insitu_file_spec, iuvs_file_spec=iuvs_f
                       'maven_orb_rec.orb']
     
     orbit_file_server_spec = create_struct($
-      'host', 'naif.jpl.nasa.gov/', $
+      'host', 'lasp.colorado.edu/', $
       'port', 80, $
       'username', '', $
       'password', '', $

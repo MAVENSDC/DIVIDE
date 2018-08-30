@@ -55,7 +55,7 @@
        
     exclude_orbit_file: in, optional, type=boolean
        Don't download an updated version of the orbit # file 
-       from naif.jpl.nasa.gov
+       from MAVEN Science Data Center
     
     local_dir: in, optional, type=string
        Specify a directory to download files to - this overrides what's 

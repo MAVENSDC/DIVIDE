@@ -45,7 +45,7 @@
        downloading any data.
 
     exclude_orbit_file: in, optional, type=boolean
-       Don't download an updated version of the orbit # file from naif.jpl.nasa.gov
+       Don't download an updated version of the orbit # file from MAVEN Science Data Center
 
     debug: in, optional, type=boolean
        On error, - "Stop immediately at the statement that caused the error and print
