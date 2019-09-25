@@ -485,7 +485,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                               xtickname=x_labels,$
 ;                              xtickvalue=xtickvalue, $
                               xstyle=1,yrange=temp_yrange,color='black',$
-                              margin=0.1,_extra=e) ]
+                              margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
           endif else begin
             plot1 = [plot1, $
                      plot(x, y[oplot_index,*], xtitle='Time', $
@@ -494,7 +494,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                          title=title[i],xmajor=5,$
 ;                         xtickvalue=xtickvalue, $
                          xtickname=x_labels,xstyle=1,yrange=temp_yrange,$
-                         color='black',margin=0.1,_extra=e) ]
+                         color='black',margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
           endelse ; err_check          
           oplot_index= oplot_index+1
 
@@ -519,7 +519,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;                              xtickvalue=xtickvalue, $
                               xstyle=1,color='black',$
                               name=y_axis_title[oplot_index],$
-                              margin=0.1,_extra=e) ]
+                              margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
             l = legend(target=plot1,position=[0.2,0.95],/normal,linestyle=0,$
                        font_size=8)
             oplot_index = oplot_index+1
@@ -533,7 +533,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;                                xtickvalue=xtickvalue, $
                                 xtickname=x_labels,xstyle=1, color='black',$
                                 name=y_axis_title[oplot_index],$
-                                margin=0.1,_extra=e) ]
+                                margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
               l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],$
                          /normal,linestyle=j,font_size=8)
               oplot_index=oplot_index+1
@@ -547,7 +547,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
                          title=title[i],linestyle=0, xmajor=5, $
                          xtickname=x_labels,xstyle=1,$
 ;                         xtickvalue=xtickvalue, $
-                         name=y_axis_title[oplot_index],margin=0.1,_extra=e) ]
+                         name=y_axis_title[oplot_index],margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
             l = legend(target=plot1,position=[0.2,0.95],/normal,linestyle=0,$
                        font_size=8)
             oplot_index = oplot_index+1
@@ -560,7 +560,7 @@ pro MVN_KP_PLOT, kp_data, parameter, error=error, time=time, list=list, $
 ;                           xtickvalue=xtickvalue,$
                            xmajor=5,overplot=1,$
                            xstyle=1,name=y_axis_title[oplot_index],$
-                           margin=0.1,_extra=e) ]
+                           margin=0.1, xrange=[x[0], x[-1]],_extra=e) ]
               l = legend(target=plot1,position=[0.2,0.95-(j*0.15)],/normal,$
                          linestyle=j,font_size=8)
               oplot_index=oplot_index+1

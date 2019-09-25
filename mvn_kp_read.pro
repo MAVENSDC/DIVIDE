@@ -551,6 +551,17 @@ pro MVN_KP_READ, time, insitu_output, iuvs_output, $
                       save_files=save_files, text_files=text_files, $
                       insitu_only=insitu_only, new_files=new_files
 
+  ;; Remove the insitu crustal files if they exist
+  nfiles = n_elements(target_KP_filenames)
+  new_filenames = []
+  for i = 0, nfiles-1 do begin
+    match_found = STRMATCH(target_KP_filenames[i], "*crustal*")
+    if match_found eq 0 then begin
+      new_filenames = [new_filenames, target_KP_filenames[i]]
+    endif
+  endfor
+  target_KP_filenames=new_filenames
+
   if (target_KP_filenames[0] eq 'None') then begin
     print, "No insitu files found.  Make sure you have the correct time range.  "
     insitu_found=0

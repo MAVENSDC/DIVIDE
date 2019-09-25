@@ -30,7 +30,18 @@ function MVN_KP_LOCAL_INSITU_FILES, begin_jul, end_jul, insitu_dir, filename_spe
   
   ;; - recursive search to look through year/month subdirs
   local_insitu = file_search(insitu_dir+path_sep(),insitu_pattern, count=count)
-
+  
+  ;; Remove the insitu crustal files if they exist
+  nfiles = n_elements(local_insitu)
+  new_filenames = []
+  for i = 0, nfiles-1 do begin
+    match_found = STRMATCH(local_insitu[i], "*crustal*")
+    if match_found eq 0 then begin
+      new_filenames = [new_filenames, local_insitu[i]]
+    endif
+  endfor
+  local_insitu=new_filenames
+  
   if (count gt 0) then begin
     local_insitu_base  = file_basename(local_insitu)
     ;local_times_insitu = strmid(local_insitu_base, 20, 8, /reverse_offset) ;;FIXME - cleaner way to get this part of the string

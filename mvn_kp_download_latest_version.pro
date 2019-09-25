@@ -93,7 +93,8 @@ pro mvn_kp_download_latest_version
     ;; If there is no match, we need to download that file
     if (matching_index eq -1) then begin
       file_and_path = install_directory[0] + file
-      return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/'+strmid(new_file_names[i], 2), '', filename=file_and_path, /not_sdc_connection)
+      download_url = (spec.url_path+'/'+strmid(new_file_names[i], 2)).replace("\","/")
+      return_value = mvn_kp_execute_neturl_query(netURL, download_url, '', filename=file_and_path, /not_sdc_connection)
       print, "Downloading " + file 
     endif
     
@@ -102,7 +103,8 @@ pro mvn_kp_download_latest_version
       ;; Don't do anything
     endif else begin
       file_and_path = install_directory[0] + file
-      return_value = mvn_kp_execute_neturl_query(netURL, spec.url_path+'/'+strmid(new_file_names[i], 2), '', filename=file_and_path, /not_sdc_connection)
+      download_url = (spec.url_path+'/'+strmid(new_file_names[i], 2)).replace("\","/")
+      return_value = mvn_kp_execute_neturl_query(netURL, download_url, '', filename=file_and_path, /not_sdc_connection)
       print, "Downloading " + file 
     endelse
   endfor

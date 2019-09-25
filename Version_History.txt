@@ -1,4 +1,10 @@
-Current Version: 2018-08-30
+Current Version: 2019-09-25
+
+2019-09-25:
+	-Filtering out the insitu crustal field KP data
+
+2018-10-17:
+	-Fixing an issue with x range in plots
 
 2018-08-30:
 	-Fixed issue where the altitude in the KP files was not read correctly

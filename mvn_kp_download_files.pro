@@ -255,8 +255,25 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
     filenames = mvn_kp_relative_complement(local_files, filenames)
   endif
   
+  ;; Ignore the Crustal Files
+  
+  
   ;; Sort the filenames
   filenames = filenames[sort(filenames)]
+  
+  ; Get the number of files that would be downloaded.
+  nfiles = n_elements(filenames)
+  
+  ;; Remove the insitu crustal files if they exist
+  new_filenames = []
+  for i = 0, nfiles-1 do begin
+    match_found = STRMATCH(filenames[i], "*crustal*")
+    if match_found eq 0 then begin
+      new_filenames = [new_filenames, filenames[i]]
+    endif
+  endfor
+  filenames=new_filenames
+  nfiles = n_elements(filenames)
   
   ;; If LIST_FILES option, then just print out the file list (and save to list_files) 
   ; Don't actually download
@@ -270,8 +287,7 @@ pro mvn_kp_download_files, filenames=filenames, local_dir=local_dir, $
   endif
   
 
-  ; Get the number of files that would be downloaded.
-  nfiles = n_elements(filenames)
+  
   
   ;; Hanlde the stupid case where IDL has an emptry string and n_elements will return 1.
   ;; Return from here if no files to download

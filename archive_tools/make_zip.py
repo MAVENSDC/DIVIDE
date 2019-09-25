@@ -113,7 +113,7 @@ def define_file_name(Debug, IncludeBasemaps, access):
     #
     # Move to relevant direcotry
     #
-    os.chdir('W:/DIVIDE/dev/maventoolkit/')
+    os.chdir('C:/Code Repos/maventoolkit/')
     #os.chdir('W:/DIVIDE/dev/maventoolkit/')
     #
     #  Create the new access.txt file
@@ -234,7 +234,7 @@ def make_help():
     Author: McGouldrick (2015-Jul-21)
     '''
 
-    os.chdir('W:/DIVIDE/dev/maventoolkit/')
+    os.chdir('C:/Code Repos/maventoolkit/')
     pro_files = []
     pro_files += [each for each in os.listdir('./') if each.endswith('.pro')]
 
